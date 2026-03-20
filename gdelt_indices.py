@@ -1,22 +1,6 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[ ]:
-
-
-"""
-GDELT INDEX GENERATOR — V2.0
-==============================
-Orijinal kod: GENERATE INDICES V1.4.ipynb
-Geliştirmeler:
-  - Paralel indirme (ThreadPoolExecutor) → ~8x hız artışı
-  - Hata yönetimi + otomatik yeniden deneme
-  - Kaldığı yerden devam (mevcut CSV'yi okur, sadece eksik günleri indirir)
-  - İlerleme göstergesi
-
-Kullanım:
-  python gdelt_indices.py
-"""
+# GDELT INDEX GENERATOR V3.0 - Sentiment-Weighted
+# Formul: Sigma(NumMentions x |AvgTone|/100 x |Goldstein|/10) / Sigma(NumMentions)
+# Calistirmak icin CMD: python gdelt_indices.py
 
 import pandas as pd
 import numpy as np
@@ -30,18 +14,16 @@ import time
 import concurrent.futures
 
 # ============================================================
-# AYARLAR — buradan değiştirin
+# AYARLAR
 # ============================================================
-
-OUTPUT_FILE   = './indices.csv'   # çıktı dosyası
-MAX_WORKERS   = 8                 # paralel indirme sayısı (internet hızına göre 4-16)
-RETRY_COUNT   = 3                 # hata durumunda kaç kez tekrar dene
-RETRY_DELAY   = 3                 # denemeler arası bekleme (saniye)
+OUTPUT_FILE  = './indices.csv'
+MAX_WORKERS  = 8
+RETRY_COUNT  = 3
+RETRY_DELAY  = 3
 
 # ============================================================
 # GDELT SÜTUN TANIMLARI
 # ============================================================
-
 V2HEADERS = [
     'GLOBALEVENTID','Date','MonthYear','Year','FractionDate','Source',
     'Actor1Name','Actor1CountryCode','Actor1KnownGroupCode','Actor1EthnicCode',
@@ -58,15 +40,19 @@ V2HEADERS = [
     'ActionGeoLat','ActionGeoLong','ActionGeo_FeatureID','DATEADDED','SOURCEURL'
 ]
 
+# V3: Goldstein, NumMentions, AvgTone eklendi
 SELECTED_COLUMNS = [
-    'DATEADDED', 'Actor1Geo_CountryCode', 'Actor2Geo_CountryCode',
-    'ActionGeo_CountryCode', 'QuadClass', 'EventRootCode', 'CAMEOCode'
+    'DATEADDED',
+    'Actor1Geo_CountryCode', 'Actor2Geo_CountryCode', 'ActionGeo_CountryCode',
+    'QuadClass', 'EventRootCode', 'CAMEOCode',
+    'Goldstein',      # -10 (çatışma) ile +10 (işbirliği) arası
+    'NumMentions',    # medya önem ağırlığı
+    'AvgTone',        # -100 (negatif) ile +100 (pozitif) arası
 ]
 
 # ============================================================
 # KONU TANIMLARI (CAMEO KODLARI)
 # ============================================================
-
 TOPICS = {
     'appeal_of_leadership_change': ['1041'],
     'coup': ['195','194','1724','012','092','0831','112','133','141','160','170','173'],
@@ -148,10 +134,6 @@ TOPICS = {
     'corruption': ['1121'],
 }
 
-# ============================================================
-# ÜLKE KODLARI
-# ============================================================
-
 COUNTRY_CODES = {
     'AF':'Afghanistan','AR':'Argentina','AM':'Armenia','AS':'Australia',
     'BE':'Belgium','BR':'Brazil','CA':'Canada','CH':'China','CO':'Colombia',
@@ -175,7 +157,6 @@ COUNTRY_CODES = {
 def download_gdelt_day(filename):
     """Tek bir günün GDELT verisini indir. Hata varsa yeniden dene."""
     url = f"http://data.gdeltproject.org/events/{filename}.export.CSV.zip"
-
     for attempt in range(RETRY_COUNT):
         try:
             resp = urlopen(url, timeout=60)
@@ -188,158 +169,165 @@ def download_gdelt_day(filename):
                 low_memory=False
             )
             return filename, df
-
         except urllib.error.HTTPError as e:
             if e.code == 404:
-                # Dosya GDELT'te yok (hafta sonu / tatil günleri olabilir)
                 return filename, None
             print(f"  [!] HTTP {e.code} — {filename} (deneme {attempt+1}/{RETRY_COUNT})")
-
         except Exception as e:
             print(f"  [!] Hata — {filename}: {e} (deneme {attempt+1}/{RETRY_COUNT})")
-
         if attempt < RETRY_COUNT - 1:
             time.sleep(RETRY_DELAY)
-
     return filename, None
 
 
 def compute_day_indices(df):
     """
-    Bir günün DataFrame'i için tüm (konu, ülke) indeks değerlerini hesapla.
-    İndeks = o gün o ülkede o konuya ait olay sayısı / toplam olay sayısı
+    V3 — Sentiment-Weighted Index
+
+    Formül:
+      Skor = Σ(NumMentions × |AvgTone|/100 × |Goldstein|/10)  [eşleşen]
+             ─────────────────────────────────────────────────
+             Σ(NumMentions)                                     [tüm olaylar]
+
+    Sıfır bölme ve eksik veri koruması dahil.
     """
     if df is None or len(df) == 0:
         return None
 
-    all_event = len(df)
+    # Eksik değerleri doldur
+    df = df.copy()
+    df['NumMentions'] = pd.to_numeric(df['NumMentions'], errors='coerce').fillna(1).clip(lower=1)
+    df['Goldstein']   = pd.to_numeric(df['Goldstein'],   errors='coerce').fillna(0)
+    df['AvgTone']     = pd.to_numeric(df['AvgTone'],     errors='coerce').fillna(0)
+
+    # Tüm günün toplam medya ağırlığı (payda)
+    total_weight = df['NumMentions'].sum()
+    if total_weight == 0:
+        return None
+
+    # Duygu yoğunluğu: 0–1 arası
+    # |AvgTone|/100 → medya tonunun şiddeti
+    # |Goldstein|/10 → olayın doğasındaki şiddet
+    df['intensity'] = (df['AvgTone'].abs() / 100) * (df['Goldstein'].abs() / 10)
+
+    # Ağırlıklı katkı = medya önem × duygu yoğunluğu
+    df['weighted_contribution'] = df['NumMentions'] * df['intensity']
+
     results = {}
 
     for cont in COUNTRY_CODES:
-        # Ülkeye ait tüm satırları bir kez filtrele
+        # Ülke maskesi
         country_mask = (
             (df['ActionGeo_CountryCode'] == cont) |
-            (df['Actor1Geo_CountryCode'] == cont) |
+            (df['Actor1Geo_CountryCode'] == cont)  |
             (df['Actor2Geo_CountryCode'] == cont)
         )
-        country_cameo = df.loc[country_mask, 'CAMEOCode']
+        country_df = df[country_mask]
+        if len(country_df) == 0:
+            for topic in TOPICS:
+                results[(topic, cont)] = 0.0
+            continue
+
+        country_cameo = country_df['CAMEOCode']
 
         for topic, codes in TOPICS.items():
-            val = country_cameo.isin(codes).sum()
-            results[(topic, cont)] = val / all_event
+            topic_mask = country_cameo.isin(codes)
+            matched = country_df[topic_mask]
+
+            if len(matched) == 0:
+                results[(topic, cont)] = 0.0
+            else:
+                # Payı: eşleşen olayların ağırlıklı duygu katkısı
+                numerator = matched['weighted_contribution'].sum()
+                results[(topic, cont)] = numerator / total_weight
 
     return results
 
 
 def load_existing_indices(filepath):
-    """Mevcut CSV'yi yükle; yoksa boş DataFrame döndür."""
     if os.path.exists(filepath):
         print(f"Mevcut indeks dosyası bulundu: {filepath}")
         df = pd.read_csv(filepath, sep=',', header=0, index_col=[0, 1])
-        print(f"  → {len(df.columns)} gün, {len(df)} (konu, ülke) çifti yüklendi.")
+        print(f"  → {len(df.columns)} gün yüklendi.")
         return df
     else:
-        print("Mevcut indeks dosyası bulunamadı. Sıfırdan başlanıyor.")
-        multi_index = pd.MultiIndex.from_product(
+        print("Yeni başlanıyor (mevcut dosya bulunamadı).")
+        idx = pd.MultiIndex.from_product(
             [TOPICS.keys(), COUNTRY_CODES.keys()],
             names=['topic', 'country']
         )
-        return pd.DataFrame(index=multi_index)
+        return pd.DataFrame(index=idx)
 
 
 def get_missing_dates(indices):
-    """
-    Son kaydedilen günden bugüne kadar hangi günler eksik?
-    GDELT genellikle 1-2 gün gecikmelidir, bu yüzden dünü son gün olarak alıyoruz.
-    """
     yesterday = datetime.datetime.now() - datetime.timedelta(days=1)
-
     if len(indices.columns) == 0:
-        # Hiç veri yok — son 30 günü indir (başlangıç için)
         start = yesterday - datetime.timedelta(days=30)
         print("⚠ İlk çalıştırma: son 30 gün indirilecek.")
-        print("  (Daha fazla tarihsel veri için START_DATE ayarını değiştirin)")
     else:
-        last_date_str = indices.columns[-1]
-        start = datetime.datetime.strptime(str(last_date_str), '%Y%m%d') + datetime.timedelta(days=1)
+        last = str(indices.columns[-1])
+        start = datetime.datetime.strptime(last, '%Y%m%d') + datetime.timedelta(days=1)
 
     date_list = []
-    current = start
-    while current <= yesterday:
-        date_list.append(int(current.strftime('%Y%m%d')))
-        current += datetime.timedelta(days=1)
-
+    cur = start
+    while cur <= yesterday:
+        date_list.append(int(cur.strftime('%Y%m%d')))
+        cur += datetime.timedelta(days=1)
     return sorted(date_list)
 
 
 # ============================================================
 # ANA FONKSİYON
 # ============================================================
-
 def run():
     print("=" * 60)
-    print("GDELT INDEX GENERATOR v2.0")
+    print("GDELT INDEX GENERATOR v3.0  (Sentiment-Weighted)")
+    print("=" * 60)
+    print("Formül: Σ(NumMentions × |AvgTone|/100 × |Goldstein|/10)")
     print("=" * 60)
 
-    # 1. Mevcut veriyi yükle
     indices = load_existing_indices(OUTPUT_FILE)
-
-    # 2. Eksik günleri bul
     date_list = get_missing_dates(indices)
 
     if not date_list:
-        print("\n✓ Tüm veriler güncel. Yeni indirilecek gün yok.")
+        print("\n✓ Tüm veriler güncel.")
         return indices
 
     print(f"\n{len(date_list)} gün indirilecek: {date_list[0]} → {date_list[-1]}")
-    print(f"Paralel worker sayısı: {MAX_WORKERS}\n")
+    print(f"Paralel worker: {MAX_WORKERS}\n")
 
-    # 3. Paralel indirme + indeks hesaplama
-    success_count = 0
-    skip_count = 0
-    total = len(date_list)
+    success, skipped, total = 0, 0, len(date_list)
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
         futures = {executor.submit(download_gdelt_day, d): d for d in date_list}
-
         for i, future in enumerate(concurrent.futures.as_completed(futures), 1):
             filename, df = future.result()
-
             if df is not None:
                 day_results = compute_day_indices(df)
                 if day_results:
                     indices[str(filename)] = pd.Series(day_results)
-                    success_count += 1
+                    success += 1
                     print(f"  [{i:>4}/{total}] ✓ {filename}  ({len(df):,} olay)")
                 else:
-                    skip_count += 1
-                    print(f"  [{i:>4}/{total}] – {filename}  (boş veri)")
+                    skipped += 1
             else:
-                skip_count += 1
+                skipped += 1
                 print(f"  [{i:>4}/{total}] ✗ {filename}  (atlandı)")
 
-            # Her 10 günde bir ara kaydet (veri kaybını önle)
             if i % 10 == 0:
-                indices.to_csv(OUTPUT_FILE, sep=',')
-                print(f"  → Ara kayıt yapıldı ({i}/{total})")
+                indices.to_csv(OUTPUT_FILE)
+                print(f"  → Ara kayıt ({i}/{total})")
 
-    # 4. Son kaydet
-    # Sütunları tarihe göre sırala
     indices = indices.reindex(sorted(indices.columns), axis=1)
-    indices.to_csv(OUTPUT_FILE, sep=',')
+    indices.to_csv(OUTPUT_FILE)
 
     print("\n" + "=" * 60)
-    print(f"✓ Tamamlandı!")
-    print(f"  Başarılı  : {success_count} gün")
-    print(f"  Atlanan   : {skip_count} gün")
-    print(f"  Toplam gün: {len(indices.columns)}")
-    print(f"  Toplam satır: {len(indices):,} (konu × ülke çifti)")
-    print(f"  Kaydedildi: {OUTPUT_FILE}")
+    print(f"✓ Tamamlandı! Başarılı: {success}  Atlanan: {skipped}")
+    print(f"  Toplam: {len(indices.columns)} gün × {len(indices):,} (konu×ülke)")
+    print(f"  Kayıt: {OUTPUT_FILE}")
     print("=" * 60)
-
     return indices
 
 
 if __name__ == '__main__':
-    indices = run()
-
+    run()
