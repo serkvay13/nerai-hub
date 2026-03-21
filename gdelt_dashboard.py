@@ -135,6 +135,43 @@ html, body, [class*="css"] { font-family:'Exo 2',sans-serif; color:#c8d8e8; }
     border-radius:8px; padding:11px 15px; margin-bottom:7px;
     display:flex; align-items:center; gap:12px;
 }
+
+/* COUNTRY PROFILE */
+.prof-header {
+    background:linear-gradient(135deg,rgba(0,18,50,0.97),rgba(10,0,45,0.95));
+    border:1px solid rgba(0,150,255,0.2); border-radius:10px;
+    padding:14px 20px; margin-bottom:14px;
+    display:flex; align-items:center; justify-content:space-between;
+    box-shadow:0 4px 20px rgba(0,0,0,0.4);
+}
+.prof-country { font-size:1.25rem; font-weight:700; color:#fff; letter-spacing:0.06em; }
+.prof-sub { font-size:0.6rem; color:rgba(0,180,255,0.4);
+    font-family:'Share Tech Mono',monospace; letter-spacing:0.15em; margin-top:3px; }
+.prof-section-title {
+    font-size:0.58rem; letter-spacing:0.22em; text-transform:uppercase;
+    color:rgba(0,150,255,0.5); font-family:'Share Tech Mono',monospace;
+    padding-bottom:5px; border-bottom:1px solid rgba(0,150,255,0.1); margin-bottom:9px;
+}
+.idx-row {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:6px 0; border-bottom:1px solid rgba(0,100,180,0.07);
+}
+.idx-label { font-size:0.72rem; color:#8ab0cc; }
+.idx-val   { font-size:0.82rem; font-weight:700; }
+.idx-bar-bg { background:rgba(0,0,0,0.35); border-radius:3px; height:3px; margin-top:3px; }
+.alarm-row {
+    background:rgba(0,12,32,0.75); border:1px solid rgba(0,150,255,0.1);
+    border-radius:7px; padding:8px 11px; margin-bottom:6px;
+    display:flex; align-items:center; justify-content:space-between;
+}
+.alarm-label { font-size:0.72rem; color:#9ab8cc; font-weight:600; }
+.alarm-meta  { font-size:0.58rem; color:rgba(0,150,255,0.4);
+    font-family:'Share Tech Mono',monospace; margin-top:2px; }
+.rel-compact {
+    background:rgba(0,10,28,0.75); border-radius:7px; padding:8px 12px;
+    margin-bottom:5px; display:flex; align-items:center; justify-content:space-between;
+    border-left:3px solid transparent;
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -554,6 +591,107 @@ def compute_top_tensions(_t_norm, _c_norm, top_n=28, n_pairs=5):
 
 
 # ─────────────────────────────────────────────────────────────
+# COUNTRY PROFILE YARDIMCI FONKSİYONLAR
+# ─────────────────────────────────────────────────────────────
+@st.cache_data(ttl=3600)
+def compute_country_top_indices(_df_raw, country, top_n=6):
+    """Ülke için tüm topic'lerde en yüksek skorlu N tanesini döner (0-100 normalize)."""
+    if country not in _df_raw.index.get_level_values('country'):
+        return []
+    topics = _df_raw.index.get_level_values('topic').unique()
+    results = []
+    for topic in topics:
+        try:
+            tdf = _df_raw.xs(topic, level='topic')
+            if country not in tdf.index:
+                continue
+            series  = tdf.loc[country]
+            recent  = float(series.iloc[-7:].mean())
+            flat    = tdf.values.flatten()
+            pos     = flat[flat > 0]
+            g_max   = float(np.percentile(pos, 99)) if len(pos) else 1.0
+            score   = min(100.0, recent / g_max * 100)
+            label   = TOPIC_LABELS.get(topic, topic.replace('_',' ').title())
+            results.append({'topic': topic, 'label': label, 'score': score})
+        except Exception:
+            continue
+    results.sort(key=lambda x: x['score'], reverse=True)
+    return results[:top_n]
+
+
+@st.cache_data(ttl=3600)
+def compute_country_alarms(_df_raw, country, top_n=5):
+    """Ülke için en büyük anomalileri (Z-score bazında) döner."""
+    if country not in _df_raw.index.get_level_values('country'):
+        return []
+    topics = _df_raw.index.get_level_values('topic').unique()
+    alarms = []
+    for topic in topics:
+        try:
+            tdf    = _df_raw.xs(topic, level='topic')
+            if country not in tdf.index:
+                continue
+            series = tdf.loc[country]
+            if len(series) < 14:
+                continue
+            recent = float(series.iloc[-7:].mean())
+            prev7  = float(series.iloc[-14:-7].mean())
+            mu     = float(series.mean())
+            sd     = float(series.std())
+            z      = (recent - mu) / sd if sd > 0 else 0.0
+            pct    = (recent - prev7) / (abs(prev7) + 1e-10) * 100
+            flat   = tdf.values.flatten()
+            pos    = flat[flat > 0]
+            g_max  = float(np.percentile(pos, 99)) if len(pos) else 1.0
+            score  = min(100.0, recent / g_max * 100)
+            label  = TOPIC_LABELS.get(topic, topic.replace('_',' ').title())
+            alarms.append({'topic': topic, 'label': label,
+                           'z': z, 'pct': pct, 'score': score})
+        except Exception:
+            continue
+    # Z-score büyüklüğüne göre sırala (hem pozitif hem negatif spike)
+    alarms.sort(key=lambda x: abs(x['z']), reverse=True)
+    return alarms[:top_n]
+
+
+@st.cache_data(ttl=3600)
+def compute_country_bilateral_profile(_t_norm, _c_norm, country, top_n=3):
+    """Ülkenin en kötü ve en iyi top_n ikili ilişkisini döner."""
+    if country not in _t_norm.index:
+        return [], []
+    others  = [c for c in _t_norm.index if c != country]
+    recent  = _t_norm.columns[-7:]
+    prev7   = _t_norm.columns[-14:-7] if len(_t_norm.columns) >= 14 else _t_norm.columns[:7]
+    pairs   = []
+    for other in others:
+        try:
+            t1r  = float(_t_norm.loc[country, recent].mean())
+            t2r  = float(_t_norm.loc[other,   recent].mean()) if other in _t_norm.index else 0.0
+            c1r  = float(_c_norm.loc[country, recent].mean()) if country in _c_norm.index else 0.0
+            c2r  = float(_c_norm.loc[other,   recent].mean()) if other  in _c_norm.index else 0.0
+            net  = max(0.0, (t1r + t2r) / 2 - (c1r + c2r) / 2 * 0.35)
+            t1p  = float(_t_norm.loc[country, prev7].mean())
+            t2p  = float(_t_norm.loc[other,   prev7].mean()) if other in _t_norm.index else 0.0
+            trnd = (t1r + t2r) / 2 - (t1p + t2p) / 2
+            st_lbl, st_col, st_ico, tr_txt, tr_col = relation_status(net, trnd)
+            pairs.append({
+                'country': other,
+                'name':    COUNTRY_NAMES.get(other, other),
+                'net':     net,
+                'trend':   trnd,
+                'status':  st_lbl,
+                'color':   st_col,
+                'icon':    st_ico,
+            })
+        except Exception:
+            continue
+    pairs.sort(key=lambda x: x['net'], reverse=True)
+    worst = pairs[:top_n]
+    best  = sorted(pairs, key=lambda x: x['net'])[:top_n]
+    return worst, best
+
+
+# ─────────────────────────────────────────────────────────────
 # VERİ YÜKLE
 # ─────────────────────────────────────────────────────────────
 df, is_demo = load_data()
@@ -576,12 +714,16 @@ with st.sidebar:
       </div>
     </div>""", unsafe_allow_html=True)
 
-    st.markdown('<div class="sec-hdr">Normalization</div>', unsafe_allow_html=True)
-    norm_method = st.radio(
-        "norm", ['Score (0–100)', 'Z-Score', 'Raw'],
-        index=0, label_visibility='collapsed',
-        help="Score 0–100: tarihin en yüksek değeri=100 | Z-Score: ortalamadan sapma | Raw: ham veri"
+    # ── Country Profile Selector (en üstte) ─────────────────
+    st.markdown('<div class="sec-hdr">Country Profile</div>', unsafe_allow_html=True)
+    profile_c_opts = [f"{COUNTRY_NAMES.get(c,c)} ({c})" for c in sorted(all_countries)]
+    profile_default = 'United States (US)' if 'United States (US)' in profile_c_opts else profile_c_opts[0]
+    sel_profile_label = st.selectbox(
+        "profile_country", profile_c_opts,
+        index=profile_c_opts.index(profile_default),
+        label_visibility='collapsed'
     )
+    profile_country = sel_profile_label.split('(')[-1].strip(')')
 
     st.markdown('<div class="sec-hdr" style="margin-top:14px">Topic</div>', unsafe_allow_html=True)
     topic_display = {t: TOPIC_LABELS.get(t, t.replace('_',' ').title()) for t in all_topics}
@@ -619,6 +761,15 @@ with st.sidebar:
       {'⚠ DEMO MODE' if is_demo else '✓ GDELT Project'}
     </div>""", unsafe_allow_html=True)
 
+    # ── Normalization (en altta) ─────────────────────────────
+    st.markdown('<div class="sec-hdr" style="margin-top:18px">Normalization</div>',
+                unsafe_allow_html=True)
+    norm_method = st.radio(
+        "norm", ['Score (0–100)', 'Z-Score', 'Raw'],
+        index=0, label_visibility='collapsed',
+        help="Score 0–100: tarihin en yüksek değeri=100 | Z-Score: ortalamadan sapma | Raw: ham veri"
+    )
+
 # ─────────────────────────────────────────────────────────────
 # VERİ HAZIRLAMA
 # ─────────────────────────────────────────────────────────────
@@ -654,6 +805,147 @@ with c2:
       <span style='color:#00b4ff;font-size:0.9rem;'>{date_cols[-1].strftime('%d %b %Y')}</span><br>
       <span style='color:{nm_color};font-size:0.7rem;'>▣ {norm_method}</span>
     </div>""", unsafe_allow_html=True)
+
+st.markdown('<div class="h-div"></div>', unsafe_allow_html=True)
+
+# ─────────────────────────────────────────────────────────────
+# COUNTRY INTELLIGENCE PROFILE
+# ─────────────────────────────────────────────────────────────
+prof_name = COUNTRY_NAMES.get(profile_country, profile_country)
+
+# Profil verileri
+prof_indices = compute_country_top_indices(df, profile_country)
+prof_alarms  = compute_country_alarms(df, profile_country)
+prof_worst, prof_best = compute_country_bilateral_profile(
+    tension_norm, coop_norm, profile_country)
+
+# Ülkenin genel risk seviyesi (Score 0-100, tüm topic ortalaması)
+_prof_score = 0.0
+_prof_badge = ''
+if profile_country in tension_norm.index:
+    _prof_score = float(tension_norm.loc[profile_country].iloc[-7:].mean())
+    _prof_badge = risk_badge(_prof_score, 'Score (0–100)')
+
+with st.expander(f"🎯  Country Intelligence Profile — {prof_name}", expanded=True):
+    # ── Üst başlık ──────────────────────────────────────────
+    _pc = '#ff4b6e' if _prof_score >= 60 else ('#ffd700' if _prof_score >= 35 else '#00b4ff')
+    st.markdown(f"""
+    <div class="prof-header">
+      <div>
+        <div class="prof-country">{prof_name}</div>
+        <div class="prof-sub">COUNTRY INTELLIGENCE PROFILE &nbsp;·&nbsp; LAST 7-DAY AVERAGE</div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-size:1.6rem;font-weight:700;color:{_pc};
+             text-shadow:0 0 18px {_pc}55;">{_prof_score:.1f}</div>
+        <div style="margin-top:3px;">{_prof_badge}</div>
+      </div>
+    </div>""", unsafe_allow_html=True)
+
+    # ── 3 sütun ─────────────────────────────────────────────
+    pc1, pc2, pc3 = st.columns([4, 4, 4])
+
+    # --- Sütun 1: En Yüksek İndeks Skorları ---
+    with pc1:
+        st.markdown('<div class="prof-section-title">📊 Top Index Scores</div>',
+                    unsafe_allow_html=True)
+        if prof_indices:
+            for idx in prof_indices:
+                s   = idx['score']
+                col = '#ff4b6e' if s >= 65 else ('#ff6b35' if s >= 45 else
+                      '#ffd700' if s >= 25 else '#00b4ff')
+                st.markdown(f"""
+                <div class="idx-row">
+                  <div>
+                    <div class="idx-label">{idx['label']}</div>
+                    <div class="idx-bar-bg">
+                      <div style="background:{col};width:{s:.0f}%;height:3px;
+                           border-radius:3px;box-shadow:0 0 5px {col}60;"></div>
+                    </div>
+                  </div>
+                  <div class="idx-val" style="color:{col};margin-left:10px;
+                       text-shadow:0 0 10px {col}40;">{s:.1f}</div>
+                </div>""", unsafe_allow_html=True)
+        else:
+            st.markdown('<div style="color:rgba(100,150,180,0.4);font-size:0.72rem;">Veri yok</div>',
+                        unsafe_allow_html=True)
+
+    # --- Sütun 2: Aktif Alarmlar ---
+    with pc2:
+        st.markdown('<div class="prof-section-title">⚠️ Active Alarms</div>',
+                    unsafe_allow_html=True)
+        if prof_alarms:
+            for alm in prof_alarms:
+                z   = alm['z']
+                pct = alm['pct']
+                if   z >= 2.5: alm_col, alm_lbl = '#ff4b6e', 'CRITICAL SPIKE'
+                elif z >= 1.5: alm_col, alm_lbl = '#ff6b35', 'HIGH SPIKE'
+                elif z >= 0.8: alm_col, alm_lbl = '#ffd700', 'ELEVATED'
+                elif z <= -1.5:alm_col, alm_lbl = '#00ff9d', 'SUPPRESSED'
+                else:           alm_col, alm_lbl = '#00b4ff', 'NORMAL'
+                sym = '▲' if pct > 0 else '▼'
+                st.markdown(f"""
+                <div class="alarm-row" style="border-color:{alm_col}28;">
+                  <div>
+                    <div class="alarm-label">{alm['label']}</div>
+                    <div class="alarm-meta">z={z:+.2f}σ &nbsp;·&nbsp;
+                      <span style="color:{alm_col};">{sym}{abs(pct):.0f}%</span> vs 7d
+                    </div>
+                  </div>
+                  <span style="font-size:0.58rem;background:{alm_col}18;
+                    border:1px solid {alm_col}40;border-radius:3px;
+                    color:{alm_col};padding:2px 6px;white-space:nowrap;">{alm_lbl}</span>
+                </div>""", unsafe_allow_html=True)
+        else:
+            st.markdown('<div style="color:rgba(100,150,180,0.4);font-size:0.72rem;">Alarm yok</div>',
+                        unsafe_allow_html=True)
+
+    # --- Sütun 3: En Kötü / En İyi İkili İlişkiler ---
+    with pc3:
+        st.markdown('<div class="prof-section-title">🔗 Bilateral Relations</div>',
+                    unsafe_allow_html=True)
+
+        st.markdown("""<div style="font-size:0.6rem;color:#ff6b35;letter-spacing:0.15em;
+            margin-bottom:5px;">▼ WORST 3 RELATIONS</div>""", unsafe_allow_html=True)
+        for rel in prof_worst:
+            t_sym = '▲' if rel['trend'] > 0.5 else ('▼' if rel['trend'] < -0.5 else '→')
+            st.markdown(f"""
+            <div class="rel-compact" style="border-left-color:{rel['color']};">
+              <div>
+                <div style="font-size:0.75rem;font-weight:600;color:#c8d8e8;">
+                  {rel['icon']} {rel['name']}
+                </div>
+                <div style="font-size:0.58rem;color:{rel['color']};
+                     font-family:monospace;">{rel['status']}</div>
+              </div>
+              <div style="text-align:right;">
+                <div style="font-size:0.82rem;font-weight:700;
+                     color:{rel['color']};">{rel['net']:.1f}</div>
+                <div style="font-size:0.55rem;color:#7a9ab8;
+                     font-family:monospace;">{t_sym} {abs(rel['trend']):.1f}</div>
+              </div>
+            </div>""", unsafe_allow_html=True)
+
+        st.markdown("""<div style="font-size:0.6rem;color:#00ff9d;letter-spacing:0.15em;
+            margin:8px 0 5px;">▲ BEST 3 RELATIONS</div>""", unsafe_allow_html=True)
+        for rel in prof_best:
+            t_sym = '▲' if rel['trend'] > 0.5 else ('▼' if rel['trend'] < -0.5 else '→')
+            st.markdown(f"""
+            <div class="rel-compact" style="border-left-color:{rel['color']};">
+              <div>
+                <div style="font-size:0.75rem;font-weight:600;color:#c8d8e8;">
+                  {rel['icon']} {rel['name']}
+                </div>
+                <div style="font-size:0.58rem;color:{rel['color']};
+                     font-family:monospace;">{rel['status']}</div>
+              </div>
+              <div style="text-align:right;">
+                <div style="font-size:0.82rem;font-weight:700;
+                     color:{rel['color']};">{rel['net']:.1f}</div>
+                <div style="font-size:0.55rem;color:#7a9ab8;
+                     font-family:monospace;">{t_sym} {abs(rel['trend']):.1f}</div>
+              </div>
+            </div>""", unsafe_allow_html=True)
 
 st.markdown('<div class="h-div"></div>', unsafe_allow_html=True)
 
