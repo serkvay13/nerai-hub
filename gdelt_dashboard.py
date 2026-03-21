@@ -110,6 +110,31 @@ html, body, [class*="css"] { font-family:'Exo 2',sans-serif; color:#c8d8e8; }
 #MainMenu,footer,.stDeployButton { visibility:hidden; display:none; }
 ::-webkit-scrollbar { width:4px; }
 ::-webkit-scrollbar-thumb { background:rgba(0,150,255,0.25); border-radius:2px; }
+
+/* BILATERAL */
+.vs-badge {
+    display:inline-block; background:rgba(123,47,255,0.18);
+    border:1px solid rgba(123,47,255,0.45); border-radius:50%;
+    width:38px; height:38px; line-height:38px; text-align:center;
+    font-size:0.72rem; font-weight:700; color:#7b2fff; font-family:monospace;
+}
+.relation-status {
+    border-radius:10px; padding:18px 12px; text-align:center;
+    background:linear-gradient(135deg,rgba(0,15,40,0.95),rgba(15,0,40,0.9));
+    margin:4px 0;
+}
+.metric-mini {
+    background:rgba(0,10,28,0.75); border:1px solid rgba(0,150,255,0.12);
+    border-radius:8px; padding:12px 10px; text-align:center;
+}
+.metric-mini-label { font-size:0.58rem; letter-spacing:0.15em; text-transform:uppercase;
+    color:rgba(0,180,255,0.45); font-family:'Share Tech Mono',monospace; margin-bottom:4px; }
+.metric-mini-val { font-size:1.5rem; font-weight:700; line-height:1.1; }
+.pair-card {
+    background:rgba(0,10,28,0.7); border:1px solid rgba(0,150,255,0.1);
+    border-radius:8px; padding:11px 15px; margin-bottom:7px;
+    display:flex; align-items:center; gap:12px;
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -170,6 +195,32 @@ TOPIC_LABELS = {
 }
 GLOW_COLORS = ['#00b4ff','#7b2fff','#00ff9d','#ff6b35','#ff4b6e',
                '#ffd700','#00e5ff','#e040fb','#69ff47','#ff6e40']
+
+# ── Bilateral relations topics & weights ──────────────────────
+TENSION_WEIGHTS = {
+    'deteriorating_bilateral_relations': 3.0,
+    'military_clash':                    3.5,
+    'military_escalation':               2.5,
+    'military_crisis':                   2.5,
+    'political_crisis':                  2.0,
+    'international_crisis':              2.0,
+    'threaten_in_international_relations': 2.0,
+    'instability':                       1.5,
+}
+COOP_WEIGHTS = {
+    'increasing_bilateral_relations': 3.0,
+    'military_deescalation':          2.5,
+    'dispute_settlement':             2.0,
+    'international_support':          1.5,
+    'political_stability':            1.0,
+}
+# Topics shown as key indicators in the bilateral panel
+BILATERAL_INDICATORS = [
+    ('political_crisis',                   'Political Crisis',      '#e040fb'),
+    ('military_clash',                     'War Risk',              '#ff4b6e'),
+    ('threaten_in_international_relations','Intl. Threats',         '#ff6b35'),
+    ('military_escalation',                'Military Escalation',   '#ffd700'),
+]
 
 def hex_to_rgba(h, a=0.06):
     r,g,b = int(h[1:3],16),int(h[3:5],16),int(h[5:7],16)
@@ -371,12 +422,147 @@ def chart_sparkline(series, color='#00b4ff'):
     return fig
 
 # ─────────────────────────────────────────────────────────────
+# BİLATERAL YARDIMCI FONKSİYONLAR
+# ─────────────────────────────────────────────────────────────
+@st.cache_data(ttl=3600)
+def compute_bilateral_base(_df_raw):
+    """
+    Her ülke için ağırlıklı TENSION ve COOPERATION zaman serisi üretir.
+    Sonuç 0-100 ölçeğinde global normalize edilir.
+    """
+    available = set(_df_raw.index.get_level_values('topic').unique())
+    countries  = _df_raw.index.get_level_values('country').unique()
+    cols       = _df_raw.columns
+
+    t_sum = pd.DataFrame(0.0, index=countries, columns=cols)
+    t_wt  = 0.0
+    for topic, w in TENSION_WEIGHTS.items():
+        if topic in available:
+            tdf = _df_raw.xs(topic, level='topic').reindex(countries).fillna(0)
+            t_sum += tdf * w;  t_wt += w
+
+    c_sum = pd.DataFrame(0.0, index=countries, columns=cols)
+    c_wt  = 0.0
+    for topic, w in COOP_WEIGHTS.items():
+        if topic in available:
+            tdf = _df_raw.xs(topic, level='topic').reindex(countries).fillna(0)
+            c_sum += tdf * w;  c_wt += w
+
+    tension = t_sum / t_wt if t_wt > 0 else t_sum
+    coop    = c_sum / c_wt if c_wt > 0 else c_sum
+
+    # Global 99. percentile normalization (outlier'lara karşı dayanıklı)
+    def _norm99(df):
+        flat = df.values.flatten()
+        pos  = flat[flat > 0]
+        mx   = np.percentile(pos, 99) if len(pos) else 1.0
+        return (df / mx * 100).clip(0, 100)
+
+    return _norm99(tension), _norm99(coop)
+
+
+def get_bilateral_series(t_norm, c_norm, c1, c2, n_days=60):
+    """İki ülke için bilateral tension/cooperation/net zaman serileri."""
+    cols = t_norm.columns[-n_days:]
+    t1 = t_norm.loc[c1, cols] if c1 in t_norm.index else pd.Series(0.0, index=cols)
+    t2 = t_norm.loc[c2, cols] if c2 in t_norm.index else pd.Series(0.0, index=cols)
+    c1s= c_norm.loc[c1, cols] if c1 in c_norm.index else pd.Series(0.0, index=cols)
+    c2s= c_norm.loc[c2, cols] if c2 in c_norm.index else pd.Series(0.0, index=cols)
+    bi_t   = (t1 + t2) / 2
+    bi_c   = (c1s + c2s) / 2
+    bi_net = (bi_t - bi_c * 0.35).clip(0, 100)
+    return bi_t, bi_c, bi_net
+
+
+def relation_status(net_score, trend_7d):
+    """İlişki durumu: etiket, renk, ikon, trend metni."""
+    if   net_score >= 80: st_, col_, ico = 'CRISIS',      '#ff0033', '🚨'
+    elif net_score >= 65: st_, col_, ico = 'HOSTILE',     '#ff4b6e', '⚠️'
+    elif net_score >= 45: st_, col_, ico = 'TENSE',       '#ff6b35', '📈'
+    elif net_score >= 25: st_, col_, ico = 'CAUTIOUS',    '#ffd700', '📊'
+    elif net_score >= 10: st_, col_, ico = 'STABLE',      '#00b4ff', '📉'
+    else:                 st_, col_, ico = 'COOPERATIVE', '#00ff9d', '🤝'
+
+    if   trend_7d >  5: tr_txt, tr_col = '▲ DETERIORATING', '#ff6b35'
+    elif trend_7d >  1: tr_txt, tr_col = '↗ WORSENING',     '#ffd700'
+    elif trend_7d < -5: tr_txt, tr_col = '▼ IMPROVING',     '#00ff9d'
+    elif trend_7d < -1: tr_txt, tr_col = '↘ EASING',        '#00b4ff'
+    else:               tr_txt, tr_col = '→ STABLE',         '#7a9ab8'
+
+    return st_, col_, ico, tr_txt, tr_col
+
+
+def gauge_chart(value, title, color, height=210):
+    """0-100 arası Plotly gauge."""
+    fig = go.Figure(go.Indicator(
+        mode='gauge+number',
+        value=round(value, 1),
+        domain={'x': [0, 1], 'y': [0, 1]},
+        title={'text': title,
+               'font': {'size': 10, 'color': '#6a9ab8', 'family': 'Share Tech Mono'}},
+        number={'font': {'color': color, 'size': 30, 'family': 'Exo 2'}, 'valueformat': '.0f'},
+        gauge={
+            'axis': {'range': [0, 100], 'nticks': 5,
+                     'tickfont': {'size': 8, 'color': '#3a5a7a'},
+                     'tickcolor': '#2a4a6a'},
+            'bar':  {'color': color, 'thickness': 0.22},
+            'bgcolor': 'rgba(0,0,0,0)', 'borderwidth': 0,
+            'steps': [
+                {'range': [0,  25], 'color': 'rgba(0,255,157,0.06)'},
+                {'range': [25, 50], 'color': 'rgba(255,215,0,0.06)'},
+                {'range': [50, 75], 'color': 'rgba(255,107,53,0.08)'},
+                {'range': [75,100], 'color': 'rgba(255,75,110,0.10)'},
+            ],
+            'threshold': {'line': {'color': color, 'width': 3},
+                          'thickness': 0.75, 'value': value},
+        }
+    ))
+    fig.update_layout(paper_bgcolor='rgba(0,0,0,0)',
+                      font=dict(family='Exo 2,sans-serif', color='#7a9ab8'),
+                      height=height, margin=dict(l=15, r=15, t=45, b=5))
+    return fig
+
+
+@st.cache_data(ttl=3600)
+def compute_top_tensions(_t_norm, _c_norm, top_n=28, n_pairs=5):
+    """En yüksek gerilime sahip ülke ikililerini bulur."""
+    avg_t = _t_norm.mean(axis=1)
+    top_c = avg_t.nlargest(top_n).index.tolist()
+
+    recent = _t_norm.columns[-7:]
+    prev7  = _t_norm.columns[-14:-7] if len(_t_norm.columns) >= 14 else _t_norm.columns[:7]
+
+    pairs = []
+    for i in range(len(top_c)):
+        for j in range(i + 1, len(top_c)):
+            c1, c2 = top_c[i], top_c[j]
+            t1r = _t_norm.loc[c1, recent].mean()
+            t2r = _t_norm.loc[c2, recent].mean()
+            c1r = _c_norm.loc[c1, recent].mean() if c1 in _c_norm.index else 0
+            c2r = _c_norm.loc[c2, recent].mean() if c2 in _c_norm.index else 0
+            net  = max(0, (t1r + t2r) / 2 - (c1r + c2r) / 2 * 0.35)
+
+            t1p = _t_norm.loc[c1, prev7].mean()
+            t2p = _t_norm.loc[c2, prev7].mean()
+            trend = (t1r + t2r) / 2 - (t1p + t2p) / 2
+
+            pairs.append({'c1': c1, 'c2': c2, 'net': net, 'trend': trend,
+                          'tension': (t1r + t2r) / 2, 'coop': (c1r + c2r) / 2})
+
+    pairs.sort(key=lambda x: x['net'], reverse=True)
+    return pairs[:n_pairs]
+
+
+# ─────────────────────────────────────────────────────────────
 # VERİ YÜKLE
 # ─────────────────────────────────────────────────────────────
 df, is_demo = load_data()
 date_cols = df.columns
 all_topics = sorted(df.index.get_level_values('topic').unique().tolist())
 all_countries = sorted(df.index.get_level_values('country').unique().tolist())
+
+# Bilateral temel skorlar (cache'li)
+tension_norm, coop_norm = compute_bilateral_base(df)
 
 # ─────────────────────────────────────────────────────────────
 # SIDEBAR
@@ -590,6 +776,216 @@ with col_r:
     if map_date in df_norm.columns:
         st.plotly_chart(chart_ranking(df_norm, map_date),
                         use_container_width=True, config={'displayModeBar':False})
+
+# ─────────────────────────────────────────────────────────────
+# TOP 5 BİLATERAL GERGİNLİK ALARMLARI
+# ─────────────────────────────────────────────────────────────
+st.markdown('<div class="h-div"></div>', unsafe_allow_html=True)
+
+with st.expander("🚨  Top 5 Bilateral Tension Alerts — Auto-Detected", expanded=True):
+    st.markdown('<div class="sec-hdr">Highest Risk Country Pairs · Last 7 Days</div>',
+                unsafe_allow_html=True)
+    top_pairs = compute_top_tensions(tension_norm, coop_norm)
+
+    for rank, pair in enumerate(top_pairs, 1):
+        n1   = COUNTRY_NAMES.get(pair['c1'], pair['c1'])
+        n2   = COUNTRY_NAMES.get(pair['c2'], pair['c2'])
+        net  = pair['net']
+        trnd = pair['trend']
+
+        if   net >= 65: badge_cls, badge_txt, bar_col = 'badge-crit', 'CRITICAL', '#ff4b6e'
+        elif net >= 45: badge_cls, badge_txt, bar_col = 'badge-high', 'HIGH',     '#ff6b35'
+        elif net >= 25: badge_cls, badge_txt, bar_col = 'badge-med',  'ELEVATED', '#ffd700'
+        else:           badge_cls, badge_txt, bar_col = 'badge-low',  'MODERATE', '#00b4ff'
+
+        t_sym = '▲' if trnd > 0.5 else ('▼' if trnd < -0.5 else '→')
+        t_col = '#ff6b35' if trnd > 0.5 else ('#00ff9d' if trnd < -0.5 else '#7a9ab8')
+
+        st.markdown(f"""
+        <div class="pair-card" style="border-color:rgba(255,255,255,0.06);">
+          <div style="font-size:1rem;font-weight:700;color:rgba(0,150,255,0.35);
+               font-family:monospace;width:22px;flex-shrink:0;">#{rank}</div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:0.85rem;font-weight:600;color:#c8d8e8;margin-bottom:5px;">
+              {n1}
+              <span style="color:rgba(123,47,255,0.6);padding:0 6px;">↔</span>
+              {n2}
+            </div>
+            <div style="background:rgba(0,0,0,0.35);border-radius:3px;height:3px;width:100%;">
+              <div style="background:{bar_col};width:{min(net,100):.0f}%;height:3px;
+                   border-radius:3px;box-shadow:0 0 8px {bar_col}70;"></div>
+            </div>
+          </div>
+          <div style="text-align:right;flex-shrink:0;margin-left:14px;">
+            <div style="font-size:1rem;font-weight:700;color:{bar_col};">{net:.1f}</div>
+            <div style="font-size:0.62rem;color:{t_col};font-family:monospace;">
+              {t_sym} {abs(trnd):.1f}
+            </div>
+          </div>
+          <div style="flex-shrink:0;margin-left:10px;">
+            <span class="{badge_cls}">{badge_txt}</span>
+          </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+st.markdown('<div class="h-div"></div>', unsafe_allow_html=True)
+
+# ─────────────────────────────────────────────────────────────
+# BİLATERAL İLİŞKİ ANALİZÖRÜ
+# ─────────────────────────────────────────────────────────────
+st.markdown('<div class="sec-hdr">🔗 Bilateral Relations Analyzer</div>',
+            unsafe_allow_html=True)
+
+c_opts_bi = [f"{COUNTRY_NAMES.get(c,c)} ({c})" for c in sorted(all_countries)]
+
+bi_col1, bi_vs_col, bi_col2 = st.columns([5, 1, 5])
+with bi_col1:
+    default_a = 'United States (US)' if 'United States (US)' in c_opts_bi else c_opts_bi[0]
+    sel_bi_a = st.selectbox("Country A", c_opts_bi,
+                            index=c_opts_bi.index(default_a),
+                            label_visibility='visible')
+    bi_a = sel_bi_a.split('(')[-1].strip(')')
+
+with bi_vs_col:
+    st.markdown("""
+    <div style="text-align:center;padding-top:26px;">
+      <span class="vs-badge">VS</span>
+    </div>""", unsafe_allow_html=True)
+
+with bi_col2:
+    default_b = 'Russia (RS)' if 'Russia (RS)' in c_opts_bi else c_opts_bi[1]
+    sel_bi_b = st.selectbox("Country B", c_opts_bi,
+                            index=c_opts_bi.index(default_b),
+                            label_visibility='visible')
+    bi_b = sel_bi_b.split('(')[-1].strip(')')
+
+# ── Bilateral metrikler ───────────────────────────────────────
+bi_t_ser, bi_c_ser, bi_net_ser = get_bilateral_series(
+    tension_norm, coop_norm, bi_a, bi_b, n_days)
+
+cur_net   = float(bi_net_ser.iloc[-1])   if len(bi_net_ser) > 0 else 0.0
+cur_t     = float(bi_t_ser.iloc[-1])     if len(bi_t_ser)   > 0 else 0.0
+cur_c     = float(bi_c_ser.iloc[-1])     if len(bi_c_ser)   > 0 else 0.0
+prev7_net = float(bi_net_ser.iloc[-8])   if len(bi_net_ser) > 7 else float(bi_net_ser.iloc[0]) if len(bi_net_ser) else 0.0
+trend_bi  = cur_net - prev7_net
+
+st_, st_col, st_ico, tr_txt, tr_col = relation_status(cur_net, trend_bi)
+
+# ── Gauge + Durum Paneli ─────────────────────────────────────
+g1, g2, g3 = st.columns([3, 4, 3])
+
+with g1:
+    t_col_g = '#ff6b35' if cur_t > 50 else ('#ffd700' if cur_t > 25 else '#00b4ff')
+    st.plotly_chart(gauge_chart(cur_t, 'CONFLICT PRESSURE', t_col_g),
+                    use_container_width=True, config={'displayModeBar': False})
+
+with g2:
+    name_a = COUNTRY_NAMES.get(bi_a, bi_a)
+    name_b = COUNTRY_NAMES.get(bi_b, bi_b)
+    st.markdown(f"""
+    <div class="relation-status" style="border:2px solid {st_col}25;">
+      <div style="font-size:1.7rem;margin-bottom:4px;">{st_ico}</div>
+      <div style="font-size:0.55rem;color:{st_col}80;letter-spacing:0.3em;
+           font-family:'Share Tech Mono',monospace;">RELATIONSHIP STATUS</div>
+      <div style="font-size:1.55rem;font-weight:700;color:{st_col};
+           text-shadow:0 0 20px {st_col}60;letter-spacing:0.08em;
+           margin:4px 0;">{st_}</div>
+      <div style="height:1px;
+           background:linear-gradient(90deg,transparent,{st_col}40,transparent);
+           margin:8px 0;"></div>
+      <div style="font-size:0.78rem;font-weight:600;color:{tr_col};
+           font-family:'Share Tech Mono',monospace;">{tr_txt}</div>
+      <div style="font-size:0.6rem;color:rgba(100,150,200,0.45);
+           margin-top:5px;font-family:monospace;">
+        Net Tension: {cur_net:.1f} / 100 &nbsp;·&nbsp; Δ7d: {trend_bi:+.1f}
+      </div>
+      <div style="font-size:0.62rem;color:rgba(0,180,255,0.3);
+           margin-top:3px;font-family:monospace;letter-spacing:0.05em;">
+        {name_a} &nbsp;↔&nbsp; {name_b}
+      </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+with g3:
+    c_col_g = '#00ff9d' if cur_c > 40 else ('#00b4ff' if cur_c > 15 else '#4a6a8a')
+    st.plotly_chart(gauge_chart(cur_c, 'COOPERATION', c_col_g),
+                    use_container_width=True, config={'displayModeBar': False})
+
+# ── 4 Gösterge Kart ──────────────────────────────────────────
+st.markdown("""<div style="font-size:0.6rem;color:rgba(0,180,255,0.38);
+     font-family:'Share Tech Mono',monospace;letter-spacing:0.18em;
+     margin:10px 0 8px;">KEY RISK INDICATORS (7-DAY AVG)</div>""",
+            unsafe_allow_html=True)
+
+ind_cols = st.columns(4)
+avail_topics = set(df.index.get_level_values('topic').unique())
+
+for col_el, (topic, label, color) in zip(ind_cols, BILATERAL_INDICATORS):
+    with col_el:
+        val_a = val_b = 0.0
+        if topic in avail_topics:
+            tdf = df.xs(topic, level='topic')
+            if bi_a in tdf.index:
+                val_a = float(tdf.loc[bi_a].iloc[-7:].mean())
+            if bi_b in tdf.index:
+                val_b = float(tdf.loc[bi_b].iloc[-7:].mean())
+            flat  = tdf.values.flatten()
+            pos   = flat[flat > 0]
+            g_max = float(np.percentile(pos, 99)) if len(pos) else 1.0
+        else:
+            g_max = 1.0
+
+        avg_v = min(100.0, (val_a + val_b) / 2 / g_max * 100)
+
+        st.markdown(f"""
+        <div class="metric-mini">
+          <div class="metric-mini-label">{label}</div>
+          <div class="metric-mini-val" style="color:{color};
+               text-shadow:0 0 12px {color}45;">{avg_v:.1f}</div>
+          <div style="background:rgba(0,0,0,0.3);border-radius:3px;
+               height:3px;margin:6px 0 5px;">
+            <div style="background:{color};width:{avg_v:.0f}%;height:3px;
+                 border-radius:3px;box-shadow:0 0 6px {color}70;"></div>
+          </div>
+          <div style="font-size:0.56rem;color:rgba(150,180,200,0.4);
+               font-family:monospace;">{name_a} · {name_b}</div>
+        </div>
+        """, unsafe_allow_html=True)
+
+# ── Trend Grafiği ─────────────────────────────────────────────
+st.markdown('<div style="height:6px;"></div>', unsafe_allow_html=True)
+fig_bi = go.Figure()
+fig_bi.add_trace(go.Scatter(
+    x=bi_t_ser.index, y=bi_t_ser.values, name='Conflict Pressure',
+    mode='lines', line=dict(width=2, color='#ff6b35'),
+    fill='tozeroy', fillcolor='rgba(255,107,53,0.06)',
+    hovertemplate='Conflict Pressure: %{y:.1f}<extra></extra>'
+))
+fig_bi.add_trace(go.Scatter(
+    x=bi_c_ser.index, y=bi_c_ser.values, name='Cooperation',
+    mode='lines', line=dict(width=2, color='#00ff9d'),
+    fill='tozeroy', fillcolor='rgba(0,255,157,0.05)',
+    hovertemplate='Cooperation: %{y:.1f}<extra></extra>'
+))
+fig_bi.add_trace(go.Scatter(
+    x=bi_net_ser.index, y=bi_net_ser.values, name='Net Tension',
+    mode='lines', line=dict(width=2.5, color='#7b2fff'),
+    hovertemplate='Net Tension: %{y:.1f}<extra></extra>'
+))
+t_bi = {**BASE_THEME}
+t_bi['yaxis'] = {**t_bi['yaxis'], 'title': 'Score (0–100)',
+                  'title_font': dict(size=10)}
+fig_bi.update_layout(
+    **t_bi, height=290,
+    title=dict(text=f'{name_a}  ↔  {name_b} — Bilateral Tension Trend',
+               font=dict(size=12, color='#6a9ab8'), x=0.01),
+    legend=dict(bgcolor='rgba(0,0,0,0)', bordercolor='rgba(0,100,180,0.2)',
+                borderwidth=1, font=dict(size=10)),
+    hovermode='x unified'
+)
+st.plotly_chart(fig_bi, use_container_width=True, config={'displayModeBar': False})
+
+st.markdown('<div class="h-div"></div>', unsafe_allow_html=True)
 
 # ─────────────────────────────────────────────────────────────
 # RAW DATA TABLE
