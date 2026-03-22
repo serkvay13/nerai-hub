@@ -866,38 +866,137 @@ def compute_country_alarms(_df_raw, country, top_n=5):
 # ═══════════════════════════════════════════════════════════════
 @st.cache_data(ttl=900)
 def fetch_gdelt_news(query_str, max_records=8):
-    """GDELT 2.0 API'den en güncel haberleri çeker."""
+    """Google News RSS (primary) + GDELT fallback ile haber çeker."""
+    import xml.etree.ElementTree as ET
+
+    # --- Primary: Google News RSS ---
+    try:
+        encoded = urllib.parse.quote(query_str)
+        url = f"https://news.google.com/rss/search?q={encoded}&hl=en&gl=US&ceid=US:en"
+        req = urllib.request.Request(url, headers={
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+        })
+        with urllib.request.urlopen(req, timeout=10) as r:
+            xml_data = r.read().decode('utf-8')
+        root    = ET.fromstring(xml_data)
+        channel = root.find('channel')
+        if channel is None:
+            raise ValueError("No channel in RSS")
+        articles = []
+        for item in channel.findall('item')[:max_records]:
+            raw_title = item.findtext('title', '') or ''
+            link      = item.findtext('link',  '') or '#'
+            pub_date  = item.findtext('pubDate', '') or ''
+            src_el    = item.find('source')
+            source    = src_el.text if src_el is not None else ''
+            if not source:
+                try:
+                    source = urllib.parse.urlparse(link).netloc.replace('www.', '')
+                except Exception:
+                    source = 'News'
+            # Google News appends " - Source" to title — strip it
+            title = raw_title
+            if source and title.endswith(f' - {source}'):
+                title = title[:-(len(source) + 3)]
+            try:
+                seendate = pd.Timestamp(pub_date).strftime('%Y%m%d%H%M%S')
+            except Exception:
+                seendate = ''
+            articles.append({
+                'title':    title,
+                'url':      link,
+                'domain':   source,
+                'seendate': seendate,
+                'language': 'EN',
+            })
+        if articles:
+            return articles
+    except Exception:
+        pass
+
+    # --- Fallback: GDELT DOC API ---
     try:
         encoded = urllib.parse.quote(query_str)
         url = (f"https://api.gdeltproject.org/api/v2/doc/doc?"
                f"query={encoded}&mode=artlist&maxrecords={max_records}"
                f"&format=json&sort=DateDesc")
-        req = urllib.request.Request(url, headers={'User-Agent':'Mozilla/5.0'})
-        with urllib.request.urlopen(req, timeout=8) as r:
+        req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+        with urllib.request.urlopen(req, timeout=10) as r:
             data = json.loads(r.read().decode('utf-8'))
-            return data.get('articles', [])
+        return data.get('articles', [])
     except Exception:
         return []
 
 
 @st.cache_data(ttl=1800)
 def fetch_peak_news(country, topic, peak_date_str, days_window=3):
-    """Belirli bir peak tarihi için ülke+topic kombinasyonu haberleri."""
+    """Belirli bir peak tarihi için ülke+topic haberleri (Google News + GDELT fallback)."""
+    import xml.etree.ElementTree as ET
+
+    cname  = COUNTRY_NAMES.get(country, country)
+    twords = topic.replace('_', ' ')
+    pk_dt  = pd.Timestamp(peak_date_str)
+    after  = (pk_dt - pd.Timedelta(days=days_window)).strftime('%Y-%m-%d')
+    before = (pk_dt + pd.Timedelta(days=days_window + 1)).strftime('%Y-%m-%d')
+
+    # --- Primary: Google News RSS with date range ---
     try:
-        cname  = COUNTRY_NAMES.get(country, country)
-        twords = topic.replace('_', ' ')
-        pk_dt  = pd.Timestamp(peak_date_str)
-        start  = (pk_dt - pd.Timedelta(days=days_window)).strftime('%Y%m%d000000')
-        end    = (pk_dt + pd.Timedelta(days=days_window+1)).strftime('%Y%m%d000000')
-        query  = f'"{cname}" {twords}'
+        query   = f'{cname} {twords} after:{after} before:{before}'
         encoded = urllib.parse.quote(query)
-        url = (f"https://api.gdeltproject.org/api/v2/doc/doc?"
-               f"query={encoded}&mode=artlist&maxrecords=5&format=json"
-               f"&startdatetime={start}&enddatetime={end}&sort=DateDesc")
-        req = urllib.request.Request(url, headers={'User-Agent':'Mozilla/5.0'})
-        with urllib.request.urlopen(req, timeout=8) as r:
+        url     = f"https://news.google.com/rss/search?q={encoded}&hl=en&gl=US&ceid=US:en"
+        req     = urllib.request.Request(url, headers={
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+        })
+        with urllib.request.urlopen(req, timeout=10) as r:
+            xml_data = r.read().decode('utf-8')
+        root    = ET.fromstring(xml_data)
+        channel = root.find('channel')
+        if channel is None:
+            raise ValueError("No channel")
+        articles = []
+        for item in channel.findall('item')[:5]:
+            raw_title = item.findtext('title',   '') or ''
+            link      = item.findtext('link',    '') or '#'
+            pub_date  = item.findtext('pubDate', '') or ''
+            src_el    = item.find('source')
+            source    = src_el.text if src_el is not None else ''
+            if not source:
+                try:
+                    source = urllib.parse.urlparse(link).netloc.replace('www.', '')
+                except Exception:
+                    source = 'News'
+            title = raw_title
+            if source and title.endswith(f' - {source}'):
+                title = title[:-(len(source) + 3)]
+            try:
+                seendate = pd.Timestamp(pub_date).strftime('%Y%m%d%H%M%S')
+            except Exception:
+                seendate = ''
+            articles.append({
+                'title':    title,
+                'url':      link,
+                'domain':   source,
+                'seendate': seendate,
+                'language': 'EN',
+            })
+        if articles:
+            return articles
+    except Exception:
+        pass
+
+    # --- Fallback: GDELT with date range ---
+    try:
+        query   = f'"{cname}" {twords}'
+        encoded = urllib.parse.quote(query)
+        start   = (pk_dt - pd.Timedelta(days=days_window)).strftime('%Y%m%d000000')
+        end     = (pk_dt + pd.Timedelta(days=days_window + 1)).strftime('%Y%m%d000000')
+        url     = (f"https://api.gdeltproject.org/api/v2/doc/doc?"
+                   f"query={encoded}&mode=artlist&maxrecords=5&format=json"
+                   f"&startdatetime={start}&enddatetime={end}&sort=DateDesc")
+        req     = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+        with urllib.request.urlopen(req, timeout=10) as r:
             data = json.loads(r.read().decode('utf-8'))
-            return data.get('articles', [])
+        return data.get('articles', [])
     except Exception:
         return []
 
