@@ -1,0 +1,37 @@
+name: Update GDELT Indices Daily
+
+on:
+  schedule:
+    - cron: '0 5 * * *'
+  workflow_dispatch:
+
+jobs:
+  update-indices:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install pandas
+
+      - name: Run GDELT indices script
+        run: python gdelt_indices.py
+
+      - name: Commit and push updated indices.csv
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add indices.csv
+          git diff --staged --quiet || git commit -m "chore: auto-update GDELT indices [$(date +%Y-%m-%d)]"
+          git push
