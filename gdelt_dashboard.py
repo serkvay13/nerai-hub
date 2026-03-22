@@ -209,23 +209,43 @@ html,body,[class*="css"]{font-family:'Exo 2',sans-serif;color:#c8d8e8;}
 .home-corner-br{bottom:14px;right:14px;border-bottom:2px solid rgba(0,200,255,0.6);border-right:2px solid rgba(0,200,255,0.6);}
 /* Glowing orbs */
 .home-orb{position:absolute;border-radius:50%;filter:blur(70px);pointer-events:none;}
-/* Logo pulse */
-.hero-logo-img{width:280px;max-width:75%;
-    filter:drop-shadow(0 0 18px rgba(0,180,255,0.35));
-    animation:logo-glow 3.5s ease-in-out infinite;
-    position:relative;z-index:2;margin-bottom:6px;}
-@keyframes logo-glow{
-    0%,100%{filter:drop-shadow(0 0 14px rgba(0,180,255,0.3));}
-    50%{filter:drop-shadow(0 0 32px rgba(0,220,255,0.75)) drop-shadow(0 0 60px rgba(0,150,255,0.25));}}
+/* ── CSS TEXT LOGO ─────────────────────────────────────────── */
+.nerai-logo-wrap{position:relative;z-index:2;margin-bottom:14px;display:inline-block;}
+.nerai-logo-brand{display:inline-flex;align-items:center;gap:6px;line-height:1;}
+.nerai-logo-hex{font-size:3rem;color:rgba(0,230,255,0.92);
+    text-shadow:0 0 16px rgba(0,210,255,0.9),0 0 35px rgba(0,160,255,0.5);
+    animation:logo-hex-pulse 3.5s ease-in-out infinite;}
+.nerai-logo-ner{font-size:4.4rem;font-weight:900;letter-spacing:0.04em;
+    font-family:'Exo 2',sans-serif;color:#ffffff;
+    animation:logo-text-glow 3.5s ease-in-out infinite;}
+.nerai-logo-ai{font-size:4.4rem;font-weight:900;letter-spacing:0.04em;
+    font-family:'Exo 2',sans-serif;
+    background:linear-gradient(135deg,#00e5ff 0%,#0099ff 50%,#8b3fff 100%);
+    -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+/* Expanding ring behind logo */
+.nerai-logo-ring{position:absolute;border-radius:50%;
+    border:1px solid rgba(0,200,255,0.18);pointer-events:none;
+    top:50%;left:50%;transform:translate(-50%,-50%);
+    animation:ring-expand 4s ease-out infinite;}
+.nerai-logo-ring-2{animation-delay:2s;}
+@keyframes ring-expand{
+    0%{width:60px;height:30px;opacity:0.6;}
+    100%{width:500px;height:130px;opacity:0;}}
+@keyframes logo-hex-pulse{
+    0%,100%{text-shadow:0 0 12px rgba(0,210,255,0.8),0 0 28px rgba(0,160,255,0.4);}
+    50%{text-shadow:0 0 30px rgba(0,230,255,1),0 0 60px rgba(0,200,255,0.6),0 0 90px rgba(0,130,255,0.25);}}
+@keyframes logo-text-glow{
+    0%,100%{text-shadow:0 0 20px rgba(0,200,255,0.25),0 0 40px rgba(0,120,255,0.1);}
+    50%{text-shadow:0 0 40px rgba(0,230,255,0.55),0 0 80px rgba(0,180,255,0.22);}}
 /* Tagline flicker */
-.hero-tagline{font-size:0.75rem;letter-spacing:0.38em;text-transform:uppercase;
-    color:rgba(0,200,255,0.5);font-family:'Share Tech Mono',monospace;
-    margin:6px 0 26px;animation:tag-flicker 9s ease-in-out infinite;}
-@keyframes tag-flicker{0%,88%,100%{opacity:0.7;}90%{opacity:0.1;}92%{opacity:0.7;}94%{opacity:0.15;}96%{opacity:0.7;}}
+.hero-tagline{font-size:0.8rem;letter-spacing:0.38em;text-transform:uppercase;
+    color:rgba(0,210,255,0.65);font-family:'Share Tech Mono',monospace;
+    margin:8px 0 28px;animation:tag-flicker 9s ease-in-out infinite;}
+@keyframes tag-flicker{0%,88%,100%{opacity:0.85;}90%{opacity:0.12;}92%{opacity:0.85;}94%{opacity:0.18;}96%{opacity:0.85;}}
 /* Floating hexagons */
-.hex-deco{position:absolute;border:1px solid rgba(0,180,255,0.1);
+.hex-deco{position:absolute;border:1px solid rgba(0,180,255,0.12);
     clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);
-    background:rgba(0,80,200,0.04);animation:hex-float 10s ease-in-out infinite;}
+    background:rgba(0,80,200,0.05);animation:hex-float 10s ease-in-out infinite;}
 @keyframes hex-float{0%,100%{transform:translateY(0) rotate(0deg);}50%{transform:translateY(-18px) rotate(8deg);}}
 /* Stats */
 .home-stat-row{display:flex;justify-content:center;gap:50px;margin-bottom:30px;position:relative;z-index:2;}
@@ -237,11 +257,15 @@ html,body,[class*="css"]{font-family:'Exo 2',sans-serif;color:#c8d8e8;}
 
 /* HOME MODULE TILES */
 .home-module{
-    background:linear-gradient(135deg,rgba(0,18,50,0.92),rgba(0,8,30,0.92));
+    background:linear-gradient(135deg,rgba(0,18,50,0.95),rgba(0,8,30,0.95));
     border:1px solid rgba(0,150,255,0.15);border-radius:14px;
     padding:30px 22px 24px;text-align:center;position:relative;overflow:hidden;
     min-height:190px;display:flex;flex-direction:column;align-items:center;justify-content:center;
-}
+    transition:border-color 0.3s,box-shadow 0.3s,transform 0.3s;
+    box-shadow:0 4px 24px rgba(0,0,0,0.35);}
+.home-module:hover{border-color:rgba(0,200,255,0.45);
+    box-shadow:0 8px 40px rgba(0,100,255,0.22),inset 0 0 30px rgba(0,40,130,0.12);
+    transform:translateY(-4px);}
 .home-module::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;
     background:linear-gradient(90deg,transparent,var(--mc,#00b4ff),transparent);}
 .home-module-icon{font-size:2.8rem;margin-bottom:12px;line-height:1;}
@@ -1048,9 +1072,18 @@ if 'page' not in st.session_state:
 # ═══════════════════════════════════════════════════════════════
 with st.sidebar:
     st.markdown("""
-    <div style='padding:10px 0 18px;border-bottom:1px solid rgba(0,150,255,0.12);margin-bottom:16px;'>
-      <div style='font-size:1.15rem;font-weight:700;color:#00b4ff;letter-spacing:0.08em;'>⬡ NERAI</div>
-      <div style='font-size:0.6rem;color:rgba(0,180,255,0.35);letter-spacing:0.22em;font-family:monospace;'>
+    <div style='padding:10px 0 18px;border-bottom:1px solid rgba(0,150,255,0.15);margin-bottom:16px;'>
+      <div style='font-size:1.35rem;font-weight:900;letter-spacing:0.1em;
+           font-family:"Exo 2",sans-serif;line-height:1.1;'>
+        <span style='color:rgba(0,230,255,0.95);
+             text-shadow:0 0 14px rgba(0,210,255,0.9),0 0 30px rgba(0,160,255,0.45);'>◈</span>
+        <span style='color:#ffffff;
+             text-shadow:0 0 18px rgba(0,210,255,0.35),0 0 35px rgba(0,140,255,0.15);'> NER</span><span style='background:linear-gradient(135deg,#00e5ff,#0099ff,#8b3fff);
+             -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+             background-clip:text;'>AI</span>
+      </div>
+      <div style='font-size:0.58rem;color:rgba(0,210,255,0.55);letter-spacing:0.28em;
+           font-family:"Share Tech Mono",monospace;margin-top:3px;'>
         INTELLIGENCE HUB
       </div>
     </div>""", unsafe_allow_html=True)
@@ -1178,34 +1211,60 @@ def render_home():
       <div class="hex-deco" style="width:45px;height:52px;bottom:18%;left:10%;animation-delay:6s;opacity:0.6;"></div>
       <div class="hex-deco" style="width:40px;height:46px;bottom:22%;right:9%;animation-delay:1.5s;opacity:0.5;"></div>
       <!-- Main content -->
-      <div style="position:relative;z-index:2;padding:10px 0;">
-        <img src="data:image/png;base64,{NERAI_LOGO_B64}"
-             class="hero-logo-img" alt="NERAI Intelligence Hub" />
+      <div style="position:relative;z-index:2;padding:12px 0;">
+        <!-- CSS Text Logo -->
+        <div class="nerai-logo-wrap">
+          <div class="nerai-logo-ring"></div>
+          <div class="nerai-logo-ring nerai-logo-ring-2"></div>
+          <div class="nerai-logo-brand">
+            <span class="nerai-logo-hex">◈</span>
+            <span class="nerai-logo-ner">NER</span><span class="nerai-logo-ai">AI</span>
+          </div>
+        </div>
+        <!-- Sub-brand line -->
+        <div style="font-size:0.65rem;letter-spacing:0.35em;text-transform:uppercase;
+             color:rgba(0,200,255,0.4);font-family:'Share Tech Mono',monospace;
+             margin-bottom:6px;">Intelligence Hub</div>
         <div class="hero-tagline">Geopolitical Risk Intelligence Platform</div>
-        <div style="height:1px;background:linear-gradient(90deg,transparent,rgba(0,180,255,0.3),transparent);
-             width:55%;margin:0 auto 28px;"></div>
+        <!-- Separator -->
+        <div style="height:1px;background:linear-gradient(90deg,transparent,rgba(0,200,255,0.4),rgba(123,47,255,0.3),transparent);
+             width:60%;margin:0 auto 30px;"></div>
+        <!-- Stats row -->
         <div class="home-stat-row">
           <div class="home-stat">
             <div class="home-stat-val">{len(all_countries)}</div>
             <div class="home-stat-lbl">Countries</div>
           </div>
+          <div style="width:1px;background:rgba(0,150,255,0.15);align-self:stretch;"></div>
           <div class="home-stat">
             <div class="home-stat-val">{len(all_topics)}</div>
             <div class="home-stat-lbl">Risk Topics</div>
           </div>
+          <div style="width:1px;background:rgba(0,150,255,0.15);align-self:stretch;"></div>
           <div class="home-stat">
             <div class="home-stat-val">{len(date_cols)}</div>
             <div class="home-stat-lbl">Days of Data</div>
           </div>
+          <div style="width:1px;background:rgba(0,150,255,0.15);align-self:stretch;"></div>
           <div class="home-stat">
             <div class="home-stat-val">{len(df):,}</div>
             <div class="home-stat-lbl">Data Points</div>
           </div>
         </div>
-        <div style="font-size:0.7rem;color:rgba(0,180,255,0.35);font-family:monospace;letter-spacing:0.1em;">
+        <!-- Live status bar -->
+        <div style="display:inline-flex;align-items:center;gap:12px;
+             background:rgba(0,20,50,0.6);border:1px solid rgba(0,150,255,0.2);
+             border-radius:20px;padding:5px 18px;
+             font-size:0.68rem;color:rgba(0,200,255,0.6);
+             font-family:'Share Tech Mono',monospace;letter-spacing:0.1em;">
           <span class="live-dot"></span>
-          LIVE · DATA SOURCE: GDELT PROJECT · LAST UPDATE: {date_cols[-1].strftime('%d %b %Y') if len(date_cols) else 'N/A'}
-          {'&nbsp;&nbsp;⚠ DEMO MODE' if is_demo else '&nbsp;&nbsp;✓ REAL DATA'}
+          <span>LIVE</span>
+          <span style="color:rgba(0,150,255,0.3);">|</span>
+          <span>GDELT PROJECT</span>
+          <span style="color:rgba(0,150,255,0.3);">|</span>
+          <span>LAST UPDATE: {date_cols[-1].strftime('%d %b %Y') if len(date_cols) else 'N/A'}</span>
+          <span style="color:rgba(0,150,255,0.3);">|</span>
+          <span style="color:{'#ffaa00' if is_demo else '#00ff9d'};">{'⚠ DEMO' if is_demo else '✓ ONLINE'}</span>
         </div>
       </div>
     </div>
@@ -1213,9 +1272,13 @@ def render_home():
 
     # ── Module Tiles ─────────────────────────────────────────
     st.markdown("""
-    <div style="font-size:0.65rem;letter-spacing:0.3em;text-transform:uppercase;
-         color:rgba(0,150,255,0.4);font-family:monospace;margin-bottom:20px;text-align:center;">
-      — SELECT A MODULE TO BEGIN —
+    <div style="font-size:0.62rem;letter-spacing:0.35em;text-transform:uppercase;
+         color:rgba(0,180,255,0.45);font-family:'Share Tech Mono',monospace;
+         margin-bottom:20px;text-align:center;
+         display:flex;align-items:center;justify-content:center;gap:14px;">
+      <span style="flex:1;height:1px;background:linear-gradient(90deg,transparent,rgba(0,150,255,0.2));"></span>
+      SELECT A MODULE TO BEGIN
+      <span style="flex:1;height:1px;background:linear-gradient(90deg,rgba(0,150,255,0.2),transparent);"></span>
     </div>""", unsafe_allow_html=True)
 
     m1, m2, m3 = st.columns(3)
