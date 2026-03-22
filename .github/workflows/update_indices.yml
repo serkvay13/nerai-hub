@@ -1,11 +1,12 @@
-name: Update GDELT Indices Daily
+name: Update GDELT Indices & Forecasts
 
 on:
   schedule:
-    - cron: '0 5 * * *'
+    - cron: '0 5 * * *'   # Every day at 05:00 UTC (08:00 Turkey)
   workflow_dispatch:
 
 jobs:
+  # ─── Job 1: Update daily indices ──────────────────────────
   update-indices:
     runs-on: ubuntu-latest
     permissions:
@@ -22,16 +23,54 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Install dependencies
+      - name: Install data dependencies
         run: pip install pandas
 
       - name: Run GDELT indices script
         run: python gdelt_indices.py
 
-      - name: Commit and push updated indices.csv
+      - name: Commit updated indices.csv
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
           git add indices.csv
           git diff --staged --quiet || git commit -m "chore: auto-update GDELT indices [$(date +%Y-%m-%d)]"
+          git push
+
+  # ─── Job 2: Re-train forecast (weekly, Sunday) ────────────
+  update-forecast:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    # Only run on Sundays (cron day-of-week = 0) or manual dispatch
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'schedule' && startsWith(github.run_id, '0'))
+    needs: update-indices
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install forecast dependencies
+        run: |
+          pip install pandas numpy neuralforecast
+
+      - name: Pull latest indices.csv
+        run: git pull
+
+      - name: Run forecast engine
+        run: python gdelt_forecast.py
+
+      - name: Commit predictions
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add predictions.csv forecast_trends.csv
+          git diff --staged --quiet || git commit -m "chore: auto-update N-HiTS predictions [$(date +%Y-%m-%d)]"
           git push
