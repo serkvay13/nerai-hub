@@ -1064,6 +1064,27 @@ all_countries = sorted(df.index.get_level_values('country').unique().tolist())
 tension_norm, coop_norm = compute_bilateral_base(df)
 deteri_norm, incr_norm  = _get_bilateral_specific_norm(df)
 
+# ── Load pre-computed predictions (if available) ─────────────
+@st.cache_data(ttl=3600)
+def load_predictions():
+    pred_file   = './predictions.csv'
+    trend_file  = './forecast_trends.csv'
+    preds, trends = None, None
+    if os.path.exists(pred_file):
+        try:
+            preds = pd.read_csv(pred_file, parse_dates=['ds'])
+        except Exception:
+            preds = None
+    if os.path.exists(trend_file):
+        try:
+            trends = pd.read_csv(trend_file)
+        except Exception:
+            trends = None
+    return preds, trends
+
+pred_df, trend_df = load_predictions()
+has_predictions   = pred_df is not None and len(pred_df) > 0
+
 if 'page' not in st.session_state:
     st.session_state.page = 'home'
 
@@ -1092,10 +1113,11 @@ with st.sidebar:
     st.markdown('<div class="sec-hdr">Navigation</div>', unsafe_allow_html=True)
 
     nav_pages = [
-        ('home',    '🏠  HOME'),
-        ('indices', '📊  INDICES'),
-        ('profile', '🎯  COUNTRY PROFILE'),
-        ('news',    '📰  NEWS'),
+        ('home',        '🏠  HOME'),
+        ('indices',     '📊  INDICES'),
+        ('profile',     '🎯  COUNTRY PROFILE'),
+        ('news',        '📰  NEWS'),
+        ('predictions', '🔮  PREDICTIONS'),
     ]
     for page_key, page_label in nav_pages:
         active_style = 'border-color:rgba(0,180,255,0.5) !important;color:#00e5ff !important;background:rgba(0,50,110,0.4) !important;' if st.session_state.page == page_key else ''
@@ -1176,6 +1198,39 @@ with st.sidebar:
           28 topic categories
         </div>""", unsafe_allow_html=True)
 
+    elif st.session_state.page == 'predictions':
+        st.markdown('<div class="sec-hdr">Forecast Filters</div>', unsafe_allow_html=True)
+        if has_predictions:
+            topic_display_p = {t: TOPIC_LABELS.get(t, t.replace('_',' ').title())
+                               for t in sorted(pred_df['topic'].unique())}
+            pred_label = st.selectbox(
+                "pred_topic", list(topic_display_p.values()),
+                index=list(topic_display_p.values()).index('Political Instability')
+                      if 'Political Instability' in topic_display_p.values() else 0,
+                label_visibility='collapsed')
+            sel_pred_topic = [k for k,v in topic_display_p.items() if v==pred_label][0]
+
+            st.markdown('<div class="sec-hdr" style="margin-top:14px">Country</div>',
+                        unsafe_allow_html=True)
+            pred_c_opts = [f"{COUNTRY_NAMES.get(c,c)} ({c})"
+                           for c in sorted(pred_df['country'].unique())]
+            pred_default = 'United States (US)' if 'United States (US)' in pred_c_opts \
+                           else pred_c_opts[0]
+            sel_pred_country_label = st.selectbox(
+                "pred_country", pred_c_opts,
+                index=pred_c_opts.index(pred_default),
+                label_visibility='collapsed')
+            sel_pred_country = sel_pred_country_label.split('(')[-1].strip(')')
+
+            st.markdown('<div class="sec-hdr" style="margin-top:14px">History window</div>',
+                        unsafe_allow_html=True)
+            pred_hist_months = st.slider("hist_months", 12, 60, 24,
+                                         label_visibility='collapsed')
+        else:
+            sel_pred_topic   = all_topics[0] if all_topics else ''
+            sel_pred_country = 'US'
+            pred_hist_months = 24
+
     # defaults for pages that don't set them
     if st.session_state.page not in ('indices',):
         sel_topic = all_topics[0] if all_topics else 'political_instability'
@@ -1188,6 +1243,10 @@ with st.sidebar:
     if st.session_state.page not in ('profile',):
         profile_country = 'US'
         bi_a = 'US'; bi_b = 'RS'; bi_days = 60
+    if st.session_state.page not in ('predictions',):
+        sel_pred_topic   = all_topics[0] if all_topics else ''
+        sel_pred_country = 'US'
+        pred_hist_months = 24
 
 # ═══════════════════════════════════════════════════════════════
 # PAGE: HOME
@@ -1281,7 +1340,7 @@ def render_home():
       <span style="flex:1;height:1px;background:linear-gradient(90deg,rgba(0,150,255,0.2),transparent);"></span>
     </div>""", unsafe_allow_html=True)
 
-    m1, m2, m3 = st.columns(3)
+    m1, m2, m3, m4 = st.columns(4)
 
     with m1:
         st.markdown("""
@@ -1323,6 +1382,25 @@ def render_home():
         </div>""", unsafe_allow_html=True)
         if st.button("→ Open News", key='home_to_news', use_container_width=True):
             st.session_state.page = 'news'
+            st.rerun()
+
+    with m4:
+        pred_status = '✓ READY' if has_predictions else '⏳ PENDING'
+        pred_color  = '#7b2fff' if has_predictions else '#ff6b35'
+        st.markdown(f"""
+        <div class="home-module" style="--mc:{pred_color}">
+          <div class="home-module-icon">🔮</div>
+          <div class="home-module-title">Predictions</div>
+          <div class="home-module-desc">
+            N-HiTS deep learning 12-month forecasts<br>
+            for 2,400 topic × country risk series.<br>
+            <span style='color:{pred_color};font-family:monospace;font-size:0.6rem;'>
+              {pred_status}
+            </span>
+          </div>
+        </div>""", unsafe_allow_html=True)
+        if st.button("→ Open Predictions", key='home_to_pred', use_container_width=True):
+            st.session_state.page = 'predictions'
             st.rerun()
 
     st.markdown('<div class="h-div" style="margin:28px 0 20px;"></div>', unsafe_allow_html=True)
@@ -1953,6 +2031,267 @@ def render_news():
 
 
 # ═══════════════════════════════════════════════════════════════
+# PAGE: PREDICTIONS
+# ═══════════════════════════════════════════════════════════════
+def render_predictions():
+    st.markdown("""
+    <div style='padding:6px 0 10px;'>
+      <div class='hero-title'>12-Month Risk Forecasts</div>
+      <div class='hero-sub'>
+        <span class='live-dot'></span>
+        N-HiTS Deep Learning Model &nbsp;·&nbsp; 2,400 Topic × Country Series
+      </div>
+    </div>""", unsafe_allow_html=True)
+    st.markdown('<div class="h-div"></div>', unsafe_allow_html=True)
+
+    if not has_predictions:
+        st.markdown("""
+        <div style='text-align:center;padding:60px 20px;
+             background:rgba(0,12,32,0.6);border:1px solid rgba(0,150,255,0.12);
+             border-radius:12px;margin:20px 0;'>
+          <div style='font-size:3rem;margin-bottom:16px;'>🔮</div>
+          <div style='font-size:1.1rem;font-weight:700;color:#00e5ff;
+               letter-spacing:0.08em;margin-bottom:10px;'>
+            Predictions Not Yet Generated
+          </div>
+          <div style='font-size:0.8rem;color:rgba(150,190,220,0.7);
+               max-width:480px;margin:0 auto;line-height:1.7;'>
+            To generate forecasts, first download historical data and then run the
+            deep learning training pipeline:
+          </div>
+          <div style='margin-top:20px;padding:16px 24px;
+               background:rgba(0,0,0,0.4);border-radius:8px;
+               font-family:monospace;font-size:0.78rem;
+               color:rgba(0,230,255,0.7);text-align:left;
+               display:inline-block;'>
+            # Step 1 — download 10+ years of history (~2 hrs)<br>
+            python gdelt_bulk_history.py<br><br>
+            # Step 2 — train N-HiTS and generate predictions<br>
+            pip install neuralforecast<br>
+            python gdelt_forecast.py
+          </div>
+          <div style='margin-top:14px;font-size:0.68rem;
+               color:rgba(100,150,200,0.4);font-family:monospace;'>
+            GitHub Actions will re-run the forecast automatically once configured.
+          </div>
+        </div>""", unsafe_allow_html=True)
+        _render_footer()
+        return
+
+    # ── Normalise predictions to score 0-100 for display ─────
+    # Use the same max as historical indices for comparability
+    def _norm_pred_series(topic, country, yhat_vals):
+        if topic in df.index.get_level_values('topic') and \
+           country in df.index.get_level_values('country'):
+            try:
+                hist_max = float(df.xs(topic, level='topic').loc[country].max())
+            except Exception:
+                hist_max = None
+            if hist_max and hist_max > 0:
+                return yhat_vals / hist_max * 100
+        return yhat_vals * 1000   # fallback: scale small raw values
+
+    # ── Main chart — historical + forecast ───────────────────
+    col_left, col_right = st.columns([3, 2])
+
+    with col_left:
+        topic_lbl = TOPIC_LABELS.get(sel_pred_topic,
+                                      sel_pred_topic.replace('_',' ').title())
+        cname     = COUNTRY_NAMES.get(sel_pred_country, sel_pred_country)
+        st.markdown(f'<div class="sec-hdr">{topic_lbl} — {cname} · 12-Month Forecast</div>',
+                    unsafe_allow_html=True)
+
+        # Historical monthly series from indices.csv
+        hist_series = None
+        if sel_pred_topic in df.index.get_level_values('topic') and \
+           sel_pred_country in df.index.get_level_values('country'):
+            try:
+                raw = df.xs(sel_pred_topic, level='topic').loc[sel_pred_country]
+                raw = raw.dropna()
+                raw_monthly = raw.resample('MS').mean().tail(pred_hist_months)
+                hist_max = raw.max()
+                if hist_max > 0:
+                    hist_series = raw_monthly / hist_max * 100
+                else:
+                    hist_series = raw_monthly
+            except Exception:
+                hist_series = None
+
+        # Forecast series
+        mask = (pred_df['topic'] == sel_pred_topic) & \
+               (pred_df['country'] == sel_pred_country)
+        fc = pred_df[mask].sort_values('ds')
+
+        fig_fc = go.Figure()
+
+        # Historical line
+        if hist_series is not None and len(hist_series) > 0:
+            fig_fc.add_trace(go.Scatter(
+                x=hist_series.index, y=hist_series.values,
+                name='Historical (monthly avg)',
+                mode='lines',
+                line=dict(color='#00b4ff', width=2),
+                hovertemplate='%{x|%b %Y}: %{y:.1f}<extra>Historical</extra>'
+            ))
+
+        if len(fc) > 0:
+            # Normalise forecast to same scale
+            if hist_series is not None and hist_series.max() > 0:
+                raw_hist_max = float(df.xs(sel_pred_topic, level='topic')
+                                       .loc[sel_pred_country].max()) \
+                               if (sel_pred_topic in df.index.get_level_values('topic') and
+                                   sel_pred_country in df.index.get_level_values('country')) \
+                               else 1.0
+                scale = 100 / raw_hist_max if raw_hist_max > 0 else 1.0
+            else:
+                scale = 1.0
+
+            yhat   = fc['yhat']       * scale
+            y_lo   = fc['yhat_lower'] * scale
+            y_hi   = fc['yhat_upper'] * scale
+
+            # Confidence band
+            fig_fc.add_trace(go.Scatter(
+                x=pd.concat([fc['ds'], fc['ds'].iloc[::-1]]),
+                y=pd.concat([y_hi, y_lo.iloc[::-1]]),
+                fill='toself',
+                fillcolor='rgba(123,47,255,0.10)',
+                line=dict(color='rgba(0,0,0,0)'),
+                name='90% Confidence',
+                hoverinfo='skip',
+                showlegend=True,
+            ))
+            # Forecast line
+            fig_fc.add_trace(go.Scatter(
+                x=fc['ds'], y=yhat,
+                name='12-Month Forecast',
+                mode='lines+markers',
+                line=dict(color='#7b2fff', width=2.5, dash='dot'),
+                marker=dict(size=5, color='#7b2fff'),
+                hovertemplate='%{x|%b %Y}: %{y:.1f}<extra>Forecast</extra>'
+            ))
+
+            # Today marker
+            today = pd.Timestamp.now().normalize()
+            fig_fc.add_vline(x=today, line_width=1,
+                             line_dash='dash', line_color='rgba(0,200,255,0.3)')
+            fig_fc.add_annotation(
+                x=today, y=1, yref='paper',
+                text='TODAY', showarrow=False,
+                font=dict(size=9, color='rgba(0,200,255,0.45)'),
+                xanchor='left', yanchor='bottom'
+            )
+
+        t_fc = {**BASE_THEME}
+        t_fc['yaxis'] = {**t_fc.get('yaxis', {}),
+                         'title': 'Risk Score (0–100)', 'title_font': dict(size=10)}
+        fig_fc.update_layout(
+            **t_fc, height=320,
+            legend=dict(bgcolor='rgba(0,0,0,0)', bordercolor='rgba(0,100,180,0.2)',
+                        borderwidth=1, font=dict(size=10)),
+            hovermode='x unified'
+        )
+        st.plotly_chart(fig_fc, use_container_width=True, config={'displayModeBar': False})
+
+    with col_right:
+        st.markdown('<div class="sec-hdr">Trend Summary — All Topics</div>',
+                    unsafe_allow_html=True)
+        if trend_df is not None:
+            country_trends = trend_df[trend_df['country'] == sel_pred_country].copy()
+            country_trends['label'] = country_trends['topic'].apply(
+                lambda t: TOPIC_LABELS.get(t, t.replace('_', ' ').title()))
+            country_trends = country_trends.sort_values('trend_pct', ascending=False)
+
+            for _, row in country_trends.iterrows():
+                pct   = row['trend_pct']
+                dirn  = row['direction']
+                arrow = '▲' if dirn == 'rising' else ('▼' if dirn == 'falling' else '→')
+                col_d = ('#ff4b6e' if dirn == 'rising'
+                         else '#00ff9d' if dirn == 'falling' else '#7a9ab8')
+                bar_w = min(abs(pct) / 2, 100)
+                st.markdown(f"""
+                <div style='display:flex;align-items:center;gap:8px;
+                     padding:5px 0;border-bottom:1px solid rgba(0,100,180,0.06);'>
+                  <div style='font-size:0.7rem;color:{col_d};width:14px;
+                       text-align:center;flex-shrink:0;'>{arrow}</div>
+                  <div style='flex:1;min-width:0;'>
+                    <div style='font-size:0.68rem;color:#a8c0d8;white-space:nowrap;
+                         overflow:hidden;text-overflow:ellipsis;'>{row["label"]}</div>
+                    <div style='background:rgba(0,0,0,0.3);border-radius:2px;
+                         height:2px;width:100%;margin-top:3px;'>
+                      <div style='background:{col_d};width:{bar_w:.0f}%;height:2px;
+                           border-radius:2px;'></div>
+                    </div>
+                  </div>
+                  <div style='font-size:0.68rem;color:{col_d};
+                       font-family:monospace;flex-shrink:0;width:44px;
+                       text-align:right;'>{pct:+.1f}%</div>
+                </div>""", unsafe_allow_html=True)
+
+    st.markdown('<div class="h-div" style="margin:24px 0;"></div>', unsafe_allow_html=True)
+
+    # ── Top Movers (global) ───────────────────────────────────
+    if trend_df is not None:
+        st.markdown('<div class="sec-hdr">🌍  Global Top Movers — Next 12 Months</div>',
+                    unsafe_allow_html=True)
+        col_rise, col_fall = st.columns(2)
+
+        with col_rise:
+            st.markdown("""
+            <div style='font-size:0.62rem;color:rgba(255,75,110,0.6);
+                 font-family:monospace;letter-spacing:0.18em;
+                 margin-bottom:8px;'>▲  HIGHEST RISING RISKS</div>""",
+                        unsafe_allow_html=True)
+            top_rise = trend_df.nlargest(10, 'trend_pct')
+            for _, r in top_rise.iterrows():
+                lbl = TOPIC_LABELS.get(r['topic'], r['topic'].replace('_', ' ').title())
+                cnt = COUNTRY_NAMES.get(r['country'], r['country'])
+                st.markdown(f"""
+                <div style='display:flex;justify-content:space-between;align-items:center;
+                     padding:5px 8px;margin-bottom:3px;
+                     background:rgba(255,75,110,0.05);
+                     border:1px solid rgba(255,75,110,0.12);border-radius:5px;'>
+                  <div>
+                    <div style='font-size:0.73rem;color:#c8d8e8;'>{lbl}</div>
+                    <div style='font-size:0.6rem;color:rgba(0,150,255,0.5);
+                         font-family:monospace;'>{cnt}</div>
+                  </div>
+                  <div style='font-size:0.85rem;font-weight:700;
+                       color:#ff4b6e;font-family:monospace;'>
+                    +{r['trend_pct']:.1f}%
+                  </div>
+                </div>""", unsafe_allow_html=True)
+
+        with col_fall:
+            st.markdown("""
+            <div style='font-size:0.62rem;color:rgba(0,255,157,0.6);
+                 font-family:monospace;letter-spacing:0.18em;
+                 margin-bottom:8px;'>▼  HIGHEST FALLING RISKS</div>""",
+                        unsafe_allow_html=True)
+            top_fall = trend_df.nsmallest(10, 'trend_pct')
+            for _, r in top_fall.iterrows():
+                lbl = TOPIC_LABELS.get(r['topic'], r['topic'].replace('_', ' ').title())
+                cnt = COUNTRY_NAMES.get(r['country'], r['country'])
+                st.markdown(f"""
+                <div style='display:flex;justify-content:space-between;align-items:center;
+                     padding:5px 8px;margin-bottom:3px;
+                     background:rgba(0,255,157,0.04);
+                     border:1px solid rgba(0,255,157,0.10);border-radius:5px;'>
+                  <div>
+                    <div style='font-size:0.73rem;color:#c8d8e8;'>{lbl}</div>
+                    <div style='font-size:0.6rem;color:rgba(0,150,255,0.5);
+                         font-family:monospace;'>{cnt}</div>
+                  </div>
+                  <div style='font-size:0.85rem;font-weight:700;
+                       color:#00ff9d;font-family:monospace;'>
+                    {r['trend_pct']:.1f}%
+                  </div>
+                </div>""", unsafe_allow_html=True)
+
+    _render_footer()
+
+
+# ═══════════════════════════════════════════════════════════════
 # FOOTER
 # ═══════════════════════════════════════════════════════════════
 def _render_footer():
@@ -1968,10 +2307,11 @@ def _render_footer():
 # ROUTING
 # ═══════════════════════════════════════════════════════════════
 page = st.session_state.get('page', 'home')
-if   page == 'home':    render_home()
-elif page == 'indices': render_indices()
-elif page == 'profile': render_profile()
-elif page == 'news':    render_news()
+if   page == 'home':        render_home()
+elif page == 'indices':     render_indices()
+elif page == 'profile':     render_profile()
+elif page == 'news':        render_news()
+elif page == 'predictions': render_predictions()
 else:
     st.session_state.page = 'home'
     st.rerun()
