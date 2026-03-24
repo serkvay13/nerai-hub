@@ -2045,8 +2045,9 @@ def render_predictions():
     st.markdown('<div class="h-div"></div>', unsafe_allow_html=True)
 
     if not has_predictions:
+        import subprocess, sys
         st.markdown("""
-        <div style='text-align:center;padding:60px 20px;
+        <div style='text-align:center;padding:40px 20px;
              background:rgba(0,12,32,0.6);border:1px solid rgba(0,150,255,0.12);
              border-radius:12px;margin:20px 0;'>
           <div style='font-size:3rem;margin-bottom:16px;'>🔮</div>
@@ -2056,25 +2057,44 @@ def render_predictions():
           </div>
           <div style='font-size:0.8rem;color:rgba(150,190,220,0.7);
                max-width:480px;margin:0 auto;line-height:1.7;'>
-            To generate forecasts, first download historical data and then run the
-            deep learning training pipeline:
+            Run the fast Holt-Winters forecast engine (no ML libraries needed)
+            or the full N-HiTS deep learning pipeline:
           </div>
           <div style='margin-top:20px;padding:16px 24px;
                background:rgba(0,0,0,0.4);border-radius:8px;
                font-family:monospace;font-size:0.78rem;
                color:rgba(0,230,255,0.7);text-align:left;
                display:inline-block;'>
-            # Step 1 — download 10+ years of history (~2 hrs)<br>
-            python gdelt_bulk_history.py<br><br>
-            # Step 2 — train N-HiTS and generate predictions<br>
-            pip install neuralforecast<br>
-            python gdelt_forecast.py
-          </div>
-          <div style='margin-top:14px;font-size:0.68rem;
-               color:rgba(100,150,200,0.4);font-family:monospace;'>
-            GitHub Actions will re-run the forecast automatically once configured.
+            # Fast option — pure NumPy, runs in ~30 sec<br>
+            python gdelt_forecast_numpy.py<br><br>
+            # Full option — N-HiTS deep learning (~2 hrs history download)<br>
+            python gdelt_bulk_history.py &amp;&amp; python gdelt_forecast.py
           </div>
         </div>""", unsafe_allow_html=True)
+
+        # ── Auto-generate button ──────────────────────────────────
+        col_l, col_c, col_r = st.columns([2,3,2])
+        with col_c:
+            indices_ok = os.path.exists('./indices.csv')
+            numpy_script = os.path.exists('./gdelt_forecast_numpy.py')
+            if indices_ok and numpy_script:
+                if st.button('⚡ Generate Predictions Now (Holt-Winters)',
+                             use_container_width=True, type='primary'):
+                    with st.spinner('Running Holt-Winters forecast engine (~30 sec)…'):
+                        result = subprocess.run(
+                            [sys.executable, './gdelt_forecast_numpy.py'],
+                            capture_output=True, text=True, cwd='.'
+                        )
+                    if result.returncode == 0:
+                        st.success('✅ Predictions generated! Reloading…')
+                        st.cache_data.clear()
+                        st.rerun()
+                    else:
+                        st.error(f'Forecast failed:\n{result.stderr[-800:]}')
+            elif not indices_ok:
+                st.info('📥 Run `python gdelt_indices.py` first to collect GDELT data.')
+            else:
+                st.info('📄 Place `gdelt_forecast_numpy.py` in the same folder to enable auto-generation.')
         _render_footer()
         return
 
