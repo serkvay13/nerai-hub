@@ -2219,7 +2219,7 @@ def render_predictions():
         if trend_df is not None:
             country_trends = trend_df[trend_df['country'] == sel_pred_country].copy()
             country_trends['label'] = country_trends['topic'].apply(
-                lambda t: TOPIC_LABELS.get(t, t.replace('_', ' ').title()))
+                lambda t: TOPIC_LABELS.get(t, str(t).replace('_', ' ').title()) if pd.notna(t) else 'Unknown')
             country_trends = country_trends.sort_values('trend_pct', ascending=False)
 
             for _, row in country_trends.iterrows():
@@ -2264,7 +2264,8 @@ def render_predictions():
                         unsafe_allow_html=True)
             top_rise = trend_df.nlargest(10, 'trend_pct')
             for _, r in top_rise.iterrows():
-                lbl = TOPIC_LABELS.get(r['topic'], r['topic'].replace('_', ' ').title())
+                _t = r['topic'] if pd.notna(r['topic']) else ''
+                lbl = TOPIC_LABELS.get(_t, str(_t).replace('_', ' ').title() if _t else 'Unknown')
                 cnt = COUNTRY_NAMES.get(r['country'], r['country'])
                 st.markdown(f"""
                 <div style='display:flex;justify-content:space-between;align-items:center;
@@ -2290,7 +2291,8 @@ def render_predictions():
                         unsafe_allow_html=True)
             top_fall = trend_df.nsmallest(10, 'trend_pct')
             for _, r in top_fall.iterrows():
-                lbl = TOPIC_LABELS.get(r['topic'], r['topic'].replace('_', ' ').title())
+                _t = r['topic'] if pd.notna(r['topic']) else ''
+                lbl = TOPIC_LABELS.get(_t, str(_t).replace('_', ' ').title() if _t else 'Unknown')
                 cnt = COUNTRY_NAMES.get(r['country'], r['country'])
                 st.markdown(f"""
                 <div style='display:flex;justify-content:space-between;align-items:center;
