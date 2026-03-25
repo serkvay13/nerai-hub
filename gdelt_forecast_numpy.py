@@ -204,10 +204,12 @@ def compute_trend_metrics(extended, forecasts):
                        .rename(columns={'yhat': 'avg_12m'}))
 
     metrics = last_obs.merge(avg_fc, on='unique_id')
+    # Use scale-aware denominator: max(|last|, |avg_12m|) to avoid blow-up when last_value ≈ 0
+    scale_base = metrics[['last_value', 'avg_12m']].abs().max(axis=1).clip(lower=1e-12)
     metrics['trend_pct'] = (
         (metrics['avg_12m'] - metrics['last_value'])
-        / (metrics['last_value'].abs() + 1e-9) * 100
-    )
+        / scale_base * 100
+    ).clip(-300, 300)  # cap at ±300% for display sanity
     metrics['direction'] = metrics['trend_pct'].apply(
         lambda x: 'rising' if x > 10 else ('falling' if x < -10 else 'stable')
     )
