@@ -1128,6 +1128,7 @@ with st.sidebar:
         ('profile',     '🎯  COUNTRY PROFILE'),
         ('news',        '📰  NEWS'),
         ('predictions', '🔮  PREDICTIONS'),
+        ('insights',    '🔍  INSIGHTS'),
     ]
     for page_key, page_label in nav_pages:
         active_style = 'border-color:rgba(0,180,255,0.5) !important;color:#00e5ff !important;background:rgba(0,50,110,0.4) !important;' if st.session_state.page == page_key else ''
@@ -2324,6 +2325,506 @@ def render_predictions():
 
 
 # ═══════════════════════════════════════════════════════════════
+# INSIGHTS — Country Risk Intelligence + Q&A
+# ═══════════════════════════════════════════════════════════════
+
+@st.cache_data(ttl=3600)
+def _compute_country_insights(_df_raw, _trend_df):
+    """Compute per-country risk insights. Returns sorted DataFrame."""
+    try:
+        date_cols = sorted([c for c in _df_raw.columns
+                            if str(c).isdigit() and len(str(c)) == 8])
+        if len(date_cols) < 7:
+            return None
+
+        recent_cols = date_cols[-7:]
+        past_cols   = date_cols[-14:-7] if len(date_cols) >= 14 else date_cols[:7]
+        countries   = _df_raw.index.get_level_values(1).unique().tolist()
+
+        # ── Step 1: raw means per country ──────────────────────
+        raw_means   = {}
+        change_pcts = {}
+        for country in countries:
+            try:
+                c_df = _df_raw.xs(country, level=1)
+                r_mean = float(c_df[recent_cols].values.mean())
+                p_mean = float(c_df[past_cols].values.mean())
+                raw_means[country]   = r_mean
+                change_pcts[country] = (r_mean - p_mean) / (p_mean + 1e-15) * 100 if p_mean > 1e-15 else 0.0
+            except Exception:
+                raw_means[country]   = 0.0
+                change_pcts[country] = 0.0
+
+        # ── Step 2: normalize risk score to 0-100 ──────────────
+        vals       = list(raw_means.values())
+        global_p95 = float(sorted(vals)[int(len(vals) * 0.95)]) if vals else 1.0
+        if global_p95 == 0:
+            global_p95 = max(vals) if max(vals) > 0 else 1.0
+
+        rows = []
+        for country in countries:
+            risk_score = min(raw_means[country] / global_p95 * 100, 100)
+            change     = change_pcts[country]
+
+            # ── Trend data for this country ─────────────────────
+            if _trend_df is not None:
+                ct = _trend_df[_trend_df['country'] == country].dropna(subset=['trend_pct'])
+                top_rising  = ct.nlargest(3, 'trend_pct')[['topic','trend_pct']].values.tolist() if len(ct) else []
+                top_falling = ct.nsmallest(3, 'trend_pct')[['topic','trend_pct']].values.tolist() if len(ct) else []
+                avg_fc      = float(ct['trend_pct'].mean()) if len(ct) else 0.0
+            else:
+                top_rising, top_falling, avg_fc = [], [], 0.0
+
+            forecast_dir = ('rising' if avg_fc > 8 else 'falling' if avg_fc < -8 else 'stable')
+
+            # ── Criticality: blend risk level + volatility ──────
+            criticality = risk_score * 0.45 + abs(change) * 0.35 + abs(avg_fc) * 0.20
+
+            rows.append({
+                'country': country, 'risk_score': risk_score,
+                'change_30d': change, 'top_rising': top_rising,
+                'top_falling': top_falling, 'forecast_dir': forecast_dir,
+                'avg_forecast': avg_fc, 'criticality': criticality,
+            })
+
+        result = pd.DataFrame(rows).sort_values('criticality', ascending=False)
+        return result
+    except Exception:
+        return None
+
+
+def _risk_narrative(top_rising, top_falling, forecast_dir, avg_fc, country_name):
+    """Generate a concise data-driven narrative for a country card."""
+    parts = []
+    r_keys = [r[0] for r in top_rising]
+
+    # ── Specific dangerous combinations ────────────────────────
+    if 'coup' in r_keys and 'political_instability' in r_keys:
+        parts.append(f"Coup risk and political instability are simultaneously escalating in {country_name}")
+    elif 'military_escalation' in r_keys and 'international_crisis' in r_keys:
+        parts.append(f"Military build-up and international tensions are reinforcing each other")
+    elif 'terrorism' in r_keys and 'political_repression' in r_keys:
+        parts.append(f"Security crackdowns and extremist activity are both rising")
+    elif 'mass_killing' in r_keys or 'domestic_violence' in r_keys:
+        parts.append(f"Civilian security indicators have reached critical levels")
+    elif 'authoritarianism' in r_keys and 'human_rights_abuses' in r_keys:
+        parts.append(f"Authoritarian consolidation is driving human-rights deterioration")
+    elif top_rising:
+        t1, p1 = top_rising[0]
+        lbl1 = TOPIC_LABELS.get(t1, t1.replace('_', ' ').title())
+        parts.append(f"{lbl1} is the primary risk driver ({p1:+.1f}%)")
+        if len(top_rising) > 1:
+            t2, p2 = top_rising[1]
+            lbl2 = TOPIC_LABELS.get(t2, t2.replace('_', ' ').title())
+            parts.append(f"compounded by rising {lbl2} ({p2:+.1f}%)")
+
+    # ── Forecast qualifier ──────────────────────────────────────
+    if forecast_dir == 'rising' and avg_fc > 25:
+        parts.append(f"12-month models project significant escalation (avg +{avg_fc:.0f}%)")
+    elif forecast_dir == 'rising':
+        parts.append(f"Near-term outlook points to continued risk growth")
+    elif forecast_dir == 'falling':
+        parts.append(f"Forecast models suggest gradual stabilisation ahead")
+    else:
+        parts.append(f"Risk trajectory appears broadly stable in the near term")
+
+    return ". ".join(parts) + "." if parts else "Monitoring ongoing."
+
+
+def _render_country_card(col, row):
+    """Render a single country intelligence card."""
+    country  = row['country']
+    cname    = COUNTRY_NAMES.get(country, country)
+    risk     = row['risk_score']
+    change   = row['change_30d']
+    tr       = row['top_rising']
+    tf       = row['top_falling']
+    fc_dir   = row['forecast_dir']
+    avg_fc   = row['avg_forecast']
+
+    # Colour scheme
+    chg_col   = '#ff4b6e' if change > 10 else '#00ff9d' if change < -10 else '#7a9ab8'
+    chg_arrow = '▲' if change > 10 else '▼' if change < -10 else '→'
+    risk_col  = '#ff4b6e' if risk > 65 else '#f59e0b' if risk > 35 else '#00ff9d'
+    fc_col    = '#ff4b6e' if fc_dir == 'rising' else '#00ff9d' if fc_dir == 'falling' else '#7a9ab8'
+    fc_arrow  = '▲' if fc_dir == 'rising' else '▼' if fc_dir == 'falling' else '→'
+
+    def topic_rows(items, color):
+        if not items:
+            return "<div style='color:rgba(120,150,190,0.35);font-size:0.62rem;'>—</div>"
+        html = ""
+        for t, p in items[:3]:
+            lbl = TOPIC_LABELS.get(t, t.replace('_', ' ').title())
+            html += (f"<div style='display:flex;justify-content:space-between;"
+                     f"padding:2px 0;border-bottom:1px solid rgba(0,80,160,0.07);'>"
+                     f"<span style='color:#a8c0d8;font-size:0.63rem;white-space:nowrap;"
+                     f"overflow:hidden;text-overflow:ellipsis;max-width:110px;'>{lbl}</span>"
+                     f"<span style='color:{color};font-size:0.63rem;font-family:monospace;"
+                     f"flex-shrink:0;margin-left:4px;'>{p:+.1f}%</span></div>")
+        return html
+
+    narrative = _risk_narrative(tr, tf, fc_dir, avg_fc, cname)
+
+    col.markdown(f"""
+<div style='background:rgba(0,15,45,0.65);border:1px solid rgba(0,100,180,0.18);
+     border-radius:9px;padding:14px 16px;margin-bottom:12px;
+     box-shadow:0 2px 12px rgba(0,0,0,0.3);'>
+
+  <div style='display:flex;justify-content:space-between;align-items:flex-start;
+       margin-bottom:10px;padding-bottom:8px;
+       border-bottom:1px solid rgba(0,100,180,0.10);'>
+    <div>
+      <div style='font-size:0.98rem;font-weight:700;color:#e8f4ff;
+           letter-spacing:0.03em;'>{cname}</div>
+      <div style='font-size:0.57rem;color:rgba(0,180,255,0.35);
+           font-family:monospace;letter-spacing:0.12em;'>{country} · GDELT INDEX</div>
+    </div>
+    <div style='text-align:right;'>
+      <div style='font-size:1.15rem;font-weight:800;color:{risk_col};
+           line-height:1.1;'>{risk:.0f}<span style='font-size:0.58rem;
+           color:rgba(200,220,240,0.35);'>/100</span></div>
+      <div style='font-size:0.63rem;color:{chg_col};font-family:monospace;'>
+        {chg_arrow} {change:+.1f}% <span style='color:rgba(140,165,195,0.4);
+        font-size:0.56rem;'>(7d chg)</span></div>
+    </div>
+  </div>
+
+  <div style='display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;'>
+    <div>
+      <div style='font-size:0.56rem;color:rgba(255,75,110,0.55);
+           font-family:monospace;letter-spacing:0.1em;margin-bottom:5px;'>▲ RISING</div>
+      {topic_rows(tr, '#ff4b6e')}
+    </div>
+    <div>
+      <div style='font-size:0.56rem;color:rgba(0,255,157,0.55);
+           font-family:monospace;letter-spacing:0.1em;margin-bottom:5px;'>▼ FALLING</div>
+      {topic_rows(tf, '#00ff9d')}
+    </div>
+  </div>
+
+  <div style='background:rgba(0,0,0,0.25);border-radius:5px;padding:6px 10px;
+       margin-bottom:9px;border-left:2px solid {fc_col};'>
+    <div style='font-size:0.56rem;color:rgba(140,175,215,0.45);
+         font-family:monospace;letter-spacing:0.1em;margin-bottom:2px;'>12-MONTH FORECAST</div>
+    <div style='font-size:0.69rem;color:{fc_col};font-weight:600;'>
+      {fc_arrow} {fc_dir.title()} &nbsp;·&nbsp; {avg_fc:+.1f}% avg predicted change
+    </div>
+  </div>
+
+  <div style='font-size:0.64rem;color:rgba(175,205,235,0.65);
+       line-height:1.55;font-style:italic;'>
+    "{narrative}"
+  </div>
+
+</div>""", unsafe_allow_html=True)
+
+
+# ── Q&A helpers ────────────────────────────────────────────────
+
+_QUESTION_KEYWORDS = {
+    'war':        ['military_escalation','military_crisis','international_crisis','military_clash'],
+    'savaş':      ['military_escalation','military_crisis','international_crisis','military_clash'],
+    'conflict':   ['military_escalation','military_crisis','military_clash'],
+    'çatışma':    ['military_escalation','military_crisis'],
+    'coup':       ['coup','regime_instability','government_instability'],
+    'darbe':      ['coup','regime_instability','government_instability'],
+    'terror':     ['terrorism','domestic_violence'],
+    'teror':      ['terrorism','domestic_violence'],
+    'rights':     ['human_rights_abuses','torture','political_repression'],
+    'hak':        ['human_rights_abuses','political_repression'],
+    'election':   ['leadership_change','political_instability','democratization'],
+    'seçim':      ['leadership_change','democratization'],
+    'protest':    ['protest','political_dissent','opposition_activeness'],
+    'stabili':    ['political_stability','institutional_strength','dispute_settlement'],
+    'istikrar':   ['political_stability','political_instability','government_instability'],
+    'sanction':   ['international_crisis','deteriorating_bilateral_relations'],
+    'yaptırım':   ['international_crisis','deteriorating_bilateral_relations'],
+    'nuclear':    ['military_escalation','international_crisis','threaten_in_international_relations'],
+    'nükleer':    ['military_escalation','international_crisis','threaten_in_international_relations'],
+    'crisis':     ['international_crisis','political_crisis','military_crisis'],
+    'kriz':       ['international_crisis','political_crisis','military_crisis'],
+    'human':      ['human_rights_abuses','torture','mass_expulsion'],
+    'insan':      ['human_rights_abuses','torture'],
+    'corruption': ['corruption','authoritarianism'],
+    'yolsuzluk':  ['corruption'],
+    'military':   ['military_escalation','military_crisis','military_clash','military_deescalation'],
+    'askeri':     ['military_escalation','military_crisis'],
+    'bilateral':  ['deteriorating_bilateral_relations','increasing_bilateral_relations'],
+    'ikili':      ['deteriorating_bilateral_relations','increasing_bilateral_relations'],
+    'mass':       ['mass_killing','mass_expulsion'],
+    'killing':    ['mass_killing','domestic_violence'],
+}
+
+_COUNTRY_ALIASES = {
+    'iran': 'IR', 'irak': 'IZ', 'iraq': 'IZ', 'usa': 'US', 'america': 'US',
+    'amerik': 'US', 'abd': 'US', 'states': 'US', 'united states': 'US',
+    'russia': 'RS', 'rusya': 'RS', 'türk': 'TU', 'turkey': 'TU', 'türkiye': 'TU',
+    'china': 'CH', 'çin': 'CH', 'israel': 'IS', 'israil': 'IS', 'isra': 'IS',
+    'ukraine': 'UP', 'ukrain': 'UP', 'ukrayna': 'UP', 'pakistan': 'PK',
+    'india': 'IN', 'hindistan': 'IN', 'syria': 'SY', 'suriye': 'SY',
+    'saudi': 'SA', 'suudi': 'SA', 'lebanon': 'LE', 'lübnan': 'LE', 'libn': 'LE',
+    'egypt': 'EG', 'mısır': 'EG', 'france': 'FR', 'fransa': 'FR',
+    'germany': 'GM', 'almanya': 'GM', 'uk': 'UK', 'britain': 'UK',
+    'japan': 'JA', 'japonya': 'JA', 'brazil': 'BR', 'brezilya': 'BR',
+    'north korea': 'KN', 'kuzey kore': 'KN', 'korea': 'KS', 'south korea': 'KS',
+    'afg': 'AF', 'afghanistan': 'AF', 'afganistan': 'AF',
+    'yemen': 'YM', 'jordan': 'JO', 'ürdün': 'JO', 'kuwait': 'KU', 'kuvey': 'KU',
+    'qatar': 'QA', 'katar': 'QA', 'nigeri': 'NI', 'ethiopia': 'ET', 'etyopya': 'ET',
+    'somalia': 'SO', 'somali': 'SO', 'kenya': 'KE', 'ghana': 'GH',
+    'spain': 'SP', 'ispanya': 'SP', 'italy': 'IT', 'italya': 'IT',
+    'greece': 'GR', 'yunanis': 'GR', 'mexico': 'MX', 'meksika': 'MX',
+    'colombia': 'CO', 'kolombiya': 'CO', 'indonesia': 'ID', 'endonezya': 'ID',
+    'malaysia': 'MY', 'filipin': 'RP', 'philippine': 'RP',
+    'kazak': 'KZ', 'kazakhst': 'KZ', 'kyrgyz': 'KG', 'kırgız': 'KG',
+    'norwa': 'NO', 'norveç': 'NO', 'sweden': 'SW', 'isveç': 'SW',
+}
+
+
+def _parse_question(question):
+    """Extract country codes and relevant topics from a natural-language question."""
+    q_low = question.lower()
+
+    # ── Countries ───────────────────────────────────────────────
+    found_countries = set()
+    # Check alias map first (longer phrases first)
+    for alias in sorted(_COUNTRY_ALIASES.keys(), key=len, reverse=True):
+        if alias in q_low:
+            found_countries.add(_COUNTRY_ALIASES[alias])
+    # Then check official country names
+    for code, name in COUNTRY_NAMES.items():
+        if name.lower() in q_low:
+            found_countries.add(code)
+
+    # ── Topics ──────────────────────────────────────────────────
+    found_topics = set()
+    for kw, topics in _QUESTION_KEYWORDS.items():
+        if kw in q_low:
+            found_topics.update(topics)
+    # Direct topic key match
+    for key in TOPIC_LABELS:
+        if key.replace('_', ' ') in q_low or TOPIC_LABELS[key].lower() in q_low:
+            found_topics.add(key)
+
+    return list(found_countries), list(found_topics)
+
+
+def _answer_question(question, df_raw, trend_df, pred_df, insights_df):
+    """
+    Build a data-driven analysis response for the given question.
+    Returns HTML string.
+    """
+    countries, topics = _parse_question(question)
+
+    # Fallback: if no countries found, use top-critical ones
+    if not countries and insights_df is not None:
+        countries = insights_df['country'].head(3).tolist()
+        fallback_note = "*(No specific country detected — showing top-risk countries)*"
+    else:
+        fallback_note = ""
+
+    # Fallback: if no topics found, use all major conflict topics
+    if not topics:
+        topics = ['political_instability', 'military_escalation', 'international_crisis',
+                  'military_crisis', 'coup', 'terrorism']
+
+    date_cols = sorted([c for c in df_raw.columns
+                        if str(c).isdigit() and len(str(c)) == 8])
+    recent_cols = date_cols[-7:] if len(date_cols) >= 7 else date_cols
+
+    # ── Build per-country analysis ──────────────────────────────
+    sections = []
+    for country in countries[:4]:  # max 4 countries
+        cname = COUNTRY_NAMES.get(country, country)
+        cdata = {}
+
+        # Current values for relevant topics
+        try:
+            c_df = df_raw.xs(country, level=1)
+            for topic in topics:
+                if topic in c_df.index:
+                    val = float(c_df.loc[topic, recent_cols].mean())
+                    cdata[topic] = val
+        except Exception:
+            pass
+
+        # Trend data
+        c_trend = {}
+        if trend_df is not None:
+            ct = trend_df[trend_df['country'] == country]
+            for topic in topics:
+                row = ct[ct['topic'] == topic]
+                if len(row):
+                    c_trend[topic] = float(row.iloc[0]['trend_pct'])
+
+        # Overall risk from insights_df
+        overall_risk = None
+        forecast_dir = None
+        avg_fc       = None
+        if insights_df is not None:
+            match = insights_df[insights_df['country'] == country]
+            if len(match):
+                overall_risk = float(match.iloc[0]['risk_score'])
+                forecast_dir = match.iloc[0]['forecast_dir']
+                avg_fc       = float(match.iloc[0]['avg_forecast'])
+
+        # ── Format section for this country ─────────────────────
+        risk_bar = int((overall_risk or 0) / 5)
+        risk_str = '█' * risk_bar + '░' * (20 - risk_bar)
+        risk_color = '#ff4b6e' if (overall_risk or 0) > 65 else '#f59e0b' if (overall_risk or 0) > 35 else '#00ff9d'
+        fc_col    = '#ff4b6e' if forecast_dir == 'rising' else '#00ff9d' if forecast_dir == 'falling' else '#7a9ab8'
+        fc_arrow  = '▲' if forecast_dir == 'rising' else '▼' if forecast_dir == 'falling' else '→'
+
+        topic_lines = ""
+        for topic in sorted(cdata.keys(), key=lambda t: -cdata.get(t, 0)):
+            lbl   = TOPIC_LABELS.get(topic, topic.replace('_', ' ').title())
+            val   = cdata.get(topic, 0)
+            trend = c_trend.get(topic)
+            t_str = f"<span style='color:#ff4b6e;font-size:0.6rem;'> ▲{trend:+.0f}%</span>" if trend and trend > 5 \
+                    else f"<span style='color:#00ff9d;font-size:0.6rem;'> ▼{trend:.0f}%</span>" if trend and trend < -5 \
+                    else ""
+            # Simple visual bar for current value magnitude
+            bar_len = min(int(val / (max(cdata.values()) + 1e-15) * 12), 12) if cdata else 0
+            bar = '▪' * bar_len + '·' * (12 - bar_len)
+            topic_lines += (f"<div style='display:flex;align-items:center;gap:6px;"
+                            f"padding:2px 0;'>"
+                            f"<span style='color:#6080a0;font-size:0.58rem;font-family:monospace;'>{bar}</span>"
+                            f"<span style='color:#a8c0d8;font-size:0.65rem;'>{lbl}</span>"
+                            f"{t_str}</div>")
+
+        sections.append(f"""
+<div style='background:rgba(0,10,35,0.5);border:1px solid rgba(0,100,180,0.15);
+     border-radius:7px;padding:12px 14px;margin-bottom:10px;'>
+  <div style='display:flex;justify-content:space-between;align-items:center;
+       margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid rgba(0,80,160,0.1);'>
+    <div style='font-size:0.88rem;font-weight:700;color:#ddeeff;'>{cname}
+      <span style='font-size:0.55rem;color:rgba(0,180,255,0.35);
+      font-family:monospace;margin-left:6px;'>{country}</span></div>
+    <div style='text-align:right;'>
+      {"<span style='font-size:0.85rem;font-weight:700;color:" + risk_color + ";'>" + f"{overall_risk:.0f}/100</span>" if overall_risk is not None else ""}
+      {"<span style='font-size:0.62rem;color:" + fc_col + ";font-family:monospace;margin-left:8px;'>" + fc_arrow + " " + (forecast_dir or "").title() + f" {avg_fc:+.1f}%</span>" if forecast_dir else ""}
+    </div>
+  </div>
+  <div style='font-size:0.6rem;color:rgba(100,140,200,0.5);
+       font-family:monospace;margin-bottom:2px;letter-spacing:0.08em;'>[{risk_str}] {overall_risk:.0f}/100</div>
+  <div style='margin-top:6px;'>{topic_lines if topic_lines else "<span style='color:rgba(100,140,180,0.4);font-size:0.63rem;'>No matching topic data</span>"}</div>
+</div>""")
+
+    if not sections:
+        return "<div style='color:#7a9ab8;font-size:0.7rem;'>No data found for the entities in your question.</div>"
+
+    header_note = f"<div style='font-size:0.6rem;color:rgba(100,160,210,0.45);font-family:monospace;margin-bottom:10px;'>{fallback_note}</div>" if fallback_note else ""
+    topic_labels_used = ", ".join([TOPIC_LABELS.get(t, t) for t in topics[:6]])
+
+    return f"""
+<div style='font-size:0.6rem;color:rgba(0,200,255,0.4);font-family:monospace;
+     letter-spacing:0.1em;margin-bottom:8px;'>
+  ANALYSED TOPICS: {topic_labels_used}{" + more" if len(topics) > 6 else ""}
+</div>
+{header_note}
+{''.join(sections)}
+<div style='font-size:0.58rem;color:rgba(100,140,180,0.35);
+     font-family:monospace;margin-top:6px;'>
+  SOURCE: GDELT PROJECT · {len(recent_cols)}-DAY WINDOW · HOLT-WINTERS 12M FORECAST
+</div>"""
+
+
+def render_insights():
+    # ── Page header ─────────────────────────────────────────────
+    st.markdown("""
+<div style='padding:10px 0 6px;'>
+  <div style='font-size:1.55rem;font-weight:800;color:#e8f4ff;letter-spacing:0.04em;'>
+    🔍 Intelligence Insights
+  </div>
+  <div style='font-size:0.65rem;color:rgba(0,180,255,0.45);font-family:monospace;
+       letter-spacing:0.12em;margin-top:3px;'>
+    DATA-DRIVEN COUNTRY RISK ANALYSIS &nbsp;·&nbsp; 7-DAY WINDOW + 12-MONTH FORECAST
+  </div>
+</div>""", unsafe_allow_html=True)
+
+    if not indices_ok:
+        st.info("📥 No indices data available. Run `python gdelt_indices.py` first.")
+        _render_footer()
+        return
+
+    # ── Compute insights ────────────────────────────────────────
+    with st.spinner("Analysing 60 countries × 40 risk topics…"):
+        insights_df = _compute_country_insights(df, trend_df)
+
+    if insights_df is None or len(insights_df) == 0:
+        st.warning("⚠ Could not compute insights from available data.")
+        _render_footer()
+        return
+
+    # ── Summary KPIs ────────────────────────────────────────────
+    rising_n  = int((insights_df['forecast_dir'] == 'rising').sum())
+    falling_n = int((insights_df['forecast_dir'] == 'falling').sum())
+    stable_n  = int((insights_df['forecast_dir'] == 'stable').sum())
+    top1_c    = COUNTRY_NAMES.get(insights_df.iloc[0]['country'], insights_df.iloc[0]['country'])
+
+    k1, k2, k3, k4 = st.columns(4)
+    k1.metric("Countries Monitored", len(insights_df))
+    k2.metric("📈 Rising Trend",  f"{rising_n} countries")
+    k3.metric("📉 Falling Trend", f"{falling_n} countries")
+    k4.metric("🔴 Highest Risk",  top1_c)
+
+    st.markdown('<div class="h-div" style="margin:16px 0 12px;"></div>', unsafe_allow_html=True)
+
+    # ═══════════════════════════════════════════════════════════
+    # Q&A SECTION
+    # ═══════════════════════════════════════════════════════════
+    st.markdown("""
+<div style='background:rgba(0,30,70,0.5);border:1px solid rgba(0,150,255,0.2);
+     border-radius:10px;padding:16px 18px;margin-bottom:20px;'>
+  <div style='font-size:0.95rem;font-weight:700;color:#b8d8ff;margin-bottom:4px;'>
+    💬 Ask the Data
+  </div>
+  <div style='font-size:0.65rem;color:rgba(100,170,230,0.55);font-family:monospace;'>
+    Ask any geopolitical question — the system will analyse indices, trends and forecasts to answer.
+  </div>
+</div>""", unsafe_allow_html=True)
+
+    qa_question = st.text_input(
+        "question",
+        placeholder="e.g.  'What is the risk outlook for Iran and the US?'  or  'Which countries face the highest coup risk?'",
+        label_visibility='collapsed',
+        key='insights_question'
+    )
+
+    if qa_question and qa_question.strip():
+        with st.spinner("Analysing data…"):
+            answer_html = _answer_question(
+                qa_question, df, trend_df, pred_df, insights_df)
+        st.markdown(answer_html, unsafe_allow_html=True)
+        st.markdown('<div class="h-div" style="margin:16px 0 12px;"></div>', unsafe_allow_html=True)
+    elif not qa_question:
+        st.markdown("""
+<div style='font-size:0.62rem;color:rgba(100,150,200,0.4);font-family:monospace;
+     text-align:center;padding:8px;'>
+  ↑ Type a question above to get a data-driven analysis
+</div>""", unsafe_allow_html=True)
+        st.markdown('<div class="h-div" style="margin:10px 0 16px;"></div>', unsafe_allow_html=True)
+
+    # ═══════════════════════════════════════════════════════════
+    # COUNTRY RISK CARDS
+    # ═══════════════════════════════════════════════════════════
+    st.markdown("""
+<div style='font-size:0.6rem;color:rgba(0,180,255,0.4);font-family:monospace;
+     letter-spacing:0.15em;margin-bottom:14px;'>
+  TOP 20 MOST CRITICAL COUNTRIES &nbsp;·&nbsp; RANKED BY RISK LEVEL + RATE OF CHANGE
+</div>""", unsafe_allow_html=True)
+
+    top20 = insights_df.head(20).to_dict('records')
+    for i in range(0, len(top20), 2):
+        c1, c2 = st.columns(2)
+        _render_country_card(c1, top20[i])
+        if i + 1 < len(top20):
+            _render_country_card(c2, top20[i + 1])
+
+    _render_footer()
+
+
+
+# ═══════════════════════════════════════════════════════════════
 # FOOTER
 # ═══════════════════════════════════════════════════════════════
 def _render_footer():
@@ -2344,6 +2845,7 @@ elif page == 'indices':     render_indices()
 elif page == 'profile':     render_profile()
 elif page == 'news':        render_news()
 elif page == 'predictions': render_predictions()
+elif page == 'insights':    render_insights()
 else:
     st.session_state.page = 'home'
     st.rerun()
