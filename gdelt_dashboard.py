@@ -2332,21 +2332,20 @@ def render_predictions():
 def _compute_country_insights(_df_raw, _trend_df):
     """Compute per-country risk insights. Returns sorted DataFrame."""
     try:
-        date_cols = sorted([c for c in _df_raw.columns
-                            if str(c).isdigit() and len(str(c)) == 8])
+        date_cols = sorted([c for c in _df_raw.columns if hasattr(c, 'strftime')])
         if len(date_cols) < 7:
             return None
 
         recent_cols = date_cols[-7:]
         past_cols   = date_cols[-14:-7] if len(date_cols) >= 14 else date_cols[:7]
-        countries   = _df_raw.index.get_level_values(1).unique().tolist()
+        countries   = _df_raw.index.get_level_values('country').unique().tolist()
 
         # ── Step 1: raw means per country ──────────────────────
         raw_means   = {}
         change_pcts = {}
         for country in countries:
             try:
-                c_df = _df_raw.xs(country, level=1)
+                c_df = _df_raw.xs(country, level='country')
                 r_mean = float(c_df[recent_cols].values.mean())
                 p_mean = float(c_df[past_cols].values.mean())
                 raw_means[country]   = r_mean
@@ -2627,8 +2626,7 @@ def _answer_question(question, df_raw, trend_df, pred_df, insights_df):
         topics = ['political_instability', 'military_escalation', 'international_crisis',
                   'military_crisis', 'coup', 'terrorism']
 
-    date_cols = sorted([c for c in df_raw.columns
-                        if str(c).isdigit() and len(str(c)) == 8])
+    date_cols = sorted([c for c in df_raw.columns if hasattr(c, 'strftime')])
     recent_cols = date_cols[-7:] if len(date_cols) >= 7 else date_cols
 
     # ── Build per-country analysis ──────────────────────────────
@@ -2748,30 +2746,23 @@ def render_insights():
         return
 
     # ── Compute insights ────────────────────────────────────────
-    with st.spinner("Analysing 60 countries × 40 risk topics…"):
+    with st.spinner("Analysing countries × risk topics…"):
         insights_df = _compute_country_insights(df, trend_df)
 
-    if insights_df is None or len(insights_df) == 0:
-        st.warning("⚠ Could not compute insights from available data.")
-        _render_footer()
-        return
-
-    # ── Summary KPIs ────────────────────────────────────────────
-    rising_n  = int((insights_df['forecast_dir'] == 'rising').sum())
-    falling_n = int((insights_df['forecast_dir'] == 'falling').sum())
-    stable_n  = int((insights_df['forecast_dir'] == 'stable').sum())
-    top1_c    = COUNTRY_NAMES.get(insights_df.iloc[0]['country'], insights_df.iloc[0]['country'])
-
-    k1, k2, k3, k4 = st.columns(4)
-    k1.metric("Countries Monitored", len(insights_df))
-    k2.metric("📈 Rising Trend",  f"{rising_n} countries")
-    k3.metric("📉 Falling Trend", f"{falling_n} countries")
-    k4.metric("🔴 Highest Risk",  top1_c)
-
-    st.markdown('<div class="h-div" style="margin:16px 0 12px;"></div>', unsafe_allow_html=True)
+    # ── Summary KPIs (if available) ─────────────────────────────
+    if insights_df is not None and len(insights_df) > 0:
+        rising_n  = int((insights_df['forecast_dir'] == 'rising').sum())
+        falling_n = int((insights_df['forecast_dir'] == 'falling').sum())
+        top1_c    = COUNTRY_NAMES.get(insights_df.iloc[0]['country'], insights_df.iloc[0]['country'])
+        k1, k2, k3, k4 = st.columns(4)
+        k1.metric("Countries Monitored", len(insights_df))
+        k2.metric("📈 Rising Trend",  f"{rising_n} countries")
+        k3.metric("📉 Falling Trend", f"{falling_n} countries")
+        k4.metric("🔴 Highest Risk",  top1_c)
+        st.markdown('<div class="h-div" style="margin:16px 0 12px;"></div>', unsafe_allow_html=True)
 
     # ═══════════════════════════════════════════════════════════
-    # Q&A SECTION
+    # Q&A SECTION — always shown
     # ═══════════════════════════════════════════════════════════
     st.markdown("""
 <div style='background:rgba(0,30,70,0.5);border:1px solid rgba(0,150,255,0.2);
@@ -2808,18 +2799,37 @@ def render_insights():
     # ═══════════════════════════════════════════════════════════
     # COUNTRY RISK CARDS
     # ═══════════════════════════════════════════════════════════
-    st.markdown("""
+    if insights_df is not None and len(insights_df) > 0:
+        st.markdown("""
 <div style='font-size:0.6rem;color:rgba(0,180,255,0.4);font-family:monospace;
      letter-spacing:0.15em;margin-bottom:14px;'>
   TOP 20 MOST CRITICAL COUNTRIES &nbsp;·&nbsp; RANKED BY RISK LEVEL + RATE OF CHANGE
 </div>""", unsafe_allow_html=True)
-
-    top20 = insights_df.head(20).to_dict('records')
-    for i in range(0, len(top20), 2):
-        c1, c2 = st.columns(2)
-        _render_country_card(c1, top20[i])
-        if i + 1 < len(top20):
-            _render_country_card(c2, top20[i + 1])
+        top20 = insights_df.head(20).to_dict('records')
+        for i in range(0, len(top20), 2):
+            c1, c2 = st.columns(2)
+            _render_country_card(c1, top20[i])
+            if i + 1 < len(top20):
+                _render_country_card(c2, top20[i + 1])
+    elif trend_df is not None:
+        st.markdown("""
+<div style='font-size:0.6rem;color:rgba(0,180,255,0.4);font-family:monospace;
+     letter-spacing:0.15em;margin-bottom:14px;'>
+  TOP RISK MOVEMENTS &nbsp;·&nbsp; 12-MONTH FORECAST TREND
+</div>""", unsafe_allow_html=True)
+        cf1, cf2 = st.columns(2)
+        with cf1:
+            st.markdown("<div style='font-size:0.62rem;color:rgba(255,75,110,0.7);font-family:monospace;margin-bottom:8px;'>▲ HIGHEST RISING</div>", unsafe_allow_html=True)
+            for _, r in trend_df.nlargest(15, 'trend_pct').iterrows():
+                lbl = TOPIC_LABELS.get(r['topic'], str(r['topic']).replace('_',' ').title())
+                cnt = COUNTRY_NAMES.get(r['country'], r['country'])
+                st.markdown(f"<div style='display:flex;justify-content:space-between;padding:4px 8px;margin-bottom:3px;background:rgba(255,75,110,0.05);border:1px solid rgba(255,75,110,0.12);border-radius:5px;'><div><div style='font-size:0.72rem;color:#c8d8e8;'>{lbl}</div><div style='font-size:0.58rem;color:rgba(0,150,255,0.5);font-family:monospace;'>{cnt}</div></div><div style='font-size:0.82rem;font-weight:700;color:#ff4b6e;font-family:monospace;'>+{r['trend_pct']:.1f}%</div></div>", unsafe_allow_html=True)
+        with cf2:
+            st.markdown("<div style='font-size:0.62rem;color:rgba(0,255,157,0.7);font-family:monospace;margin-bottom:8px;'>▼ HIGHEST FALLING</div>", unsafe_allow_html=True)
+            for _, r in trend_df.nsmallest(15, 'trend_pct').iterrows():
+                lbl = TOPIC_LABELS.get(r['topic'], str(r['topic']).replace('_',' ').title())
+                cnt = COUNTRY_NAMES.get(r['country'], r['country'])
+                st.markdown(f"<div style='display:flex;justify-content:space-between;padding:4px 8px;margin-bottom:3px;background:rgba(0,255,157,0.04);border:1px solid rgba(0,255,157,0.10);border-radius:5px;'><div><div style='font-size:0.72rem;color:#c8d8e8;'>{lbl}</div><div style='font-size:0.58rem;color:rgba(0,150,255,0.5);font-family:monospace;'>{cnt}</div></div><div style='font-size:0.82rem;font-weight:700;color:#00ff9d;font-family:monospace;'>{r['trend_pct']:.1f}%</div></div>", unsafe_allow_html=True)
 
     _render_footer()
 
