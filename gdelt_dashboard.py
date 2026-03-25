@@ -2741,7 +2741,8 @@ def render_insights():
   </div>
 </div>""", unsafe_allow_html=True)
 
-    if not indices_ok:
+    _indices_ok = df is not None and len(df) > 0
+    if not _indices_ok:
         st.info("📥 No indices data available. Run `python gdelt_indices.py` first.")
         _render_footer()
         return
