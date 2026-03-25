@@ -1078,6 +1078,16 @@ def load_predictions():
     if os.path.exists(trend_file):
         try:
             trends = pd.read_csv(trend_file)
+            # Validate: drop rows with NaN topic or country (bad data from old script runs)
+            if trends is not None and 'topic' in trends.columns and 'country' in trends.columns:
+                trends = trends.dropna(subset=['topic', 'country'])
+                trends['topic']   = trends['topic'].astype(str).str.strip()
+                trends['country'] = trends['country'].astype(str).str.strip()
+                # Filter out rows where topic/country look invalid (single chars or empty)
+                trends = trends[trends['topic'].str.len() > 2]
+                trends = trends[trends['country'].str.len() >= 2]
+                if len(trends) == 0:
+                    trends = None
         except Exception:
             trends = None
     return preds, trends
@@ -2112,7 +2122,7 @@ def render_predictions():
         return yhat_vals * 1000   # fallback: scale small raw values
 
     # ── Main chart — historical + forecast ───────────────────
-    col_left, col_right = st.columns([3, 2])
+    col_left, col_right = st.columns([4, 2])
 
     with col_left:
         topic_lbl = TOPIC_LABELS.get(sel_pred_topic,
@@ -2206,7 +2216,7 @@ def render_predictions():
         t_fc['yaxis'] = {**t_fc.get('yaxis', {}),
                          'title': 'Risk Score (0–100)', 'title_font': dict(size=10)}
         fig_fc.update_layout(
-            **t_fc, height=320,
+            **t_fc, height=500,
             legend=dict(bgcolor='rgba(0,0,0,0)', bordercolor='rgba(0,100,180,0.2)',
                         borderwidth=1, font=dict(size=10)),
             hovermode='x unified'
@@ -2228,7 +2238,7 @@ def render_predictions():
                 arrow = '▲' if dirn == 'rising' else ('▼' if dirn == 'falling' else '→')
                 col_d = ('#ff4b6e' if dirn == 'rising'
                          else '#00ff9d' if dirn == 'falling' else '#7a9ab8')
-                bar_w = min(abs(pct) / 2, 100)
+                bar_w = min(abs(pct) / 3, 100)
                 st.markdown(f"""
                 <div style='display:flex;align-items:center;gap:8px;
                      padding:5px 0;border-bottom:1px solid rgba(0,100,180,0.06);'>
