@@ -2609,121 +2609,217 @@ def _parse_question(question):
 
 def _answer_question(question, df_raw, trend_df, pred_df, insights_df):
     """
-    Build a data-driven analysis response for the given question.
+    Build a narrative analytical response for the given question.
+    Sections per country:
+      1. Recent 7-day index trend (vs prior 7 days)
+      2. 12-month model projections
+      3. Per-country assessment paragraph
     Returns HTML string.
     """
+    import pandas as _pd
+
     countries, topics = _parse_question(question)
 
-    # Fallback: if no countries found, use top-critical ones
-    if not countries and insights_df is not None:
-        countries = insights_df['country'].head(3).tolist()
-        fallback_note = "*(No specific country detected — showing top-risk countries)*"
-    else:
-        fallback_note = ""
+    # Fallback countries
+    fallback_note = ""
+    if not countries:
+        if insights_df is not None and len(insights_df):
+            countries = insights_df['country'].head(3).tolist()
+            fallback_note = "No specific country detected — showing top-risk countries."
+        elif trend_df is not None and len(trend_df):
+            countries = trend_df.sort_values('trend_pct', ascending=False)['country'].unique()[:3].tolist()
+            fallback_note = "No specific country detected — showing top trending countries."
 
-    # Fallback: if no topics found, use all major conflict topics
+    # Fallback topics
     if not topics:
         topics = ['political_instability', 'military_escalation', 'international_crisis',
                   'military_crisis', 'coup', 'terrorism']
 
     date_cols = sorted([c for c in df_raw.columns if hasattr(c, 'strftime')])
+    if not date_cols:
+        return "<div style='color:#7a9ab8;font-size:0.75rem;padding:10px;'>No time-series index data available.</div>"
+
     recent_cols = date_cols[-7:] if len(date_cols) >= 7 else date_cols
+    prev_cols   = date_cols[-14:-7] if len(date_cols) >= 14 else date_cols[:max(1, len(date_cols) - 7)]
+    last_date   = recent_cols[-1].strftime('%B %d, %Y') if recent_cols else "unknown"
 
-    # ── Build per-country analysis ──────────────────────────────
-    sections = []
-    for country in countries[:4]:  # max 4 countries
+    country_blocks = []
+
+    for country in countries[:4]:
         cname = COUNTRY_NAMES.get(country, country)
-        cdata = {}
 
-        # Current values for relevant topics
+        # SECTION 1: Recent 7-day trend
+        trend_items = []
         try:
-            c_df = df_raw.xs(country, level=1)
+            c_df = df_raw.xs(country, level='country')
             for topic in topics:
-                if topic in c_df.index:
-                    val = float(c_df.loc[topic, recent_cols].mean())
-                    cdata[topic] = val
+                if topic not in c_df.index:
+                    continue
+                row = c_df.loc[topic]
+                cur_vals = [float(row[d]) for d in recent_cols if d in row.index and not _pd.isna(row[d])]
+                prv_vals = [float(row[d]) for d in prev_cols  if d in row.index and not _pd.isna(row[d])]
+                if not cur_vals or not prv_vals:
+                    continue
+                cur_avg = sum(cur_vals) / len(cur_vals)
+                prv_avg = sum(prv_vals) / len(prv_vals)
+                if prv_avg < 0.001:
+                    continue
+                pct = (cur_avg - prv_avg) / prv_avg * 100
+                if abs(pct) < 2:
+                    continue
+                lbl = TOPIC_LABELS.get(topic, topic.replace('_', ' ').title())
+                direction = "rose" if pct > 0 else "eased"
+                color = "#ff6b6b" if pct > 15 else "#ffa94d" if pct > 5 else "#74c0fc" if pct < -5 else "#a9e34b"
+                arrow = "▲" if pct > 0 else "▼"
+                trend_items.append((abs(pct), pct,
+                    f"<span style='color:{color};'><b>{arrow} {lbl}</b> {direction} <b>{pct:+.1f}%</b></span>"))
         except Exception:
             pass
 
-        # Trend data
-        c_trend = {}
-        if trend_df is not None:
-            ct = trend_df[trend_df['country'] == country]
+        trend_items.sort(key=lambda x: -x[0])
+
+        if trend_items:
+            phrases = [s for _, _, s in trend_items[:5]]
+            section1_html = (
+                f"<p style='color:#c8ddf0;font-size:0.73rem;line-height:1.75;margin:0 0 4px;'>"
+                f"Over the <b>last 7 days</b> (through {last_date}), key risk indices for "
+                f"<b>{cname}</b> showed: " + ", ".join(phrases) + ".</p>"
+            )
+        else:
+            section1_html = (
+                f"<p style='color:#7a9ab8;font-size:0.73rem;margin:0 0 4px;'>"
+                f"No significant 7-day movement detected for <b>{cname}</b> across the queried topics.</p>"
+            )
+
+        # SECTION 2: 12-month predictions
+        pred_items = []
+        if pred_df is not None:
+            c_pred = pred_df[pred_df['country'] == country]
             for topic in topics:
-                row = ct[ct['topic'] == topic]
-                if len(row):
-                    c_trend[topic] = float(row.iloc[0]['trend_pct'])
+                t_pred = c_pred[c_pred['topic'] == topic].sort_values('ds')
+                if len(t_pred) < 2:
+                    continue
+                base_val = float(t_pred.iloc[0]['yhat'])
+                if base_val < 0.001:
+                    continue
+                idx_3m  = min(2, len(t_pred) - 1)
+                val_3m  = float(t_pred.iloc[idx_3m]['yhat'])
+                val_12m = float(t_pred.iloc[-1]['yhat'])
+                pct_3m  = (val_3m  - base_val) / base_val * 100
+                pct_12m = (val_12m - base_val) / base_val * 100
+                lbl     = TOPIC_LABELS.get(topic, topic.replace('_', ' ').title())
+                ds_end  = t_pred.iloc[-1]['ds']
+                ds_str  = ds_end.strftime('%B %Y') if hasattr(ds_end, 'strftime') else str(ds_end)
+                if abs(pct_12m) < 2:
+                    sentence = f"<b>{lbl}</b> is projected to remain <b>stable</b> through {ds_str}"
+                elif pct_12m > 0:
+                    col = "#ff6b6b" if pct_12m > 20 else "#ffa94d"
+                    sentence = (f"<b>{lbl}</b> is projected to "
+                                f"<span style='color:{col};'>rise <b>{pct_12m:+.1f}%</b></span> "
+                                f"by {ds_str} (3-month: {pct_3m:+.1f}%)")
+                else:
+                    col = "#74c0fc"
+                    sentence = (f"<b>{lbl}</b> is projected to "
+                                f"<span style='color:{col};'>ease <b>{pct_12m:+.1f}%</b></span> "
+                                f"by {ds_str} (3-month: {pct_3m:+.1f}%)")
+                pred_items.append((abs(pct_12m), pct_12m, sentence))
 
-        # Overall risk from insights_df
-        overall_risk = None
-        forecast_dir = None
-        avg_fc       = None
-        if insights_df is not None:
-            match = insights_df[insights_df['country'] == country]
-            if len(match):
-                overall_risk = float(match.iloc[0]['risk_score'])
-                forecast_dir = match.iloc[0]['forecast_dir']
-                avg_fc       = float(match.iloc[0]['avg_forecast'])
+            pred_items.sort(key=lambda x: -x[0])
 
-        # ── Format section for this country ─────────────────────
-        risk_bar = int((overall_risk or 0) / 5)
-        risk_str = '█' * risk_bar + '░' * (20 - risk_bar)
-        risk_color = '#ff4b6e' if (overall_risk or 0) > 65 else '#f59e0b' if (overall_risk or 0) > 35 else '#00ff9d'
-        fc_col    = '#ff4b6e' if forecast_dir == 'rising' else '#00ff9d' if forecast_dir == 'falling' else '#7a9ab8'
-        fc_arrow  = '▲' if forecast_dir == 'rising' else '▼' if forecast_dir == 'falling' else '→'
+        if pred_items:
+            pred_phrases = [s for _, _, s in pred_items[:5]]
+            section2_html = (
+                f"<p style='color:#c8ddf0;font-size:0.73rem;line-height:1.75;margin:0 0 4px;'>"
+                f"<b>Forward projections (12-month model)</b> for <b>{cname}</b>: "
+                + "; ".join(pred_phrases) + ".</p>"
+            )
+        else:
+            section2_html = (
+                f"<p style='color:#7a9ab8;font-size:0.73rem;margin:0 0 4px;'>"
+                f"No model forecast available for <b>{cname}</b> on the queried topics.</p>"
+            )
 
-        topic_lines = ""
-        for topic in sorted(cdata.keys(), key=lambda t: -cdata.get(t, 0)):
-            lbl   = TOPIC_LABELS.get(topic, topic.replace('_', ' ').title())
-            val   = cdata.get(topic, 0)
-            trend = c_trend.get(topic)
-            t_str = f"<span style='color:#ff4b6e;font-size:0.6rem;'> ▲{trend:+.0f}%</span>" if trend and trend > 5 \
-                    else f"<span style='color:#00ff9d;font-size:0.6rem;'> ▼{trend:.0f}%</span>" if trend and trend < -5 \
-                    else ""
-            # Simple visual bar for current value magnitude
-            bar_len = min(int(val / (max(cdata.values()) + 1e-15) * 12), 12) if cdata else 0
-            bar = '▪' * bar_len + '·' * (12 - bar_len)
-            topic_lines += (f"<div style='display:flex;align-items:center;gap:6px;"
-                            f"padding:2px 0;'>"
-                            f"<span style='color:#6080a0;font-size:0.58rem;font-family:monospace;'>{bar}</span>"
-                            f"<span style='color:#a8c0d8;font-size:0.65rem;'>{lbl}</span>"
-                            f"{t_str}</div>")
+        # SECTION 3: Assessment
+        net_trend = (sum(p for _, p, _ in trend_items) / len(trend_items)) if trend_items else 0.0
+        net_pred  = (sum(p for _, p, _ in pred_items)  / len(pred_items))  if pred_items  else 0.0
 
-        sections.append(f"""
-<div style='background:rgba(0,10,35,0.5);border:1px solid rgba(0,100,180,0.15);
-     border-radius:7px;padding:12px 14px;margin-bottom:10px;'>
-  <div style='display:flex;justify-content:space-between;align-items:center;
-       margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid rgba(0,80,160,0.1);'>
-    <div style='font-size:0.88rem;font-weight:700;color:#ddeeff;'>{cname}
-      <span style='font-size:0.55rem;color:rgba(0,180,255,0.35);
-      font-family:monospace;margin-left:6px;'>{country}</span></div>
-    <div style='text-align:right;'>
-      {"<span style='font-size:0.85rem;font-weight:700;color:" + risk_color + ";'>" + f"{overall_risk:.0f}/100</span>" if overall_risk is not None else ""}
-      {"<span style='font-size:0.62rem;color:" + fc_col + ";font-family:monospace;margin-left:8px;'>" + fc_arrow + " " + (forecast_dir or "").title() + f" {avg_fc:+.1f}%</span>" if forecast_dir else ""}
-    </div>
+        if net_trend > 10 and net_pred > 5:
+            assess_text = (
+                f"<b>{cname}</b> shows a <span style='color:#ff6b6b;'><b>deteriorating risk trajectory</b></span>. "
+                f"Recent index data confirms escalating tensions across multiple domains, and predictive models "
+                f"reinforce this upward pressure over the coming year. "
+                f"<b>Elevated monitoring is warranted.</b>"
+            )
+        elif net_trend > 5 or net_pred > 10:
+            assess_text = (
+                f"<b>{cname}</b> presents a <span style='color:#ffa94d;'><b>cautionary but mixed picture</b></span>. "
+                f"Either recent signals or forward projections indicate elevated risk. "
+                f"Sustained observation of key indicators is recommended."
+            )
+        elif net_trend < -5 and net_pred < -5:
+            assess_text = (
+                f"<b>{cname}</b> demonstrates an <span style='color:#74c0fc;'><b>improving risk outlook</b></span>. "
+                f"Recent indices are easing, and the 12-month model confirms continued de-escalation on most fronts."
+            )
+        elif net_trend < -5:
+            assess_text = (
+                f"<b>{cname}</b> is experiencing <span style='color:#a9e34b;'><b>short-term de-escalation</b></span>, "
+                f"though longer-term projections remain uncertain. The situation should continue to be monitored."
+            )
+        elif net_pred < -5:
+            assess_text = (
+                f"<b>{cname}</b> shows a <span style='color:#74c0fc;'><b>positive medium-term outlook</b></span> "
+                f"according to model projections, despite limited movement in recent indices."
+            )
+        else:
+            assess_text = (
+                f"<b>{cname}</b> presents a <span style='color:#94a3b8;'><b>stable-to-uncertain</b></span> picture. "
+                f"No strong directional signal is present in either the current data window or forward projections."
+            )
+
+        country_blocks.append(f"""
+<div style='background:rgba(5,15,40,0.6);border:1px solid rgba(0,120,200,0.18);
+     border-radius:8px;padding:14px 16px;margin-bottom:12px;'>
+  <div style='font-size:0.82rem;font-weight:700;color:#ddeeff;letter-spacing:0.04em;
+       margin-bottom:10px;padding-bottom:7px;border-bottom:1px solid rgba(0,100,180,0.15);'>
+    📍 {cname}
+    <span style='font-size:0.55rem;color:rgba(0,180,255,0.35);font-family:monospace;margin-left:6px;'>{country}</span>
   </div>
-  <div style='font-size:0.6rem;color:rgba(100,140,200,0.5);
-       font-family:monospace;margin-bottom:2px;letter-spacing:0.08em;'>[{risk_str}] {overall_risk:.0f}/100</div>
-  <div style='margin-top:6px;'>{topic_lines if topic_lines else "<span style='color:rgba(100,140,180,0.4);font-size:0.63rem;'>No matching topic data</span>"}</div>
+  <div style='font-size:0.6rem;color:rgba(0,200,255,0.5);font-family:monospace;
+       letter-spacing:0.1em;margin-bottom:5px;'>■ RECENT ACTIVITY — 7-DAY WINDOW</div>
+  {section1_html}
+  <div style='font-size:0.6rem;color:rgba(0,200,255,0.5);font-family:monospace;
+       letter-spacing:0.1em;margin:10px 0 5px;'>■ FORWARD PROJECTIONS — 12-MONTH MODEL</div>
+  {section2_html}
+  <div style='font-size:0.6rem;color:rgba(0,200,255,0.5);font-family:monospace;
+       letter-spacing:0.1em;margin:10px 0 5px;'>🎯 ASSESSMENT</div>
+  <p style='color:#e2e8f0;font-size:0.73rem;line-height:1.75;margin:0;'>{assess_text}</p>
 </div>""")
 
-    if not sections:
-        return "<div style='color:#7a9ab8;font-size:0.7rem;'>No data found for the entities in your question.</div>"
+    if not country_blocks:
+        return ("<div style='color:#7a9ab8;font-size:0.75rem;padding:10px;'>"
+                "No relevant data found for the entities in your question. "
+                "Try mentioning a specific country or risk topic.</div>")
 
-    header_note = f"<div style='font-size:0.6rem;color:rgba(100,160,210,0.45);font-family:monospace;margin-bottom:10px;'>{fallback_note}</div>" if fallback_note else ""
-    topic_labels_used = ", ".join([TOPIC_LABELS.get(t, t) for t in topics[:6]])
+    topic_labels_used = ", ".join([TOPIC_LABELS.get(t, t.replace('_', ' ').title()) for t in topics[:6]])
+    header_note_html  = (f"<div style='font-size:0.62rem;color:rgba(255,200,100,0.55);"
+                         f"font-family:monospace;margin-bottom:10px;'>⚠ {fallback_note}</div>"
+                         if fallback_note else "")
 
     return f"""
-<div style='font-size:0.6rem;color:rgba(0,200,255,0.4);font-family:monospace;
-     letter-spacing:0.1em;margin-bottom:8px;'>
-  ANALYSED TOPICS: {topic_labels_used}{" + more" if len(topics) > 6 else ""}
-</div>
-{header_note}
-{''.join(sections)}
-<div style='font-size:0.58rem;color:rgba(100,140,180,0.35);
-     font-family:monospace;margin-top:6px;'>
-  SOURCE: GDELT PROJECT · {len(recent_cols)}-DAY WINDOW · HOLT-WINTERS 12M FORECAST
+<div style='font-family:system-ui,sans-serif;'>
+  <div style='font-size:0.58rem;color:rgba(0,200,255,0.4);font-family:monospace;
+       letter-spacing:0.1em;margin-bottom:10px;'>
+    TOPICS ANALYSED: {topic_labels_used}{" + more" if len(topics) > 6 else ""}
+  </div>
+  {header_note_html}
+  {'''.'''.join(country_blocks)}
+  <div style='font-size:0.58rem;color:rgba(100,140,180,0.35);font-family:monospace;
+       margin-top:6px;border-top:1px solid rgba(0,80,160,0.1);padding-top:6px;'>
+    SOURCE: GDELT PROJECT · INDICES WINDOW TO {last_date.upper()} · PROPHET 12-MONTH FORECAST
+  </div>
 </div>"""
+
 
 
 def render_insights():
