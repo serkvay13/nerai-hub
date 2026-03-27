@@ -1,4 +1,4 @@
-"""
+────────────────────────────────────────────────────—ş🔐🔐şçööşşş❌Öö───────────────────────────────────────────────────────"""
 NERAI INTELLIGENCE HUB — Dashboard v3.0
 Multi-page: Home | Indices | Country Profile | News
 """
