@@ -1,4 +1,19 @@
-────────────────────────────────────────────────────—ş🔐🔐şçööşşş❌Öö───────────────────────────────────────────────────────"""
+import streamlit as st
+# NERAI ACCESS GATE
+if "auth" not in st.session_state:
+    st.session_state.auth = False
+if not st.session_state.auth:
+    pw = st.text_input("Access Code", type="password")
+    if st.button("Enter", type="primary"):
+        if pw == st.secrets.get("ACCESS_CODE", "NERAI-2026"):
+            st.session_state.auth = True
+            st.rerun()
+        else:
+            st.error("Invalid code. Check your payment confirmation email.")
+    st.stop()
+# END ACCESS GATE
+
+"""
 NERAI INTELLIGENCE HUB — Dashboard v3.0
 Multi-page: Home | Indices | Country Profile | News
 """
