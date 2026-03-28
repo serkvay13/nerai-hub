@@ -1052,14 +1052,12 @@ with st.sidebar:
     <div style='padding:10px 0 18px;border-bottom:1px solid rgba(0,150,255,0.15);margin-bottom:16px;'>
       <div style='font-size:1.35rem;font-weight:900;letter-spacing:0.1em;
            font-family:"Exo 2",sans-serif;line-height:1.1;'>
-        <span style='color:rgba(0,230,255,0.95);
-             text-shadow:0 0 14px rgba(0,210,255,0.9),0 0 30px rgba(0,160,255,0.45);'>◈</span>
-        <span style='color:#ffffff;
-             text-shadow:0 0 18px rgba(0,210,255,0.35),0 0 35px rgba(0,140,255,0.15);'> NER</span><span style='background:linear-gradient(135deg,#00e5ff,#0099ff,#8b3fff);
+        <span style='color:#0077a8;'>◈</span>
+        <span style='color:#0d1f3c;'> NER</span><span style='background:linear-gradient(135deg,#0077a8 0%,#00a886 100%);
              -webkit-background-clip:text;-webkit-text-fill-color:transparent;
              background-clip:text;'>AI</span>
       </div>
-      <div style='font-size:0.58rem;color:rgba(0,210,255,0.55);letter-spacing:0.28em;
+      <div style='font-size:0.58rem;color:#5a6b82;letter-spacing:0.28em;
            font-family:"Share Tech Mono",monospace;margin-top:3px;'>
         INTELLIGENCE HUB
       </div>
@@ -1942,7 +1940,7 @@ def render_news():
                 <div class="news-card">
                   <div class="news-title">
                     <a href="{url}" target="_blank"
-                       style="color:#c8d8e8;text-decoration:none;">
+                       style="color:#0d1f3c;text-decoration:none;">
                       {title[:180]}{'...' if len(title)>180 else ''}
                     </a>
                   </div>
@@ -2777,10 +2775,10 @@ def render_insights():
     # ── Page header ─────────────────────────────────────────────
     st.markdown("""
 <div style='padding:10px 0 6px;'>
-  <div style='font-size:1.55rem;font-weight:800;color:#e8f4ff;letter-spacing:0.04em;'>
+  <div style='font-size:1.55rem;font-weight:800;color:#0d1f3c;letter-spacing:0.04em;'>
     🔍 Intelligence Insights
   </div>
-  <div style='font-size:0.65rem;color:rgba(0,180,255,0.45);font-family:monospace;
+  <div style='font-size:0.65rem;color:#0077a8;font-family:monospace;
        letter-spacing:0.12em;margin-top:3px;'>
     DATA-DRIVEN COUNTRY RISK ANALYSIS &nbsp;·&nbsp; 7-DAY WINDOW + 12-MONTH FORECAST
   </div>
@@ -2814,10 +2812,10 @@ def render_insights():
     st.markdown("""
 <div style='background:rgba(0,30,70,0.5);border:1px solid rgba(0,150,255,0.2);
      border-radius:10px;padding:16px 18px;margin-bottom:20px;'>
-  <div style='font-size:0.95rem;font-weight:700;color:#b8d8ff;margin-bottom:4px;'>
+  <div style='font-size:0.95rem;font-weight:700;color:#0d1f3c;margin-bottom:4px;'>
     💬 Ask the Data
   </div>
-  <div style='font-size:0.65rem;color:rgba(100,170,230,0.55);font-family:monospace;'>
+  <div style='font-size:0.65rem;color:#5a6b82;font-family:monospace;'>
     Ask any geopolitical question — the system will analyse indices, trends and forecasts to answer.
   </div>
 </div>""", unsafe_allow_html=True)
@@ -2848,7 +2846,7 @@ def render_insights():
     # ═══════════════════════════════════════════════════════════
     if insights_df is not None and len(insights_df) > 0:
         st.markdown("""
-<div style='font-size:0.6rem;color:rgba(0,180,255,0.4);font-family:monospace;
+<div style='font-size:0.6rem;color:#0077a8;font-family:monospace;
      letter-spacing:0.15em;margin-bottom:14px;'>
   TOP 20 MOST CRITICAL COUNTRIES &nbsp;·&nbsp; RANKED BY RISK LEVEL + RATE OF CHANGE
 </div>""", unsafe_allow_html=True)
