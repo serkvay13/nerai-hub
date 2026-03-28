@@ -3134,48 +3134,82 @@ def render_scenarios():
     for i, (key, tmpl) in enumerate(row1):
         with cols1[i]:
             has_result = sdf is not None and key in sdf.get('scenario', pd.Series()).values if sdf is not None else False
-            status = '✅ Run' if has_result else '⏳ Not run'
+            s_col = '#3fb950' if has_result else 'rgba(150,150,150,0.5)'
+            s_txt = '✅ Completed' if has_result else '⏳ Not run yet'
             st.markdown(f"""
             <div style='background:rgba(0,8,20,0.7);border:1px solid rgba(0,150,255,0.15);
-                 border-radius:10px;padding:18px;margin-bottom:12px;'>
-              <div style='font-size:1.6rem;margin-bottom:8px;'>{tmpl['icon']}</div>
-              <div style='font-weight:700;color:#00e5ff;margin-bottom:6px;'>{tmpl['label']}</div>
-              <div style='font-size:0.75rem;color:rgba(150,190,220,0.7);margin-bottom:10px;'>{tmpl['desc']}</div>
-              <code style='font-size:0.65rem;color:rgba(0,200,255,0.5);word-break:break-all;'>
-                python gdelt_scenarios.py --scenario {key}</code>
-              <div style='margin-top:8px;font-size:0.7rem;color:{"#3fb950" if has_result else "rgba(150,150,150,0.5)"};'>{status}</div>
+                 border-radius:10px;padding:20px;margin-bottom:12px;min-height:130px;'>
+              <div style='font-size:1.8rem;margin-bottom:10px;'>{tmpl['icon']}</div>
+              <div style='font-weight:700;color:#00e5ff;margin-bottom:8px;font-size:1rem;'>{tmpl['label']}</div>
+              <div style='font-size:0.75rem;color:rgba(150,190,220,0.7);line-height:1.5;margin-bottom:10px;'>{tmpl['desc']}</div>
+              <div style='font-size:0.7rem;color:{s_col};'>{s_txt}</div>
             </div>""", unsafe_allow_html=True)
 
     cols2 = st.columns(3)
     for i, (key, tmpl) in enumerate(row2):
         with cols2[i]:
             has_result = sdf is not None and key in sdf.get('scenario', pd.Series()).values if sdf is not None else False
-            status = '✅ Run' if has_result else '⏳ Not run'
+            s_col = '#3fb950' if has_result else 'rgba(150,150,150,0.5)'
+            s_txt = '✅ Completed' if has_result else '⏳ Not run yet'
             st.markdown(f"""
             <div style='background:rgba(0,8,20,0.7);border:1px solid rgba(0,150,255,0.15);
-                 border-radius:10px;padding:18px;margin-bottom:12px;'>
-              <div style='font-size:1.6rem;margin-bottom:8px;'>{tmpl['icon']}</div>
-              <div style='font-weight:700;color:#00e5ff;margin-bottom:6px;'>{tmpl['label']}</div>
-              <div style='font-size:0.75rem;color:rgba(150,190,220,0.7);margin-bottom:10px;'>{tmpl['desc']}</div>
-              <code style='font-size:0.65rem;color:rgba(0,200,255,0.5);word-break:break-all;'>
-                python gdelt_scenarios.py --scenario {key}</code>
-              <div style='margin-top:8px;font-size:0.7rem;color:{"#3fb950" if has_result else "rgba(150,150,150,0.5)"};'>{status}</div>
+                 border-radius:10px;padding:20px;margin-bottom:12px;min-height:130px;'>
+              <div style='font-size:1.8rem;margin-bottom:10px;'>{tmpl['icon']}</div>
+              <div style='font-weight:700;color:#00e5ff;margin-bottom:8px;font-size:1rem;'>{tmpl['label']}</div>
+              <div style='font-size:0.75rem;color:rgba(150,190,220,0.7);line-height:1.5;margin-bottom:10px;'>{tmpl['desc']}</div>
+              <div style='font-size:0.7rem;color:{s_col};'>{s_txt}</div>
             </div>""", unsafe_allow_html=True)
 
     import subprocess, sys as _sys
-    st.markdown('<div class="h-div" style="margin:20px 0;"></div>', unsafe_allow_html=True)
-    st.subheader("Run a Scenario")
+    st.markdown('<div class="h-div" style="margin:24px 0;"></div>', unsafe_allow_html=True)
+
+    # ── Run Pre-Built Scenario ──────────────────────────────────
+    st.subheader("▶️ Run Pre-Built Scenario")
     sel_scenario = st.selectbox('Select Scenario', list(SCENARIO_TEMPLATES.keys()),
                                 format_func=lambda k: SCENARIO_TEMPLATES[k]['label'])
-    if st.button('▶️ Run Selected Scenario', type='primary', use_container_width=False):
+    if st.button('▶️ Run Selected Scenario', type='primary'):
         if not os.path.exists('./gdelt_scenarios.py'):
             st.error('gdelt_scenarios.py not found in working directory.')
         else:
-            with st.spinner(f'Running {sel_scenario}…'):
+            with st.spinner(f'Running {SCENARIO_TEMPLATES[sel_scenario]["label"]}…'):
                 r = subprocess.run([_sys.executable, './gdelt_scenarios.py', '--scenario', sel_scenario],
                                    capture_output=True, text=True, cwd='.')
             if r.returncode == 0:
                 st.success('✅ Scenario complete!')
+                st.cache_data.clear(); st.rerun()
+            else:
+                st.error(r.stderr[-600:] or 'Failed')
+
+    st.markdown('<div class="h-div" style="margin:24px 0;"></div>', unsafe_allow_html=True)
+
+    # ── Custom Scenario Builder ─────────────────────────────────
+    st.subheader("🔧 Build a Custom Scenario")
+    st.markdown("""
+    <div style='font-size:0.78rem;color:rgba(150,190,220,0.7);margin-bottom:16px;'>
+    Kendi senaryonu tanımla: hangi ülkede, hangi konuda, ne kadar büyüklükte bir şok simüle etmek istiyorsun?
+    </div>""", unsafe_allow_html=True)
+
+    c1, c2 = st.columns(2)
+    with c1:
+        custom_country = st.selectbox('Country', sorted(all_countries),
+                                      format_func=lambda c: f"{COUNTRY_NAMES.get(c, c)} ({c})")
+        custom_topic   = st.selectbox('Topic', sorted(all_topics),
+                                      format_func=lambda t: TOPIC_LABELS.get(t, t.replace('_',' ').title()))
+    with c2:
+        custom_magnitude = st.slider('Shock Magnitude', 0.1, 2.0, 0.5, 0.05,
+                                     help='1.0 = same size as current level. 2.0 = doubles it.')
+        custom_duration  = st.slider('Duration (months)', 1, 12, 6)
+
+    if st.button('⚡ Run Custom Scenario', type='secondary'):
+        if not os.path.exists('./gdelt_scenarios.py'):
+            st.error('gdelt_scenarios.py not found in working directory.')
+        else:
+            cmd = [_sys.executable, './gdelt_scenarios.py', '--custom-shock',
+                   f'{custom_topic},{custom_country},{custom_magnitude},{custom_duration}']
+            with st.spinner('Running custom scenario…'):
+                r = subprocess.run(cmd, capture_output=True, text=True, cwd='.')
+            if r.returncode == 0:
+                st.success('✅ Custom scenario complete!')
                 st.cache_data.clear(); st.rerun()
             else:
                 st.error(r.stderr[-600:] or 'Failed')
