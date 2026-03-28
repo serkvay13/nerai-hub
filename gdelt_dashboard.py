@@ -1046,6 +1046,41 @@ def load_predictions():
 pred_df, trend_df = load_predictions()
 has_predictions   = pred_df is not None and len(pred_df) > 0
 
+@st.cache_data(ttl=3600)
+def load_causality():
+    net_file  = './causality_network.csv'
+    stat_file = './causality_stats.csv'
+    net, stats = None, None
+    if os.path.exists(net_file):
+        try:
+            net = pd.read_csv(net_file)
+            if len(net) == 0:
+                net = None
+        except Exception:
+            net = None
+    if os.path.exists(stat_file):
+        try:
+            stats = pd.read_csv(stat_file)
+            if len(stats) == 0:
+                stats = None
+        except Exception:
+            stats = None
+    return net, stats
+
+@st.cache_data(ttl=600)
+def load_scenario_results():
+    f = './scenario_results.csv'
+    if os.path.exists(f):
+        try:
+            df = pd.read_csv(f)
+            return df if len(df) > 0 else None
+        except Exception:
+            return None
+    return None
+
+causality_net, causality_stats = load_causality()
+has_causality = causality_net is not None and len(causality_net) > 0
+
 if 'page' not in st.session_state:
     st.session_state.page = 'home'
 
@@ -1071,6 +1106,8 @@ with st.sidebar:
         ('profile',     '🎯  COUNTRY PROFILE'),
         ('news',        '📰  NEWS'),
         ('predictions', '🔮  PREDICTIONS'),
+        ('causality',   '🕸  CAUSAL NETWORK'),
+        ('scenarios',   '⚡  WHAT-IF SCENARIOS'),
         ('insights',    '🔍  INSIGHTS'),
     ]
     for page_key, page_label in nav_pages:
@@ -3271,6 +3308,250 @@ def _render_footer():
 
 
 # ═══════════════════════════════════════════════════════════════
+# ═══════════════════════════════════════════════════════════════
+# PAGE: CAUSAL NETWORK
+# ═══════════════════════════════════════════════════════════════
+def render_causality():
+    st.markdown('<div class="page-hdr">🕸 Causal Network</div>', unsafe_allow_html=True)
+    st.markdown(
+        '<p style="color:#5a6b82;font-size:0.88rem;margin-bottom:18px;">'
+        'Granger causality relationships between risk indices — which series statistically '
+        'predict changes in others, and with what lag.</p>',
+        unsafe_allow_html=True
+    )
+
+    if not has_causality:
+        st.info(
+            "**Causal network not yet generated.**\n\n"
+            "Run the causality analysis script to discover which risk series predict others:\n\n"
+            "```bash\npython gdelt_causality.py\n```\n\n"
+            "This performs Granger causality tests across all topic × country pairs and produces "
+            "`causality_network.csv` and `causality_stats.csv`."
+        )
+        return
+
+    net = causality_net.copy()
+    net['source_label'] = net.apply(
+        lambda r: f"{TOPIC_LABELS.get(r['source_topic'], r['source_topic'].replace('_',' ').title())} / {COUNTRY_NAMES.get(r['source_country'], r['source_country'])}", axis=1)
+    net['target_label'] = net.apply(
+        lambda r: f"{TOPIC_LABELS.get(r['target_topic'], r['target_topic'].replace('_',' ').title())} / {COUNTRY_NAMES.get(r['target_country'], r['target_country'])}", axis=1)
+
+    col1, col2, col3 = st.columns(3)
+    col1.metric("Total Causal Links", f"{len(net):,}")
+    col2.metric("Unique Source Series", f"{net['source_id'].nunique():,}")
+    col3.metric("Unique Target Series", f"{net['target_id'].nunique():,}")
+
+    st.markdown('<div class="h-div" style="margin:14px 0 18px;"></div>', unsafe_allow_html=True)
+
+    # ── Filter controls ───────────────────────────────────────
+    col_f1, col_f2, col_f3 = st.columns(3)
+    with col_f1:
+        filter_country = st.selectbox(
+            "Filter by Country",
+            ['All'] + sorted(COUNTRY_NAMES.values()),
+            key='caus_country'
+        )
+    with col_f2:
+        filter_topic = st.selectbox(
+            "Filter by Topic",
+            ['All'] + sorted([TOPIC_LABELS.get(t, t) for t in TOPICS.keys()]),
+            key='caus_topic'
+        )
+    with col_f3:
+        max_lag_filter = st.selectbox("Max Lag (months)", [1, 2, 3], index=2, key='caus_lag')
+
+    view_net = net[net['best_lag'] <= max_lag_filter].copy()
+    if filter_country != 'All':
+        cc = [k for k, v in COUNTRY_NAMES.items() if v == filter_country]
+        cc = cc[0] if cc else filter_country
+        view_net = view_net[(view_net['source_country'] == cc) | (view_net['target_country'] == cc)]
+    if filter_topic != 'All':
+        tk = [k for k, v in TOPIC_LABELS.items() if v == filter_topic]
+        tk = tk[0] if tk else filter_topic
+        view_net = view_net[(view_net['source_topic'] == tk) | (view_net['target_topic'] == tk)]
+
+    # ── Network bubble chart: source infectiousness ───────────
+    st.markdown('<div class="sec-hdr">Most Causally Influential Series</div>', unsafe_allow_html=True)
+    st.markdown('<p style="color:#5a6b82;font-size:0.82rem;">Series that Granger-cause the most other series — the most "infectious" risk factors in the system.</p>', unsafe_allow_html=True)
+
+    influence = (
+        view_net.groupby(['source_topic', 'source_country'])
+        .agg(n_targets=('target_id', 'nunique'), avg_pval=('p_value', 'mean'), avg_fstat=('f_stat', 'mean'))
+        .reset_index()
+        .sort_values('n_targets', ascending=False)
+        .head(20)
+    )
+    influence['label'] = influence.apply(
+        lambda r: f"{TOPIC_LABELS.get(r['source_topic'], r['source_topic'][:18])} / {COUNTRY_NAMES.get(r['source_country'], r['source_country'])}", axis=1)
+    influence['sig'] = (1 - influence['avg_pval']) * 100
+
+    fig_inf = go.Figure(go.Bar(
+        x=influence['n_targets'],
+        y=influence['label'],
+        orientation='h',
+        marker=dict(
+            color=influence['avg_fstat'],
+            colorscale='Blues',
+            showscale=True,
+            colorbar=dict(title='Avg F-stat', thickness=12, len=0.6),
+        ),
+        text=influence['n_targets'].apply(lambda x: f'{x} targets'),
+        textposition='outside',
+        hovertemplate='<b>%{y}</b><br>Influences %{x} series<br>Avg F-stat: %{marker.color:.2f}<extra></extra>',
+    ))
+    t_inf = {**BASE_THEME}
+    fig_inf.update_layout(**t_inf, height=420,
+        xaxis_title='Number of Series Granger-Caused',
+        margin=dict(l=240, r=80, t=20, b=40))
+    st.plotly_chart(fig_inf, use_container_width=True, config={'displayModeBar': False})
+
+    # ── Top causal relationships table ────────────────────────
+    st.markdown('<div class="sec-hdr">Strongest Causal Relationships</div>', unsafe_allow_html=True)
+    top_edges = view_net.nsmallest(40, 'p_value')[
+        ['source_label', 'target_label', 'best_lag', 'f_stat', 'p_value']
+    ].copy()
+    top_edges.columns = ['Causes →', 'Affects', 'Lag (mo)', 'F-Statistic', 'p-value']
+    top_edges['p-value'] = top_edges['p-value'].apply(lambda x: f'{x:.4f}')
+    top_edges['F-Statistic'] = top_edges['F-Statistic'].apply(lambda x: f'{x:.2f}')
+    st.dataframe(top_edges, use_container_width=True, hide_index=True)
+
+    # ── Series detail ─────────────────────────────────────────
+    if causality_stats is not None:
+        st.markdown('<div class="sec-hdr">Series Causality Profile</div>', unsafe_allow_html=True)
+        stats = causality_stats.copy()
+        stats['label'] = stats.apply(
+            lambda r: f"{TOPIC_LABELS.get(r['topic'], str(r['topic'])[:20])} / {COUNTRY_NAMES.get(r['country'], r['country'])}", axis=1)
+        stats_view = stats[['label', 'n_causes', 'n_caused_by', 'top_cause', 'top_cause_lag']].copy()
+        stats_view.columns = ['Series', 'Incoming Predictors', 'Series It Predicts', 'Strongest Predictor', 'Predictor Lag']
+        stats_view = stats_view.sort_values('Incoming Predictors', ascending=False)
+        st.dataframe(stats_view.head(50), use_container_width=True, hide_index=True)
+
+
+# ═══════════════════════════════════════════════════════════════
+# PAGE: WHAT-IF SCENARIOS
+# ═══════════════════════════════════════════════════════════════
+def render_scenarios():
+    st.markdown('<div class="page-hdr">⚡ What-If Scenarios</div>', unsafe_allow_html=True)
+    st.markdown(
+        '<p style="color:#5a6b82;font-size:0.88rem;margin-bottom:18px;">'
+        'Inject geopolitical shocks into the model and simulate how risk indices respond. '
+        'Run scenarios via the command line, then view results here.</p>',
+        unsafe_allow_html=True
+    )
+
+    # ── Scenario templates reference ──────────────────────────
+    SCENARIO_DESCS = {
+        'iran_nuclear_crisis':          'Iran accelerates nuclear program, triggering regional escalation',
+        'russia_escalation':            'Russia escalates military operations in Eastern Europe',
+        'china_taiwan_tension':         'China increases military pressure on Taiwan',
+        'middle_east_oil_crisis':       'Attacks on oil infrastructure trigger regional instability',
+        'global_democratic_backsliding':'Wave of authoritarianism across multiple regions',
+    }
+
+    st.markdown('<div class="sec-hdr">Available Scenarios</div>', unsafe_allow_html=True)
+    scen_cols = st.columns(len(SCENARIO_DESCS))
+    for col, (key, desc) in zip(scen_cols, SCENARIO_DESCS.items()):
+        label = key.replace('_', ' ').title()
+        col.markdown(
+            f'<div style="background:#f4f7fb;border-radius:8px;padding:12px;'
+            f'border-left:3px solid #0077a8;min-height:90px;">'
+            f'<div style="font-size:0.75rem;font-weight:700;color:#0d1f3c;margin-bottom:6px;">{label}</div>'
+            f'<div style="font-size:0.72rem;color:#5a6b82;">{desc}</div>'
+            f'<div style="margin-top:8px;font-family:monospace;font-size:0.68rem;'
+            f'color:#0077a8;background:#e8f0fa;padding:4px 6px;border-radius:4px;">'
+            f'python gdelt_scenarios.py --scenario {key}</div></div>',
+            unsafe_allow_html=True
+        )
+
+    st.markdown('<div style="margin:18px 0 6px;"></div>', unsafe_allow_html=True)
+
+    # ── Custom shock builder ───────────────────────────────────
+    with st.expander("🛠 Custom Shock Builder", expanded=False):
+        st.markdown('<p style="color:#5a6b82;font-size:0.82rem;">Define a custom geopolitical shock and copy the command to run in your terminal.</p>', unsafe_allow_html=True)
+        cc1, cc2, cc3, cc4 = st.columns(4)
+        shock_topic    = cc1.selectbox("Topic", sorted(TOPIC_LABELS.keys()),
+                                        format_func=lambda t: TOPIC_LABELS.get(t, t), key='sc_topic')
+        shock_country  = cc2.selectbox("Country", sorted(COUNTRY_NAMES.keys()),
+                                        format_func=lambda c: f"{COUNTRY_NAMES.get(c,c)} ({c})", key='sc_country')
+        shock_mag      = cc3.slider("Magnitude", 0.1, 2.0, 0.6, 0.05, key='sc_mag',
+                                     help="1.0 = +100% increase over baseline")
+        shock_dur      = cc4.slider("Duration (months)", 1, 12, 4, key='sc_dur')
+        cmd = (f'python gdelt_scenarios.py --custom-shock '
+               f'"topic={shock_topic},country={shock_country},'
+               f'magnitude={shock_mag},duration={shock_dur}"')
+        st.code(cmd, language='bash')
+
+    st.markdown('<div class="h-div" style="margin:18px 0;"></div>', unsafe_allow_html=True)
+
+    # ── Results section ────────────────────────────────────────
+    scen_df = load_scenario_results()
+
+    if scen_df is None:
+        st.info(
+            "**No scenario results yet.**\n\n"
+            "Run one of the scenarios above in your terminal, then refresh the dashboard to see results."
+        )
+        return
+
+    st.markdown('<div class="sec-hdr">Latest Scenario Results</div>', unsafe_allow_html=True)
+
+    # Summary KPIs
+    n_rising   = (scen_df['direction'] == 'escalating').sum()  if 'direction' in scen_df.columns else 0
+    n_falling  = (scen_df['direction'] == 'de-escalating').sum() if 'direction' in scen_df.columns else 0
+    n_series   = len(scen_df)
+    avg_delta  = scen_df['delta_pct'].mean() if 'delta_pct' in scen_df.columns else 0
+
+    kk = st.columns(4)
+    kk[0].metric("Series Affected", n_series)
+    kk[1].metric("Escalating", n_rising)
+    kk[2].metric("De-escalating", n_falling)
+    kk[3].metric("Avg Change vs Baseline", f"{avg_delta:+.1f}%")
+
+    st.markdown('<div style="margin:14px 0;"></div>', unsafe_allow_html=True)
+
+    # ── Waterfall chart: delta_pct per series ─────────────────
+    if 'delta_pct' in scen_df.columns:
+        plot_df = scen_df.copy()
+        plot_df['label'] = plot_df.apply(
+            lambda r: f"{TOPIC_LABELS.get(r.get('topic',''), str(r.get('topic',''))[:18])} / {COUNTRY_NAMES.get(r.get('country',''), r.get('country',''))}"
+            if 'topic' in r and 'country' in r else str(r.get('unique_id', '')), axis=1)
+        plot_df = plot_df.sort_values('delta_pct', ascending=True)
+        bar_colors = ['#e05a2b' if x > 0 else '#00b894' for x in plot_df['delta_pct']]
+
+        fig_scen = go.Figure(go.Bar(
+            x=plot_df['delta_pct'],
+            y=plot_df['label'],
+            orientation='h',
+            marker_color=bar_colors,
+            text=plot_df['delta_pct'].apply(lambda x: f'{x:+.1f}%'),
+            textposition='outside',
+            hovertemplate='<b>%{y}</b><br>Change vs baseline: %{x:+.1f}%<extra></extra>',
+        ))
+        t_sc = {**BASE_THEME}
+        fig_scen.update_layout(
+            **t_sc, height=max(320, len(plot_df) * 22 + 80),
+            xaxis_title='% Change vs Baseline Forecast',
+            xaxis_zeroline=True, xaxis_zerolinecolor='rgba(0,100,180,0.3)',
+            margin=dict(l=260, r=80, t=20, b=40),
+        )
+        st.plotly_chart(fig_scen, use_container_width=True, config={'displayModeBar': False})
+
+    # ── Detailed results table ─────────────────────────────────
+    st.markdown('<div class="sec-hdr">Detailed Scenario Output</div>', unsafe_allow_html=True)
+    show_cols = [c for c in ['unique_id', 'baseline_avg', 'shocked_avg', 'delta_pct', 'peak_month', 'direction'] if c in scen_df.columns]
+    if show_cols:
+        display_df = scen_df[show_cols].copy()
+        if 'delta_pct' in display_df.columns:
+            display_df['delta_pct'] = display_df['delta_pct'].apply(lambda x: f'{x:+.1f}%')
+        st.dataframe(display_df, use_container_width=True, hide_index=True)
+
+    # ── Report text ────────────────────────────────────────────
+    if os.path.exists('./scenario_report.txt'):
+        with st.expander("📄 Full Scenario Report", expanded=False):
+            with open('./scenario_report.txt', 'r') as f:
+                st.code(f.read(), language=None)
+
+
 # ROUTING
 # ═══════════════════════════════════════════════════════════════
 page = st.session_state.get('page', 'home')
@@ -3279,6 +3560,8 @@ elif page == 'indices':     render_indices()
 elif page == 'profile':     render_profile()
 elif page == 'news':        render_news()
 elif page == 'predictions': render_predictions()
+elif page == 'causality':   render_causality()
+elif page == 'scenarios':   render_scenarios()
 elif page == 'insights':    render_insights()
 else:
     st.session_state.page = 'home'
