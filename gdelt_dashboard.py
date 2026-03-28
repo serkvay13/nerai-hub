@@ -34,6 +34,11 @@ st.markdown("""
 .stApp { background:#f4f7fb; }
 html,body,[class*="css"]{font-family:'Inter',sans-serif;color:#0d1f3c;}
 
+/* RADIO BUTTONS */
+.stRadio label p {color:#0d1f3c !important;font-size:0.82rem !important;font-weight:500 !important;}
+.stRadio label {color:#0d1f3c !important;}
+[data-testid="stRadio"] label span p {color:#0d1f3c !important;}
+
 /* SIDEBAR */
 [data-testid="stSidebar"]{background:#ffffff;border-right:1px solid rgba(0,119,168,0.14);}
 [data-testid="stSidebar"] label{color:#0077a8 !important;font-size:0.7rem !important;
@@ -1049,16 +1054,10 @@ if 'page' not in st.session_state:
 # ═══════════════════════════════════════════════════════════════
 with st.sidebar:
     st.markdown("""
-    <div style='padding:10px 0 18px;border-bottom:1px solid rgba(0,150,255,0.15);margin-bottom:16px;'>
-      <div style='font-size:1.35rem;font-weight:900;letter-spacing:0.1em;
-           font-family:"Exo 2",sans-serif;line-height:1.1;'>
-        <span style='color:#0077a8;'>◈</span>
-        <span style='color:#0d1f3c;'> NER</span><span style='background:linear-gradient(135deg,#0077a8 0%,#00a886 100%);
-             -webkit-background-clip:text;-webkit-text-fill-color:transparent;
-             background-clip:text;'>AI</span>
-      </div>
-      <div style='font-size:0.58rem;color:#5a6b82;letter-spacing:0.28em;
-           font-family:"Share Tech Mono",monospace;margin-top:3px;'>
+    <div style='padding:10px 0 18px;border-bottom:1px solid rgba(0,119,168,0.14);margin-bottom:16px;'>
+      <img src='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFgAAAAyCAIAAABXmItfAAAIAElEQVR42u2Ye3AX1RXHz7l3d3/5PfImLxocSIqO0ZKAIb/YYglhnEIopZIZBYtT6FDqTLVOpzMNERRBbIqFQqEaHjO0Du/RNCO2DVKcVjoxDmpKJx2wmA6lowmvSJJfsr+9u/fe0z9Wf6aBaZMO+Neev3bP3T27+7n3nPs9i0IICAyABQgCEAGIAEQAIgARgAhABCACEAGIAEQAIgARgAhAfM5mjOtqBYAAjEgqxTknRALgAEopRGSMEZFSCgA454j42Y1KEZHv1FprrW8wJ4yNjHD90CgnASgCROBj8/93w3H9obIYApFk3OBcac2lBIauJsuyAMB1Xf8AADzP01qnWPh+IvI8L3XN9TYywihzHGcUCxPBj+9qGunnAJwhAHia6KaDIACOcGxQTAhZd7lDB1pa6xfM783OOzcsFmaEWlpaJk+eHK+q6urqamtry8zMXLFihWmaUkrOOREdPHiwt7e3vr6+tLS0vb29vb09EomkMDHGkslkTU3NjBkz/AipUUTMycm59957S0pKhBC+kwAMhG5Xvz6scjjWxwwDgT71X5H08pAXQ3ww3bQQxspCjMEcIVwhhBAzLgw9OkTv/emPAHDsyOH1DpX+y+75+FqmZT780INE1Pzii37YRx55RCnlOI4QwnGcO++8EwBaW1uJaPXq1Td8k/Xr1xNRc3Pz9UPZ2dmHDh0iItu2hRC2EOS5j304ED3bN+H9vjcHbPJcW4ikEOSKvySSme/3lX3wcV9SSCEcMSYbU41AAE1kcv503z/y3NiX4tU733jzy1XTJ17+aGrPxYLK6bvebC/JzQGAcDRqWVZubu6+ffui0Whzc7MQgoiys7MNw/CXfSwWMwyjqqpqzpw5UkpE5Jzbtn3fffcBQDQaNU2zoqJi1apVnueZptnZ2blnz561a9fOmzcvFotJpUIMP/L0nx1VbGBC02+G5FcjxsiyN4FjNhtRom5WsSQixpin9A/m319dPu3pY3/40ZTKu2KRlscf33vgwOzeSz8praxR9kwATeRJiYhZWVk7d+6MRqObN29OJpNSSiklfZqzUsrp06dv3LjxPyqxUn6aeJ5XUFCwcuXK1NA777xz5syZnp6esrIyISVD1jbsfSipzGIhhDeSssfThQYK+iSLJYG6FbuGX+oNzp/d/sui3JxSoA3e1bt1sfm9R2+vqc3PzPhhz+Uvhi2AKGeMtI7H4zNnzlyzZs3WrVvT09PXrVt3fcy+vr7z58/7JZBzXlhYiIjRaDSVsIlEwnEcwzDOnj178eLFcDicnp5ORAaiq+m3w9Il+H6m9a5QOwbc1225ItPSmgBv8fbpszg8e1F5llX09lvPzp59zyuvnK5b9PKUyvphe9NXZsytWzBr127S2q/wjY2Nly5d2r59+3PPPReJRCKRyKiZP3HiRFtbGyJ6npeXl3fq1KnMzEx/lDHW1dVVXl6OiKFQqK+v7/Lly8uXLy8uLraFiHL+VlK+K9RtBs6L8gwGuwfw6JBclm5yvPU6ggg4w3mWnoRQOHHi0m8vn1xSohGGTZWelrZ4ydJp5RU+Lz+VtNbbtm1LJBJ79+5tamqyLMswjJHyIRwO5+fn+2mSm5t7vUwwTdNxnN7eXkR84oknNmzY4HkeIgLCq8PymoZVGWamyb+GGE9jHUK956h42ACgW70iQAOc+u7DidLS+Kbn//nsDlGY9sHPnn/7+HG39dWrazdfIwEAhMzHgYhCiF27dg0ODra0tOTl5aU2S845AMydO/eFF15IJpP+qWVZvsTgnGutp02bdvTo0f7+/rq6us7OzpycnIyMjGHbDpvmRU+fsOUEjgD0yoDLAfI5CoLWYVkdMf5fDuNUlq7rSulpAEmoAKSUnutqIo9A6hukEmPspZdeSiQSJ0+e9D945Iq4YcqkYIVCoYKCgsbGxqVLl27ZsmXhwoXlFRXME23DqkdRlOEvBjyPPACIMMhmeMKWvZ4uMhnd+tSA+oOthWlGxsXeObt35yz7Vnz1k+HHfhxNo8odP596xx2wYAFHMAzD/2bGmJQyHA7v27dv1qxZFy5cSLEwDOP06dMNDQ0pbW7b9gMPPFBbW0tEhmH4WttxnMWLF8+fP/+1117btOn5w4cPKcLf2ZIj3G6w3BBqAAQggG5PX5D6DVsuy7Y0gDFOfT3m7RMAEZSmpo/643nZGd3dTz7zzD1339WRX/rrnoH5BUbjM+u+/o1v3r9ggW3bUsr+/v6UZPQ8Lz093d8IXNcFgKGhISllR0dHR0fHyKcUFRXV1tamIiAiESHiU089dfz48SNHDi9ZtHDSQw+3JQYnWsaegrQvmAwINABjuOeaWHXZ+dWgtyTDBICrikLjrBZjFVS+xP79bRkWqqyq+N/PnZs8aVIVet8pjuaFjL92/S0WjSqlqqurm5qaSkpK/Kn2c4SIGhoarly5UlZWppSqq6vLysoaKbER0XGcmpoapVQ8Hm9qapoyZYpSyjAM13UrKyv379/f3d1thELc9TZOSJtq8UIDHU2fvJiiRTEDIA0AbE3FBv40NxRDCCH4S+bmN10mAhFIAMuyXM/jRBxREIUsS2stpUy1TP7kf9atjb/pSkUgolAolLoCOAKB0IQj+yAA49NGC0cc3/ymK/XITxS31oyxkaf+TuE30b5qHqUax9WGj4rg384YQ8b+Z+v9ebThwR+qAEQAIgARgAhABBaACEAEIAIQAYgARAAiABGACEDcNPs3ezJh5lHOieMAAAAASUVORK5CYII=' style='height:44px;width:auto;display:block;margin-bottom:5px;' alt='NERAI'/>
+      <div style='font-size:0.55rem;color:#5a6b82;letter-spacing:0.25em;
+           font-family:monospace;margin-top:4px;'>
         INTELLIGENCE HUB
       </div>
     </div>""", unsafe_allow_html=True)
