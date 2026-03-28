@@ -2098,74 +2098,197 @@ def render_predictions():
 
         fig_fc = go.Figure()
 
-        # Historical line
+        # ── Compute scale factor ──────────────────────────────
+        raw_hist_max = None
+        if sel_pred_topic in df.index.get_level_values('topic') and \
+           sel_pred_country in df.index.get_level_values('country'):
+            try:
+                raw_hist_max = float(df.xs(sel_pred_topic, level='topic')
+                                       .loc[sel_pred_country].max())
+            except Exception:
+                raw_hist_max = None
+        scale = (100 / raw_hist_max) if (raw_hist_max and raw_hist_max > 0) else 1.0
+
+        # ── Layer 1: Daily volatility (background dots) ───────
+        if sel_pred_topic in df.index.get_level_values('topic') and \
+           sel_pred_country in df.index.get_level_values('country'):
+            try:
+                raw_all = df.xs(sel_pred_topic, level='topic').loc[sel_pred_country].dropna()
+                raw_tail = raw_all.tail(pred_hist_months * 30)  # approx daily lookback
+                daily_norm = raw_tail * scale
+                fig_fc.add_trace(go.Scatter(
+                    x=daily_norm.index, y=daily_norm.values,
+                    name='Daily readings',
+                    mode='markers',
+                    marker=dict(size=3, color='rgba(0,180,216,0.22)', symbol='circle'),
+                    hovertemplate='%{x|%d %b %Y}: %{y:.2f}<extra>Daily</extra>',
+                    showlegend=True,
+                ))
+            except Exception:
+                pass
+
+        # ── Layer 2: Historical monthly line (weekly resample for volatility) ──
         if hist_series is not None and len(hist_series) > 0:
-            fig_fc.add_trace(go.Scatter(
-                x=hist_series.index, y=hist_series.values,
-                name='Historical (monthly avg)',
-                mode='lines',
-                line=dict(color='#00b4d8', width=2),
-                hovertemplate='%{x|%b %Y}: %{y:.1f}<extra>Historical</extra>'
-            ))
+            try:
+                raw2 = df.xs(sel_pred_topic, level='topic').loc[sel_pred_country].dropna()
+                raw_weekly = (raw2 * scale).resample('W').mean().tail(pred_hist_months * 5)
+                fig_fc.add_trace(go.Scatter(
+                    x=raw_weekly.index, y=raw_weekly.values,
+                    name='Historical (weekly)',
+                    mode='lines',
+                    line=dict(color='#00b4d8', width=2.0),
+                    hovertemplate='%{x|%d %b %Y}: %{y:.1f}<extra>Historical</extra>',
+                ))
+            except Exception:
+                fig_fc.add_trace(go.Scatter(
+                    x=hist_series.index, y=hist_series.values,
+                    name='Historical (monthly)',
+                    mode='lines',
+                    line=dict(color='#00b4d8', width=2.0),
+                    hovertemplate='%{x|%b %Y}: %{y:.1f}<extra>Historical</extra>',
+                ))
 
         if len(fc) > 0:
-            # Normalise forecast to same scale
-            if hist_series is not None and hist_series.max() > 0:
-                raw_hist_max = float(df.xs(sel_pred_topic, level='topic')
-                                       .loc[sel_pred_country].max()) \
-                               if (sel_pred_topic in df.index.get_level_values('topic') and
-                                   sel_pred_country in df.index.get_level_values('country')) \
-                               else 1.0
-                scale = 100 / raw_hist_max if raw_hist_max > 0 else 1.0
-            else:
-                scale = 1.0
+            yhat = fc['yhat']       * scale
+            y_lo = fc['yhat_lower'] * scale
+            y_hi = fc['yhat_upper'] * scale
 
-            yhat   = fc['yhat']       * scale
-            y_lo   = fc['yhat_lower'] * scale
-            y_hi   = fc['yhat_upper'] * scale
-
-            # Confidence band
+            # ── Layer 3: Outer confidence band (90%) ─────────
             fig_fc.add_trace(go.Scatter(
                 x=pd.concat([fc['ds'], fc['ds'].iloc[::-1]]),
                 y=pd.concat([y_hi, y_lo.iloc[::-1]]),
                 fill='toself',
-                fillcolor='rgba(123,47,255,0.10)',
+                fillcolor='rgba(255,140,50,0.08)',
                 line=dict(color='rgba(0,0,0,0)'),
-                name='90% Confidence',
+                name='90% Confidence band',
                 hoverinfo='skip',
                 showlegend=True,
             ))
-            # Forecast line
+
+            # ── Layer 4: Inner ±1σ band (tighter, more visible) ──
+            mid_spread = (y_hi - y_lo) * 0.35
+            fig_fc.add_trace(go.Scatter(
+                x=pd.concat([fc['ds'], fc['ds'].iloc[::-1]]),
+                y=pd.concat([yhat + mid_spread, (yhat - mid_spread).iloc[::-1]]),
+                fill='toself',
+                fillcolor='rgba(255,140,50,0.15)',
+                line=dict(color='rgba(0,0,0,0)'),
+                name='Core range (±1σ)',
+                hoverinfo='skip',
+                showlegend=True,
+            ))
+
+            # ── Layer 5: Forecast line — ORANGE, solid, prominent ──
+            trend_val = float(yhat.iloc[-1]) - float(yhat.iloc[0])
+            fc_color  = '#e05a2b' if trend_val > 1 else ('#00b894' if trend_val < -1 else '#f0a500')
             fig_fc.add_trace(go.Scatter(
                 x=fc['ds'], y=yhat,
                 name='12-Month Forecast',
                 mode='lines+markers',
-                line=dict(color='#0077a8', width=2.5, dash='dot'),
-                marker=dict(size=5, color='#0077a8'),
-                hovertemplate='%{x|%b %Y}: %{y:.1f}<extra>Forecast</extra>'
+                line=dict(color=fc_color, width=2.5),
+                marker=dict(
+                    size=7, color='white',
+                    line=dict(color=fc_color, width=2),
+                    symbol='circle',
+                ),
+                customdata=np.column_stack([y_lo, y_hi]),
+                hovertemplate=(
+                    '<b>%{x|%b %Y}</b><br>'
+                    'Forecast: <b>%{y:.1f}</b><br>'
+                    'Range: %{customdata[0]:.1f} – %{customdata[1]:.1f}'
+                    '<extra>Forecast</extra>'
+                ),
             ))
 
-            # Today marker
+            # ── TODAY divider ─────────────────────────────────
             today = pd.Timestamp.now().normalize()
-            fig_fc.add_vline(x=today, line_width=1,
-                             line_dash='dash', line_color='rgba(0,200,255,0.3)')
+            fig_fc.add_vline(
+                x=today, line_width=1.5,
+                line_dash='solid', line_color='rgba(0,180,216,0.5)'
+            )
             fig_fc.add_annotation(
-                x=today, y=1, yref='paper',
-                text='TODAY', showarrow=False,
-                font=dict(size=9, color='rgba(0,200,255,0.45)'),
-                xanchor='left', yanchor='bottom'
+                x=today, y=0.97, yref='paper',
+                text='◀ TODAY ▶', showarrow=False,
+                font=dict(size=9, color='#00b4d8', family='monospace'),
+                xanchor='center', yanchor='top',
+                bgcolor='rgba(244,247,251,0.85)',
+                bordercolor='rgba(0,180,216,0.4)',
+                borderwidth=1, borderpad=3,
+            )
+
+            # ── Trend annotation (top-right of forecast area) ─
+            trend_pct = ((float(yhat.iloc[-1]) - float(yhat.iloc[0]))
+                         / (abs(float(yhat.iloc[0])) + 1e-9) * 100)
+            trend_icon = '▲' if trend_pct > 3 else ('▼' if trend_pct < -3 else '→')
+            trend_label = (f'{trend_icon} +{trend_pct:.1f}% — Rising Risk' if trend_pct > 3
+                           else f'{trend_icon} {trend_pct:.1f}% — Declining Risk' if trend_pct < -3
+                           else f'{trend_icon} Stable ({trend_pct:+.1f}%)')
+            ann_color = ('#e05a2b' if trend_pct > 3 else
+                         '#00b894' if trend_pct < -3 else '#f0a500')
+            fig_fc.add_annotation(
+                x=fc['ds'].iloc[-1], y=float(yhat.max()),
+                text=f'<b>{trend_label}</b>',
+                showarrow=False,
+                font=dict(size=10, color=ann_color),
+                xanchor='right', yanchor='bottom',
+                bgcolor='rgba(244,247,251,0.9)',
+                bordercolor=ann_color, borderwidth=1, borderpad=4,
             )
 
         t_fc = {**BASE_THEME}
-        t_fc['yaxis'] = {**t_fc.get('yaxis', {}),
-                         'title': 'Risk Score (0–100)', 'title_font': dict(size=10)}
+        t_fc['yaxis'] = {
+            **t_fc.get('yaxis', {}),
+            'title': 'Risk Score (0–100)',
+            'title_font': dict(size=10, color='#5a6b82'),
+            'zeroline': False,
+        }
+        t_fc['xaxis'] = {
+            **t_fc.get('xaxis', {}),
+            'showgrid': True,
+            'dtick': 'M3',
+            'tickformat': '%b\n%Y',
+        }
         fig_fc.update_layout(
             **t_fc, height=500,
-            legend=dict(bgcolor='rgba(0,0,0,0)', bordercolor='rgba(0,100,180,0.2)',
-                        borderwidth=1, font=dict(size=10)),
-            hovermode='x unified'
+            legend=dict(
+                bgcolor='rgba(255,255,255,0.92)',
+                bordercolor='rgba(0,100,180,0.15)',
+                borderwidth=1,
+                font=dict(size=10, color='#0d1f3c'),
+                orientation='h',
+                yanchor='bottom', y=1.01,
+                xanchor='left', x=0,
+                itemsizing='constant',
+            ),
+            hovermode='x unified',
         )
         st.plotly_chart(fig_fc, use_container_width=True, config={'displayModeBar': False})
+
+        # ── KPI strip below chart ─────────────────────────────
+        if len(fc) > 0:
+            last_hist = float(hist_series.iloc[-1]) if (hist_series is not None and len(hist_series) > 0) else None
+            avg_fc_val = float(yhat.mean())
+            peak_fc    = float(yhat.max())
+            peak_month = fc['ds'].iloc[yhat.values.argmax()].strftime('%b %Y')
+            trend_dir  = ('🔴 Rising' if trend_pct > 5 else
+                          '🟢 Declining' if trend_pct < -5 else '🟡 Stable')
+            kpi_cols = st.columns(4)
+            kpi_data = [
+                ('Current Level', f'{last_hist:.1f}' if last_hist is not None else 'N/A', '#0d1f3c'),
+                ('12M Avg Forecast', f'{avg_fc_val:.1f}', '#0077a8'),
+                ('Peak Forecast', f'{peak_fc:.1f} ({peak_month})', '#e05a2b' if trend_pct > 3 else '#0d1f3c'),
+                ('Trend Direction', trend_dir, '#0d1f3c'),
+            ]
+            for col, (label, val, col_color) in zip(kpi_cols, kpi_data):
+                col.markdown(
+                    f'<div style="background:#f4f7fb;border-radius:8px;padding:10px 14px;'
+                    f'border-left:3px solid {col_color};">'
+                    f'<div style="font-size:0.72rem;color:#5a6b82;font-weight:600;'
+                    f'letter-spacing:0.05em;text-transform:uppercase;">{label}</div>'
+                    f'<div style="font-size:1.1rem;font-weight:700;color:{col_color};'
+                    f'margin-top:4px;">{val}</div></div>',
+                    unsafe_allow_html=True
+                )
 
     with col_right:
         st.markdown('<div class="sec-hdr">Trend Summary — All Topics</div>',
