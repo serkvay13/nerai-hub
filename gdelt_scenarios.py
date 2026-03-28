@@ -551,19 +551,29 @@ def parse_custom_shock(shock_str):
     """
     parts = shock_str.split(',')
     shock = {}
-    for part in parts:
-        key, val = part.split('=')
-        key = key.strip()
-        val = val.strip()
 
-        if key == 'topic':
-            shock['topic'] = val
-        elif key == 'country':
-            shock['country'] = val
-        elif key == 'magnitude':
-            shock['magnitude'] = float(val)
-        elif key == 'duration' or key == 'duration_months':
-            shock['duration_months'] = int(val)
+    # Support both positional format (topic,country,magnitude,duration)
+    # and key=value format (topic=x,country=y,magnitude=z,duration=n)
+    if '=' in shock_str:
+        for part in parts:
+            key, val = part.split('=')
+            key = key.strip()
+            val = val.strip()
+            if key == 'topic':
+                shock['topic'] = val
+            elif key == 'country':
+                shock['country'] = val
+            elif key == 'magnitude':
+                shock['magnitude'] = float(val)
+            elif key in ('duration', 'duration_months'):
+                shock['duration_months'] = int(val)
+    else:
+        # Positional: topic, country, magnitude, duration
+        if len(parts) >= 4:
+            shock['topic']           = parts[0].strip()
+            shock['country']         = parts[1].strip()
+            shock['magnitude']       = float(parts[2].strip())
+            shock['duration_months'] = int(parts[3].strip())
 
     # Validate
     required = {'topic', 'country', 'magnitude', 'duration_months'}
