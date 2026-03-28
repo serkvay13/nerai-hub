@@ -2552,6 +2552,261 @@ def _parse_question(question):
 
 def _answer_question(question, df_raw, trend_df, pred_df, insights_df):
     """
+    LLM-powered geopolitical analyst using Claude claude-sonnet-4-6.
+    Gathers full data context (indices, predictions, trends, news) and sends to Claude.
+    Falls back to template-based response if no API key configured.
+    """
+    import datetime as _dt
+
+    # ── API key check ────────────────────────────────────────────
+    api_key = None
+    try:
+        api_key = st.secrets.get("ANTHROPIC_API_KEY")
+    except Exception:
+        pass
+
+    if not api_key:
+        return _answer_question_template(question, df_raw, trend_df, pred_df, insights_df)
+
+    # ── Parse question ───────────────────────────────────────────
+    countries, topics = _parse_question(question)
+
+    # Fallback: use top-risk countries if none detected
+    if not countries:
+        if insights_df is not None and len(insights_df):
+            countries = insights_df['country'].head(5).tolist()
+        elif trend_df is not None:
+            countries = trend_df.sort_values('trend_pct', ascending=False)['country'].unique()[:5].tolist()
+
+    # Fallback: use core security topics if none detected
+    if not topics:
+        topics = [
+            'political_instability', 'military_escalation', 'international_crisis',
+            'military_crisis', 'coup', 'terrorism', 'economic_crisis', 'sanctions',
+            'protests', 'bilateral_deterioration'
+        ]
+
+    today_str = _dt.date.today().strftime('%B %d, %Y')
+    date_cols  = sorted([c for c in df_raw.columns if hasattr(c, 'strftime')])
+    recent_cols = date_cols[-7:]  if len(date_cols) >= 7  else date_cols
+    prev_cols   = date_cols[-14:-7] if len(date_cols) >= 14 else date_cols[:max(1, len(date_cols)-7)]
+    last_date   = recent_cols[-1].strftime('%B %d, %Y') if recent_cols else today_str
+
+    # ── Build index data summary ─────────────────────────────────
+    index_lines = []
+    for country in countries[:6]:
+        cname = COUNTRY_NAMES.get(country, country)
+        try:
+            c_df = df_raw.xs(country, level='country')
+            country_items = []
+            for topic in topics:
+                if topic not in c_df.index:
+                    continue
+                row = c_df.loc[topic]
+                cur_vals = [float(row[d]) for d in recent_cols if d in row.index and not pd.isna(row[d])]
+                prv_vals = [float(row[d]) for d in prev_cols  if d in row.index and not pd.isna(row[d])]
+                if not cur_vals or not prv_vals:
+                    continue
+                cur_avg = sum(cur_vals) / len(cur_vals)
+                prv_avg = sum(prv_vals) / len(prv_vals)
+                if prv_avg < 0.001 or cur_avg < 0.001:
+                    continue
+                pct = (cur_avg - prv_avg) / prv_avg * 100
+                if abs(pct) < 1:
+                    continue
+                lbl = TOPIC_LABELS.get(topic, topic.replace('_', ' ').title())
+                sign = "+" if pct > 0 else ""
+                country_items.append((abs(pct), f"{lbl}: {sign}{pct:.1f}% (level={cur_avg:.2f})"))
+            country_items.sort(key=lambda x: -x[0])
+            for _, line in country_items[:8]:
+                index_lines.append(f"  {cname}: {line}")
+        except Exception:
+            pass
+
+    # ── Build forecast summary ───────────────────────────────────
+    pred_lines = []
+    if pred_df is not None:
+        for country in countries[:6]:
+            cname = COUNTRY_NAMES.get(country, country)
+            c_pred = pred_df[pred_df['country'] == country]
+            country_preds = []
+            for topic in topics:
+                t_pred = c_pred[c_pred['topic'] == topic].sort_values('ds')
+                if len(t_pred) < 2:
+                    continue
+                base_val = float(t_pred.iloc[0]['yhat'])
+                if base_val < 0.001:
+                    continue
+                # 3-month
+                idx_3m  = min(2, len(t_pred)-1)
+                val_3m  = float(t_pred.iloc[idx_3m]['yhat'])
+                val_12m = float(t_pred.iloc[-1]['yhat'])
+                pct_3m  = (val_3m  - base_val) / base_val * 100
+                pct_12m = (val_12m - base_val) / base_val * 100
+                if abs(pct_12m) < 2:
+                    continue
+                ds_end = t_pred.iloc[-1]['ds']
+                ds_str = ds_end.strftime('%b %Y') if hasattr(ds_end, 'strftime') else str(ds_end)
+                lbl = TOPIC_LABELS.get(topic, topic.replace('_', ' ').title())
+                sign3 = "+" if pct_3m > 0 else ""
+                sign12 = "+" if pct_12m > 0 else ""
+                country_preds.append((abs(pct_12m),
+                    f"{lbl}: {sign12}{pct_12m:.1f}% by {ds_str} (3-month: {sign3}{pct_3m:.1f}%)"))
+            country_preds.sort(key=lambda x: -x[0])
+            for _, line in country_preds[:5]:
+                pred_lines.append(f"  {cname}: {line}")
+
+    # ── Global top movements ─────────────────────────────────────
+    top_rising  = []
+    top_falling = []
+    if trend_df is not None:
+        for _, r in trend_df.nlargest(10, 'trend_pct').iterrows():
+            lbl = TOPIC_LABELS.get(r['topic'], str(r['topic']).replace('_', ' ').title())
+            cnt = COUNTRY_NAMES.get(r['country'], r['country'])
+            top_rising.append(f"  {cnt} / {lbl}: +{r['trend_pct']:.1f}%")
+        for _, r in trend_df.nsmallest(10, 'trend_pct').iterrows():
+            lbl = TOPIC_LABELS.get(r['topic'], str(r['topic']).replace('_', ' ').title())
+            cnt = COUNTRY_NAMES.get(r['country'], r['country'])
+            top_falling.append(f"  {cnt} / {lbl}: {r['trend_pct']:.1f}%")
+
+    # ── Fetch relevant GDELT news ────────────────────────────────
+    news_lines = []
+    try:
+        articles = fetch_gdelt_news(question[:120], max_records=10)
+        for art in articles[:10]:
+            title  = art.get('title', '').strip()
+            source = art.get('domain', '')
+            date   = art.get('seendate', '')[:8]
+            if date:
+                try:
+                    date = pd.Timestamp(date).strftime('%d %b %Y')
+                except Exception:
+                    pass
+            if title:
+                news_lines.append(f"  [{source}, {date}] {title}")
+    except Exception:
+        pass
+
+    # ── Assemble full context ────────────────────────────────────
+    context_parts = [
+        f"ANALYSIS DATE: {today_str}",
+        f"INDEX DATA WINDOW: 7-day through {last_date}",
+        f"",
+        f"USER QUESTION: {question}",
+        f"",
+        f"DETECTED ENTITIES:",
+        f"  Countries: {', '.join([COUNTRY_NAMES.get(c, c) for c in countries]) or 'Not specified — using top-risk countries'}",
+        f"  Topics: {', '.join([TOPIC_LABELS.get(t, t) for t in topics[:10]])}",
+        f"",
+        f"=== RISK INDEX MOVEMENTS (7-day window vs prior 7 days) ===",
+    ]
+    context_parts += (index_lines if index_lines else ["  No significant movements detected"])
+    context_parts += [
+        f"",
+        f"=== 12-MONTH MODEL FORECASTS (Prophet) ===",
+    ]
+    context_parts += (pred_lines if pred_lines else ["  No forecast data available"])
+    context_parts += [
+        f"",
+        f"=== GLOBAL RISK MOVERS (all countries, all topics) ===",
+        f"Top Rising:",
+    ]
+    context_parts += (top_rising  if top_rising  else ["  None"])
+    context_parts += ["Top Falling:"]
+    context_parts += (top_falling if top_falling else ["  None"])
+    context_parts += [
+        f"",
+        f"=== RECENT GDELT NEWS HEADLINES (relevant to query) ===",
+    ]
+    context_parts += (news_lines if news_lines else ["  No headlines retrieved"])
+
+    context = "\n".join(context_parts)
+
+    # ── System prompt ────────────────────────────────────────────
+    system_prompt = (
+        "You are a senior geopolitical intelligence analyst at NERAI Intelligence Hub — "
+        "a real-time risk platform powered by the GDELT Project event database. "
+        "Your expertise spans international relations, conflict dynamics, political economy, "
+        "and regional security across all global theatres.\n\n"
+        "When the user asks a question, you receive structured data: "
+        "current risk index levels and 7-day changes, 12-month model forecasts, "
+        "global risk movers, and recent GDELT news headlines. "
+        "Your task is to synthesise ALL of this into a single, flowing analytical response.\n\n"
+        "STRICT RULES:\n"
+        "1. Write 4-6 paragraphs of prose. NO bullet points. NO tables. NO headers.\n"
+        "2. Every claim must be grounded in the specific numbers from the data.\n"
+        "3. Establish cause-effect relationships: connect index movements to news events.\n"
+        "4. Reference news headlines by name when they explain index changes.\n"
+        "5. Compare country trajectories when multiple countries are present.\n"
+        "6. The final paragraph must be a forward-looking strategic assessment.\n"
+        "7. Write at the analytical level of Eurasia Group, Oxford Analytica, or Control Risks.\n"
+        "8. Tone: authoritative, measured, precise. Never vague. Never alarmist.\n"
+        "9. Use exact figures: '…military escalation indices rose 18.4% week-on-week…'\n"
+        "10. Length: 350-600 words total."
+    )
+
+    # ── Call Claude ──────────────────────────────────────────────
+    try:
+        import anthropic as _ant
+        client = _ant.Anthropic(api_key=api_key)
+        response = client.messages.create(
+            model="claude-sonnet-4-6",
+            max_tokens=1500,
+            system=system_prompt,
+            messages=[{"role": "user", "content": context}]
+        )
+        analysis_text = response.content[0].text.strip()
+    except ImportError:
+        return _answer_question_template(question, df_raw, trend_df, pred_df, insights_df)
+    except Exception as e:
+        err = str(e)[:300]
+        return (f"<div style='color:#e05060;font-size:0.78rem;padding:12px;"
+                f"background:#fff0f0;border:1px solid #f0c0c0;border-radius:8px;'>"
+                f"⚠ Analysis error: {err}</div>")
+
+    # ── Format output ─────────────────────────────────────────────
+    paragraphs = [p.strip() for p in analysis_text.split('\n\n') if p.strip()]
+    # Also split on single newlines that start new thoughts
+    all_paras = []
+    for p in paragraphs:
+        sub = [s.strip() for s in p.split('\n') if s.strip()]
+        if len(sub) > 1:
+            all_paras.extend(sub)
+        else:
+            all_paras.append(p)
+
+    html_paras = ''.join([
+        f"<p style='color:#0d1f3c;font-size:0.83rem;line-height:1.9;margin:0 0 16px;'>{p}</p>"
+        for p in all_paras if p
+    ])
+
+    topic_labels_used = ", ".join([TOPIC_LABELS.get(t, t.replace('_',' ').title()) for t in topics[:6]])
+    country_names_used = ", ".join([COUNTRY_NAMES.get(c, c) for c in countries[:4]])
+
+    return f"""<div style='font-family:"Inter",system-ui,sans-serif;'>
+  <div style='display:flex;align-items:center;gap:10px;margin-bottom:14px;
+       padding-bottom:10px;border-bottom:1px solid rgba(0,119,168,0.15);'>
+    <div style='font-size:0.6rem;color:#0077a8;font-family:monospace;letter-spacing:0.1em;flex:1;'>
+      🧠 NERAI ANALYST · CLAUDE claude-sonnet-4-6 · {today_str.upper()}
+    </div>
+    <div style='font-size:0.55rem;color:#5a6b82;font-family:monospace;'>
+      {country_names_used}
+    </div>
+  </div>
+  <div style='background:#ffffff;border:1px solid rgba(0,119,168,0.12);
+       border-radius:10px;padding:22px 24px;
+       box-shadow:0 2px 12px rgba(13,31,60,0.05);'>
+    {html_paras}
+  </div>
+  <div style='font-size:0.53rem;color:#5a6b82;font-family:monospace;
+       margin-top:8px;letter-spacing:0.08em;'>
+    DATA: GDELT PROJECT · TOPICS: {topic_labels_used} · INDEX WINDOW → {last_date.upper()}
+  </div>
+</div>"""
+
+
+def _answer_question_template(question, df_raw, trend_df, pred_df, insights_df):
+    """
     Build a narrative analytical response for the given question.
     Sections per country:
       1. Recent 7-day index trend (vs prior 7 days)
