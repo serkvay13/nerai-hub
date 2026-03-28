@@ -1074,6 +1074,8 @@ with st.sidebar:
         ('profile',     '🎯  COUNTRY PROFILE'),
         ('news',        '📰  NEWS'),
         ('predictions', '🔮  PREDICTIONS'),
+        ('causality',   '🕸  CAUSAL NETWORK'),
+        ('scenarios',   '⚡  WHAT-IF SCENARIOS'),
         ('insights',    '🔍  INSIGHTS'),
     ]
     for page_key, page_label in nav_pages:
@@ -2956,6 +2958,219 @@ def _render_footer():
 
 
 # ═══════════════════════════════════════════════════════════════
+# CAUSAL NETWORK PAGE
+# ═══════════════════════════════════════════════════════════════
+@st.cache_data(ttl=3600)
+def load_causality():
+    path = './causality_network.csv'
+    if os.path.exists(path):
+        return pd.read_csv(path)
+    return None
+
+@st.cache_data(ttl=3600)
+def load_scenario_results():
+    path = './scenario_results.csv'
+    if os.path.exists(path):
+        return pd.read_csv(path)
+    return None
+
+def render_causality():
+    st.markdown("""
+    <div style='padding:6px 0 10px;'>
+      <div class='hero-title'>Causal Network Analysis</div>
+      <div class='hero-sub'>
+        <span class='live-dot'></span>
+        Granger Causality &nbsp;·&nbsp; Cross-Series Influence Detection
+      </div>
+    </div>""", unsafe_allow_html=True)
+    st.markdown('<div class="h-div"></div>', unsafe_allow_html=True)
+
+    cdf = load_causality()
+
+    if cdf is None or cdf.empty:
+        st.markdown("""
+        <div style='text-align:center;padding:40px 20px;
+             background:rgba(0,12,32,0.6);border:1px solid rgba(0,150,255,0.12);
+             border-radius:12px;margin:20px 0;'>
+          <div style='font-size:3rem;margin-bottom:16px;'>🕸</div>
+          <div style='font-size:1.1rem;font-weight:700;color:#00e5ff;
+               letter-spacing:0.08em;margin-bottom:10px;'>Causal Network Not Yet Computed</div>
+          <div style='font-size:0.8rem;color:rgba(150,190,220,0.7);max-width:480px;margin:0 auto;line-height:1.7;'>
+            Click <b>Run Causal Analysis</b> in the sidebar to compute Granger causality relationships
+            between all topic × country pairs. This reveals which geopolitical signals
+            statistically predict future movements in others.
+          </div>
+        </div>""", unsafe_allow_html=True)
+
+        st.subheader("Preview: What You'll See")
+        demo_edges = pd.DataFrame({
+            'source': ['political_instability_RU','military_posture_IR','protest_activity_TR'],
+            'target': ['political_instability_UA','oil_market_stability_SA','political_instability_GR'],
+            'max_f_stat': [12.4, 8.7, 6.2],
+            'min_p_value': [0.002, 0.011, 0.031],
+            'best_lag': [1, 2, 1]
+        })
+        st.dataframe(demo_edges, use_container_width=True)
+        return
+
+    # Filters
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        min_f = st.slider('Min F-Statistic', 0.0, float(cdf['max_f_stat'].max()), 3.0)
+    with col2:
+        topics = ['All'] + sorted(cdf['source'].str.split('_').str[:-1].str.join('_').unique().tolist())
+        sel_topic = st.selectbox('Filter by Topic', topics)
+    with col3:
+        max_lag = st.selectbox('Max Lag', [1, 2, 3], index=2)
+
+    filtered = cdf[cdf['max_f_stat'] >= min_f]
+    if sel_topic != 'All':
+        filtered = filtered[filtered['source'].str.contains(sel_topic) | filtered['target'].str.contains(sel_topic)]
+    filtered = filtered[filtered['best_lag'] <= max_lag]
+
+    kc1, kc2, kc3 = st.columns(3)
+    with kc1:
+        st.markdown(f"<div class='kpi-card'><div class='kpi-label'>Causal Links</div><div class='kpi-value'>{len(filtered)}</div></div>", unsafe_allow_html=True)
+    with kc2:
+        st.markdown(f"<div class='kpi-card'><div class='kpi-label'>Avg F-Stat</div><div class='kpi-value'>{filtered['max_f_stat'].mean():.1f}</div></div>", unsafe_allow_html=True)
+    with kc3:
+        st.markdown(f"<div class='kpi-card'><div class='kpi-label'>Series Involved</div><div class='kpi-value'>{len(set(filtered['source'].tolist()+filtered['target'].tolist()))}</div></div>", unsafe_allow_html=True)
+
+    st.markdown('<div style="margin:16px 0;"></div>', unsafe_allow_html=True)
+
+    # Top influencers bar chart
+    st.subheader("Top Causal Influencers")
+    influence = filtered.groupby('source')['max_f_stat'].sum().sort_values(ascending=False).head(15)
+    fig = go.Figure(go.Bar(
+        x=influence.values, y=influence.index,
+        orientation='h',
+        marker_color='rgba(0,180,255,0.7)',
+        marker_line_color='rgba(0,220,255,0.9)',
+        marker_line_width=1
+    ))
+    fig.update_layout(
+        height=400, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,8,20,0.6)',
+        xaxis=dict(title='Total F-Statistic', color='rgba(150,200,255,0.7)', gridcolor='rgba(0,100,200,0.1)'),
+        yaxis=dict(color='rgba(150,200,255,0.8)', tickfont=dict(size=10)),
+        margin=dict(l=20, r=20, t=10, b=40)
+    )
+    st.plotly_chart(fig, use_container_width=True)
+
+    st.subheader("Causal Edge List")
+    st.dataframe(
+        filtered.sort_values('max_f_stat', ascending=False)[['source','target','max_f_stat','min_p_value','best_lag']],
+        use_container_width=True
+    )
+
+
+# ═══════════════════════════════════════════════════════════════
+# WHAT-IF SCENARIOS PAGE
+# ═══════════════════════════════════════════════════════════════
+SCENARIO_TEMPLATES = {
+    'iran_nuclear_crisis': {'label': '☢️ Iran Nuclear Crisis', 'icon': '☢️',
+        'desc': 'Simulates escalation in Iran nuclear tensions and regional spillover'},
+    'russia_escalation': {'label': '⚔️ Russia Escalation', 'icon': '⚔️',
+        'desc': 'Models further Russian military escalation in Eastern Europe'},
+    'china_taiwan_tension': {'label': '🌊 China-Taiwan Tension', 'icon': '🌊',
+        'desc': 'Simulates increased military posturing in Taiwan Strait'},
+    'middle_east_oil_crisis': {'label': '🛢️ Middle East Oil Crisis', 'icon': '🛢️',
+        'desc': 'Models oil supply disruption from Middle East instability'},
+    'global_democratic_backsliding': {'label': '🗳️ Democratic Backsliding', 'icon': '🗳️',
+        'desc': 'Simulates coordinated erosion of democratic institutions globally'},
+}
+
+def render_scenarios():
+    st.markdown("""
+    <div style='padding:6px 0 10px;'>
+      <div class='hero-title'>What-If Scenario Engine</div>
+      <div class='hero-sub'>
+        <span class='live-dot'></span>
+        Shock Simulation &nbsp;·&nbsp; ARIMA Re-Forecast &nbsp;·&nbsp; Spillover Propagation
+      </div>
+    </div>""", unsafe_allow_html=True)
+    st.markdown('<div class="h-div"></div>', unsafe_allow_html=True)
+
+    sdf = load_scenario_results()
+
+    st.subheader("Pre-Built Scenarios")
+    row1 = list(SCENARIO_TEMPLATES.items())[:2]
+    row2 = list(SCENARIO_TEMPLATES.items())[2:]
+
+    cols1 = st.columns(2)
+    for i, (key, tmpl) in enumerate(row1):
+        with cols1[i]:
+            has_result = sdf is not None and key in sdf.get('scenario', pd.Series()).values if sdf is not None else False
+            status = '✅ Run' if has_result else '⏳ Not run'
+            st.markdown(f"""
+            <div style='background:rgba(0,8,20,0.7);border:1px solid rgba(0,150,255,0.15);
+                 border-radius:10px;padding:18px;margin-bottom:12px;'>
+              <div style='font-size:1.6rem;margin-bottom:8px;'>{tmpl['icon']}</div>
+              <div style='font-weight:700;color:#00e5ff;margin-bottom:6px;'>{tmpl['label']}</div>
+              <div style='font-size:0.75rem;color:rgba(150,190,220,0.7);margin-bottom:10px;'>{tmpl['desc']}</div>
+              <code style='font-size:0.65rem;color:rgba(0,200,255,0.5);word-break:break-all;'>
+                python gdelt_scenarios.py --scenario {key}</code>
+              <div style='margin-top:8px;font-size:0.7rem;color:{"#3fb950" if has_result else "rgba(150,150,150,0.5)"};'>{status}</div>
+            </div>""", unsafe_allow_html=True)
+
+    cols2 = st.columns(3)
+    for i, (key, tmpl) in enumerate(row2):
+        with cols2[i]:
+            has_result = sdf is not None and key in sdf.get('scenario', pd.Series()).values if sdf is not None else False
+            status = '✅ Run' if has_result else '⏳ Not run'
+            st.markdown(f"""
+            <div style='background:rgba(0,8,20,0.7);border:1px solid rgba(0,150,255,0.15);
+                 border-radius:10px;padding:18px;margin-bottom:12px;'>
+              <div style='font-size:1.6rem;margin-bottom:8px;'>{tmpl['icon']}</div>
+              <div style='font-weight:700;color:#00e5ff;margin-bottom:6px;'>{tmpl['label']}</div>
+              <div style='font-size:0.75rem;color:rgba(150,190,220,0.7);margin-bottom:10px;'>{tmpl['desc']}</div>
+              <code style='font-size:0.65rem;color:rgba(0,200,255,0.5);word-break:break-all;'>
+                python gdelt_scenarios.py --scenario {key}</code>
+              <div style='margin-top:8px;font-size:0.7rem;color:{"#3fb950" if has_result else "rgba(150,150,150,0.5)"};'>{status}</div>
+            </div>""", unsafe_allow_html=True)
+
+    import subprocess, sys as _sys
+    st.markdown('<div class="h-div" style="margin:20px 0;"></div>', unsafe_allow_html=True)
+    st.subheader("Run a Scenario")
+    sel_scenario = st.selectbox('Select Scenario', list(SCENARIO_TEMPLATES.keys()),
+                                format_func=lambda k: SCENARIO_TEMPLATES[k]['label'])
+    if st.button('▶️ Run Selected Scenario', type='primary', use_container_width=False):
+        if not os.path.exists('./gdelt_scenarios.py'):
+            st.error('gdelt_scenarios.py not found in working directory.')
+        else:
+            with st.spinner(f'Running {sel_scenario}…'):
+                r = subprocess.run([_sys.executable, './gdelt_scenarios.py', '--scenario', sel_scenario],
+                                   capture_output=True, text=True, cwd='.')
+            if r.returncode == 0:
+                st.success('✅ Scenario complete!')
+                st.cache_data.clear(); st.rerun()
+            else:
+                st.error(r.stderr[-600:] or 'Failed')
+
+    if sdf is not None and not sdf.empty:
+        st.markdown('<div class="h-div" style="margin:20px 0;"></div>', unsafe_allow_html=True)
+        st.subheader("Scenario Results")
+        scenarios_run = sdf['scenario'].unique() if 'scenario' in sdf.columns else []
+        sel_result = st.selectbox('View Results For', scenarios_run)
+        result_df = sdf[sdf['scenario'] == sel_result] if len(scenarios_run) > 0 else sdf
+        if not result_df.empty:
+            val_col = [c for c in result_df.columns if c not in ('scenario','series_id','topic','country')]
+            if val_col:
+                fig = go.Figure(go.Bar(
+                    x=result_df['series_id'] if 'series_id' in result_df.columns else result_df.index,
+                    y=result_df[val_col[0]],
+                    marker_color='rgba(245,158,11,0.7)'
+                ))
+                fig.update_layout(
+                    height=350, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,8,20,0.6)',
+                    xaxis=dict(tickangle=-45, color='rgba(150,200,255,0.7)'),
+                    yaxis=dict(title='Impact', color='rgba(150,200,255,0.7)'),
+                    margin=dict(l=20, r=20, t=10, b=80)
+                )
+                st.plotly_chart(fig, use_container_width=True)
+            st.dataframe(result_df, use_container_width=True)
+
+
+# ═══════════════════════════════════════════════════════════════
 # ROUTING
 # ═══════════════════════════════════════════════════════════════
 page = st.session_state.get('page', 'home')
@@ -2964,6 +3179,8 @@ elif page == 'indices':     render_indices()
 elif page == 'profile':     render_profile()
 elif page == 'news':        render_news()
 elif page == 'predictions': render_predictions()
+elif page == 'causality':   render_causality()
+elif page == 'scenarios':   render_scenarios()
 elif page == 'insights':    render_insights()
 else:
     st.session_state.page = 'home'
