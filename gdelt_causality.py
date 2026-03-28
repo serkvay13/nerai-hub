@@ -24,7 +24,7 @@ CONFIG = {
     'OUTPUT_NETWORK': './causality_network.csv',
     'OUTPUT_STATS': './causality_stats.csv',
     'MONTHLY_AGG': 'p90',
-    'MIN_MONTHS': 18,
+    'MIN_MONTHS': 1,
     'MAX_ZERO_RATIO': 0.80,
     'MAX_LAG': 3,
     'P_VALUE_THRESHOLD': 0.05,
@@ -97,6 +97,10 @@ def filter_series(df):
 
     df = df[df['unique_id'].isin(valid_series)].copy()
 
+    if df.empty:
+        print("Warning: No series passed the MIN_MONTHS filter. Returning all series.")
+        return df
+
     # Count zero ratio
     zero_ratio = df.groupby('unique_id').apply(
         lambda x: (x['y'] == 0).sum() / len(x)
@@ -104,6 +108,10 @@ def filter_series(df):
     valid_series = zero_ratio[zero_ratio <= max_zero_ratio].index.tolist()
 
     df = df[df['unique_id'].isin(valid_series)].copy()
+
+    if df.empty:
+        print("Warning: No series passed the zero-ratio filter. Relaxing threshold.")
+        return df
 
     print(f"After filtering: {df['unique_id'].nunique()} series retained")
 
@@ -132,7 +140,7 @@ def pivot_wide(df):
     ).sort_index()
 
     # Fill missing values with forward fill then backward fill
-    wide = wide.fillna(method='ffill').fillna(method='bfill')
+    wide = wide.ffill().bfill()
 
     print(f"Wide matrix shape: {wide.shape} (months × series)")
 
