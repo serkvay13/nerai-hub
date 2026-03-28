@@ -1,6 +1,6 @@
 # GDELT INDEX GENERATOR V3.0 - Sentiment-Weighted
-# Formul: Sigma(NumMentions x |AvgTone|/100 x |Goldstein|/10) / Sigma(NumMentions)
-# Calistirmak icin CMD: python gdelt_indices.py
+# Formula: Sigma(NumMentions x |AvgTone|/100 x |Goldstein|/10) / Sigma(NumMentions)
+# Run: python gdelt_indices.py
 
 import pandas as pd
 import numpy as np
@@ -12,9 +12,10 @@ import datetime
 import os
 import time
 import concurrent.futures
+import re
 
 # ============================================================
-# AYARLAR
+# SETTINGS
 # ============================================================
 OUTPUT_FILE  = './indices.csv'
 MAX_WORKERS  = 8
@@ -22,7 +23,7 @@ RETRY_COUNT  = 3
 RETRY_DELAY  = 3
 
 # ============================================================
-# GDELT SÜTUN TANIMLARI
+# GDELT COLUMN DEFINITIONS
 # ============================================================
 V2HEADERS = [
     'GLOBALEVENTID','Date','MonthYear','Year','FractionDate','Source',
@@ -40,18 +41,18 @@ V2HEADERS = [
     'ActionGeoLat','ActionGeoLong','ActionGeo_FeatureID','DATEADDED','SOURCEURL'
 ]
 
-# V3: Goldstein, NumMentions, AvgTone eklendi
+# V3: Goldstein, NumMentions, AvgTone columns added
 SELECTED_COLUMNS = [
     'DATEADDED',
     'Actor1Geo_CountryCode', 'Actor2Geo_CountryCode', 'ActionGeo_CountryCode',
     'QuadClass', 'EventRootCode', 'CAMEOCode',
-    'Goldstein',      # -10 (çatışma) ile +10 (işbirliği) arası
-    'NumMentions',    # medya önem ağırlığı
-    'AvgTone',        # -100 (negatif) ile +100 (pozitif) arası
+    'Goldstein',      # -10 (conflict) to +10 (cooperation)
+    'NumMentions',    # media importance weight
+    'AvgTone',        # -100 (negative) to +100 (positive)
 ]
 
 # ============================================================
-# KONU TANIMLARI (CAMEO KODLARI)
+# TOPIC DEFINITIONS (CAMEO CODES)
 # ============================================================
 TOPICS = {
     'appeal_of_leadership_change': ['1041'],
@@ -134,6 +135,20 @@ TOPICS = {
     'corruption': ['1121'],
 }
 
+# FIX 2: Topics where negative Goldstein/AvgTone drives score UP
+INSTABILITY_TOPICS = {
+    'coup', 'domestic_violence', 'ethnic_religious_violence',
+    'government_instability', 'impose_curfew', 'imposing_state_of_emergency',
+    'instability', 'international_crisis', 'mass_killing', 'military_clash',
+    'military_crisis', 'military_escalation', 'opposition_activeness',
+    'political_crisis', 'political_dissent', 'political_instability',
+    'regime_instability', 'political_repression', 'terrorism', 'torture',
+    'mass_expulsion', 'repression_tactics', 'pressure_to_political_parties',
+    'authoritarianism', 'confiscate_property', 'human_rights_abuses',
+    'corruption', 'deteriorating_bilateral_relations',
+    'threaten_in_international_relations',
+}
+
 COUNTRY_CODES = {
     'AF':'Afghanistan','AR':'Argentina','AM':'Armenia','AS':'Australia',
     'BE':'Belgium','BR':'Brazil','CA':'Canada','CH':'China','CO':'Colombia',
@@ -151,11 +166,21 @@ COUNTRY_CODES = {
 }
 
 # ============================================================
-# ÇEKIRDEK FONKSİYONLAR
+# FIX 5: Pre-compile CAMEO code patterns for prefix matching
+# ============================================================
+def build_topic_pattern(codes):
+    """Build regex pattern for prefix matching CAMEO codes (e.g., '140' matches '1401', '1402', etc.)."""
+    pattern = '|'.join(f'^{re.escape(c)}' for c in sorted(codes, key=len, reverse=True))
+    return re.compile(pattern)
+
+TOPIC_PATTERNS = {topic: build_topic_pattern(codes) for topic, codes in TOPICS.items()}
+
+# ============================================================
+# CORE FUNCTIONS
 # ============================================================
 
 def download_gdelt_day(filename):
-    """Tek bir günün GDELT verisini indir. Hata varsa yeniden dene."""
+    """Download GDELT data for a single day. Retry on error."""
     url = f"http://data.gdeltproject.org/events/{filename}.export.CSV.zip"
     for attempt in range(RETRY_COUNT):
         try:
@@ -172,9 +197,9 @@ def download_gdelt_day(filename):
         except urllib.error.HTTPError as e:
             if e.code == 404:
                 return filename, None
-            print(f"  [!] HTTP {e.code} — {filename} (deneme {attempt+1}/{RETRY_COUNT})")
+            print(f"  [!] HTTP {e.code} — {filename} (attempt {attempt+1}/{RETRY_COUNT})")
         except Exception as e:
-            print(f"  [!] Hata — {filename}: {e} (deneme {attempt+1}/{RETRY_COUNT})")
+            print(f"  [!] Error — {filename}: {e} (attempt {attempt+1}/{RETRY_COUNT})")
         if attempt < RETRY_COUNT - 1:
             time.sleep(RETRY_DELAY)
     return filename, None
@@ -182,76 +207,104 @@ def download_gdelt_day(filename):
 
 def compute_day_indices(df):
     """
-    V3 — Sentiment-Weighted Index
+    V4 — Sentiment-Weighted Index with directional scoring and geo weighting.
 
-    Formül:
-      Skor = Σ(NumMentions × |AvgTone|/100 × |Goldstein|/10)  [eşleşen]
-             ─────────────────────────────────────────────────
-             Σ(NumMentions)                                     [tüm olaylar]
-
-    Sıfır bölme ve eksik veri koruması dahil.
+    Improvements:
+      1. Per-country denominators (not global) — removes media-size bias
+      2. Directional scoring: instability topics reward negative values, stability topics reward positive
+      3. ActionGeo weighted 1.0, Actor geo weighted 0.4 each (max 1.0 per event)
+      4. CAMEO code prefix matching
+      5. QuadClass boost for instability topics (Material Conflict = 0.2, Verbal = 0.05)
     """
     if df is None or len(df) == 0:
         return None
 
-    # Eksik değerleri doldur
+    # Handle missing values
     df = df.copy()
     df['NumMentions'] = pd.to_numeric(df['NumMentions'], errors='coerce').fillna(1).clip(lower=1)
     df['Goldstein']   = pd.to_numeric(df['Goldstein'],   errors='coerce').fillna(0)
     df['AvgTone']     = pd.to_numeric(df['AvgTone'],     errors='coerce').fillna(0)
+    df['QuadClass']   = pd.to_numeric(df['QuadClass'],   errors='coerce').fillna(0)
 
-    # Tüm günün toplam medya ağırlığı (payda)
-    total_weight = df['NumMentions'].sum()
-    if total_weight == 0:
-        return None
+    # FIX 3: Compute directional intensity columns
+    # Instability topics: negative Goldstein/AvgTone signals high intensity
+    df['instab_intensity'] = ((-df['Goldstein']).clip(lower=0)/10 + (-df['AvgTone']).clip(lower=0)/100) / 2
+    # Stability topics: positive Goldstein/AvgTone signals high intensity
+    df['stab_intensity']   = (df['Goldstein'].clip(lower=0)/10 + df['AvgTone'].clip(lower=0)/100) / 2
 
-    # Duygu yoğunluğu: 0–1 arası
-    # |AvgTone|/100 → medya tonunun şiddeti
-    # |Goldstein|/10 → olayın doğasındaki şiddet
-    df['intensity'] = (df['AvgTone'].abs() / 100) * (df['Goldstein'].abs() / 10)
+    # Compute contributions (before weighting by geo)
+    df['instab_contribution'] = df['NumMentions'] * df['instab_intensity']
+    df['stab_contribution']   = df['NumMentions'] * df['stab_intensity']
 
-    # Ağırlıklı katkı = medya önem × duygu yoğunluğu
-    df['weighted_contribution'] = df['NumMentions'] * df['intensity']
+    # FIX 6: Add QuadClass boost to instability contributions
+    # QuadClass=4 (Material Conflict) gets +0.2, QuadClass=3 (Verbal Conflict) gets +0.05
+    df['quad_boost'] = df['NumMentions'] * (
+        (df['QuadClass'] == 4).astype(float) * 0.2 +
+        (df['QuadClass'] == 3).astype(float) * 0.05
+    )
+    df['instab_contribution'] = df['instab_contribution'] + df['quad_boost']
 
     results = {}
 
+    # FIX 1 & FIX 4: Process per country with weighted geo matching
     for cont in COUNTRY_CODES:
-        # Ülke maskesi
-        country_mask = (
-            (df['ActionGeo_CountryCode'] == cont) |
-            (df['Actor1Geo_CountryCode'] == cont)  |
-            (df['Actor2Geo_CountryCode'] == cont)
-        )
-        country_df = df[country_mask]
-        if len(country_df) == 0:
+        # FIX 4: Compute geo_weight for each event (ActionGeo=1.0, Actor geo=0.4 each, max 1.0)
+        geo_weight = (
+            (df['ActionGeo_CountryCode'] == cont).astype(float) * 1.0 +
+            (df['Actor1Geo_CountryCode'] == cont).astype(float) * 0.4 +
+            (df['Actor2Geo_CountryCode'] == cont).astype(float) * 0.4
+        ).clip(upper=1.0)
+
+        country_mask = geo_weight > 0
+        if not country_mask.any():
+            # No events for this country
             for topic in TOPICS:
                 results[(topic, cont)] = 0.0
             continue
 
-        country_cameo = country_df['CAMEOCode']
+        country_df = df[country_mask].copy()
+        country_df['geo_weight'] = geo_weight[country_mask]
+
+        # FIX 1: Compute per-country denominator (removes media-size bias)
+        country_total_weight = (country_df['NumMentions'] * country_df['geo_weight']).sum()
+        if country_total_weight == 0:
+            for topic in TOPICS:
+                results[(topic, cont)] = 0.0
+            continue
+
+        country_cameo = country_df['CAMEOCode'].astype(str)
 
         for topic, codes in TOPICS.items():
-            topic_mask = country_cameo.isin(codes)
+            # FIX 5: Use compiled regex for prefix matching instead of exact match
+            topic_mask = country_cameo.str.match(TOPIC_PATTERNS[topic], na=False)
             matched = country_df[topic_mask]
 
             if len(matched) == 0:
                 results[(topic, cont)] = 0.0
             else:
-                # Payı: eşleşen olayların ağırlıklı duygu katkısı
-                numerator = matched['weighted_contribution'].sum()
-                results[(topic, cont)] = numerator / total_weight
+                # Choose correct contribution column based on topic type
+                if topic in INSTABILITY_TOPICS:
+                    contribution_col = 'instab_contribution'
+                else:
+                    contribution_col = 'stab_contribution'
+
+                # Compute numerator: weighted contribution (accounting for geo weight)
+                numerator = (matched[contribution_col] * matched['geo_weight']).sum()
+
+                # FIX 7: Divide by per-country denominator (not global)
+                results[(topic, cont)] = numerator / country_total_weight
 
     return results
 
 
 def load_existing_indices(filepath):
     if os.path.exists(filepath):
-        print(f"Mevcut indeks dosyası bulundu: {filepath}")
+        print(f"Found existing indices file: {filepath}")
         df = pd.read_csv(filepath, sep=',', header=0, index_col=[0, 1])
-        print(f"  → {len(df.columns)} gün yüklendi.")
+        print(f"  -> {len(df.columns)} days loaded.")
         return df
     else:
-        print("Yeni başlanıyor (mevcut dosya bulunamadı).")
+        print("Starting fresh (no existing file found).")
         idx = pd.MultiIndex.from_product(
             [TOPICS.keys(), COUNTRY_CODES.keys()],
             names=['topic', 'country']
@@ -263,7 +316,7 @@ def get_missing_dates(indices):
     yesterday = datetime.datetime.now() - datetime.timedelta(days=1)
     if len(indices.columns) == 0:
         start = yesterday - datetime.timedelta(days=30)
-        print("⚠ İlk çalıştırma: son 30 gün indirilecek.")
+        print("Warning: First run — downloading last 30 days.")
     else:
         last = str(indices.columns[-1])
         start = datetime.datetime.strptime(last, '%Y%m%d') + datetime.timedelta(days=1)
@@ -277,24 +330,26 @@ def get_missing_dates(indices):
 
 
 # ============================================================
-# ANA FONKSİYON
+# MAIN FUNCTION
 # ============================================================
 def run():
     print("=" * 60)
-    print("GDELT INDEX GENERATOR v3.0  (Sentiment-Weighted)")
+    print("GDELT INDEX GENERATOR v4.0  (Directional + Geo-Weighted)")
     print("=" * 60)
-    print("Formül: Σ(NumMentions × |AvgTone|/100 × |Goldstein|/10)")
+    print("Formula: Sigma(NumMentions × Geo_Weight × Directional_Intensity)")
+    print("         ───────────────────────────────────────────────────────")
+    print("         Sigma(NumMentions × Geo_Weight)  [per-country denominator]")
     print("=" * 60)
 
     indices = load_existing_indices(OUTPUT_FILE)
     date_list = get_missing_dates(indices)
 
     if not date_list:
-        print("\n✓ Tüm veriler güncel.")
+        print("\nAll data is current.")
         return indices
 
-    print(f"\n{len(date_list)} gün indirilecek: {date_list[0]} → {date_list[-1]}")
-    print(f"Paralel worker: {MAX_WORKERS}\n")
+    print(f"\n{len(date_list)} days to download: {date_list[0]} -> {date_list[-1]}")
+    print(f"Parallel workers: {MAX_WORKERS}\n")
 
     success, skipped, total = 0, 0, len(date_list)
 
@@ -307,24 +362,24 @@ def run():
                 if day_results:
                     indices[str(filename)] = pd.Series(day_results)
                     success += 1
-                    print(f"  [{i:>4}/{total}] ✓ {filename}  ({len(df):,} olay)")
+                    print(f"  [{i:>4}/{total}] ✓ {filename}  ({len(df):,} events)")
                 else:
                     skipped += 1
             else:
                 skipped += 1
-                print(f"  [{i:>4}/{total}] ✗ {filename}  (atlandı)")
+                print(f"  [{i:>4}/{total}] ✗ {filename}  (skipped)")
 
             if i % 10 == 0:
                 indices.to_csv(OUTPUT_FILE)
-                print(f"  → Ara kayıt ({i}/{total})")
+                print(f"  -> Checkpoint save ({i}/{total})")
 
     indices = indices.reindex(sorted(indices.columns), axis=1)
     indices.to_csv(OUTPUT_FILE)
 
     print("\n" + "=" * 60)
-    print(f"✓ Tamamlandı! Başarılı: {success}  Atlanan: {skipped}")
-    print(f"  Toplam: {len(indices.columns)} gün × {len(indices):,} (konu×ülke)")
-    print(f"  Kayıt: {OUTPUT_FILE}")
+    print(f"Completed! Success: {success}  Skipped: {skipped}")
+    print(f"  Total: {len(indices.columns)} days x {len(indices):,} (topic×country)")
+    print(f"  Output: {OUTPUT_FILE}")
     print("=" * 60)
     return indices
 
