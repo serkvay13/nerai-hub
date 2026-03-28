@@ -36,17 +36,32 @@ CONFIG = {
 def load_and_aggregate(input_file):
     """
     Load indices.csv and aggregate daily data to monthly using p90.
-    Reuses forecast engine logic.
+    Handles both wide format (dates as columns) and long format (ds column).
     """
     print(f"Loading data from {input_file}...")
     df = pd.read_csv(input_file)
 
-    # Ensure ds is datetime
-    df['ds'] = pd.to_datetime(df['ds'])
-
-    # Create unique_id from topic and country
     if 'topic' not in df.columns or 'country' not in df.columns:
         raise ValueError("Input file must have 'topic' and 'country' columns")
+
+    # Detect wide vs long format
+    # Wide: date columns are numeric strings like '20260217'
+    date_cols = [c for c in df.columns if c not in ('topic', 'country', 'ds', 'value', 'unique_id')
+                 and str(c).isdigit() and len(str(c)) == 8]
+
+    if date_cols:
+        # Wide format → melt to long
+        print(f"Detected wide format with {len(date_cols)} date columns. Converting to long format...")
+        df = df.melt(
+            id_vars=['topic', 'country'],
+            value_vars=date_cols,
+            var_name='ds',
+            value_name='value'
+        )
+
+    # Ensure ds is datetime
+    df['ds'] = pd.to_datetime(df['ds'].astype(str), format='%Y%m%d', errors='coerce')
+    df = df.dropna(subset=['ds'])
 
     df['unique_id'] = df['topic'].astype(str) + '_' + df['country'].astype(str)
 
