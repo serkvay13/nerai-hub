@@ -235,6 +235,17 @@ html,body,[class*="css"]{font-family:'Inter',sans-serif;color:#0d1f3c;}
 .peak-news-item:last-child{border-bottom:none;}
 .peak-news-headline{font-size:0.75rem;color:#0d1f3c;line-height:1.4;}
 .peak-news-src{font-size:0.58rem;color:#0077a8;margin-top:2px;}
+
+/* ── News Topics radio label colors ── */
+div[data-testid="stRadio"] label p {
+    color: #0077a8 !important;
+    font-weight: 600 !important;
+    font-size: 0.74rem !important;
+    letter-spacing: 0.06em !important;
+    text-transform: uppercase !important;
+}
+div[data-testid="stRadio"] label:has(input:checked) p { color: #00d4aa !important; }
+div[data-testid="stRadio"] label:hover p { color: #00b4d8 !important; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -480,8 +491,8 @@ def chart_timeseries_with_peaks(df_n, countries, title, method, show_peaks=True)
     t['yaxis'] = {**t['yaxis'],'title':y_label,'title_font':dict(size=10)}
     fig.update_layout(**t, height=340,
         title=dict(text=title,font=dict(size=12,color='#0077a8'),x=0.01),
-        legend=dict(bgcolor='rgba(0,0,0,0)',bordercolor='rgba(0,100,180,0.2)',
-                    borderwidth=1,font=dict(size=10)),
+        legend=dict(bgcolor='rgba(255,255,255,0.85)',bordercolor='rgba(0,119,168,0.25)',
+                    borderwidth=1,font=dict(size=10,color='#0d1f3c')),
         hovermode='x unified')
     return fig, peak_info
 
@@ -1939,8 +1950,8 @@ def render_profile():
     fig_bi.update_layout(**t_bi,height=290,
         title=dict(text=f'{name_a}  ↔  {name_b} — Bilateral Tension Trend',
                    font=dict(size=12,color='#6a9ab8'),x=0.01),
-        legend=dict(bgcolor='rgba(0,0,0,0)',bordercolor='rgba(0,100,180,0.2)',
-                    borderwidth=1,font=dict(size=10)),hovermode='x unified')
+        legend=dict(bgcolor='rgba(255,255,255,0.85)',bordercolor='rgba(0,119,168,0.25)',
+                    borderwidth=1,font=dict(size=10,color='#0d1f3c')),hovermode='x unified')
     st.plotly_chart(fig_bi, use_container_width=True, config={'displayModeBar':False})
     _render_footer()
 
@@ -2162,19 +2173,21 @@ def render_predictions():
         fc = pred_df[mask].sort_values('ds')
 
         fig_fc = go.Figure()
+        current_val, fc_end_val = None, None
 
-        # Historical line
+        # Historical — teal solid line with markers
         if hist_series is not None and len(hist_series) > 0:
+            current_val = round(float(hist_series.iloc[-1]), 1)
             fig_fc.add_trace(go.Scatter(
                 x=hist_series.index, y=hist_series.values,
-                name='Historical (monthly avg)',
-                mode='lines',
-                line=dict(color='#00b4d8', width=2),
-                hovertemplate='%{x|%b %Y}: %{y:.1f}<extra>Historical</extra>'
+                name='Historical',
+                mode='lines+markers',
+                line=dict(color='#0077a8', width=2.5),
+                marker=dict(size=5, color='#0077a8', line=dict(color='white', width=1)),
+                hovertemplate='<b>%{x|%b %Y}</b><br>Score: %{y:.1f}<extra>Historical</extra>'
             ))
 
         if len(fc) > 0:
-            # Normalise forecast to same scale
             if hist_series is not None and hist_series.max() > 0:
                 raw_hist_max = float(df.xs(sel_pred_topic, level='topic')
                                        .loc[sel_pred_country].max()) \
@@ -2185,52 +2198,73 @@ def render_predictions():
             else:
                 scale = 1.0
 
-            yhat   = fc['yhat']       * scale
-            y_lo   = fc['yhat_lower'] * scale
-            y_hi   = fc['yhat_upper'] * scale
+            yhat = fc['yhat']       * scale
+            y_lo = fc['yhat_lower'] * scale
+            y_hi = fc['yhat_upper'] * scale
+            fc_end_val = round(float(yhat.iloc[-1]), 1)
 
-            # Confidence band
+            # Outer CI (95%)
+            fig_fc.add_trace(go.Scatter(
+                x=pd.concat([fc['ds'], fc['ds'].iloc[::-1]]),
+                y=pd.concat([y_hi * 1.06, (y_lo * 0.94).iloc[::-1]]),
+                fill='toself', fillcolor='rgba(245,158,11,0.07)',
+                line=dict(color='rgba(0,0,0,0)'),
+                name='95% Confidence', hoverinfo='skip',
+            ))
+            # Inner CI (80%)
             fig_fc.add_trace(go.Scatter(
                 x=pd.concat([fc['ds'], fc['ds'].iloc[::-1]]),
                 y=pd.concat([y_hi, y_lo.iloc[::-1]]),
-                fill='toself',
-                fillcolor='rgba(123,47,255,0.10)',
-                line=dict(color='rgba(0,0,0,0)'),
-                name='90% Confidence',
-                hoverinfo='skip',
-                showlegend=True,
+                fill='toself', fillcolor='rgba(245,158,11,0.16)',
+                line=dict(color='rgba(245,158,11,0.3)', width=0.5),
+                name='80% Confidence', hoverinfo='skip',
             ))
-            # Forecast line
+            # Forecast — orange/amber
             fig_fc.add_trace(go.Scatter(
                 x=fc['ds'], y=yhat,
                 name='12-Month Forecast',
                 mode='lines+markers',
-                line=dict(color='#0077a8', width=2.5, dash='dot'),
-                marker=dict(size=5, color='#0077a8'),
-                hovertemplate='%{x|%b %Y}: %{y:.1f}<extra>Forecast</extra>'
+                line=dict(color='#f59e0b', width=3),
+                marker=dict(size=7, color='#f59e0b', line=dict(color='white', width=1.5)),
+                hovertemplate='<b>%{x|%b %Y}</b><br>Forecast: %{y:.1f}<extra>Forecast</extra>'
             ))
-
-            # Today marker
+            # TODAY line
             today = pd.Timestamp.now().normalize()
-            fig_fc.add_vline(x=today, line_width=1,
-                             line_dash='dash', line_color='rgba(0,200,255,0.3)')
+            fig_fc.add_vline(x=today, line_width=1.5,
+                             line_dash='dot', line_color='rgba(0,119,168,0.5)')
             fig_fc.add_annotation(
-                x=today, y=1, yref='paper',
-                text='TODAY', showarrow=False,
-                font=dict(size=9, color='rgba(0,200,255,0.45)'),
-                xanchor='left', yanchor='bottom'
+                x=today, y=0.96, yref='paper', text='TODAY',
+                showarrow=False, font=dict(size=9, color='#0077a8'),
+                xanchor='left', yanchor='top',
+                bgcolor='rgba(255,255,255,0.75)', borderpad=2
             )
 
-        t_fc = {**BASE_THEME}
-        t_fc['yaxis'] = {**t_fc.get('yaxis', {}),
-                         'title': 'Risk Score (0–100)', 'title_font': dict(size=10)}
         fig_fc.update_layout(
-            **t_fc, height=500,
-            legend=dict(bgcolor='rgba(0,0,0,0)', bordercolor='rgba(0,100,180,0.2)',
-                        borderwidth=1, font=dict(size=10)),
-            hovermode='x unified'
+            paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(248,251,255,1)',
+            font=dict(family='Inter,sans-serif', color='#0d1f3c', size=11),
+            height=420, hovermode='x unified',
+            margin=dict(l=50, r=20, t=55, b=40),
+            xaxis=dict(gridcolor='rgba(0,119,168,0.06)', tickfont=dict(size=10, color='#5a6b82'), showgrid=False),
+            yaxis=dict(title='Risk Score (0–100)', title_font=dict(size=10, color='#5a6b82'),
+                       gridcolor='rgba(0,119,168,0.1)', tickfont=dict(size=10, color='#5a6b82'), zeroline=False),
+            legend=dict(
+                bgcolor='rgba(255,255,255,0.92)', bordercolor='rgba(0,119,168,0.2)',
+                borderwidth=1, font=dict(size=10, color='#0d1f3c'),
+                orientation='h', yanchor='bottom', y=1.01, xanchor='left', x=0
+            ),
         )
         st.plotly_chart(fig_fc, use_container_width=True, config={'displayModeBar': False})
+
+        # KPI strip
+        if current_val is not None and fc_end_val is not None:
+            delta = fc_end_val - current_val
+            d_col = '#e05060' if delta > 0 else '#00d4aa'
+            arrow = '▲' if delta > 0 else '▼'
+            k1, k2, k3, k4 = st.columns(4)
+            k1.markdown(f"<div class='kpi-card'><div class='kpi-label'>Current Score</div><div class='kpi-value'>{current_val:.0f}</div></div>", unsafe_allow_html=True)
+            k2.markdown(f"<div class='kpi-card'><div class='kpi-label'>12-Month Forecast</div><div class='kpi-value' style='color:#f59e0b'>{fc_end_val:.0f}</div></div>", unsafe_allow_html=True)
+            k3.markdown(f"<div class='kpi-card'><div class='kpi-label'>Expected Change</div><div class='kpi-value' style='color:{d_col}'>{arrow} {abs(delta):.1f}</div></div>", unsafe_allow_html=True)
+            k4.markdown(f"<div class='kpi-card'><div class='kpi-label'>Trend Direction</div><div class='kpi-value' style='color:{d_col};font-size:1rem;'>{'↑ Rising Risk' if delta > 0 else '↓ Falling Risk'}</div></div>", unsafe_allow_html=True)
 
     with col_right:
         st.markdown('<div class="sec-hdr">Trend Summary — All Topics</div>',
