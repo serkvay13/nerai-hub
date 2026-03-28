@@ -34,11 +34,6 @@ st.markdown("""
 .stApp { background:#f4f7fb; }
 html,body,[class*="css"]{font-family:'Inter',sans-serif;color:#0d1f3c;}
 
-/* RADIO BUTTONS */
-.stRadio label p {color:#0d1f3c !important;font-size:0.82rem !important;font-weight:500 !important;}
-.stRadio label {color:#0d1f3c !important;}
-[data-testid="stRadio"] label span p {color:#0d1f3c !important;}
-
 /* SIDEBAR */
 [data-testid="stSidebar"]{background:#ffffff;border-right:1px solid rgba(0,119,168,0.14);}
 [data-testid="stSidebar"] label{color:#0077a8 !important;font-size:0.7rem !important;
@@ -1046,41 +1041,6 @@ def load_predictions():
 pred_df, trend_df = load_predictions()
 has_predictions   = pred_df is not None and len(pred_df) > 0
 
-@st.cache_data(ttl=3600)
-def load_causality():
-    net_file  = './causality_network.csv'
-    stat_file = './causality_stats.csv'
-    net, stats = None, None
-    if os.path.exists(net_file):
-        try:
-            net = pd.read_csv(net_file)
-            if len(net) == 0:
-                net = None
-        except Exception:
-            net = None
-    if os.path.exists(stat_file):
-        try:
-            stats = pd.read_csv(stat_file)
-            if len(stats) == 0:
-                stats = None
-        except Exception:
-            stats = None
-    return net, stats
-
-@st.cache_data(ttl=600)
-def load_scenario_results():
-    f = './scenario_results.csv'
-    if os.path.exists(f):
-        try:
-            df = pd.read_csv(f)
-            return df if len(df) > 0 else None
-        except Exception:
-            return None
-    return None
-
-causality_net, causality_stats = load_causality()
-has_causality = causality_net is not None and len(causality_net) > 0
-
 if 'page' not in st.session_state:
     st.session_state.page = 'home'
 
@@ -1089,10 +1049,18 @@ if 'page' not in st.session_state:
 # ═══════════════════════════════════════════════════════════════
 with st.sidebar:
     st.markdown("""
-    <div style='padding:10px 0 18px;border-bottom:1px solid rgba(0,119,168,0.14);margin-bottom:16px;'>
-      <img src='data:image/png;base64,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' style='height:44px;width:auto;display:block;margin-bottom:5px;' alt='NERAI'/>
-      <div style='font-size:0.55rem;color:#5a6b82;letter-spacing:0.25em;
-           font-family:monospace;margin-top:4px;'>
+    <div style='padding:10px 0 18px;border-bottom:1px solid rgba(0,150,255,0.15);margin-bottom:16px;'>
+      <div style='font-size:1.35rem;font-weight:900;letter-spacing:0.1em;
+           font-family:"Exo 2",sans-serif;line-height:1.1;'>
+        <span style='color:rgba(0,230,255,0.95);
+             text-shadow:0 0 14px rgba(0,210,255,0.9),0 0 30px rgba(0,160,255,0.45);'>◈</span>
+        <span style='color:#ffffff;
+             text-shadow:0 0 18px rgba(0,210,255,0.35),0 0 35px rgba(0,140,255,0.15);'> NER</span><span style='background:linear-gradient(135deg,#00e5ff,#0099ff,#8b3fff);
+             -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+             background-clip:text;'>AI</span>
+      </div>
+      <div style='font-size:0.58rem;color:rgba(0,210,255,0.55);letter-spacing:0.28em;
+           font-family:"Share Tech Mono",monospace;margin-top:3px;'>
         INTELLIGENCE HUB
       </div>
     </div>""", unsafe_allow_html=True)
@@ -1106,8 +1074,6 @@ with st.sidebar:
         ('profile',     '🎯  COUNTRY PROFILE'),
         ('news',        '📰  NEWS'),
         ('predictions', '🔮  PREDICTIONS'),
-        ('causality',   '🕸  CAUSAL NETWORK'),
-        ('scenarios',   '⚡  WHAT-IF SCENARIOS'),
         ('insights',    '🔍  INSIGHTS'),
     ]
     for page_key, page_label in nav_pages:
@@ -1115,6 +1081,66 @@ with st.sidebar:
         if st.button(page_label, key=f'nav_{page_key}'):
             st.session_state.page = page_key
             st.rerun()
+
+    st.markdown('<div class="h-div" style="margin:14px 0;"></div>', unsafe_allow_html=True)
+
+    # ── Data Pipeline ────────────────────────────────────────
+    st.markdown('<div class="sec-hdr">Data Pipeline</div>', unsafe_allow_html=True)
+
+    import subprocess, sys as _sys
+
+    indices_age = ""
+    if os.path.exists('./indices.csv'):
+        mt = os.path.getmtime('./indices.csv')
+        delta = (datetime.datetime.now() - datetime.datetime.fromtimestamp(mt))
+        h = int(delta.total_seconds() // 3600)
+        indices_age = f"Last updated: {h}h ago" if h < 48 else f"Last updated: {delta.days}d ago"
+
+    st.markdown(f"""
+    <div style='font-size:0.62rem;color:rgba(0,180,255,0.5);font-family:monospace;
+         padding:6px 4px;line-height:1.8;'>
+      {'✅ ' + indices_age if indices_age else '⚠ No data yet'}
+    </div>""", unsafe_allow_html=True)
+
+    if st.button('🔄 Refresh Indices', use_container_width=True,
+                 help='Run gdelt_indices.py to fetch latest GDELT data'):
+        with st.spinner('Fetching GDELT data…'):
+            r = subprocess.run([_sys.executable, './gdelt_indices.py'],
+                               capture_output=True, text=True, cwd='.')
+        if r.returncode == 0:
+            st.success('✅ Indices updated!')
+            st.cache_data.clear(); st.rerun()
+        else:
+            st.error(r.stderr[-600:] or 'Failed')
+
+    if st.button('🕸 Run Causal Analysis', use_container_width=True,
+                 help='Run gdelt_causality.py to compute Granger causality network'):
+        with st.spinner('Computing causality network…'):
+            r = subprocess.run([_sys.executable, './gdelt_causality.py'],
+                               capture_output=True, text=True, cwd='.')
+        if r.returncode == 0:
+            st.success('✅ Causal network ready!')
+            st.cache_data.clear(); st.rerun()
+        else:
+            st.error(r.stderr[-600:] or 'Failed')
+
+    if st.button('⚡ Refresh All Data', use_container_width=True, type='primary',
+                 help='Run full pipeline: indices → causality → forecast'):
+        scripts = ['gdelt_indices.py', 'gdelt_causality.py', 'gdelt_forecast_numpy.py']
+        all_ok = True
+        for script in scripts:
+            if not os.path.exists(f'./{script}'):
+                continue
+            with st.spinner(f'Running {script}…'):
+                r = subprocess.run([_sys.executable, f'./{script}'],
+                                   capture_output=True, text=True, cwd='.')
+            if r.returncode != 0:
+                st.error(f'{script} failed:\n{r.stderr[-400:]}')
+                all_ok = False
+                break
+        if all_ok:
+            st.success('✅ All data refreshed!')
+            st.cache_data.clear(); st.rerun()
 
     st.markdown('<div class="h-div" style="margin:14px 0;"></div>', unsafe_allow_html=True)
 
@@ -1976,7 +2002,7 @@ def render_news():
                 <div class="news-card">
                   <div class="news-title">
                     <a href="{url}" target="_blank"
-                       style="color:#0d1f3c;text-decoration:none;">
+                       style="color:#c8d8e8;text-decoration:none;">
                       {title[:180]}{'...' if len(title)>180 else ''}
                     </a>
                   </div>
@@ -2135,197 +2161,74 @@ def render_predictions():
 
         fig_fc = go.Figure()
 
-        # ── Compute scale factor ──────────────────────────────
-        raw_hist_max = None
-        if sel_pred_topic in df.index.get_level_values('topic') and \
-           sel_pred_country in df.index.get_level_values('country'):
-            try:
-                raw_hist_max = float(df.xs(sel_pred_topic, level='topic')
-                                       .loc[sel_pred_country].max())
-            except Exception:
-                raw_hist_max = None
-        scale = (100 / raw_hist_max) if (raw_hist_max and raw_hist_max > 0) else 1.0
-
-        # ── Layer 1: Daily volatility (background dots) ───────
-        if sel_pred_topic in df.index.get_level_values('topic') and \
-           sel_pred_country in df.index.get_level_values('country'):
-            try:
-                raw_all = df.xs(sel_pred_topic, level='topic').loc[sel_pred_country].dropna()
-                raw_tail = raw_all.tail(pred_hist_months * 30)  # approx daily lookback
-                daily_norm = raw_tail * scale
-                fig_fc.add_trace(go.Scatter(
-                    x=daily_norm.index, y=daily_norm.values,
-                    name='Daily readings',
-                    mode='markers',
-                    marker=dict(size=3, color='rgba(0,180,216,0.22)', symbol='circle'),
-                    hovertemplate='%{x|%d %b %Y}: %{y:.2f}<extra>Daily</extra>',
-                    showlegend=True,
-                ))
-            except Exception:
-                pass
-
-        # ── Layer 2: Historical monthly line (weekly resample for volatility) ──
+        # Historical line
         if hist_series is not None and len(hist_series) > 0:
-            try:
-                raw2 = df.xs(sel_pred_topic, level='topic').loc[sel_pred_country].dropna()
-                raw_weekly = (raw2 * scale).resample('W').mean().tail(pred_hist_months * 5)
-                fig_fc.add_trace(go.Scatter(
-                    x=raw_weekly.index, y=raw_weekly.values,
-                    name='Historical (weekly)',
-                    mode='lines',
-                    line=dict(color='#00b4d8', width=2.0),
-                    hovertemplate='%{x|%d %b %Y}: %{y:.1f}<extra>Historical</extra>',
-                ))
-            except Exception:
-                fig_fc.add_trace(go.Scatter(
-                    x=hist_series.index, y=hist_series.values,
-                    name='Historical (monthly)',
-                    mode='lines',
-                    line=dict(color='#00b4d8', width=2.0),
-                    hovertemplate='%{x|%b %Y}: %{y:.1f}<extra>Historical</extra>',
-                ))
+            fig_fc.add_trace(go.Scatter(
+                x=hist_series.index, y=hist_series.values,
+                name='Historical (monthly avg)',
+                mode='lines',
+                line=dict(color='#00b4d8', width=2),
+                hovertemplate='%{x|%b %Y}: %{y:.1f}<extra>Historical</extra>'
+            ))
 
         if len(fc) > 0:
-            yhat = fc['yhat']       * scale
-            y_lo = fc['yhat_lower'] * scale
-            y_hi = fc['yhat_upper'] * scale
+            # Normalise forecast to same scale
+            if hist_series is not None and hist_series.max() > 0:
+                raw_hist_max = float(df.xs(sel_pred_topic, level='topic')
+                                       .loc[sel_pred_country].max()) \
+                               if (sel_pred_topic in df.index.get_level_values('topic') and
+                                   sel_pred_country in df.index.get_level_values('country')) \
+                               else 1.0
+                scale = 100 / raw_hist_max if raw_hist_max > 0 else 1.0
+            else:
+                scale = 1.0
 
-            # ── Layer 3: Outer confidence band (90%) ─────────
+            yhat   = fc['yhat']       * scale
+            y_lo   = fc['yhat_lower'] * scale
+            y_hi   = fc['yhat_upper'] * scale
+
+            # Confidence band
             fig_fc.add_trace(go.Scatter(
                 x=pd.concat([fc['ds'], fc['ds'].iloc[::-1]]),
                 y=pd.concat([y_hi, y_lo.iloc[::-1]]),
                 fill='toself',
-                fillcolor='rgba(255,140,50,0.08)',
+                fillcolor='rgba(123,47,255,0.10)',
                 line=dict(color='rgba(0,0,0,0)'),
-                name='90% Confidence band',
+                name='90% Confidence',
                 hoverinfo='skip',
                 showlegend=True,
             ))
-
-            # ── Layer 4: Inner ±1σ band (tighter, more visible) ──
-            mid_spread = (y_hi - y_lo) * 0.35
-            fig_fc.add_trace(go.Scatter(
-                x=pd.concat([fc['ds'], fc['ds'].iloc[::-1]]),
-                y=pd.concat([yhat + mid_spread, (yhat - mid_spread).iloc[::-1]]),
-                fill='toself',
-                fillcolor='rgba(255,140,50,0.15)',
-                line=dict(color='rgba(0,0,0,0)'),
-                name='Core range (±1σ)',
-                hoverinfo='skip',
-                showlegend=True,
-            ))
-
-            # ── Layer 5: Forecast line — ORANGE, solid, prominent ──
-            trend_val = float(yhat.iloc[-1]) - float(yhat.iloc[0])
-            fc_color  = '#e05a2b' if trend_val > 1 else ('#00b894' if trend_val < -1 else '#f0a500')
+            # Forecast line
             fig_fc.add_trace(go.Scatter(
                 x=fc['ds'], y=yhat,
                 name='12-Month Forecast',
                 mode='lines+markers',
-                line=dict(color=fc_color, width=2.5),
-                marker=dict(
-                    size=7, color='white',
-                    line=dict(color=fc_color, width=2),
-                    symbol='circle',
-                ),
-                customdata=np.column_stack([y_lo, y_hi]),
-                hovertemplate=(
-                    '<b>%{x|%b %Y}</b><br>'
-                    'Forecast: <b>%{y:.1f}</b><br>'
-                    'Range: %{customdata[0]:.1f} – %{customdata[1]:.1f}'
-                    '<extra>Forecast</extra>'
-                ),
+                line=dict(color='#0077a8', width=2.5, dash='dot'),
+                marker=dict(size=5, color='#0077a8'),
+                hovertemplate='%{x|%b %Y}: %{y:.1f}<extra>Forecast</extra>'
             ))
 
-            # ── TODAY divider ─────────────────────────────────
+            # Today marker
             today = pd.Timestamp.now().normalize()
-            fig_fc.add_vline(
-                x=today, line_width=1.5,
-                line_dash='solid', line_color='rgba(0,180,216,0.5)'
-            )
+            fig_fc.add_vline(x=today, line_width=1,
+                             line_dash='dash', line_color='rgba(0,200,255,0.3)')
             fig_fc.add_annotation(
-                x=today, y=0.97, yref='paper',
-                text='◀ TODAY ▶', showarrow=False,
-                font=dict(size=9, color='#00b4d8', family='monospace'),
-                xanchor='center', yanchor='top',
-                bgcolor='rgba(244,247,251,0.85)',
-                bordercolor='rgba(0,180,216,0.4)',
-                borderwidth=1, borderpad=3,
-            )
-
-            # ── Trend annotation (top-right of forecast area) ─
-            trend_pct = ((float(yhat.iloc[-1]) - float(yhat.iloc[0]))
-                         / (abs(float(yhat.iloc[0])) + 1e-9) * 100)
-            trend_icon = '▲' if trend_pct > 3 else ('▼' if trend_pct < -3 else '→')
-            trend_label = (f'{trend_icon} +{trend_pct:.1f}% — Rising Risk' if trend_pct > 3
-                           else f'{trend_icon} {trend_pct:.1f}% — Declining Risk' if trend_pct < -3
-                           else f'{trend_icon} Stable ({trend_pct:+.1f}%)')
-            ann_color = ('#e05a2b' if trend_pct > 3 else
-                         '#00b894' if trend_pct < -3 else '#f0a500')
-            fig_fc.add_annotation(
-                x=fc['ds'].iloc[-1], y=float(yhat.max()),
-                text=f'<b>{trend_label}</b>',
-                showarrow=False,
-                font=dict(size=10, color=ann_color),
-                xanchor='right', yanchor='bottom',
-                bgcolor='rgba(244,247,251,0.9)',
-                bordercolor=ann_color, borderwidth=1, borderpad=4,
+                x=today, y=1, yref='paper',
+                text='TODAY', showarrow=False,
+                font=dict(size=9, color='rgba(0,200,255,0.45)'),
+                xanchor='left', yanchor='bottom'
             )
 
         t_fc = {**BASE_THEME}
-        t_fc['yaxis'] = {
-            **t_fc.get('yaxis', {}),
-            'title': 'Risk Score (0–100)',
-            'title_font': dict(size=10, color='#5a6b82'),
-            'zeroline': False,
-        }
-        t_fc['xaxis'] = {
-            **t_fc.get('xaxis', {}),
-            'showgrid': True,
-            'dtick': 'M3',
-            'tickformat': '%b\n%Y',
-        }
+        t_fc['yaxis'] = {**t_fc.get('yaxis', {}),
+                         'title': 'Risk Score (0–100)', 'title_font': dict(size=10)}
         fig_fc.update_layout(
             **t_fc, height=500,
-            legend=dict(
-                bgcolor='rgba(255,255,255,0.92)',
-                bordercolor='rgba(0,100,180,0.15)',
-                borderwidth=1,
-                font=dict(size=10, color='#0d1f3c'),
-                orientation='h',
-                yanchor='bottom', y=1.01,
-                xanchor='left', x=0,
-                itemsizing='constant',
-            ),
-            hovermode='x unified',
+            legend=dict(bgcolor='rgba(0,0,0,0)', bordercolor='rgba(0,100,180,0.2)',
+                        borderwidth=1, font=dict(size=10)),
+            hovermode='x unified'
         )
         st.plotly_chart(fig_fc, use_container_width=True, config={'displayModeBar': False})
-
-        # ── KPI strip below chart ─────────────────────────────
-        if len(fc) > 0:
-            last_hist = float(hist_series.iloc[-1]) if (hist_series is not None and len(hist_series) > 0) else None
-            avg_fc_val = float(yhat.mean())
-            peak_fc    = float(yhat.max())
-            peak_month = fc['ds'].iloc[yhat.values.argmax()].strftime('%b %Y')
-            trend_dir  = ('🔴 Rising' if trend_pct > 5 else
-                          '🟢 Declining' if trend_pct < -5 else '🟡 Stable')
-            kpi_cols = st.columns(4)
-            kpi_data = [
-                ('Current Level', f'{last_hist:.1f}' if last_hist is not None else 'N/A', '#0d1f3c'),
-                ('12M Avg Forecast', f'{avg_fc_val:.1f}', '#0077a8'),
-                ('Peak Forecast', f'{peak_fc:.1f} ({peak_month})', '#e05a2b' if trend_pct > 3 else '#0d1f3c'),
-                ('Trend Direction', trend_dir, '#0d1f3c'),
-            ]
-            for col, (label, val, col_color) in zip(kpi_cols, kpi_data):
-                col.markdown(
-                    f'<div style="background:#f4f7fb;border-radius:8px;padding:10px 14px;'
-                    f'border-left:3px solid {col_color};">'
-                    f'<div style="font-size:0.72rem;color:#5a6b82;font-weight:600;'
-                    f'letter-spacing:0.05em;text-transform:uppercase;">{label}</div>'
-                    f'<div style="font-size:1.1rem;font-weight:700;color:{col_color};'
-                    f'margin-top:4px;">{val}</div></div>',
-                    unsafe_allow_html=True
-                )
 
     with col_right:
         st.markdown('<div class="sec-hdr">Trend Summary — All Topics</div>',
@@ -2712,261 +2615,6 @@ def _parse_question(question):
 
 def _answer_question(question, df_raw, trend_df, pred_df, insights_df):
     """
-    LLM-powered geopolitical analyst using Claude claude-sonnet-4-6.
-    Gathers full data context (indices, predictions, trends, news) and sends to Claude.
-    Falls back to template-based response if no API key configured.
-    """
-    import datetime as _dt
-
-    # ── API key check ────────────────────────────────────────────
-    api_key = None
-    try:
-        api_key = st.secrets.get("ANTHROPIC_API_KEY")
-    except Exception:
-        pass
-
-    if not api_key:
-        return _answer_question_template(question, df_raw, trend_df, pred_df, insights_df)
-
-    # ── Parse question ───────────────────────────────────────────
-    countries, topics = _parse_question(question)
-
-    # Fallback: use top-risk countries if none detected
-    if not countries:
-        if insights_df is not None and len(insights_df):
-            countries = insights_df['country'].head(5).tolist()
-        elif trend_df is not None:
-            countries = trend_df.sort_values('trend_pct', ascending=False)['country'].unique()[:5].tolist()
-
-    # Fallback: use core security topics if none detected
-    if not topics:
-        topics = [
-            'political_instability', 'military_escalation', 'international_crisis',
-            'military_crisis', 'coup', 'terrorism', 'economic_crisis', 'sanctions',
-            'protests', 'bilateral_deterioration'
-        ]
-
-    today_str = _dt.date.today().strftime('%B %d, %Y')
-    date_cols  = sorted([c for c in df_raw.columns if hasattr(c, 'strftime')])
-    recent_cols = date_cols[-7:]  if len(date_cols) >= 7  else date_cols
-    prev_cols   = date_cols[-14:-7] if len(date_cols) >= 14 else date_cols[:max(1, len(date_cols)-7)]
-    last_date   = recent_cols[-1].strftime('%B %d, %Y') if recent_cols else today_str
-
-    # ── Build index data summary ─────────────────────────────────
-    index_lines = []
-    for country in countries[:6]:
-        cname = COUNTRY_NAMES.get(country, country)
-        try:
-            c_df = df_raw.xs(country, level='country')
-            country_items = []
-            for topic in topics:
-                if topic not in c_df.index:
-                    continue
-                row = c_df.loc[topic]
-                cur_vals = [float(row[d]) for d in recent_cols if d in row.index and not pd.isna(row[d])]
-                prv_vals = [float(row[d]) for d in prev_cols  if d in row.index and not pd.isna(row[d])]
-                if not cur_vals or not prv_vals:
-                    continue
-                cur_avg = sum(cur_vals) / len(cur_vals)
-                prv_avg = sum(prv_vals) / len(prv_vals)
-                if prv_avg < 0.001 or cur_avg < 0.001:
-                    continue
-                pct = (cur_avg - prv_avg) / prv_avg * 100
-                if abs(pct) < 1:
-                    continue
-                lbl = TOPIC_LABELS.get(topic, topic.replace('_', ' ').title())
-                sign = "+" if pct > 0 else ""
-                country_items.append((abs(pct), f"{lbl}: {sign}{pct:.1f}% (level={cur_avg:.2f})"))
-            country_items.sort(key=lambda x: -x[0])
-            for _, line in country_items[:8]:
-                index_lines.append(f"  {cname}: {line}")
-        except Exception:
-            pass
-
-    # ── Build forecast summary ───────────────────────────────────
-    pred_lines = []
-    if pred_df is not None:
-        for country in countries[:6]:
-            cname = COUNTRY_NAMES.get(country, country)
-            c_pred = pred_df[pred_df['country'] == country]
-            country_preds = []
-            for topic in topics:
-                t_pred = c_pred[c_pred['topic'] == topic].sort_values('ds')
-                if len(t_pred) < 2:
-                    continue
-                base_val = float(t_pred.iloc[0]['yhat'])
-                if base_val < 0.001:
-                    continue
-                # 3-month
-                idx_3m  = min(2, len(t_pred)-1)
-                val_3m  = float(t_pred.iloc[idx_3m]['yhat'])
-                val_12m = float(t_pred.iloc[-1]['yhat'])
-                pct_3m  = (val_3m  - base_val) / base_val * 100
-                pct_12m = (val_12m - base_val) / base_val * 100
-                if abs(pct_12m) < 2:
-                    continue
-                ds_end = t_pred.iloc[-1]['ds']
-                ds_str = ds_end.strftime('%b %Y') if hasattr(ds_end, 'strftime') else str(ds_end)
-                lbl = TOPIC_LABELS.get(topic, topic.replace('_', ' ').title())
-                sign3 = "+" if pct_3m > 0 else ""
-                sign12 = "+" if pct_12m > 0 else ""
-                country_preds.append((abs(pct_12m),
-                    f"{lbl}: {sign12}{pct_12m:.1f}% by {ds_str} (3-month: {sign3}{pct_3m:.1f}%)"))
-            country_preds.sort(key=lambda x: -x[0])
-            for _, line in country_preds[:5]:
-                pred_lines.append(f"  {cname}: {line}")
-
-    # ── Global top movements ─────────────────────────────────────
-    top_rising  = []
-    top_falling = []
-    if trend_df is not None:
-        for _, r in trend_df.nlargest(10, 'trend_pct').iterrows():
-            lbl = TOPIC_LABELS.get(r['topic'], str(r['topic']).replace('_', ' ').title())
-            cnt = COUNTRY_NAMES.get(r['country'], r['country'])
-            top_rising.append(f"  {cnt} / {lbl}: +{r['trend_pct']:.1f}%")
-        for _, r in trend_df.nsmallest(10, 'trend_pct').iterrows():
-            lbl = TOPIC_LABELS.get(r['topic'], str(r['topic']).replace('_', ' ').title())
-            cnt = COUNTRY_NAMES.get(r['country'], r['country'])
-            top_falling.append(f"  {cnt} / {lbl}: {r['trend_pct']:.1f}%")
-
-    # ── Fetch relevant GDELT news ────────────────────────────────
-    news_lines = []
-    try:
-        articles = fetch_gdelt_news(question[:120], max_records=10)
-        for art in articles[:10]:
-            title  = art.get('title', '').strip()
-            source = art.get('domain', '')
-            date   = art.get('seendate', '')[:8]
-            if date:
-                try:
-                    date = pd.Timestamp(date).strftime('%d %b %Y')
-                except Exception:
-                    pass
-            if title:
-                news_lines.append(f"  [{source}, {date}] {title}")
-    except Exception:
-        pass
-
-    # ── Assemble full context ────────────────────────────────────
-    context_parts = [
-        f"ANALYSIS DATE: {today_str}",
-        f"INDEX DATA WINDOW: 7-day through {last_date}",
-        f"",
-        f"USER QUESTION: {question}",
-        f"",
-        f"DETECTED ENTITIES:",
-        f"  Countries: {', '.join([COUNTRY_NAMES.get(c, c) for c in countries]) or 'Not specified — using top-risk countries'}",
-        f"  Topics: {', '.join([TOPIC_LABELS.get(t, t) for t in topics[:10]])}",
-        f"",
-        f"=== RISK INDEX MOVEMENTS (7-day window vs prior 7 days) ===",
-    ]
-    context_parts += (index_lines if index_lines else ["  No significant movements detected"])
-    context_parts += [
-        f"",
-        f"=== 12-MONTH MODEL FORECASTS (Prophet) ===",
-    ]
-    context_parts += (pred_lines if pred_lines else ["  No forecast data available"])
-    context_parts += [
-        f"",
-        f"=== GLOBAL RISK MOVERS (all countries, all topics) ===",
-        f"Top Rising:",
-    ]
-    context_parts += (top_rising  if top_rising  else ["  None"])
-    context_parts += ["Top Falling:"]
-    context_parts += (top_falling if top_falling else ["  None"])
-    context_parts += [
-        f"",
-        f"=== RECENT GDELT NEWS HEADLINES (relevant to query) ===",
-    ]
-    context_parts += (news_lines if news_lines else ["  No headlines retrieved"])
-
-    context = "\n".join(context_parts)
-
-    # ── System prompt ────────────────────────────────────────────
-    system_prompt = (
-        "You are a senior geopolitical intelligence analyst at NERAI Intelligence Hub — "
-        "a real-time risk platform powered by the GDELT Project event database. "
-        "Your expertise spans international relations, conflict dynamics, political economy, "
-        "and regional security across all global theatres.\n\n"
-        "When the user asks a question, you receive structured data: "
-        "current risk index levels and 7-day changes, 12-month model forecasts, "
-        "global risk movers, and recent GDELT news headlines. "
-        "Your task is to synthesise ALL of this into a single, flowing analytical response.\n\n"
-        "STRICT RULES:\n"
-        "1. Write 4-6 paragraphs of prose. NO bullet points. NO tables. NO headers.\n"
-        "2. Every claim must be grounded in the specific numbers from the data.\n"
-        "3. Establish cause-effect relationships: connect index movements to news events.\n"
-        "4. Reference news headlines by name when they explain index changes.\n"
-        "5. Compare country trajectories when multiple countries are present.\n"
-        "6. The final paragraph must be a forward-looking strategic assessment.\n"
-        "7. Write at the analytical level of Eurasia Group, Oxford Analytica, or Control Risks.\n"
-        "8. Tone: authoritative, measured, precise. Never vague. Never alarmist.\n"
-        "9. Use exact figures: '…military escalation indices rose 18.4% week-on-week…'\n"
-        "10. Length: 350-600 words total."
-    )
-
-    # ── Call Claude ──────────────────────────────────────────────
-    try:
-        import anthropic as _ant
-        client = _ant.Anthropic(api_key=api_key)
-        response = client.messages.create(
-            model="claude-sonnet-4-6",
-            max_tokens=1500,
-            system=system_prompt,
-            messages=[{"role": "user", "content": context}]
-        )
-        analysis_text = response.content[0].text.strip()
-    except ImportError:
-        return _answer_question_template(question, df_raw, trend_df, pred_df, insights_df)
-    except Exception as e:
-        err = str(e)[:300]
-        return (f"<div style='color:#e05060;font-size:0.78rem;padding:12px;"
-                f"background:#fff0f0;border:1px solid #f0c0c0;border-radius:8px;'>"
-                f"⚠ Analysis error: {err}</div>")
-
-    # ── Format output ─────────────────────────────────────────────
-    paragraphs = [p.strip() for p in analysis_text.split('\n\n') if p.strip()]
-    # Also split on single newlines that start new thoughts
-    all_paras = []
-    for p in paragraphs:
-        sub = [s.strip() for s in p.split('\n') if s.strip()]
-        if len(sub) > 1:
-            all_paras.extend(sub)
-        else:
-            all_paras.append(p)
-
-    html_paras = ''.join([
-        f"<p style='color:#0d1f3c;font-size:0.83rem;line-height:1.9;margin:0 0 16px;'>{p}</p>"
-        for p in all_paras if p
-    ])
-
-    topic_labels_used = ", ".join([TOPIC_LABELS.get(t, t.replace('_',' ').title()) for t in topics[:6]])
-    country_names_used = ", ".join([COUNTRY_NAMES.get(c, c) for c in countries[:4]])
-
-    return f"""<div style='font-family:"Inter",system-ui,sans-serif;'>
-  <div style='display:flex;align-items:center;gap:10px;margin-bottom:14px;
-       padding-bottom:10px;border-bottom:1px solid rgba(0,119,168,0.15);'>
-    <div style='font-size:0.6rem;color:#0077a8;font-family:monospace;letter-spacing:0.1em;flex:1;'>
-      🧠 NERAI ANALYST · CLAUDE claude-sonnet-4-6 · {today_str.upper()}
-    </div>
-    <div style='font-size:0.55rem;color:#5a6b82;font-family:monospace;'>
-      {country_names_used}
-    </div>
-  </div>
-  <div style='background:#ffffff;border:1px solid rgba(0,119,168,0.12);
-       border-radius:10px;padding:22px 24px;
-       box-shadow:0 2px 12px rgba(13,31,60,0.05);'>
-    {html_paras}
-  </div>
-  <div style='font-size:0.53rem;color:#5a6b82;font-family:monospace;
-       margin-top:8px;letter-spacing:0.08em;'>
-    DATA: GDELT PROJECT · TOPICS: {topic_labels_used} · INDEX WINDOW → {last_date.upper()}
-  </div>
-</div>"""
-
-
-def _answer_question_template(question, df_raw, trend_df, pred_df, insights_df):
-    """
     Build a narrative analytical response for the given question.
     Sections per country:
       1. Recent 7-day index trend (vs prior 7 days)
@@ -3189,10 +2837,10 @@ def render_insights():
     # ── Page header ─────────────────────────────────────────────
     st.markdown("""
 <div style='padding:10px 0 6px;'>
-  <div style='font-size:1.55rem;font-weight:800;color:#0d1f3c;letter-spacing:0.04em;'>
+  <div style='font-size:1.55rem;font-weight:800;color:#e8f4ff;letter-spacing:0.04em;'>
     🔍 Intelligence Insights
   </div>
-  <div style='font-size:0.65rem;color:#0077a8;font-family:monospace;
+  <div style='font-size:0.65rem;color:rgba(0,180,255,0.45);font-family:monospace;
        letter-spacing:0.12em;margin-top:3px;'>
     DATA-DRIVEN COUNTRY RISK ANALYSIS &nbsp;·&nbsp; 7-DAY WINDOW + 12-MONTH FORECAST
   </div>
@@ -3226,10 +2874,10 @@ def render_insights():
     st.markdown("""
 <div style='background:rgba(0,30,70,0.5);border:1px solid rgba(0,150,255,0.2);
      border-radius:10px;padding:16px 18px;margin-bottom:20px;'>
-  <div style='font-size:0.95rem;font-weight:700;color:#0d1f3c;margin-bottom:4px;'>
+  <div style='font-size:0.95rem;font-weight:700;color:#b8d8ff;margin-bottom:4px;'>
     💬 Ask the Data
   </div>
-  <div style='font-size:0.65rem;color:#5a6b82;font-family:monospace;'>
+  <div style='font-size:0.65rem;color:rgba(100,170,230,0.55);font-family:monospace;'>
     Ask any geopolitical question — the system will analyse indices, trends and forecasts to answer.
   </div>
 </div>""", unsafe_allow_html=True)
@@ -3260,7 +2908,7 @@ def render_insights():
     # ═══════════════════════════════════════════════════════════
     if insights_df is not None and len(insights_df) > 0:
         st.markdown("""
-<div style='font-size:0.6rem;color:#0077a8;font-family:monospace;
+<div style='font-size:0.6rem;color:rgba(0,180,255,0.4);font-family:monospace;
      letter-spacing:0.15em;margin-bottom:14px;'>
   TOP 20 MOST CRITICAL COUNTRIES &nbsp;·&nbsp; RANKED BY RISK LEVEL + RATE OF CHANGE
 </div>""", unsafe_allow_html=True)
@@ -3308,361 +2956,6 @@ def _render_footer():
 
 
 # ═══════════════════════════════════════════════════════════════
-# ═══════════════════════════════════════════════════════════════
-# PAGE: CAUSAL NETWORK
-# ═══════════════════════════════════════════════════════════════
-def render_causality():
-    st.markdown('<div class="page-hdr">🕸 Causal Network</div>', unsafe_allow_html=True)
-    st.markdown(
-        '<p style="color:#5a6b82;font-size:0.88rem;margin-bottom:18px;">'
-        'Granger causality relationships between risk indices — which series statistically '
-        'predict changes in others, and with what lag.</p>',
-        unsafe_allow_html=True
-    )
-
-    if not has_causality:
-        # ── Rich empty state with demo visualization ──────────
-        st.markdown(
-            '<div style="background:#fff3cd;border:1px solid #ffc107;border-radius:8px;'
-            'padding:14px 18px;margin-bottom:24px;display:flex;align-items:center;gap:12px;">'
-            '<span style="font-size:1.2rem;">⚙️</span>'
-            '<div><strong style="color:#856404;">Data not yet generated.</strong>'
-            '<span style="color:#856404;font-size:0.85rem;"> Run </span>'
-            '<code style="background:#ffe69c;padding:2px 6px;border-radius:4px;font-size:0.82rem;">python gdelt_causality.py</code>'
-            '<span style="color:#856404;font-size:0.85rem;"> to build the network, then refresh. '
-            'Preview below shows the type of insights produced.</span></div></div>',
-            unsafe_allow_html=True
-        )
-
-        # Demo Sankey-style network diagram with synthetic but realistic data
-        demo_sources = [
-            'Military Escalation / Iran', 'Political Instability / Russia',
-            'Military Escalation / Iran', 'Regime Instability / Syria',
-            'Political Instability / Russia', 'Terrorism / Pakistan',
-            'Terrorism / Pakistan', 'Military Escalation / Iran',
-            'Coup / Sudan', 'Political Instability / Russia',
-        ]
-        demo_targets = [
-            'International Crisis / Israel', 'Military Escalation / Ukraine',
-            'Instability / Saudi Arabia', 'Terrorism / Lebanon',
-            'Deteriorating Relations / Germany', 'Instability / Afghanistan',
-            'Military Escalation / India', 'Military Crisis / Lebanon',
-            'Instability / Ethiopia', 'Political Instability / Belarus',
-        ]
-        demo_lags  = [1, 1, 2, 1, 2, 1, 2, 3, 1, 1]
-        demo_fstat = [14.2, 11.8, 9.4, 13.1, 7.6, 10.3, 8.9, 6.2, 12.5, 9.8]
-        demo_pvals = [0.001, 0.003, 0.008, 0.002, 0.014, 0.005, 0.011, 0.023, 0.002, 0.007]
-
-        node_labels = list(dict.fromkeys(demo_sources + demo_targets))
-        node_idx    = {n: i for i, n in enumerate(node_labels)}
-        node_colors = [
-            '#e05a2b' if any(s == n for s in demo_sources[:4]) else
-            '#0077a8' if any(t == n for t in demo_targets[:4]) else '#00b4d8'
-            for n in node_labels
-        ]
-
-        fig_demo = go.Figure(go.Sankey(
-            node=dict(
-                pad=18, thickness=16,
-                label=node_labels,
-                color=node_colors,
-                hovertemplate='%{label}<extra></extra>',
-            ),
-            link=dict(
-                source=[node_idx[s] for s in demo_sources],
-                target=[node_idx[t] for t in demo_targets],
-                value=demo_fstat,
-                color=[f'rgba(0,119,168,{0.12 + f/80})' for f in demo_fstat],
-                hovertemplate='<b>%{source.label}</b> → <b>%{target.label}</b><br>'
-                              'F-stat: %{value:.1f}<extra></extra>',
-            ),
-        ))
-        t_demo = {**BASE_THEME}
-        fig_demo.update_layout(
-            **t_demo, height=400,
-            title=dict(
-                text='<b>DEMO — Causal Flow Network</b>  (example relationships — run gdelt_causality.py for real data)',
-                font=dict(size=11, color='#5a6b82'), x=0
-            ),
-        )
-        st.plotly_chart(fig_demo, use_container_width=True, config={'displayModeBar': False})
-
-        # Demo table
-        st.markdown('<div class="sec-hdr">Example: Strongest Causal Relationships (demo)</div>',
-                    unsafe_allow_html=True)
-        demo_df = pd.DataFrame({
-            'Causes →':    demo_sources,
-            'Affects':     demo_targets,
-            'Lag (mo)':    demo_lags,
-            'F-Statistic': [f'{f:.1f}' for f in demo_fstat],
-            'p-value':     [f'{p:.3f}' for p in demo_pvals],
-        })
-        st.dataframe(demo_df, use_container_width=True, hide_index=True)
-        return
-
-    net = causality_net.copy()
-    net['source_label'] = net.apply(
-        lambda r: f"{TOPIC_LABELS.get(r['source_topic'], r['source_topic'].replace('_',' ').title())} / {COUNTRY_NAMES.get(r['source_country'], r['source_country'])}", axis=1)
-    net['target_label'] = net.apply(
-        lambda r: f"{TOPIC_LABELS.get(r['target_topic'], r['target_topic'].replace('_',' ').title())} / {COUNTRY_NAMES.get(r['target_country'], r['target_country'])}", axis=1)
-
-    col1, col2, col3 = st.columns(3)
-    col1.metric("Total Causal Links", f"{len(net):,}")
-    col2.metric("Unique Source Series", f"{net['source_id'].nunique():,}")
-    col3.metric("Unique Target Series", f"{net['target_id'].nunique():,}")
-
-    st.markdown('<div class="h-div" style="margin:14px 0 18px;"></div>', unsafe_allow_html=True)
-
-    # ── Filter controls ───────────────────────────────────────
-    col_f1, col_f2, col_f3 = st.columns(3)
-    with col_f1:
-        filter_country = st.selectbox(
-            "Filter by Country",
-            ['All'] + sorted(COUNTRY_NAMES.values()),
-            key='caus_country'
-        )
-    with col_f2:
-        filter_topic = st.selectbox(
-            "Filter by Topic",
-            ['All'] + sorted([TOPIC_LABELS.get(t, t) for t in TOPICS.keys()]),
-            key='caus_topic'
-        )
-    with col_f3:
-        max_lag_filter = st.selectbox("Max Lag (months)", [1, 2, 3], index=2, key='caus_lag')
-
-    view_net = net[net['best_lag'] <= max_lag_filter].copy()
-    if filter_country != 'All':
-        cc = [k for k, v in COUNTRY_NAMES.items() if v == filter_country]
-        cc = cc[0] if cc else filter_country
-        view_net = view_net[(view_net['source_country'] == cc) | (view_net['target_country'] == cc)]
-    if filter_topic != 'All':
-        tk = [k for k, v in TOPIC_LABELS.items() if v == filter_topic]
-        tk = tk[0] if tk else filter_topic
-        view_net = view_net[(view_net['source_topic'] == tk) | (view_net['target_topic'] == tk)]
-
-    # ── Network bubble chart: source infectiousness ───────────
-    st.markdown('<div class="sec-hdr">Most Causally Influential Series</div>', unsafe_allow_html=True)
-    st.markdown('<p style="color:#5a6b82;font-size:0.82rem;">Series that Granger-cause the most other series — the most "infectious" risk factors in the system.</p>', unsafe_allow_html=True)
-
-    influence = (
-        view_net.groupby(['source_topic', 'source_country'])
-        .agg(n_targets=('target_id', 'nunique'), avg_pval=('p_value', 'mean'), avg_fstat=('f_stat', 'mean'))
-        .reset_index()
-        .sort_values('n_targets', ascending=False)
-        .head(20)
-    )
-    influence['label'] = influence.apply(
-        lambda r: f"{TOPIC_LABELS.get(r['source_topic'], r['source_topic'][:18])} / {COUNTRY_NAMES.get(r['source_country'], r['source_country'])}", axis=1)
-    influence['sig'] = (1 - influence['avg_pval']) * 100
-
-    fig_inf = go.Figure(go.Bar(
-        x=influence['n_targets'],
-        y=influence['label'],
-        orientation='h',
-        marker=dict(
-            color=influence['avg_fstat'],
-            colorscale='Blues',
-            showscale=True,
-            colorbar=dict(title='Avg F-stat', thickness=12, len=0.6),
-        ),
-        text=influence['n_targets'].apply(lambda x: f'{x} targets'),
-        textposition='outside',
-        hovertemplate='<b>%{y}</b><br>Influences %{x} series<br>Avg F-stat: %{marker.color:.2f}<extra></extra>',
-    ))
-    t_inf = {**BASE_THEME}
-    fig_inf.update_layout(**t_inf, height=420,
-        xaxis_title='Number of Series Granger-Caused',
-        margin=dict(l=240, r=80, t=20, b=40))
-    st.plotly_chart(fig_inf, use_container_width=True, config={'displayModeBar': False})
-
-    # ── Top causal relationships table ────────────────────────
-    st.markdown('<div class="sec-hdr">Strongest Causal Relationships</div>', unsafe_allow_html=True)
-    top_edges = view_net.nsmallest(40, 'p_value')[
-        ['source_label', 'target_label', 'best_lag', 'f_stat', 'p_value']
-    ].copy()
-    top_edges.columns = ['Causes →', 'Affects', 'Lag (mo)', 'F-Statistic', 'p-value']
-    top_edges['p-value'] = top_edges['p-value'].apply(lambda x: f'{x:.4f}')
-    top_edges['F-Statistic'] = top_edges['F-Statistic'].apply(lambda x: f'{x:.2f}')
-    st.dataframe(top_edges, use_container_width=True, hide_index=True)
-
-    # ── Series detail ─────────────────────────────────────────
-    if causality_stats is not None:
-        st.markdown('<div class="sec-hdr">Series Causality Profile</div>', unsafe_allow_html=True)
-        stats = causality_stats.copy()
-        stats['label'] = stats.apply(
-            lambda r: f"{TOPIC_LABELS.get(r['topic'], str(r['topic'])[:20])} / {COUNTRY_NAMES.get(r['country'], r['country'])}", axis=1)
-        stats_view = stats[['label', 'n_causes', 'n_caused_by', 'top_cause', 'top_cause_lag']].copy()
-        stats_view.columns = ['Series', 'Incoming Predictors', 'Series It Predicts', 'Strongest Predictor', 'Predictor Lag']
-        stats_view = stats_view.sort_values('Incoming Predictors', ascending=False)
-        st.dataframe(stats_view.head(50), use_container_width=True, hide_index=True)
-
-
-# ═══════════════════════════════════════════════════════════════
-# PAGE: WHAT-IF SCENARIOS
-# ═══════════════════════════════════════════════════════════════
-def render_scenarios():
-    st.markdown('<div class="page-hdr">⚡ What-If Scenarios</div>', unsafe_allow_html=True)
-    st.markdown(
-        '<p style="color:#5a6b82;font-size:0.88rem;margin-bottom:18px;">'
-        'Inject geopolitical shocks into the model and simulate how risk indices respond. '
-        'Run scenarios via the command line, then view results here.</p>',
-        unsafe_allow_html=True
-    )
-
-    # ── Scenario templates reference ──────────────────────────
-    SCENARIO_DESCS = {
-        'iran_nuclear_crisis':          'Iran accelerates nuclear program, triggering regional escalation',
-        'russia_escalation':            'Russia escalates military operations in Eastern Europe',
-        'china_taiwan_tension':         'China increases military pressure on Taiwan',
-        'middle_east_oil_crisis':       'Attacks on oil infrastructure trigger regional instability',
-        'global_democratic_backsliding':'Wave of authoritarianism across multiple regions',
-    }
-
-    st.markdown('<div class="sec-hdr">Available Scenarios</div>', unsafe_allow_html=True)
-
-    SCENARIO_ICONS = {
-        'iran_nuclear_crisis':           '☢️',
-        'russia_escalation':             '🪖',
-        'china_taiwan_tension':          '⚓',
-        'middle_east_oil_crisis':        '🛢️',
-        'global_democratic_backsliding': '🗳️',
-    }
-
-    # 2-column grid then 3-column grid to avoid overcrowding
-    row1 = list(SCENARIO_DESCS.items())[:2]
-    row2 = list(SCENARIO_DESCS.items())[2:]
-
-    cols1 = st.columns(2)
-    for col, (key, desc) in zip(cols1, row1):
-        label = key.replace('_', ' ').title()
-        icon  = SCENARIO_ICONS.get(key, '⚡')
-        col.markdown(
-            f'<div style="background:#f4f7fb;border-radius:10px;padding:16px 18px;'
-            f'border-left:4px solid #0077a8;margin-bottom:12px;">'
-            f'<div style="font-size:1.3rem;margin-bottom:8px;">{icon}</div>'
-            f'<div style="font-size:0.82rem;font-weight:700;color:#0d1f3c;margin-bottom:6px;">{label}</div>'
-            f'<div style="font-size:0.78rem;color:#5a6b82;line-height:1.5;margin-bottom:10px;">{desc}</div>'
-            f'<code style="font-size:0.72rem;color:#0077a8;background:#e0ecf8;'
-            f'padding:5px 8px;border-radius:5px;display:block;word-break:break-all;">'
-            f'python gdelt_scenarios.py --scenario {key}</code></div>',
-            unsafe_allow_html=True
-        )
-
-    cols2 = st.columns(3)
-    for col, (key, desc) in zip(cols2, row2):
-        label = key.replace('_', ' ').title()
-        icon  = SCENARIO_ICONS.get(key, '⚡')
-        col.markdown(
-            f'<div style="background:#f4f7fb;border-radius:10px;padding:16px 18px;'
-            f'border-left:4px solid #0077a8;margin-bottom:12px;">'
-            f'<div style="font-size:1.3rem;margin-bottom:8px;">{icon}</div>'
-            f'<div style="font-size:0.82rem;font-weight:700;color:#0d1f3c;margin-bottom:6px;">{label}</div>'
-            f'<div style="font-size:0.78rem;color:#5a6b82;line-height:1.5;margin-bottom:10px;">{desc}</div>'
-            f'<code style="font-size:0.72rem;color:#0077a8;background:#e0ecf8;'
-            f'padding:5px 8px;border-radius:5px;display:block;word-break:break-all;">'
-            f'python gdelt_scenarios.py --scenario {key}</code></div>',
-            unsafe_allow_html=True
-        )
-
-    st.markdown('<div style="margin:18px 0 6px;"></div>', unsafe_allow_html=True)
-
-    # ── Custom shock builder ───────────────────────────────────
-    with st.expander("🛠 Custom Shock Builder", expanded=False):
-        st.markdown('<p style="color:#5a6b82;font-size:0.82rem;">Define a custom geopolitical shock and copy the command to run in your terminal.</p>', unsafe_allow_html=True)
-        cc1, cc2, cc3, cc4 = st.columns(4)
-        shock_topic    = cc1.selectbox("Topic", sorted(TOPIC_LABELS.keys()),
-                                        format_func=lambda t: TOPIC_LABELS.get(t, t), key='sc_topic')
-        shock_country  = cc2.selectbox("Country", sorted(COUNTRY_NAMES.keys()),
-                                        format_func=lambda c: f"{COUNTRY_NAMES.get(c,c)} ({c})", key='sc_country')
-        shock_mag      = cc3.slider("Magnitude", 0.1, 2.0, 0.6, 0.05, key='sc_mag',
-                                     help="1.0 = +100% increase over baseline")
-        shock_dur      = cc4.slider("Duration (months)", 1, 12, 4, key='sc_dur')
-        cmd = (f'python gdelt_scenarios.py --custom-shock '
-               f'"topic={shock_topic},country={shock_country},'
-               f'magnitude={shock_mag},duration={shock_dur}"')
-        st.code(cmd, language='bash')
-
-    st.markdown('<div class="h-div" style="margin:18px 0;"></div>', unsafe_allow_html=True)
-
-    # ── Results section ────────────────────────────────────────
-    scen_df = load_scenario_results()
-
-    if scen_df is None:
-        st.markdown(
-            '<div style="background:#f4f7fb;border:1px solid rgba(0,119,168,0.2);border-radius:10px;'
-            'padding:32px;text-align:center;margin-top:8px;">'
-            '<div style="font-size:2rem;margin-bottom:12px;">📊</div>'
-            '<div style="font-size:0.95rem;font-weight:700;color:#0d1f3c;margin-bottom:8px;">'
-            'No scenario results yet</div>'
-            '<div style="font-size:0.82rem;color:#5a6b82;max-width:420px;margin:0 auto 16px;">'
-            'Pick a scenario above, run the command in your terminal, then click Refresh below.</div>'
-            '</div>',
-            unsafe_allow_html=True
-        )
-        if st.button('🔄 Refresh Results', key='scen_refresh'):
-            st.cache_data.clear()
-            st.rerun()
-        return
-
-    st.markdown('<div class="sec-hdr">Latest Scenario Results</div>', unsafe_allow_html=True)
-
-    # Summary KPIs
-    n_rising   = (scen_df['direction'] == 'escalating').sum()  if 'direction' in scen_df.columns else 0
-    n_falling  = (scen_df['direction'] == 'de-escalating').sum() if 'direction' in scen_df.columns else 0
-    n_series   = len(scen_df)
-    avg_delta  = scen_df['delta_pct'].mean() if 'delta_pct' in scen_df.columns else 0
-
-    kk = st.columns(4)
-    kk[0].metric("Series Affected", n_series)
-    kk[1].metric("Escalating", n_rising)
-    kk[2].metric("De-escalating", n_falling)
-    kk[3].metric("Avg Change vs Baseline", f"{avg_delta:+.1f}%")
-
-    st.markdown('<div style="margin:14px 0;"></div>', unsafe_allow_html=True)
-
-    # ── Waterfall chart: delta_pct per series ─────────────────
-    if 'delta_pct' in scen_df.columns:
-        plot_df = scen_df.copy()
-        plot_df['label'] = plot_df.apply(
-            lambda r: f"{TOPIC_LABELS.get(r.get('topic',''), str(r.get('topic',''))[:18])} / {COUNTRY_NAMES.get(r.get('country',''), r.get('country',''))}"
-            if 'topic' in r and 'country' in r else str(r.get('unique_id', '')), axis=1)
-        plot_df = plot_df.sort_values('delta_pct', ascending=True)
-        bar_colors = ['#e05a2b' if x > 0 else '#00b894' for x in plot_df['delta_pct']]
-
-        fig_scen = go.Figure(go.Bar(
-            x=plot_df['delta_pct'],
-            y=plot_df['label'],
-            orientation='h',
-            marker_color=bar_colors,
-            text=plot_df['delta_pct'].apply(lambda x: f'{x:+.1f}%'),
-            textposition='outside',
-            hovertemplate='<b>%{y}</b><br>Change vs baseline: %{x:+.1f}%<extra></extra>',
-        ))
-        t_sc = {**BASE_THEME}
-        fig_scen.update_layout(
-            **t_sc, height=max(320, len(plot_df) * 22 + 80),
-            xaxis_title='% Change vs Baseline Forecast',
-            xaxis_zeroline=True, xaxis_zerolinecolor='rgba(0,100,180,0.3)',
-            margin=dict(l=260, r=80, t=20, b=40),
-        )
-        st.plotly_chart(fig_scen, use_container_width=True, config={'displayModeBar': False})
-
-    # ── Detailed results table ─────────────────────────────────
-    st.markdown('<div class="sec-hdr">Detailed Scenario Output</div>', unsafe_allow_html=True)
-    show_cols = [c for c in ['unique_id', 'baseline_avg', 'shocked_avg', 'delta_pct', 'peak_month', 'direction'] if c in scen_df.columns]
-    if show_cols:
-        display_df = scen_df[show_cols].copy()
-        if 'delta_pct' in display_df.columns:
-            display_df['delta_pct'] = display_df['delta_pct'].apply(lambda x: f'{x:+.1f}%')
-        st.dataframe(display_df, use_container_width=True, hide_index=True)
-
-    # ── Report text ────────────────────────────────────────────
-    if os.path.exists('./scenario_report.txt'):
-        with st.expander("📄 Full Scenario Report", expanded=False):
-            with open('./scenario_report.txt', 'r') as f:
-                st.code(f.read(), language=None)
-
-
 # ROUTING
 # ═══════════════════════════════════════════════════════════════
 page = st.session_state.get('page', 'home')
@@ -3671,8 +2964,6 @@ elif page == 'indices':     render_indices()
 elif page == 'profile':     render_profile()
 elif page == 'news':        render_news()
 elif page == 'predictions': render_predictions()
-elif page == 'causality':   render_causality()
-elif page == 'scenarios':   render_scenarios()
 elif page == 'insights':    render_insights()
 else:
     st.session_state.page = 'home'
