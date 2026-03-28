@@ -136,11 +136,12 @@ def load_data(indices_path='./indices.csv', predictions_path='./predictions.csv'
         indices_df.rename(columns={'Date': 'date'}, inplace=True)
 
     predictions_df = pd.read_csv(predictions_path)
+    # Normalize date column name — could be 'ds', 'date', or 'Date'
+    for col in ['ds', 'Date']:
+        if col in predictions_df.columns and 'date' not in predictions_df.columns:
+            predictions_df.rename(columns={col: 'date'}, inplace=True)
     if 'date' in predictions_df.columns:
         predictions_df['date'] = pd.to_datetime(predictions_df['date'])
-    elif 'Date' in predictions_df.columns:
-        predictions_df['Date'] = pd.to_datetime(predictions_df['Date'])
-        predictions_df.rename(columns={'Date': 'date'}, inplace=True)
 
     causality_df = None
     if os.path.exists(causality_path):
