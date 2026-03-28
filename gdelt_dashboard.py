@@ -3008,6 +3008,167 @@ def load_scenario_results():
         return pd.read_csv(path)
     return None
 
+
+def _node_label(node):
+    """'political_instability_RU' → ('Political Instability', 'RU')"""
+    parts = node.rsplit('_', 1)
+    if len(parts) == 2:
+        return parts[0].replace('_', ' ').title(), parts[1]
+    return node, ''
+
+
+def build_network_figure(filtered, highlight_nodes=None):
+    """Build an interactive Plotly network diagram from a filtered edge DataFrame."""
+    import math
+    if highlight_nodes is None:
+        highlight_nodes = set()
+
+    nodes = list(set(filtered['source'].tolist() + filtered['target'].tolist()))
+    n = len(nodes)
+    if n == 0:
+        return None
+
+    # Layout: networkx spring if available, else circular fallback
+    try:
+        import networkx as nx
+        G = nx.DiGraph()
+        for _, row in filtered.iterrows():
+            G.add_edge(row['source'], row['target'], weight=float(row['max_f_stat']))
+        pos = nx.spring_layout(G, k=2.5, seed=42, iterations=60)
+    except ImportError:
+        pos = {}
+        for i, node in enumerate(nodes):
+            angle = 2 * math.pi * i / n
+            pos[node] = (math.cos(angle), math.sin(angle))
+
+    out_deg = filtered.groupby('source')['max_f_stat'].sum().to_dict()
+    in_deg  = filtered.groupby('target')['max_f_stat'].sum().to_dict()
+
+    # Edge traces (one per edge for individual hover)
+    edge_traces = []
+    for _, row in filtered.iterrows():
+        x0, y0 = pos[row['source']]
+        x1, y1 = pos[row['target']]
+        f = float(row['max_f_stat'])
+        is_hl = (row['source'] in highlight_nodes or row['target'] in highlight_nodes)
+        color = 'rgba(224,112,32,0.85)' if is_hl else f'rgba(0,140,255,{min(0.75, 0.15 + f/25):.2f})'
+        width = 3.5 if is_hl else max(0.8, min(4.0, f / 7))
+        s_lbl, s_cc = _node_label(row['source'])
+        t_lbl, t_cc = _node_label(row['target'])
+        edge_traces.append(go.Scatter(
+            x=[x0, x1, None], y=[y0, y1, None],
+            mode='lines',
+            line=dict(width=width, color=color),
+            hoverinfo='text',
+            hovertext=f"{s_lbl} ({COUNTRY_NAMES.get(s_cc,s_cc)}) → {t_lbl} ({COUNTRY_NAMES.get(t_cc,t_cc)})<br>F={f:.1f}  p={float(row['min_p_value']):.3f}  lag={int(row['best_lag'])}m",
+            showlegend=False
+        ))
+
+    # Node trace
+    nx_list, ny_list, ntxt, nhov, ncol, nsz = [], [], [], [], [], []
+    for node in nodes:
+        x, y = pos[node]
+        lbl, cc = _node_label(node)
+        nx_list.append(x); ny_list.append(y)
+        ntxt.append(f"{lbl}<br><b>{COUNTRY_NAMES.get(cc,cc)}</b>")
+        out_f = out_deg.get(node, 0)
+        in_f  = in_deg.get(node, 0)
+        nhov.append(f"<b>{lbl}</b><br><b>{COUNTRY_NAMES.get(cc,cc)}</b><br>"
+                    f"Out-influence: {out_f:.1f}<br>In-influence: {in_f:.1f}<br>"
+                    f"Connections out: {int(filtered[filtered['source']==node].shape[0])}")
+        is_hl = node in highlight_nodes
+        ncol.append('#e07020' if is_hl else ('#0055a8' if out_f > 8 else '#0099cc'))
+        nsz.append(22 if is_hl else max(10, min(34, 10 + out_f / 2.5)))
+
+    node_trace = go.Scatter(
+        x=nx_list, y=ny_list,
+        mode='markers+text',
+        text=ntxt,
+        textposition='top center',
+        textfont=dict(size=7, color='#1a2a3a'),
+        hovertext=nhov,
+        hoverinfo='text',
+        marker=dict(size=nsz, color=ncol,
+                    line=dict(width=1.5, color='rgba(255,255,255,0.6)')),
+        showlegend=False
+    )
+
+    fig = go.Figure(data=edge_traces + [node_trace])
+    fig.update_layout(
+        height=540,
+        paper_bgcolor='rgba(0,0,0,0)',
+        plot_bgcolor='rgba(232,240,250,0.45)',
+        xaxis=dict(showgrid=False, zeroline=False, showticklabels=False, showline=False),
+        yaxis=dict(showgrid=False, zeroline=False, showticklabels=False, showline=False),
+        margin=dict(l=10, r=10, t=10, b=10),
+        hovermode='closest',
+    )
+    return fig
+
+
+def causal_network_narrative(filtered, highlight_nodes=None):
+    """Return an HTML plain-English paragraph summarising the causal network."""
+    if filtered.empty:
+        return ""
+    if highlight_nodes is None:
+        highlight_nodes = set()
+
+    top_src  = filtered.groupby('source')['max_f_stat'].sum().sort_values(ascending=False)
+    top_edge = filtered.nlargest(3, 'max_f_stat')
+
+    parts_p1 = []
+    if not top_src.empty:
+        node = top_src.index[0]
+        lbl, cc = _node_label(node)
+        n_out = int(filtered[filtered['source'] == node].shape[0])
+        parts_p1.append(
+            f"The strongest statistical driver in this network is "
+            f"<b>{lbl}</b> in <b>{COUNTRY_NAMES.get(cc, cc)}</b>, which Granger-causes "
+            f"{n_out} other series with a cumulative F-statistic of {top_src.iloc[0]:.1f}."
+        )
+    if not top_edge.empty:
+        r = top_edge.iloc[0]
+        sl, sc = _node_label(r['source']); tl, tc = _node_label(r['target'])
+        parts_p1.append(
+            f"The single most powerful link runs from <b>{sl} ({COUNTRY_NAMES.get(sc,sc)})</b> "
+            f"→ <b>{tl} ({COUNTRY_NAMES.get(tc,tc)})</b> "
+            f"(F&nbsp;=&nbsp;{float(r['max_f_stat']):.1f}, "
+            f"p&nbsp;=&nbsp;{float(r['min_p_value']):.3f}, "
+            f"lag&nbsp;{int(r['best_lag'])}&nbsp;month{'s' if r['best_lag']>1 else ''}), "
+            f"meaning past readings in the source reliably precede shifts in the target."
+        )
+
+    p1 = " ".join(parts_p1)
+
+    p2 = (
+        f"In total, <b>{len(filtered)}</b> statistically significant causal links are visible "
+        f"across <b>{len(set(filtered['source'].tolist()+filtered['target'].tolist()))}</b> unique series. "
+        f"Thicker, darker edges carry higher F-statistics and represent stronger predictive relationships. "
+        f"Larger nodes are more influential — they drive more downstream series. "
+        f"This network is computed from historical GDELT data using Granger causality tests at lags 1–3 months; "
+        f"it does <em>not</em> change when you run a What-If scenario, but you can cross-reference it: "
+        f"if a scenario shocks a node that is a strong driver here, the connected nodes are likely to be affected next."
+    )
+
+    hl_note = ""
+    if highlight_nodes:
+        downstream = set(filtered[filtered['source'].isin(highlight_nodes)]['target'].tolist())
+        if downstream:
+            dl = [f"{_node_label(n)[0]} ({COUNTRY_NAMES.get(_node_label(n)[1],_node_label(n)[1])})"
+                  for n in list(downstream)[:5]]
+            hl_note = (
+                f"<div style='margin-top:10px;padding:10px 14px;"
+                f"background:rgba(224,112,32,0.1);border-left:3px solid #e07020;"
+                f"border-radius:4px;font-size:0.8rem;color:#7a3a00;'>"
+                f"⚠ <b>Scenario linkage:</b> The last scenario touched nodes highlighted in orange. "
+                f"Their direct causal descendants — most likely to experience spillover — include: "
+                f"<b>{', '.join(dl)}</b>{'…' if len(downstream)>5 else '.'}."
+                f"</div>"
+            )
+
+    return p1, p2, hl_note
+
+
 def render_causality():
     st.markdown("""
     <div style='padding:6px 0 10px;'>
@@ -3020,81 +3181,133 @@ def render_causality():
     st.markdown('<div class="h-div"></div>', unsafe_allow_html=True)
 
     cdf = load_causality()
+    sdf = load_scenario_results()
+
+    # Which nodes were in the last scenario run?
+    scenario_nodes = set()
+    if sdf is not None and not sdf.empty:
+        latest = sdf['scenario'].iloc[-1]
+        sub = sdf[sdf['scenario'] == latest]
+        if 'series_id' in sub.columns:
+            scenario_nodes = set(sub['series_id'].dropna().tolist())
 
     if cdf is None or cdf.empty:
         st.markdown("""
         <div style='text-align:center;padding:40px 20px;
-             background:rgba(0,12,32,0.6);border:1px solid rgba(0,150,255,0.12);
+             background:rgba(232,240,252,0.7);border:1px solid rgba(0,119,168,0.15);
              border-radius:12px;margin:20px 0;'>
           <div style='font-size:3rem;margin-bottom:16px;'>🕸</div>
-          <div style='font-size:1.1rem;font-weight:700;color:#00e5ff;
-               letter-spacing:0.08em;margin-bottom:10px;'>Causal Network Not Yet Computed</div>
-          <div style='font-size:0.8rem;color:rgba(150,190,220,0.7);max-width:480px;margin:0 auto;line-height:1.7;'>
+          <div style='font-size:1.1rem;font-weight:700;color:#0055a8;
+               letter-spacing:0.06em;margin-bottom:10px;'>Causal Network Not Yet Computed</div>
+          <div style='font-size:0.82rem;color:#3a5a7a;max-width:520px;margin:0 auto;line-height:1.75;'>
             Click <b>Run Causal Analysis</b> in the sidebar to compute Granger causality relationships
             between all topic × country pairs. This reveals which geopolitical signals
-            statistically predict future movements in others.
+            statistically predict future movements in others — and which countries are most
+            exposed if a shock occurs upstream.
           </div>
         </div>""", unsafe_allow_html=True)
-
-        st.subheader("Preview: What You'll See")
-        demo_edges = pd.DataFrame({
+        st.subheader("Preview: What the edge table looks like")
+        demo = pd.DataFrame({
             'source': ['political_instability_RU','military_posture_IR','protest_activity_TR'],
             'target': ['political_instability_UA','oil_market_stability_SA','political_instability_GR'],
             'max_f_stat': [12.4, 8.7, 6.2],
             'min_p_value': [0.002, 0.011, 0.031],
             'best_lag': [1, 2, 1]
         })
-        st.dataframe(demo_edges, use_container_width=True)
+        st.dataframe(demo, use_container_width=True)
         return
 
-    # Filters
+    # ── Filters ────────────────────────────────────────────────
     col1, col2, col3 = st.columns(3)
     with col1:
         min_f = st.slider('Min F-Statistic', 0.0, float(cdf['max_f_stat'].max()), 3.0)
     with col2:
-        topics = ['All'] + sorted(cdf['source'].str.split('_').str[:-1].str.join('_').unique().tolist())
+        topics = ['All'] + sorted(cdf['source'].str.rsplit('_', n=1).str[0].unique().tolist())
         sel_topic = st.selectbox('Filter by Topic', topics)
     with col3:
-        max_lag = st.selectbox('Max Lag', [1, 2, 3], index=2)
+        max_lag = st.selectbox('Max Lag (months)', [1, 2, 3], index=2)
 
-    filtered = cdf[cdf['max_f_stat'] >= min_f]
+    filtered = cdf[cdf['max_f_stat'] >= min_f].copy()
     if sel_topic != 'All':
-        filtered = filtered[filtered['source'].str.contains(sel_topic) | filtered['target'].str.contains(sel_topic)]
+        filtered = filtered[filtered['source'].str.startswith(sel_topic) |
+                            filtered['target'].str.startswith(sel_topic)]
     filtered = filtered[filtered['best_lag'] <= max_lag]
 
+    # ── KPI row ────────────────────────────────────────────────
     kc1, kc2, kc3 = st.columns(3)
     with kc1:
-        st.markdown(f"<div class='kpi-card'><div class='kpi-label'>Causal Links</div><div class='kpi-value'>{len(filtered)}</div></div>", unsafe_allow_html=True)
+        st.markdown(f"<div class='kpi-card'><div class='kpi-label'>Causal Links</div>"
+                    f"<div class='kpi-value'>{len(filtered)}</div></div>", unsafe_allow_html=True)
     with kc2:
-        st.markdown(f"<div class='kpi-card'><div class='kpi-label'>Avg F-Stat</div><div class='kpi-value'>{filtered['max_f_stat'].mean():.1f}</div></div>", unsafe_allow_html=True)
+        st.markdown(f"<div class='kpi-card'><div class='kpi-label'>Avg F-Statistic</div>"
+                    f"<div class='kpi-value'>{filtered['max_f_stat'].mean():.1f}</div></div>", unsafe_allow_html=True)
     with kc3:
-        st.markdown(f"<div class='kpi-card'><div class='kpi-label'>Series Involved</div><div class='kpi-value'>{len(set(filtered['source'].tolist()+filtered['target'].tolist()))}</div></div>", unsafe_allow_html=True)
+        n_series = len(set(filtered['source'].tolist() + filtered['target'].tolist()))
+        st.markdown(f"<div class='kpi-card'><div class='kpi-label'>Series Involved</div>"
+                    f"<div class='kpi-value'>{n_series}</div></div>", unsafe_allow_html=True)
 
-    st.markdown('<div style="margin:16px 0;"></div>', unsafe_allow_html=True)
+    st.markdown('<div style="margin:20px 0;"></div>', unsafe_allow_html=True)
 
-    # Top influencers bar chart
+    # ── Plain-English narrative ────────────────────────────────
+    narr = causal_network_narrative(filtered, highlight_nodes=scenario_nodes)
+    if narr:
+        p1, p2, hl_note = narr
+        st.markdown(f"""
+        <div style='background:#f0f6fc;border:1px solid rgba(0,119,168,0.18);
+             border-radius:10px;padding:18px 22px;margin-bottom:20px;line-height:1.75;
+             font-size:0.85rem;color:#1a2a3a;'>
+          <div style='font-size:0.7rem;font-weight:700;color:#0077a8;letter-spacing:0.1em;
+               text-transform:uppercase;margin-bottom:8px;'>📖 What This Network Shows</div>
+          <p style='margin:0 0 8px;'>{p1}</p>
+          <p style='margin:0;'>{p2}</p>
+          {hl_note}
+        </div>""", unsafe_allow_html=True)
+
+    # ── Interactive Network Diagram ────────────────────────────
+    st.subheader("🕸 Interactive Network Diagram")
+    if scenario_nodes:
+        st.caption("🟠 Orange nodes/edges = series touched by the most recent scenario run")
+
+    net_fig = build_network_figure(filtered.head(120), highlight_nodes=scenario_nodes)
+    if net_fig:
+        st.plotly_chart(net_fig, use_container_width=True)
+    else:
+        st.info("No edges to display with the current filters.")
+
+    # ── Top Influencers bar ─────────────────────────────────────
     st.subheader("Top Causal Influencers")
     influence = filtered.groupby('source')['max_f_stat'].sum().sort_values(ascending=False).head(15)
-    fig = go.Figure(go.Bar(
+    bar_colors = ['rgba(224,112,32,0.8)' if n in scenario_nodes else 'rgba(0,140,220,0.7)'
+                  for n in influence.index]
+    fig_bar = go.Figure(go.Bar(
         x=influence.values, y=influence.index,
         orientation='h',
-        marker_color='rgba(0,180,255,0.7)',
-        marker_line_color='rgba(0,220,255,0.9)',
+        marker_color=bar_colors,
+        marker_line_color='rgba(0,80,160,0.3)',
         marker_line_width=1
     ))
-    fig.update_layout(
-        height=400, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,8,20,0.6)',
-        xaxis=dict(title='Total F-Statistic', color='rgba(150,200,255,0.7)', gridcolor='rgba(0,100,200,0.1)'),
-        yaxis=dict(color='rgba(150,200,255,0.8)', tickfont=dict(size=10)),
+    fig_bar.update_layout(
+        height=420, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(232,240,252,0.4)',
+        xaxis=dict(title='Cumulative F-Statistic', color='#3a5a7a', gridcolor='rgba(0,100,200,0.1)'),
+        yaxis=dict(color='#1a2a3a', tickfont=dict(size=10)),
         margin=dict(l=20, r=20, t=10, b=40)
     )
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig_bar, use_container_width=True)
 
-    st.subheader("Causal Edge List")
-    st.dataframe(
-        filtered.sort_values('max_f_stat', ascending=False)[['source','target','max_f_stat','min_p_value','best_lag']],
-        use_container_width=True
-    )
+    # ── Edge table ──────────────────────────────────────────────
+    with st.expander("📋 Full Causal Edge List", expanded=False):
+        display_df = filtered.sort_values('max_f_stat', ascending=False)[
+            ['source', 'target', 'max_f_stat', 'min_p_value', 'best_lag']].copy()
+        display_df['source_label'] = display_df['source'].apply(
+            lambda n: f"{_node_label(n)[0]} ({COUNTRY_NAMES.get(_node_label(n)[1], _node_label(n)[1])})")
+        display_df['target_label'] = display_df['target'].apply(
+            lambda n: f"{_node_label(n)[0]} ({COUNTRY_NAMES.get(_node_label(n)[1], _node_label(n)[1])})")
+        st.dataframe(
+            display_df[['source_label','target_label','max_f_stat','min_p_value','best_lag']].rename(
+                columns={'source_label':'Source','target_label':'Target',
+                         'max_f_stat':'F-Stat','min_p_value':'p-value','best_lag':'Lag (m)'}),
+            use_container_width=True
+        )
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -3112,6 +3325,65 @@ SCENARIO_TEMPLATES = {
     'global_democratic_backsliding': {'label': '🗳️ Democratic Backsliding', 'icon': '🗳️',
         'desc': 'Simulates coordinated erosion of democratic institutions globally'},
 }
+
+
+def scenario_narrative(result_df, sel_result):
+    """Return (p1_html, p2_html) plain-English analysis of a scenario result."""
+    val_cols = [c for c in result_df.columns if c not in ('scenario', 'series_id', 'topic', 'country')]
+    if not val_cols or result_df.empty:
+        return None, None
+
+    val_col = val_cols[0]
+    sid_col = 'series_id' if 'series_id' in result_df.columns else result_df.index.name or 'index'
+    if sid_col == 'index':
+        impacts = result_df[val_col]
+        ids     = result_df.index.astype(str)
+    else:
+        impacts = result_df.set_index(sid_col)[val_col]
+        ids     = impacts.index
+
+    max_impact  = float(impacts.abs().max())
+    avg_impact  = float(impacts.abs().mean())
+    top_hit     = impacts.abs().idxmax() if not impacts.empty else None
+    direction   = "upward" if float(impacts.mean()) >= 0 else "downward"
+    n_elevated  = int((impacts.abs() > avg_impact).sum())
+    n_total     = len(impacts)
+    breadth     = "concentrated in a small cluster of series" if n_elevated < n_total / 2 else "broad across the monitored universe"
+
+    scenario_label = SCENARIO_TEMPLATES.get(sel_result, {}).get('label', sel_result.replace('_', ' ').title())
+
+    p1 = (
+        f"Under the <b>{scenario_label}</b> simulation, the model projects a "
+        f"<b>{'widespread' if n_elevated >= n_total/2 else 'localised'} {direction} pressure</b> "
+        f"across the affected risk series, with an average absolute deviation of "
+        f"<b>{avg_impact:.4f} index points</b> from baseline forecasts. "
+    )
+    if top_hit is not None:
+        lbl, cc = _node_label(str(top_hit))
+        p1 += (
+            f"The most severely impacted series is <b>{lbl}</b> "
+            f"({COUNTRY_NAMES.get(cc, cc)}), which registers a peak deviation of "
+            f"<b>{max_impact:.4f}</b> — roughly "
+            f"{'moderate' if max_impact < 0.1 else 'substantial' if max_impact < 0.3 else 'severe'}. "
+            f"In total, <b>{n_elevated} of {n_total}</b> monitored series show above-average exposure to this shock, "
+            f"meaning the impact is {breadth}."
+        )
+
+    p2 = (
+        f"From a risk-intelligence perspective, this pattern suggests that the shock "
+        f"{'concentrates risk within a limited geographic or thematic cluster, limiting direct contagion but potentially creating a pressure-cooker effect in those areas' if n_elevated < n_total/2 else 'spreads risk broadly, increasing the probability of multi-front instability and cross-domain contagion'}. "
+        f"Elevated readings in geopolitical indices of this magnitude are historically associated with "
+        f"increased media attention, diplomatic activity, and in severe cases, market repricing of "
+        f"sovereign risk in the affected region. "
+        f"These projections are generated by ARIMA re-forecasting on GDELT-derived event indices — "
+        f"they represent statistically plausible directional shifts, not deterministic point forecasts. "
+        f"For a fuller picture of downstream exposure, visit the <b>Causal Network</b> tab: "
+        f"series that are statistically caused by the shocked origin will appear as direct descendants "
+        f"in the network graph and are the most likely vectors of second-order propagation."
+    )
+
+    return p1, p2
+
 
 def render_scenarios():
     st.markdown("""
@@ -3134,30 +3406,30 @@ def render_scenarios():
     for i, (key, tmpl) in enumerate(row1):
         with cols1[i]:
             has_result = sdf is not None and key in sdf.get('scenario', pd.Series()).values if sdf is not None else False
-            s_col = '#3fb950' if has_result else 'rgba(150,150,150,0.5)'
+            s_col = '#1a8a3a' if has_result else 'rgba(120,120,130,0.5)'
             s_txt = '✅ Completed' if has_result else '⏳ Not run yet'
             st.markdown(f"""
-            <div style='background:rgba(0,8,20,0.7);border:1px solid rgba(0,150,255,0.15);
+            <div style='background:#f0f6fc;border:1px solid rgba(0,119,168,0.18);
                  border-radius:10px;padding:20px;margin-bottom:12px;min-height:130px;'>
               <div style='font-size:1.8rem;margin-bottom:10px;'>{tmpl['icon']}</div>
-              <div style='font-weight:700;color:#00e5ff;margin-bottom:8px;font-size:1rem;'>{tmpl['label']}</div>
-              <div style='font-size:0.75rem;color:rgba(150,190,220,0.7);line-height:1.5;margin-bottom:10px;'>{tmpl['desc']}</div>
-              <div style='font-size:0.7rem;color:{s_col};'>{s_txt}</div>
+              <div style='font-weight:700;color:#0055a8;margin-bottom:8px;font-size:1rem;'>{tmpl['label']}</div>
+              <div style='font-size:0.75rem;color:#4a6a8a;line-height:1.5;margin-bottom:10px;'>{tmpl['desc']}</div>
+              <div style='font-size:0.7rem;color:{s_col};font-weight:600;'>{s_txt}</div>
             </div>""", unsafe_allow_html=True)
 
     cols2 = st.columns(3)
     for i, (key, tmpl) in enumerate(row2):
         with cols2[i]:
             has_result = sdf is not None and key in sdf.get('scenario', pd.Series()).values if sdf is not None else False
-            s_col = '#3fb950' if has_result else 'rgba(150,150,150,0.5)'
+            s_col = '#1a8a3a' if has_result else 'rgba(120,120,130,0.5)'
             s_txt = '✅ Completed' if has_result else '⏳ Not run yet'
             st.markdown(f"""
-            <div style='background:rgba(0,8,20,0.7);border:1px solid rgba(0,150,255,0.15);
+            <div style='background:#f0f6fc;border:1px solid rgba(0,119,168,0.18);
                  border-radius:10px;padding:20px;margin-bottom:12px;min-height:130px;'>
               <div style='font-size:1.8rem;margin-bottom:10px;'>{tmpl['icon']}</div>
-              <div style='font-weight:700;color:#00e5ff;margin-bottom:8px;font-size:1rem;'>{tmpl['label']}</div>
-              <div style='font-size:0.75rem;color:rgba(150,190,220,0.7);line-height:1.5;margin-bottom:10px;'>{tmpl['desc']}</div>
-              <div style='font-size:0.7rem;color:{s_col};'>{s_txt}</div>
+              <div style='font-weight:700;color:#0055a8;margin-bottom:8px;font-size:1rem;'>{tmpl['label']}</div>
+              <div style='font-size:0.75rem;color:#4a6a8a;line-height:1.5;margin-bottom:10px;'>{tmpl['desc']}</div>
+              <div style='font-size:0.7rem;color:{s_col};font-weight:600;'>{s_txt}</div>
             </div>""", unsafe_allow_html=True)
 
     import subprocess, sys as _sys
@@ -3185,7 +3457,7 @@ def render_scenarios():
     # ── Custom Scenario Builder ─────────────────────────────────
     st.subheader("🔧 Build a Custom Scenario")
     st.markdown("""
-    <div style='font-size:0.78rem;color:#0077a8;margin-bottom:16px;font-weight:500;'>
+    <div style='font-size:0.82rem;color:#0077a8;margin-bottom:16px;font-weight:500;'>
     Define your own scenario: select a country, topic, shock intensity and duration — then run the simulation.
     </div>""", unsafe_allow_html=True)
 
@@ -3214,28 +3486,57 @@ def render_scenarios():
             else:
                 st.error(r.stderr[-600:] or 'Failed')
 
+    # ── Results + Analysis ──────────────────────────────────────
     if sdf is not None and not sdf.empty:
         st.markdown('<div class="h-div" style="margin:20px 0;"></div>', unsafe_allow_html=True)
-        st.subheader("Scenario Results")
+        st.subheader("📊 Scenario Results")
         scenarios_run = sdf['scenario'].unique() if 'scenario' in sdf.columns else []
-        sel_result = st.selectbox('View Results For', scenarios_run)
+        sel_result = st.selectbox('View Results For', scenarios_run,
+                                  format_func=lambda k: SCENARIO_TEMPLATES.get(k, {}).get('label', k))
         result_df = sdf[sdf['scenario'] == sel_result] if len(scenarios_run) > 0 else sdf
+
         if not result_df.empty:
-            val_col = [c for c in result_df.columns if c not in ('scenario','series_id','topic','country')]
-            if val_col:
+            val_col_list = [c for c in result_df.columns if c not in ('scenario','series_id','topic','country')]
+            if val_col_list:
+                # Impact chart
+                x_vals = result_df['series_id'] if 'series_id' in result_df.columns else result_df.index
+                y_vals = result_df[val_col_list[0]]
+                bar_colors = ['rgba(220,60,60,0.75)' if v >= 0 else 'rgba(0,140,220,0.75)'
+                              for v in y_vals]
                 fig = go.Figure(go.Bar(
-                    x=result_df['series_id'] if 'series_id' in result_df.columns else result_df.index,
-                    y=result_df[val_col[0]],
-                    marker_color='rgba(245,158,11,0.7)'
+                    x=x_vals, y=y_vals,
+                    marker_color=bar_colors,
+                    marker_line_color='rgba(80,80,100,0.2)',
+                    marker_line_width=0.8
                 ))
                 fig.update_layout(
-                    height=350, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,8,20,0.6)',
-                    xaxis=dict(tickangle=-45, color='rgba(150,200,255,0.7)'),
-                    yaxis=dict(title='Impact', color='rgba(150,200,255,0.7)'),
-                    margin=dict(l=20, r=20, t=10, b=80)
+                    height=360,
+                    paper_bgcolor='rgba(0,0,0,0)',
+                    plot_bgcolor='rgba(232,240,252,0.45)',
+                    xaxis=dict(tickangle=-45, color='#3a5a7a', tickfont=dict(size=9)),
+                    yaxis=dict(title='Δ Risk Index (vs baseline)', color='#3a5a7a',
+                               gridcolor='rgba(0,80,160,0.1)', zeroline=True,
+                               zerolinecolor='rgba(0,80,160,0.3)', zerolinewidth=1.5),
+                    margin=dict(l=20, r=20, t=10, b=90)
                 )
                 st.plotly_chart(fig, use_container_width=True)
-            st.dataframe(result_df, use_container_width=True)
+
+            # ── Plain-English Analysis ──────────────────────────
+            p1, p2 = scenario_narrative(result_df, sel_result)
+            if p1:
+                st.markdown(f"""
+                <div style='background:#f0f6fc;border:1px solid rgba(0,119,168,0.18);
+                     border-radius:10px;padding:20px 24px;margin:20px 0;line-height:1.8;
+                     font-size:0.85rem;color:#1a2a3a;'>
+                  <div style='font-size:0.7rem;font-weight:700;color:#0077a8;letter-spacing:0.1em;
+                       text-transform:uppercase;margin-bottom:10px;'>📝 Analytical Summary</div>
+                  <p style='margin:0 0 12px;'>{p1}</p>
+                  <p style='margin:0;'>{p2}</p>
+                </div>""", unsafe_allow_html=True)
+
+            # Raw data table (collapsible)
+            with st.expander("🔢 Raw Results Table", expanded=False):
+                st.dataframe(result_df, use_container_width=True)
 
 
 # ═══════════════════════════════════════════════════════════════
