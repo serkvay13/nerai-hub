@@ -1,18 +1,3 @@
-import streamlit as st
-# NERAI ACCESS GATE
-if "auth" not in st.session_state:
-    st.session_state.auth = False
-if not st.session_state.auth:
-    pw = st.text_input("Access Code", type="password")
-    if st.button("Enter", type="primary"):
-        if pw == st.secrets.get("ACCESS_CODE", "NERAI-2026"):
-            st.session_state.auth = True
-            st.rerun()
-        else:
-            st.error("Invalid code. Check your payment confirmation email.")
-    st.stop()
-# END ACCESS GATE
-
 """
 NERAI INTELLIGENCE HUB — Dashboard v3.0
 Multi-page: Home | Indices | Country Profile | News
@@ -36,282 +21,227 @@ st.set_page_config(
 # ═══════════════════════════════════════════════════════════════
 st.markdown("""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Exo+2:wght@300;400;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=DM+Serif+Display&display=swap');
 
-.stApp {
-    background:#020b18;
-    background-image:
-        radial-gradient(ellipse at 15% 40%,rgba(0,150,255,0.05) 0%,transparent 55%),
-        radial-gradient(ellipse at 85% 15%,rgba(100,0,255,0.06) 0%,transparent 55%),
-        radial-gradient(ellipse at 50% 90%,rgba(0,80,180,0.04) 0%,transparent 55%);
-}
-html,body,[class*="css"]{font-family:'Exo 2',sans-serif;color:#c8d8e8;}
-
-[data-testid="stSidebar"]{
-    background:rgba(2,8,20,0.97);
-    border-right:1px solid rgba(0,150,255,0.12);
-}
-[data-testid="stSidebar"] label{
-    color:#00b4ff !important;font-size:0.7rem !important;
-    letter-spacing:0.15em;text-transform:uppercase;
+/* ROOT PALETTE */
+:root {
+    --navy:#0d1f3c; --teal:#0077a8; --sky:#e8f0f8; --silver:#5a6b82;
+    --border:rgba(0,119,168,0.14); --hot:#e05060; --warm:#f59e0b;
+    --cool:#00d4aa; --mild:#00b4d8; --white:#ffffff;
 }
 
-/* NAV BUTTONS */
+/* BASE */
+.stApp { background:#f4f7fb; }
+html,body,[class*="css"]{font-family:'Inter',sans-serif;color:#0d1f3c;}
+
+/* SIDEBAR */
+[data-testid="stSidebar"]{background:#ffffff;border-right:1px solid rgba(0,119,168,0.14);}
+[data-testid="stSidebar"] label{color:#0077a8 !important;font-size:0.7rem !important;
+    letter-spacing:0.1em;text-transform:uppercase;}
 [data-testid="stSidebar"] .stButton>button{
-    background:rgba(0,20,50,0.6) !important;
-    border:1px solid rgba(0,150,255,0.18) !important;
-    color:#7ab4d8 !important;
-    font-family:'Share Tech Mono',monospace !important;
-    font-size:0.72rem !important;letter-spacing:0.12em !important;
-    border-radius:6px !important;width:100% !important;
+    background:#e8f0f8 !important;border:1px solid rgba(0,119,168,0.2) !important;
+    color:#0d1f3c !important;font-family:'Inter',sans-serif !important;
+    font-size:0.78rem !important;letter-spacing:0.04em !important;
+    border-radius:8px !important;width:100% !important;
     text-align:left !important;padding:9px 14px !important;
-    transition:all 0.25s !important;margin-bottom:3px !important;
-}
+    transition:all 0.2s !important;margin-bottom:3px !important;}
 [data-testid="stSidebar"] .stButton>button:hover{
-    border-color:rgba(0,180,255,0.55) !important;
-    color:#00e5ff !important;
-    background:rgba(0,50,110,0.5) !important;
-    box-shadow:0 0 14px rgba(0,150,255,0.2) !important;
-}
+    border-color:#0077a8 !important;color:#0077a8 !important;
+    background:#d5e5f0 !important;}
 
 /* KPI */
-.kpi-card{
-    background:linear-gradient(135deg,rgba(0,18,40,0.95),rgba(0,8,22,0.95));
-    border:1px solid rgba(0,150,255,0.2);border-radius:10px;padding:16px 18px;
-    position:relative;overflow:hidden;
-    box-shadow:0 4px 24px rgba(0,0,0,0.4),inset 0 1px 0 rgba(255,255,255,0.04);
-    transition:border-color 0.3s;
-}
-.kpi-card:hover{border-color:rgba(0,180,255,0.45);}
-.kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;
-    background:linear-gradient(90deg,transparent,var(--accent,#00b4ff),transparent);}
-.kpi-label{font-size:0.65rem;letter-spacing:0.2em;text-transform:uppercase;
-    color:rgba(0,180,255,0.6);font-family:'Share Tech Mono',monospace;margin-bottom:4px;}
-.kpi-value{font-size:2.1rem;font-weight:700;line-height:1;color:#fff;
-    text-shadow:0 0 24px rgba(0,180,255,0.4);}
-.kpi-sub{font-size:0.68rem;margin-top:5px;font-family:'Share Tech Mono',monospace;}
-.kpi-up{color:#00ff9d;}.kpi-down{color:#ff4b6e;}.kpi-neu{color:#556;}
-.badge-low{color:#00ff9d;font-size:0.6rem;background:rgba(0,255,157,0.08);
-    border:1px solid rgba(0,255,157,0.25);border-radius:3px;padding:1px 6px;}
-.badge-med{color:#ffd700;font-size:0.6rem;background:rgba(255,215,0,0.08);
-    border:1px solid rgba(255,215,0,0.25);border-radius:3px;padding:1px 6px;}
-.badge-high{color:#ff6b35;font-size:0.6rem;background:rgba(255,107,53,0.1);
-    border:1px solid rgba(255,107,53,0.3);border-radius:3px;padding:1px 6px;}
-.badge-crit{color:#ff4b6e;font-size:0.6rem;background:rgba(255,75,110,0.1);
-    border:1px solid rgba(255,75,110,0.35);border-radius:3px;padding:1px 6px;}
+.kpi-card{background:#ffffff;border:1px solid rgba(0,119,168,0.14);
+    border-radius:12px;padding:16px 18px;position:relative;overflow:hidden;
+    box-shadow:0 2px 12px rgba(13,31,60,0.07);transition:box-shadow 0.2s;}
+.kpi-card:hover{box-shadow:0 4px 20px rgba(0,119,168,0.14);}
+.kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;
+    background:linear-gradient(90deg,#0077a8,#00d4aa);}
+.kpi-label{font-size:0.65rem;letter-spacing:0.15em;text-transform:uppercase;
+    color:#0077a8;font-weight:600;margin-bottom:4px;}
+.kpi-value{font-size:2.1rem;font-weight:700;line-height:1;color:#0d1f3c;}
+.kpi-sub{font-size:0.68rem;margin-top:5px;color:#5a6b82;}
+.kpi-up{color:#00d4aa;}.kpi-down{color:#e05060;}.kpi-neu{color:#5a6b82;}
+.badge-low{color:#00d4aa;font-size:0.6rem;background:rgba(0,212,170,0.1);
+    border:1px solid rgba(0,212,170,0.3);border-radius:4px;padding:2px 7px;}
+.badge-med{color:#f59e0b;font-size:0.6rem;background:rgba(245,158,11,0.1);
+    border:1px solid rgba(245,158,11,0.3);border-radius:4px;padding:2px 7px;}
+.badge-high{color:#e06030;font-size:0.6rem;background:rgba(224,96,48,0.1);
+    border:1px solid rgba(224,96,48,0.3);border-radius:4px;padding:2px 7px;}
+.badge-crit{color:#e05060;font-size:0.6rem;background:rgba(224,80,96,0.1);
+    border:1px solid rgba(224,80,96,0.3);border-radius:4px;padding:2px 7px;}
 
 /* HERO */
-.hero-title{font-size:2.2rem;font-weight:700;letter-spacing:0.07em;
-    background:linear-gradient(90deg,#00b4ff 0%,#7b2fff 45%,#00e5ff 100%);
-    background-size:200% auto;-webkit-background-clip:text;
-    -webkit-text-fill-color:transparent;animation:shine 5s linear infinite;}
-@keyframes shine{to{background-position:200% center;}}
-.hero-sub{font-size:0.72rem;letter-spacing:0.22em;text-transform:uppercase;
-    color:rgba(0,180,255,0.45);font-family:'Share Tech Mono',monospace;}
+.hero-title{font-size:2rem;font-weight:700;letter-spacing:0.03em;
+    color:#0d1f3c;font-family:'DM Serif Display',serif;}
+.hero-sub{font-size:0.72rem;letter-spacing:0.18em;text-transform:uppercase;color:#0077a8;}
 .live-dot{display:inline-block;width:7px;height:7px;border-radius:50%;
-    background:#00ff9d;box-shadow:0 0 8px #00ff9d;
-    animation:pulse 2s infinite;margin-right:5px;vertical-align:middle;}
+    background:#00d4aa;animation:pulse 2s infinite;margin-right:5px;vertical-align:middle;}
 @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.8)}}
 
 /* SECTION HEADER */
-.sec-hdr{font-size:0.65rem;letter-spacing:0.25em;text-transform:uppercase;
-    color:rgba(0,150,255,0.55);font-family:'Share Tech Mono',monospace;
-    padding:8px 0 6px;border-bottom:1px solid rgba(0,150,255,0.1);margin-bottom:12px;}
+.sec-hdr{font-size:0.65rem;letter-spacing:0.2em;text-transform:uppercase;
+    color:#0077a8;font-weight:600;
+    padding:8px 0 6px;border-bottom:2px solid rgba(0,119,168,0.18);margin-bottom:12px;}
 
 /* SIGNAL CARD */
-.signal-card{background:rgba(0,15,35,0.7);border:1px solid rgba(0,150,255,0.12);
-    border-radius:8px;padding:10px 14px;margin-bottom:8px;
-    display:flex;align-items:center;justify-content:space-between;}
-.signal-name{font-size:0.75rem;color:#a0c0d8;font-weight:600;}
-.signal-topic{font-size:0.62rem;color:rgba(0,150,255,0.5);font-family:'Share Tech Mono',monospace;}
-.signal-val{font-size:1rem;font-weight:700;color:#fff;text-align:right;}
+.signal-card{background:#ffffff;border:1px solid rgba(0,119,168,0.14);
+    border-radius:10px;padding:10px 14px;margin-bottom:8px;
+    display:flex;align-items:center;justify-content:space-between;
+    transition:box-shadow 0.2s;}
+.signal-card:hover{box-shadow:0 2px 12px rgba(0,119,168,0.12);}
+.signal-name{font-size:0.75rem;color:#0d1f3c;font-weight:600;}
+.signal-topic{font-size:0.62rem;color:#0077a8;}
+.signal-val{font-size:1rem;font-weight:700;color:#0d1f3c;text-align:right;}
 
 /* NORM BADGE */
-.norm-raw{color:#8ba3bc;}.norm-score{color:#00b4ff;}.norm-z{color:#7b2fff;}
+.norm-raw{color:#5a6b82;}.norm-score{color:#0077a8;}.norm-z{color:#00d4aa;}
 
 /* DIVIDER */
-.h-div{height:1px;background:linear-gradient(90deg,transparent,rgba(0,150,255,0.15),transparent);margin:12px 0;}
+.h-div{height:1px;background:linear-gradient(90deg,transparent,rgba(0,119,168,0.2),transparent);margin:12px 0;}
 
 #MainMenu,footer,.stDeployButton{visibility:hidden;display:none;}
 ::-webkit-scrollbar{width:4px;}
-::-webkit-scrollbar-thumb{background:rgba(0,150,255,0.25);border-radius:2px;}
+::-webkit-scrollbar-thumb{background:rgba(0,119,168,0.2);border-radius:2px;}
 
 /* BILATERAL */
-.vs-badge{display:inline-block;background:rgba(123,47,255,0.18);
-    border:1px solid rgba(123,47,255,0.45);border-radius:50%;
+.vs-badge{display:inline-block;background:rgba(0,119,168,0.1);
+    border:1px solid rgba(0,119,168,0.3);border-radius:50%;
     width:38px;height:38px;line-height:38px;text-align:center;
-    font-size:0.72rem;font-weight:700;color:#7b2fff;font-family:monospace;}
+    font-size:0.72rem;font-weight:700;color:#0077a8;}
 .relation-status{border-radius:10px;padding:18px 12px;text-align:center;
-    background:linear-gradient(135deg,rgba(0,15,40,0.95),rgba(15,0,40,0.9));margin:4px 0;}
-.metric-mini{background:rgba(0,10,28,0.75);border:1px solid rgba(0,150,255,0.12);
+    background:#e8f0f8;margin:4px 0;}
+.metric-mini{background:#ffffff;border:1px solid rgba(0,119,168,0.14);
     border-radius:8px;padding:12px 10px;text-align:center;}
-.metric-mini-label{font-size:0.58rem;letter-spacing:0.15em;text-transform:uppercase;
-    color:rgba(0,180,255,0.45);font-family:'Share Tech Mono',monospace;margin-bottom:4px;}
-.metric-mini-val{font-size:1.5rem;font-weight:700;line-height:1.1;}
-.pair-card{background:rgba(0,10,28,0.7);border:1px solid rgba(0,150,255,0.1);
+.metric-mini-label{font-size:0.58rem;letter-spacing:0.12em;text-transform:uppercase;
+    color:#0077a8;font-weight:600;margin-bottom:4px;}
+.metric-mini-val{font-size:1.5rem;font-weight:700;line-height:1.1;color:#0d1f3c;}
+.pair-card{background:#ffffff;border:1px solid rgba(0,119,168,0.14);
     border-radius:8px;padding:11px 15px;margin-bottom:7px;
     display:flex;align-items:center;gap:12px;}
 
 /* COUNTRY PROFILE */
-.prof-header{background:linear-gradient(135deg,rgba(0,18,50,0.97),rgba(10,0,45,0.95));
-    border:1px solid rgba(0,150,255,0.2);border-radius:10px;
+.prof-header{background:linear-gradient(135deg,#e8f0f8,#f4f7fb);
+    border:1px solid rgba(0,119,168,0.18);border-radius:12px;
     padding:14px 20px;margin-bottom:14px;
     display:flex;align-items:center;justify-content:space-between;
-    box-shadow:0 4px 20px rgba(0,0,0,0.4);}
-.prof-country{font-size:1.25rem;font-weight:700;color:#fff;letter-spacing:0.06em;}
-.prof-sub{font-size:0.6rem;color:rgba(0,180,255,0.4);
-    font-family:'Share Tech Mono',monospace;letter-spacing:0.15em;margin-top:3px;}
-.prof-section-title{font-size:0.58rem;letter-spacing:0.22em;text-transform:uppercase;
-    color:rgba(0,150,255,0.5);font-family:'Share Tech Mono',monospace;
-    padding-bottom:5px;border-bottom:1px solid rgba(0,150,255,0.1);margin-bottom:9px;}
+    box-shadow:0 2px 12px rgba(13,31,60,0.06);}
+.prof-country{font-size:1.25rem;font-weight:700;color:#0d1f3c;}
+.prof-sub{font-size:0.6rem;color:#0077a8;
+    letter-spacing:0.12em;margin-top:3px;text-transform:uppercase;}
+.prof-section-title{font-size:0.58rem;letter-spacing:0.18em;text-transform:uppercase;
+    color:#0077a8;font-weight:600;
+    padding-bottom:5px;border-bottom:1px solid rgba(0,119,168,0.15);margin-bottom:9px;}
 .idx-row{display:flex;align-items:center;justify-content:space-between;
-    padding:6px 0;border-bottom:1px solid rgba(0,100,180,0.07);}
-.idx-label{font-size:0.72rem;color:#8ab0cc;}
-.idx-val{font-size:0.82rem;font-weight:700;}
-.idx-bar-bg{background:rgba(0,0,0,0.35);border-radius:3px;height:3px;margin-top:3px;}
-.alarm-row{background:rgba(0,12,32,0.75);border:1px solid rgba(0,150,255,0.1);
-    border-radius:7px;padding:8px 11px;margin-bottom:6px;
+    padding:6px 0;border-bottom:1px solid rgba(0,119,168,0.08);}
+.idx-label{font-size:0.72rem;color:#5a6b82;}
+.idx-val{font-size:0.82rem;font-weight:700;color:#0d1f3c;}
+.idx-bar-bg{background:#e8f0f8;border-radius:3px;height:3px;margin-top:3px;}
+.alarm-row{background:#ffffff;border:1px solid rgba(0,119,168,0.14);
+    border-radius:8px;padding:8px 11px;margin-bottom:6px;
     display:flex;align-items:center;justify-content:space-between;}
-.alarm-label{font-size:0.72rem;color:#9ab8cc;font-weight:600;}
-.alarm-meta{font-size:0.58rem;color:rgba(0,150,255,0.4);
-    font-family:'Share Tech Mono',monospace;margin-top:2px;}
-.rel-compact{background:rgba(0,10,28,0.75);border-radius:7px;padding:8px 12px;
+.alarm-label{font-size:0.72rem;color:#0d1f3c;font-weight:600;}
+.alarm-meta{font-size:0.58rem;color:#0077a8;margin-top:2px;}
+.rel-compact{background:#f4f7fb;border-radius:7px;padding:8px 12px;
     margin-bottom:5px;display:flex;align-items:center;justify-content:space-between;
     border-left:3px solid transparent;}
 
 /* NEWS CARD */
-.news-card{background:rgba(0,12,32,0.85);border:1px solid rgba(0,150,255,0.12);
-    border-radius:10px;padding:14px 16px;margin-bottom:10px;
-    transition:border-color 0.3s;}
-.news-card:hover{border-color:rgba(0,180,255,0.3);}
-.news-title{font-size:0.82rem;color:#c8d8e8;font-weight:600;line-height:1.45;}
-.news-source{font-size:0.62rem;color:rgba(0,150,255,0.5);font-family:monospace;margin-top:4px;}
-.news-date{font-size:0.6rem;color:rgba(100,150,200,0.4);font-family:monospace;}
-.news-url{font-size:0.6rem;color:rgba(0,180,255,0.35);}
+.news-card{background:#ffffff;border:1px solid rgba(0,119,168,0.14);
+    border-radius:12px;padding:14px 16px;margin-bottom:10px;transition:box-shadow 0.2s;}
+.news-card:hover{box-shadow:0 4px 16px rgba(0,119,168,0.12);}
+.news-title{font-size:0.82rem;color:#0d1f3c;font-weight:600;line-height:1.45;}
+.news-source{font-size:0.62rem;color:#0077a8;margin-top:4px;}
+.news-date{font-size:0.6rem;color:#5a6b82;}
+.news-url{font-size:0.6rem;color:#0077a8;}
 
-/* CAT BUTTON - news categories */
-.cat-item{background:rgba(0,15,40,0.7);border:1px solid rgba(0,150,255,0.1);
-    border-radius:6px;padding:7px 12px;margin-bottom:4px;cursor:pointer;
-    font-size:0.68rem;color:#7ab4d8;font-family:'Share Tech Mono',monospace;
-    letter-spacing:0.1em;transition:all 0.2s;display:block;}
-.cat-item:hover,.cat-item.active{border-color:rgba(0,180,255,0.45);
-    color:#00e5ff;background:rgba(0,40,90,0.5);}
+/* CAT BUTTON */
+.cat-item{background:#e8f0f8;border:1px solid rgba(0,119,168,0.15);
+    border-radius:8px;padding:7px 12px;margin-bottom:4px;cursor:pointer;
+    font-size:0.68rem;color:#0d1f3c;letter-spacing:0.05em;
+    transition:all 0.2s;display:block;}
+.cat-item:hover,.cat-item.active{border-color:#0077a8;color:#0077a8;background:#d5e5f0;}
 
-/* HOME PAGE */
+/* HOME PAGE HERO */
 .home-hero{
-    background:linear-gradient(160deg,rgba(0,4,16,0.99) 0%,rgba(2,0,20,0.98) 50%,rgba(0,6,22,0.99) 100%);
-    border:1px solid rgba(0,150,255,0.22);border-radius:16px;
-    padding:50px 40px;margin-bottom:32px;position:relative;overflow:hidden;
-    text-align:center;box-shadow:0 0 60px rgba(0,80,200,0.08),inset 0 0 80px rgba(0,0,0,0.3);
-}
-/* Animated grid overlay */
+    background:linear-gradient(135deg,#0d1f3c 0%,#0a2d4a 60%,#0d1f3c 100%);
+    border-radius:16px;padding:50px 40px;margin-bottom:32px;
+    position:relative;overflow:hidden;text-align:center;
+    box-shadow:0 8px 40px rgba(13,31,60,0.18);}
 .home-hero::before{content:'';position:absolute;inset:0;
-    background-image:linear-gradient(rgba(0,100,255,0.04) 1px,transparent 1px),
-        linear-gradient(90deg,rgba(0,100,255,0.04) 1px,transparent 1px);
-    background-size:50px 50px;pointer-events:none;
-    animation:grid-breathe 8s ease-in-out infinite;}
-@keyframes grid-breathe{0%,100%{opacity:0.6;}50%{opacity:1;}}
-/* Scan line */
-.home-hero::after{content:'';position:absolute;left:0;right:0;height:1px;
-    background:linear-gradient(90deg,transparent 0%,rgba(0,200,255,0.5) 40%,rgba(0,220,255,0.8) 50%,rgba(0,200,255,0.5) 60%,transparent 100%);
-    top:0;animation:scanline 6s linear infinite;pointer-events:none;z-index:1;}
-@keyframes scanline{0%{top:0%;}100%{top:100%;}}
-/* Corner HUD brackets */
+    background-image:
+        linear-gradient(rgba(0,119,168,0.07) 1px,transparent 1px),
+        linear-gradient(90deg,rgba(0,119,168,0.07) 1px,transparent 1px);
+    background-size:50px 50px;pointer-events:none;}
 .home-corner{position:absolute;width:22px;height:22px;}
-.home-corner-tl{top:14px;left:14px;border-top:2px solid rgba(0,200,255,0.6);border-left:2px solid rgba(0,200,255,0.6);}
-.home-corner-tr{top:14px;right:14px;border-top:2px solid rgba(0,200,255,0.6);border-right:2px solid rgba(0,200,255,0.6);}
-.home-corner-bl{bottom:14px;left:14px;border-bottom:2px solid rgba(0,200,255,0.6);border-left:2px solid rgba(0,200,255,0.6);}
-.home-corner-br{bottom:14px;right:14px;border-bottom:2px solid rgba(0,200,255,0.6);border-right:2px solid rgba(0,200,255,0.6);}
-/* Glowing orbs */
+.home-corner-tl{top:14px;left:14px;border-top:2px solid rgba(0,180,216,0.5);border-left:2px solid rgba(0,180,216,0.5);}
+.home-corner-tr{top:14px;right:14px;border-top:2px solid rgba(0,180,216,0.5);border-right:2px solid rgba(0,180,216,0.5);}
+.home-corner-bl{bottom:14px;left:14px;border-bottom:2px solid rgba(0,180,216,0.5);border-left:2px solid rgba(0,180,216,0.5);}
+.home-corner-br{bottom:14px;right:14px;border-bottom:2px solid rgba(0,180,216,0.5);border-right:2px solid rgba(0,180,216,0.5);}
 .home-orb{position:absolute;border-radius:50%;filter:blur(70px);pointer-events:none;}
-/* ── CSS TEXT LOGO ─────────────────────────────────────────── */
+
+/* LOGO */
 .nerai-logo-wrap{position:relative;z-index:2;margin-bottom:14px;display:inline-block;}
 .nerai-logo-brand{display:inline-flex;align-items:center;gap:6px;line-height:1;}
-.nerai-logo-hex{font-size:3rem;color:rgba(0,230,255,0.92);
-    text-shadow:0 0 16px rgba(0,210,255,0.9),0 0 35px rgba(0,160,255,0.5);
-    animation:logo-hex-pulse 3.5s ease-in-out infinite;}
+.nerai-logo-hex{font-size:3rem;color:#00d4aa;}
 .nerai-logo-ner{font-size:4.4rem;font-weight:900;letter-spacing:0.04em;
-    font-family:'Exo 2',sans-serif;color:#ffffff;
-    animation:logo-text-glow 3.5s ease-in-out infinite;}
+    font-family:'Inter',sans-serif;color:#ffffff;}
 .nerai-logo-ai{font-size:4.4rem;font-weight:900;letter-spacing:0.04em;
-    font-family:'Exo 2',sans-serif;
-    background:linear-gradient(135deg,#00e5ff 0%,#0099ff 50%,#8b3fff 100%);
+    font-family:'Inter',sans-serif;
+    background:linear-gradient(135deg,#00d4aa 0%,#0077a8 100%);
     -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
-/* Expanding ring behind logo */
-.nerai-logo-ring{position:absolute;border-radius:50%;
-    border:1px solid rgba(0,200,255,0.18);pointer-events:none;
-    top:50%;left:50%;transform:translate(-50%,-50%);
-    animation:ring-expand 4s ease-out infinite;}
-.nerai-logo-ring-2{animation-delay:2s;}
-@keyframes ring-expand{
-    0%{width:60px;height:30px;opacity:0.6;}
-    100%{width:500px;height:130px;opacity:0;}}
-@keyframes logo-hex-pulse{
-    0%,100%{text-shadow:0 0 12px rgba(0,210,255,0.8),0 0 28px rgba(0,160,255,0.4);}
-    50%{text-shadow:0 0 30px rgba(0,230,255,1),0 0 60px rgba(0,200,255,0.6),0 0 90px rgba(0,130,255,0.25);}}
-@keyframes logo-text-glow{
-    0%,100%{text-shadow:0 0 20px rgba(0,200,255,0.25),0 0 40px rgba(0,120,255,0.1);}
-    50%{text-shadow:0 0 40px rgba(0,230,255,0.55),0 0 80px rgba(0,180,255,0.22);}}
-/* Tagline flicker */
-.hero-tagline{font-size:0.8rem;letter-spacing:0.38em;text-transform:uppercase;
-    color:rgba(0,210,255,0.65);font-family:'Share Tech Mono',monospace;
-    margin:8px 0 28px;animation:tag-flicker 9s ease-in-out infinite;}
-@keyframes tag-flicker{0%,88%,100%{opacity:0.85;}90%{opacity:0.12;}92%{opacity:0.85;}94%{opacity:0.18;}96%{opacity:0.85;}}
-/* Floating hexagons */
-.hex-deco{position:absolute;border:1px solid rgba(0,180,255,0.12);
-    clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);
-    background:rgba(0,80,200,0.05);animation:hex-float 10s ease-in-out infinite;}
-@keyframes hex-float{0%,100%{transform:translateY(0) rotate(0deg);}50%{transform:translateY(-18px) rotate(8deg);}}
-/* Stats */
+.nerai-logo-ring,.nerai-logo-ring-2{display:none;}
+@keyframes logo-hex-pulse{0%,100%{opacity:0.9;}50%{opacity:1;}}
+@keyframes logo-text-glow{0%,100%{opacity:0.95;}50%{opacity:1;}}
+
+/* TAGLINE */
+.hero-tagline{font-size:0.8rem;letter-spacing:0.3em;text-transform:uppercase;
+    color:rgba(0,212,170,0.8);font-family:'Inter',sans-serif;margin:8px 0 28px;}
+.hex-deco{display:none;}
+
+/* HOME STATS */
 .home-stat-row{display:flex;justify-content:center;gap:50px;margin-bottom:30px;position:relative;z-index:2;}
 .home-stat{text-align:center;}
-.home-stat-val{font-size:2rem;font-weight:700;color:#00b4ff;
-    text-shadow:0 0 20px rgba(0,180,255,0.4);font-family:'Share Tech Mono',monospace;}
-.home-stat-lbl{font-size:0.6rem;letter-spacing:0.2em;color:rgba(0,180,255,0.4);
-    text-transform:uppercase;font-family:monospace;}
+.home-stat-val{font-size:2rem;font-weight:700;color:#00d4aa;font-family:'Inter',sans-serif;}
+.home-stat-lbl{font-size:0.6rem;letter-spacing:0.18em;color:rgba(0,212,170,0.7);text-transform:uppercase;}
 
-/* HOME MODULE TILES */
-.home-module{
-    background:linear-gradient(135deg,rgba(0,18,50,0.95),rgba(0,8,30,0.95));
-    border:1px solid rgba(0,150,255,0.15);border-radius:14px;
-    padding:30px 22px 24px;text-align:center;position:relative;overflow:hidden;
-    min-height:190px;display:flex;flex-direction:column;align-items:center;justify-content:center;
-    transition:border-color 0.3s,box-shadow 0.3s,transform 0.3s;
-    box-shadow:0 4px 24px rgba(0,0,0,0.35);}
-.home-module:hover{border-color:rgba(0,200,255,0.45);
-    box-shadow:0 8px 40px rgba(0,100,255,0.22),inset 0 0 30px rgba(0,40,130,0.12);
-    transform:translateY(-4px);}
+/* HOME MODULES */
+.home-module{background:#ffffff;border:1px solid rgba(0,119,168,0.16);
+    border-radius:14px;padding:30px 22px 24px;text-align:center;
+    position:relative;overflow:hidden;min-height:190px;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    transition:box-shadow 0.25s,transform 0.25s;
+    box-shadow:0 2px 12px rgba(13,31,60,0.07);}
+.home-module:hover{box-shadow:0 8px 32px rgba(0,119,168,0.16);transform:translateY(-4px);}
 .home-module::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;
-    background:linear-gradient(90deg,transparent,var(--mc,#00b4ff),transparent);}
+    background:linear-gradient(90deg,#0077a8,#00d4aa);}
 .home-module-icon{font-size:2.8rem;margin-bottom:12px;line-height:1;}
-.home-module-title{font-size:1rem;font-weight:700;color:#e0f0ff;
-    letter-spacing:0.12em;text-transform:uppercase;margin-bottom:8px;}
-.home-module-desc{font-size:0.67rem;color:rgba(100,180,220,0.55);line-height:1.6;}
+.home-module-title{font-size:0.9rem;font-weight:700;color:#0d1f3c;
+    letter-spacing:0.06em;text-transform:uppercase;margin-bottom:8px;}
+.home-module-desc{font-size:0.67rem;color:#5a6b82;line-height:1.6;}
 .home-module-btn{
     margin-top:16px;padding:7px 20px;
-    background:rgba(0,100,200,0.15);
-    border:1px solid rgba(0,150,255,0.3);border-radius:5px;
-    color:#00b4ff;font-size:0.68rem;font-family:'Share Tech Mono',monospace;
-    letter-spacing:0.1em;cursor:pointer;transition:all 0.2s;display:inline-block;
-}
+    background:#e8f0f8;border:1px solid rgba(0,119,168,0.25);
+    border-radius:6px;color:#0077a8;font-size:0.68rem;font-family:'Inter',sans-serif;
+    cursor:pointer;transition:all 0.2s;display:inline-block;}
+.home-module-btn:hover{background:#0077a8;color:#ffffff;border-color:#0077a8;}
 
 /* PEAK NEWS */
-.peak-news-box{background:rgba(0,10,28,0.85);border:1px solid rgba(123,47,255,0.25);
+.peak-news-box{background:#ffffff;border:1px solid rgba(0,119,168,0.2);
     border-radius:10px;padding:14px 16px;margin-top:10px;}
-.peak-date-badge{background:rgba(123,47,255,0.15);border:1px solid rgba(123,47,255,0.3);
-    border-radius:4px;padding:2px 8px;font-size:0.6rem;color:#a070ff;
-    font-family:monospace;display:inline-block;margin-bottom:8px;}
-.peak-news-item{padding:7px 0;border-bottom:1px solid rgba(0,100,180,0.08);}
+.peak-date-badge{background:rgba(0,119,168,0.1);border:1px solid rgba(0,119,168,0.25);
+    border-radius:4px;padding:2px 8px;font-size:0.6rem;color:#0077a8;
+    display:inline-block;margin-bottom:8px;}
+.peak-news-item{padding:7px 0;border-bottom:1px solid rgba(0,119,168,0.08);}
 .peak-news-item:last-child{border-bottom:none;}
-.peak-news-headline{font-size:0.75rem;color:#b8d0e8;line-height:1.4;}
-.peak-news-src{font-size:0.58rem;color:rgba(0,150,255,0.4);font-family:monospace;margin-top:2px;}
+.peak-news-headline{font-size:0.75rem;color:#0d1f3c;line-height:1.4;}
+.peak-news-src{font-size:0.58rem;color:#0077a8;margin-top:2px;}
 </style>
 """, unsafe_allow_html=True)
 
 # ═══════════════════════════════════════════════════════════════
 # NERAI LOGO (transparent PNG, base64)
 # ═══════════════════════════════════════════════════════════════
-NERAI_LOGO_B64 = "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"
+NERAI_LOGO_B64 = ""
 
 # ═══════════════════════════════════════════════════════════════
 # CONSTANTS
@@ -368,8 +298,8 @@ TOPIC_LABELS = {
     'confiscate_property':'Property Confiscation','human_rights_abuses':'Human Rights Abuses',
     'corruption':'Corruption',
 }
-GLOW_COLORS = ['#00b4ff','#7b2fff','#00ff9d','#ff6b35','#ff4b6e',
-               '#ffd700','#00e5ff','#e040fb','#69ff47','#ff6e40']
+GLOW_COLORS = ['#0077a8','#00d4aa','#f59e0b','#e05060','#00b4d8',
+               '#5a6b82','#0099cc','#f0c75e','#c97a8a','#7ec8b8']
 
 TENSION_WEIGHTS = {
     'deteriorating_bilateral_relations':3.0,
@@ -382,10 +312,10 @@ COOP_WEIGHTS = {
     'dispute_settlement':2.0,'international_support':1.5,'political_stability':1.0,
 }
 BILATERAL_INDICATORS = [
-    ('political_crisis','Political Crisis','#e040fb'),
-    ('military_clash','War Risk','#ff4b6e'),
-    ('threaten_in_international_relations','Intl. Threats','#ff6b35'),
-    ('military_escalation','Military Escalation','#ffd700'),
+    ('political_crisis','Political Crisis','#f59e0b'),
+    ('military_clash','War Risk','#e05060'),
+    ('threaten_in_international_relations','Intl. Threats','#e06030'),
+    ('military_escalation','Military Escalation','#0077a8'),
 ]
 
 NEWS_CATEGORIES = [
@@ -424,13 +354,13 @@ def hex_to_rgba(h, a=0.06):
     return f'rgba({r},{g},{b},{a})'
 
 BASE_THEME = dict(
-    paper_bgcolor='rgba(0,0,0,0)',plot_bgcolor='rgba(0,8,22,0.7)',
-    font=dict(family='Exo 2,sans-serif',color='#7a9ab8',size=11),
+    paper_bgcolor='rgba(0,0,0,0)',plot_bgcolor='rgba(244,247,251,0.8)',
+    font=dict(family='Inter,sans-serif',color='#5a6b82',size=11),
     margin=dict(l=45,r=15,t=38,b=40),
-    xaxis=dict(gridcolor='rgba(0,100,180,0.1)',linecolor='rgba(0,100,180,0.15)',
-               tickfont=dict(size=10,color='#4a6a8a')),
-    yaxis=dict(gridcolor='rgba(0,100,180,0.1)',linecolor='rgba(0,100,180,0.15)',
-               tickfont=dict(size=10,color='#4a6a8a')),
+    xaxis=dict(gridcolor='rgba(0,119,168,0.1)',linecolor='rgba(0,119,168,0.15)',
+               tickfont=dict(size=10,color='#5a6b82')),
+    yaxis=dict(gridcolor='rgba(0,119,168,0.1)',linecolor='rgba(0,119,168,0.15)',
+               tickfont=dict(size=10,color='#5a6b82')),
 )
 
 # ═══════════════════════════════════════════════════════════════
@@ -542,14 +472,14 @@ def chart_timeseries_with_peaks(df_n, countries, title, method, show_peaks=True)
                     showlegend=False
                 ))
     if method=='Z-Score':
-        fig.add_hline(y=2,line_dash='dot',line_color='rgba(255,75,110,0.4)',
+        fig.add_hline(y=2,line_dash='dot',line_color='rgba(224,80,96,0.5)',
                       annotation_text='Alert (+2σ)',annotation_font_size=9)
-        fig.add_hline(y=-2,line_dash='dot',line_color='rgba(0,255,157,0.3)',
+        fig.add_hline(y=-2,line_dash='dot',line_color='rgba(0,212,170,0.4)',
                       annotation_text='-2σ',annotation_font_size=9)
     t = {**BASE_THEME}
     t['yaxis'] = {**t['yaxis'],'title':y_label,'title_font':dict(size=10)}
     fig.update_layout(**t, height=340,
-        title=dict(text=title,font=dict(size=12,color='#6a9ab8'),x=0.01),
+        title=dict(text=title,font=dict(size=12,color='#0077a8'),x=0.01),
         legend=dict(bgcolor='rgba(0,0,0,0)',bordercolor='rgba(0,100,180,0.2)',
                     borderwidth=1,font=dict(size=10)),
         hovermode='x unified')
@@ -569,25 +499,25 @@ def chart_heatmap(df_n, top_n, method):
     xlabels = [d if i%step==0 else '' for i,d in enumerate(dates_str)]
     ylabels = [COUNTRY_NAMES.get(c,c) for c in sel]
     colorscale = (
-        [[0,'rgba(0,10,30,1)'],[0.25,'rgba(0,60,120,1)'],
-         [0.5,'rgba(0,130,200,1)'],[0.75,'rgba(100,0,200,1)'],[1,'rgba(255,50,100,1)']]
+        [[0,'#e8f0f8'],[0.25,'#00b4d8'],
+         [0.5,'#0077a8'],[0.75,'#f59e0b'],[1,'#e05060']]
         if method!='Z-Score' else
-        [[0,'rgba(0,80,160,1)'],[0.35,'rgba(0,20,50,1)'],
-         [0.5,'rgba(10,10,30,1)'],[0.65,'rgba(80,0,120,1)'],[1,'rgba(255,50,100,1)']]
+        [[0,'#00d4aa'],[0.35,'#e8f0f8'],
+         [0.5,'#f4f7fb'],[0.65,'#f59e0b'],[1,'#e05060']]
     )
     fig = go.Figure(go.Heatmap(
         z=matrix,x=xlabels,y=ylabels,colorscale=colorscale,
         hovertemplate='<b>%{y}</b><br>%{x}<br>Value: %{z:.3f}<extra></extra>',
         showscale=True,colorbar=dict(thickness=7,len=0.85,
-            tickfont=dict(size=8,color='#4a6a8a'),outlinewidth=0)
+            tickfont=dict(size=8,color='#5a6b82'),outlinewidth=0)
     ))
     t = {**BASE_THEME}
     t['xaxis'] = dict(showticklabels=True,tickangle=-45,
-                      tickfont=dict(size=8,color='#4a6a8a'),gridcolor='rgba(0,0,0,0)')
-    t['yaxis'] = dict(tickfont=dict(size=9,color='#8ab0c8'),gridcolor='rgba(0,0,0,0)')
+                      tickfont=dict(size=8,color='#5a6b82'),gridcolor='rgba(0,0,0,0)')
+    t['yaxis'] = dict(tickfont=dict(size=9,color='#0d1f3c'),gridcolor='rgba(0,0,0,0)')
     fig.update_layout(**t,height=420,
         title=dict(text=f'Top {top_n} Countries — Heatmap',
-                   font=dict(size=12,color='#6a9ab8'),x=0.01))
+                   font=dict(size=12,color='#0077a8'),x=0.01))
     return fig
 
 def chart_world(df_n,date_col):
@@ -600,24 +530,24 @@ def chart_world(df_n,date_col):
     except: return go.Figure()
     fig = go.Figure(go.Choropleth(
         locations=row['iso3'],z=row['value'],text=row['name'],
-        colorscale=[[0,'rgba(0,15,40,1)'],[0.3,'rgba(0,80,160,1)'],
-                    [0.6,'rgba(80,0,180,1)'],[0.85,'rgba(200,0,100,1)'],
-                    [1,'rgba(255,50,50,1)']],
-        autocolorscale=False,marker_line_color='rgba(0,100,180,0.3)',
+        colorscale=[[0,'#e8f0f8'],[0.3,'#00b4d8'],
+                    [0.6,'#0077a8'],[0.85,'#f59e0b'],
+                    [1,'#e05060']],
+        autocolorscale=False,marker_line_color='rgba(0,119,168,0.3)',
         marker_line_width=0.5,
-        colorbar=dict(title=dict(text='Score',font=dict(size=9,color='#4a6a8a')),
-                      thickness=7,len=0.55,tickfont=dict(size=8,color='#4a6a8a'),
+        colorbar=dict(title=dict(text='Score',font=dict(size=9,color='#5a6b82')),
+                      thickness=7,len=0.55,tickfont=dict(size=8,color='#5a6b82'),
                       outlinewidth=0,bgcolor='rgba(0,0,0,0)'),
         hovertemplate='<b>%{text}</b><br>Value: %{z:.3f}<extra></extra>'
     ))
     t = {**BASE_THEME}
     fig.update_layout(**t,height=330,
         title=dict(text=f'Global Risk Map — {pd.Timestamp(date_col).strftime("%d %b %Y")}',
-                   font=dict(size=12,color='#6a9ab8'),x=0.01),
+                   font=dict(size=12,color='#0077a8'),x=0.01),
         geo=dict(bgcolor='rgba(0,0,0,0)',showframe=False,showcoastlines=True,
-                 coastlinecolor='rgba(0,100,180,0.25)',showland=True,
-                 landcolor='rgba(4,18,42,1)',showocean=True,
-                 oceancolor='rgba(0,6,18,1)',showlakes=False,
+                 coastlinecolor='rgba(0,119,168,0.3)',showland=True,
+                 landcolor='#e8f0f8',showocean=True,
+                 oceancolor='#f4f7fb',showlakes=False,
                  projection_type='natural earth'))
     return fig
 
@@ -629,20 +559,21 @@ def chart_ranking(df_n,date_col,n=12):
         row = row.nlargest(n,'value').sort_values('value')
     except: return go.Figure()
     n_rows = len(row)
-    colors = [f'rgba({int(200*i/max(n_rows-1,1))},{int(120+80*i/max(n_rows-1,1))},{int(220-20*i/max(n_rows-1,1))},0.85)' for i in range(n_rows)]
+    RANK_PALETTE = ['#00b4d8','#0077a8','#00d4aa','#f59e0b','#e05060','#5a6b82','#c97a8a','#7ec8b8','#f0c75e','#0099cc','#e06030','#00c4a0']
+    colors = [RANK_PALETTE[i % len(RANK_PALETTE)] for i in range(n_rows)]
     fig = go.Figure(go.Bar(
         x=row['value'],y=row['name'],orientation='h',
-        marker=dict(color=colors,line=dict(color='rgba(0,180,255,0.2)',width=0.5)),
+        marker=dict(color=colors,line=dict(color='rgba(0,119,168,0.15)',width=0.5)),
         hovertemplate='<b>%{y}</b><br>Value: %{x:.4f}<extra></extra>'
     ))
     t = {**BASE_THEME}
-    t['xaxis'] = dict(gridcolor='rgba(0,100,180,0.1)',tickfont=dict(size=10,color='#4a6a8a'))
-    t['yaxis'] = dict(tickfont=dict(size=10,color='#8ab0c8'),gridcolor='rgba(0,0,0,0)')
+    t['xaxis'] = dict(gridcolor='rgba(0,119,168,0.1)',tickfont=dict(size=10,color='#5a6b82'))
+    t['yaxis'] = dict(tickfont=dict(size=10,color='#0d1f3c'),gridcolor='rgba(0,0,0,0)')
     fig.update_layout(**t,height=330,
-        title=dict(text='Country Ranking',font=dict(size=12,color='#6a9ab8'),x=0.01))
+        title=dict(text='Country Ranking',font=dict(size=12,color='#0077a8'),x=0.01))
     return fig
 
-def chart_sparkline(series,color='#00b4ff'):
+def chart_sparkline(series,color='#0077a8'):
     fig = go.Figure(go.Scatter(
         x=series.index,y=series.values,mode='lines',
         line=dict(width=1.5,color=color),
@@ -659,24 +590,24 @@ def gauge_chart(value,title,color,height=210):
     fig = go.Figure(go.Indicator(
         mode='gauge+number',value=round(value,1),
         domain={'x':[0,1],'y':[0,1]},
-        title={'text':title,'font':{'size':10,'color':'#6a9ab8','family':'Share Tech Mono'}},
-        number={'font':{'color':color,'size':30,'family':'Exo 2'},'valueformat':'.0f'},
+        title={'text':title,'font':{'size':10,'color':'#5a6b82','family':'Inter'}},
+        number={'font':{'color':color,'size':30,'family':'Inter'},'valueformat':'.0f'},
         gauge={
             'axis':{'range':[0,100],'nticks':5,
-                    'tickfont':{'size':8,'color':'#3a5a7a'},'tickcolor':'#2a4a6a'},
+                    'tickfont':{'size':8,'color':'#5a6b82'},'tickcolor':'#0077a8'},
             'bar':{'color':color,'thickness':0.22},
             'bgcolor':'rgba(0,0,0,0)','borderwidth':0,
             'steps':[
-                {'range':[0,25],'color':'rgba(0,255,157,0.06)'},
-                {'range':[25,50],'color':'rgba(255,215,0,0.06)'},
-                {'range':[50,75],'color':'rgba(255,107,53,0.08)'},
-                {'range':[75,100],'color':'rgba(255,75,110,0.10)'},
+                {'range':[0,25],'color':'rgba(0,212,170,0.10)'},
+                {'range':[25,50],'color':'rgba(245,158,11,0.10)'},
+                {'range':[50,75],'color':'rgba(224,96,48,0.10)'},
+                {'range':[75,100],'color':'rgba(224,80,96,0.12)'},
             ],
             'threshold':{'line':{'color':color,'width':3},'thickness':0.75,'value':value},
         }
     ))
     fig.update_layout(paper_bgcolor='rgba(0,0,0,0)',
-                      font=dict(family='Exo 2,sans-serif',color='#7a9ab8'),
+                      font=dict(family='Inter,sans-serif',color='#5a6b82'),
                       height=height,margin=dict(l=15,r=15,t=45,b=5))
     return fig
 
@@ -755,15 +686,15 @@ def get_bilateral_series(t_norm, c_norm, c1, c2, n_days=60):
 
 def relation_status(net_score,trend_7d):
     if   net_score>=80: st_,col_,ico = 'CRISIS',     '#ff0033','🚨'
-    elif net_score>=65: st_,col_,ico = 'HOSTILE',    '#ff4b6e','⚠️'
-    elif net_score>=45: st_,col_,ico = 'TENSE',      '#ff6b35','📈'
-    elif net_score>=25: st_,col_,ico = 'CAUTIOUS',   '#ffd700','📊'
-    elif net_score>=10: st_,col_,ico = 'STABLE',     '#00b4ff','📉'
-    else:               st_,col_,ico = 'COOPERATIVE','#00ff9d','🤝'
-    if   trend_7d> 5: tr_txt,tr_col = '▲ DETERIORATING','#ff6b35'
-    elif trend_7d> 1: tr_txt,tr_col = '↗ WORSENING',    '#ffd700'
-    elif trend_7d<-5: tr_txt,tr_col = '▼ IMPROVING',    '#00ff9d'
-    elif trend_7d<-1: tr_txt,tr_col = '↘ EASING',       '#00b4ff'
+    elif net_score>=65: st_,col_,ico = 'HOSTILE',    '#e05060','⚠️'
+    elif net_score>=45: st_,col_,ico = 'TENSE',      '#e06030','📈'
+    elif net_score>=25: st_,col_,ico = 'CAUTIOUS',   '#f59e0b','📊'
+    elif net_score>=10: st_,col_,ico = 'STABLE',     '#00b4d8','📉'
+    else:               st_,col_,ico = 'COOPERATIVE','#00d4aa','🤝'
+    if   trend_7d> 5: tr_txt,tr_col = '▲ DETERIORATING','#e06030'
+    elif trend_7d> 1: tr_txt,tr_col = '↗ WORSENING',    '#f59e0b'
+    elif trend_7d<-5: tr_txt,tr_col = '▼ IMPROVING',    '#00d4aa'
+    elif trend_7d<-1: tr_txt,tr_col = '↘ EASING',       '#00b4d8'
     else:             tr_txt,tr_col = '→ STABLE',        '#7a9ab8'
     return st_,col_,ico,tr_txt,tr_col
 
@@ -1349,7 +1280,7 @@ def render_home():
           <span style="color:rgba(0,150,255,0.3);">|</span>
           <span>LAST UPDATE: {date_cols[-1].strftime('%d %b %Y') if len(date_cols) else 'N/A'}</span>
           <span style="color:rgba(0,150,255,0.3);">|</span>
-          <span style="color:{'#ffaa00' if is_demo else '#00ff9d'};">{'⚠ DEMO' if is_demo else '✓ ONLINE'}</span>
+          <span style="color:{'#ffaa00' if is_demo else '#00d4aa'};">{'⚠ DEMO' if is_demo else '✓ ONLINE'}</span>
         </div>
       </div>
     </div>
@@ -1370,7 +1301,7 @@ def render_home():
 
     with m1:
         st.markdown("""
-        <div class="home-module" style="--mc:#00b4ff">
+        <div class="home-module" style="--mc:#0077a8">
           <div class="home-module-icon">📊</div>
           <div class="home-module-title">Indices</div>
           <div class="home-module-desc">
@@ -1384,7 +1315,7 @@ def render_home():
 
     with m2:
         st.markdown("""
-        <div class="home-module" style="--mc:#7b2fff">
+        <div class="home-module" style="--mc:#f59e0b">
           <div class="home-module-icon">🎯</div>
           <div class="home-module-title">Country Profile</div>
           <div class="home-module-desc">
@@ -1398,7 +1329,7 @@ def render_home():
 
     with m3:
         st.markdown("""
-        <div class="home-module" style="--mc:#00ff9d">
+        <div class="home-module" style="--mc:#00d4aa">
           <div class="home-module-icon">📰</div>
           <div class="home-module-title">News</div>
           <div class="home-module-desc">
@@ -1412,7 +1343,7 @@ def render_home():
 
     with m4:
         pred_status = '✓ READY' if has_predictions else '⏳ PENDING'
-        pred_color  = '#7b2fff' if has_predictions else '#ff6b35'
+        pred_color  = '#0077a8' if has_predictions else '#e06030'
         st.markdown(f"""
         <div class="home-module" style="--mc:{pred_color}">
           <div class="home-module-icon">🔮</div>
@@ -1441,7 +1372,7 @@ def render_home():
                 n1  = COUNTRY_NAMES.get(pair['c1'],pair['c1'])
                 n2  = COUNTRY_NAMES.get(pair['c2'],pair['c2'])
                 net = pair['net']
-                clr = '#ff4b6e' if net>=45 else ('#ffd700' if net>=25 else '#00b4ff')
+                clr = '#e05060' if net>=45 else ('#f59e0b' if net>=25 else '#00b4d8')
                 st.markdown(f"""
                 <div style="background:rgba(0,10,28,0.8);border:1px solid {clr}25;
                      border-radius:10px;padding:14px 12px;text-align:center;
@@ -1469,7 +1400,7 @@ def render_home():
     cols_r  = st.columns(8)
     for col_el, (country, val) in zip(cols_r, avg_all.items()):
         with col_el:
-            clr = '#ff4b6e' if val>=50 else ('#ffd700' if val>=25 else '#00b4ff')
+            clr = '#e05060' if val>=50 else ('#f59e0b' if val>=25 else '#00b4d8')
             st.markdown(f"""
             <div style="background:rgba(0,10,28,0.7);border:1px solid {clr}20;
                  border-radius:8px;padding:10px 8px;text-align:center;">
@@ -1509,12 +1440,12 @@ def render_indices():
           </div>
         </div>""", unsafe_allow_html=True)
     with c2h:
-        nm_color = {'Raw':'#8ba3bc','Score (0–100)':'#00b4ff','Z-Score':'#7b2fff'}[norm_method]
+        nm_color = {'Raw':'#8ba3bc','Score (0–100)':'#00b4d8','Z-Score':'#0077a8'}[norm_method]
         st.markdown(f"""
         <div style='text-align:right;padding-top:12px;font-family:monospace;
              font-size:0.68rem;color:rgba(0,180,255,0.4);'>
           LAST UPDATE<br>
-          <span style='color:#00b4ff;font-size:0.9rem;'>{date_cols[-1].strftime('%d %b %Y')}</span><br>
+          <span style='color:#0077a8;font-size:0.9rem;'>{date_cols[-1].strftime('%d %b %Y')}</span><br>
           <span style='color:{nm_color};font-size:0.7rem;'>▣ {norm_method}</span>
         </div>""", unsafe_allow_html=True)
     st.markdown('<div class="h-div"></div>', unsafe_allow_html=True)
@@ -1532,8 +1463,8 @@ def render_indices():
                 d_cls  = 'kpi-up' if delta>0 else ('kpi-down' if delta<0 else 'kpi-neu')
                 d_sym  = '▲' if delta>0 else ('▼' if delta<0 else '●')
                 badge  = risk_badge(val, norm_method)
-                spark_color = '#ff4b6e' if (norm_method=='Score (0–100)' and val>=60) else \
-                              '#ffd700' if (norm_method=='Score (0–100)' and val>=35) else '#00b4ff'
+                spark_color = '#e05060' if (norm_method=='Score (0–100)' and val>=60) else \
+                              '#f59e0b' if (norm_method=='Score (0–100)' and val>=35) else '#00b4d8'
                 st.markdown(f"""
                 <div class='kpi-card' style='--accent:{spark_color};'>
                   <div class='kpi-label'>{COUNTRY_NAMES.get(c,c)}</div>
@@ -1574,14 +1505,14 @@ def render_indices():
                       <div style='font-size:0.65rem;color:#ff9d6b;text-align:right;'>▲ {pct:+.1f}%</div></div>
                     </div>""", unsafe_allow_html=True)
             with sig_c2:
-                st.markdown('<div style="font-size:0.65rem;color:#00ff9d;letter-spacing:0.15em;margin-bottom:8px;">▼ DECLINING RISK</div>', unsafe_allow_html=True)
+                st.markdown('<div style="font-size:0.65rem;color:#00d4aa;letter-spacing:0.15em;margin-bottom:8px;">▼ DECLINING RISK</div>', unsafe_allow_html=True)
                 for c,pct in top_dn.items():
                     val = last[c]
                     st.markdown(f"""
                     <div class='signal-card' style='border-color:rgba(0,255,157,0.15);'>
                       <div><div class='signal-name'>{COUNTRY_NAMES.get(c,c)}</div>
                       <div class='signal-topic'>{sel_label}</div></div>
-                      <div><div class='signal-val' style='color:#00ff9d;'>{fmt(val,norm_method)}</div>
+                      <div><div class='signal-val' style='color:#00d4aa;'>{fmt(val,norm_method)}</div>
                       <div style='font-size:0.65rem;color:#00cc7a;text-align:right;'>{pct:+.1f}%</div></div>
                     </div>""", unsafe_allow_html=True)
 
@@ -1665,12 +1596,12 @@ def render_indices():
             n1  = COUNTRY_NAMES.get(pair['c1'],pair['c1'])
             n2  = COUNTRY_NAMES.get(pair['c2'],pair['c2'])
             net = pair['net']; trnd = pair['trend']
-            if   net>=65: badge_cls,badge_txt,bar_col = 'badge-crit','CRITICAL','#ff4b6e'
-            elif net>=45: badge_cls,badge_txt,bar_col = 'badge-high','HIGH','#ff6b35'
-            elif net>=25: badge_cls,badge_txt,bar_col = 'badge-med','ELEVATED','#ffd700'
-            else:         badge_cls,badge_txt,bar_col = 'badge-low','MODERATE','#00b4ff'
+            if   net>=65: badge_cls,badge_txt,bar_col = 'badge-crit','CRITICAL','#e05060'
+            elif net>=45: badge_cls,badge_txt,bar_col = 'badge-high','HIGH','#e06030'
+            elif net>=25: badge_cls,badge_txt,bar_col = 'badge-med','ELEVATED','#f59e0b'
+            else:         badge_cls,badge_txt,bar_col = 'badge-low','MODERATE','#00b4d8'
             t_sym = '▲' if trnd>0.5 else ('▼' if trnd<-0.5 else '→')
-            t_col = '#ff6b35' if trnd>0.5 else ('#00ff9d' if trnd<-0.5 else '#7a9ab8')
+            t_col = '#e06030' if trnd>0.5 else ('#00d4aa' if trnd<-0.5 else '#7a9ab8')
             st.markdown(f"""
             <div class="pair-card" style="border-color:rgba(255,255,255,0.06);">
               <div style="font-size:1rem;font-weight:700;color:rgba(0,150,255,0.35);
@@ -1736,7 +1667,7 @@ def render_profile():
     st.markdown('<div class="h-div"></div>', unsafe_allow_html=True)
 
     # ── Profile Header ────────────────────────────────────────
-    _pc = '#ff4b6e' if _prof_score>=60 else ('#ffd700' if _prof_score>=35 else '#00b4ff')
+    _pc = '#e05060' if _prof_score>=60 else ('#f59e0b' if _prof_score>=35 else '#00b4d8')
     st.markdown(f"""
     <div class="prof-header">
       <div>
@@ -1758,7 +1689,7 @@ def render_profile():
         if prof_indices:
             for idx in prof_indices:
                 s   = idx['score']
-                col = '#ff4b6e' if s>=65 else ('#ff6b35' if s>=45 else ('#ffd700' if s>=25 else '#00b4ff'))
+                col = '#e05060' if s>=65 else ('#e06030' if s>=45 else ('#f59e0b' if s>=25 else '#00b4d8'))
                 st.markdown(f"""
                 <div class="idx-row">
                   <div>
@@ -1779,11 +1710,11 @@ def render_profile():
         if prof_alarms:
             for alm in prof_alarms:
                 z = alm['z']; pct = alm['pct']
-                if   z>=2.5:  alm_col,alm_lbl = '#ff4b6e','CRITICAL SPIKE'
-                elif z>=1.5:  alm_col,alm_lbl = '#ff6b35','HIGH SPIKE'
-                elif z>=0.8:  alm_col,alm_lbl = '#ffd700','ELEVATED'
-                elif z<=-1.5: alm_col,alm_lbl = '#00ff9d','SUPPRESSED'
-                else:         alm_col,alm_lbl = '#00b4ff','NORMAL'
+                if   z>=2.5:  alm_col,alm_lbl = '#e05060','CRITICAL SPIKE'
+                elif z>=1.5:  alm_col,alm_lbl = '#e06030','HIGH SPIKE'
+                elif z>=0.8:  alm_col,alm_lbl = '#f59e0b','ELEVATED'
+                elif z<=-1.5: alm_col,alm_lbl = '#00d4aa','SUPPRESSED'
+                else:         alm_col,alm_lbl = '#00b4d8','NORMAL'
                 sym = '▲' if pct>0 else '▼'
                 st.markdown(f"""
                 <div class="alarm-row" style="border-color:{alm_col}28;">
@@ -1829,7 +1760,7 @@ def render_profile():
         else:
             st.markdown('<div style="color:rgba(100,150,180,0.4);font-size:0.72rem;padding:8px 0;">Insufficient data</div>', unsafe_allow_html=True)
 
-        st.markdown("""<div style="font-size:0.6rem;color:#00ff9d;letter-spacing:0.15em;
+        st.markdown("""<div style="font-size:0.6rem;color:#00d4aa;letter-spacing:0.15em;
             margin:8px 0 5px;">▲ BEST 3 RELATIONS</div>""", unsafe_allow_html=True)
         if prof_best:
             for rel in prof_best:
@@ -1874,7 +1805,7 @@ def render_profile():
 
     g1, g2, g3 = st.columns([3,4,3])
     with g1:
-        t_col_g = '#ff6b35' if cur_t>50 else ('#ffd700' if cur_t>25 else '#00b4ff')
+        t_col_g = '#e06030' if cur_t>50 else ('#f59e0b' if cur_t>25 else '#00b4d8')
         st.plotly_chart(gauge_chart(cur_t,'CONFLICT PRESSURE',t_col_g),
             use_container_width=True, config={'displayModeBar':False})
     with g2:
@@ -1895,7 +1826,7 @@ def render_profile():
           </div>
         </div>""", unsafe_allow_html=True)
     with g3:
-        c_col_g = '#00ff9d' if cur_c>40 else ('#00b4ff' if cur_c>15 else '#4a6a8a')
+        c_col_g = '#00d4aa' if cur_c>40 else ('#00b4d8' if cur_c>15 else '#4a6a8a')
         st.plotly_chart(gauge_chart(cur_c,'COOPERATION',c_col_g),
             use_container_width=True, config={'displayModeBar':False})
 
@@ -1931,15 +1862,15 @@ def render_profile():
     st.markdown('<div style="height:6px;"></div>', unsafe_allow_html=True)
     fig_bi = go.Figure()
     fig_bi.add_trace(go.Scatter(x=bi_t_ser.index,y=bi_t_ser.values,name='Conflict Pressure',
-        mode='lines',line=dict(width=2,color='#ff6b35'),
+        mode='lines',line=dict(width=2,color='#e06030'),
         fill='tozeroy',fillcolor='rgba(255,107,53,0.06)',
         hovertemplate='Conflict Pressure: %{y:.1f}<extra></extra>'))
     fig_bi.add_trace(go.Scatter(x=bi_c_ser.index,y=bi_c_ser.values,name='Cooperation',
-        mode='lines',line=dict(width=2,color='#00ff9d'),
+        mode='lines',line=dict(width=2,color='#00d4aa'),
         fill='tozeroy',fillcolor='rgba(0,255,157,0.05)',
         hovertemplate='Cooperation: %{y:.1f}<extra></extra>'))
     fig_bi.add_trace(go.Scatter(x=bi_net_ser.index,y=bi_net_ser.values,name='Net Tension',
-        mode='lines',line=dict(width=2.5,color='#7b2fff'),
+        mode='lines',line=dict(width=2.5,color='#0077a8'),
         hovertemplate='Net Tension: %{y:.1f}<extra></extra>'))
     t_bi = {**BASE_THEME}
     t_bi['yaxis'] = {**t_bi['yaxis'],'title':'Score (0–100)','title_font':dict(size=10)}
@@ -2176,7 +2107,7 @@ def render_predictions():
                 x=hist_series.index, y=hist_series.values,
                 name='Historical (monthly avg)',
                 mode='lines',
-                line=dict(color='#00b4ff', width=2),
+                line=dict(color='#00b4d8', width=2),
                 hovertemplate='%{x|%b %Y}: %{y:.1f}<extra>Historical</extra>'
             ))
 
@@ -2212,8 +2143,8 @@ def render_predictions():
                 x=fc['ds'], y=yhat,
                 name='12-Month Forecast',
                 mode='lines+markers',
-                line=dict(color='#7b2fff', width=2.5, dash='dot'),
-                marker=dict(size=5, color='#7b2fff'),
+                line=dict(color='#0077a8', width=2.5, dash='dot'),
+                marker=dict(size=5, color='#0077a8'),
                 hovertemplate='%{x|%b %Y}: %{y:.1f}<extra>Forecast</extra>'
             ))
 
@@ -2252,8 +2183,8 @@ def render_predictions():
                 pct   = row['trend_pct']
                 dirn  = row['direction']
                 arrow = '▲' if dirn == 'rising' else ('▼' if dirn == 'falling' else '→')
-                col_d = ('#ff4b6e' if dirn == 'rising'
-                         else '#00ff9d' if dirn == 'falling' else '#7a9ab8')
+                col_d = ('#e05060' if dirn == 'rising'
+                         else '#00d4aa' if dirn == 'falling' else '#7a9ab8')
                 bar_w = min(abs(pct) / 3, 100)
                 st.markdown(f"""
                 <div style='display:flex;align-items:center;gap:8px;
@@ -2304,7 +2235,7 @@ def render_predictions():
                          font-family:monospace;'>{cnt}</div>
                   </div>
                   <div style='font-size:0.85rem;font-weight:700;
-                       color:#ff4b6e;font-family:monospace;'>
+                       color:#e05060;font-family:monospace;'>
                     +{r['trend_pct']:.1f}%
                   </div>
                 </div>""", unsafe_allow_html=True)
@@ -2331,7 +2262,7 @@ def render_predictions():
                          font-family:monospace;'>{cnt}</div>
                   </div>
                   <div style='font-size:0.85rem;font-weight:700;
-                       color:#00ff9d;font-family:monospace;'>
+                       color:#00d4aa;font-family:monospace;'>
                     {r['trend_pct']:.1f}%
                   </div>
                 </div>""", unsafe_allow_html=True)
@@ -2457,10 +2388,10 @@ def _render_country_card(col, row):
     avg_fc   = row['avg_forecast']
 
     # Colour scheme
-    chg_col   = '#ff4b6e' if change > 10 else '#00ff9d' if change < -10 else '#7a9ab8'
+    chg_col   = '#e05060' if change > 10 else '#00d4aa' if change < -10 else '#7a9ab8'
     chg_arrow = '▲' if change > 10 else '▼' if change < -10 else '→'
-    risk_col  = '#ff4b6e' if risk > 65 else '#f59e0b' if risk > 35 else '#00ff9d'
-    fc_col    = '#ff4b6e' if fc_dir == 'rising' else '#00ff9d' if fc_dir == 'falling' else '#7a9ab8'
+    risk_col  = '#e05060' if risk > 65 else '#f59e0b' if risk > 35 else '#00d4aa'
+    fc_col    = '#e05060' if fc_dir == 'rising' else '#00d4aa' if fc_dir == 'falling' else '#7a9ab8'
     fc_arrow  = '▲' if fc_dir == 'rising' else '▼' if fc_dir == 'falling' else '→'
 
     def topic_rows(items, color):
@@ -2507,12 +2438,12 @@ def _render_country_card(col, row):
     <div>
       <div style='font-size:0.56rem;color:rgba(255,75,110,0.55);
            font-family:monospace;letter-spacing:0.1em;margin-bottom:5px;'>▲ RISING</div>
-      {topic_rows(tr, '#ff4b6e')}
+      {topic_rows(tr, '#e05060')}
     </div>
     <div>
       <div style='font-size:0.56rem;color:rgba(0,255,157,0.55);
            font-family:monospace;letter-spacing:0.1em;margin-bottom:5px;'>▼ FALLING</div>
-      {topic_rows(tf, '#00ff9d')}
+      {topic_rows(tf, '#00d4aa')}
     </div>
   </div>
 
@@ -2663,7 +2594,7 @@ def _answer_question(question, df_raw, trend_df, pred_df, insights_df):
     for country in countries[:4]:
         cname = COUNTRY_NAMES.get(country, country)
 
-        # SECTION 1: Recent 7-day trend
+        # ── SECTION 1: Recent 7-day trend ──────────────────────────
         trend_items = []
         try:
             c_df = df_raw.xs(country, level='country')
@@ -2706,7 +2637,7 @@ def _answer_question(question, df_raw, trend_df, pred_df, insights_df):
                 f"No significant 7-day movement detected for <b>{cname}</b> across the queried topics.</p>"
             )
 
-        # SECTION 2: 12-month predictions
+        # ── SECTION 2: 12-month predictions ────────────────────────
         pred_items = []
         if pred_df is not None:
             c_pred = pred_df[pred_df['country'] == country]
@@ -2754,40 +2685,46 @@ def _answer_question(question, df_raw, trend_df, pred_df, insights_df):
                 f"No model forecast available for <b>{cname}</b> on the queried topics.</p>"
             )
 
-        # SECTION 3: Assessment
+        # ── SECTION 3: Assessment ───────────────────────────────────
         net_trend = (sum(p for _, p, _ in trend_items) / len(trend_items)) if trend_items else 0.0
         net_pred  = (sum(p for _, p, _ in pred_items)  / len(pred_items))  if pred_items  else 0.0
 
         if net_trend > 10 and net_pred > 5:
-            assess_text = (
+            assess_color = "#ff6b6b"
+            assess_text  = (
                 f"<b>{cname}</b> shows a <span style='color:#ff6b6b;'><b>deteriorating risk trajectory</b></span>. "
                 f"Recent index data confirms escalating tensions across multiple domains, and predictive models "
                 f"reinforce this upward pressure over the coming year. "
                 f"<b>Elevated monitoring is warranted.</b>"
             )
         elif net_trend > 5 or net_pred > 10:
-            assess_text = (
+            assess_color = "#ffa94d"
+            assess_text  = (
                 f"<b>{cname}</b> presents a <span style='color:#ffa94d;'><b>cautionary but mixed picture</b></span>. "
                 f"Either recent signals or forward projections indicate elevated risk. "
                 f"Sustained observation of key indicators is recommended."
             )
         elif net_trend < -5 and net_pred < -5:
-            assess_text = (
+            assess_color = "#74c0fc"
+            assess_text  = (
                 f"<b>{cname}</b> demonstrates an <span style='color:#74c0fc;'><b>improving risk outlook</b></span>. "
                 f"Recent indices are easing, and the 12-month model confirms continued de-escalation on most fronts."
             )
         elif net_trend < -5:
-            assess_text = (
+            assess_color = "#a9e34b"
+            assess_text  = (
                 f"<b>{cname}</b> is experiencing <span style='color:#a9e34b;'><b>short-term de-escalation</b></span>, "
                 f"though longer-term projections remain uncertain. The situation should continue to be monitored."
             )
         elif net_pred < -5:
-            assess_text = (
+            assess_color = "#74c0fc"
+            assess_text  = (
                 f"<b>{cname}</b> shows a <span style='color:#74c0fc;'><b>positive medium-term outlook</b></span> "
                 f"according to model projections, despite limited movement in recent indices."
             )
         else:
-            assess_text = (
+            assess_color = "#94a3b8"
+            assess_text  = (
                 f"<b>{cname}</b> presents a <span style='color:#94a3b8;'><b>stable-to-uncertain</b></span> picture. "
                 f"No strong directional signal is present in either the current data window or forward projections."
             )
@@ -2828,13 +2765,12 @@ def _answer_question(question, df_raw, trend_df, pred_df, insights_df):
     TOPICS ANALYSED: {topic_labels_used}{" + more" if len(topics) > 6 else ""}
   </div>
   {header_note_html}
-  {'''.'''.join(country_blocks)}
+  {''.join(country_blocks)}
   <div style='font-size:0.58rem;color:rgba(100,140,180,0.35);font-family:monospace;
        margin-top:6px;border-top:1px solid rgba(0,80,160,0.1);padding-top:6px;'>
     SOURCE: GDELT PROJECT · INDICES WINDOW TO {last_date.upper()} · PROPHET 12-MONTH FORECAST
   </div>
 </div>"""
-
 
 
 def render_insights():
@@ -2899,7 +2835,7 @@ def render_insights():
                 qa_question, df, trend_df, pred_df, insights_df)
         st.markdown(answer_html, unsafe_allow_html=True)
         st.markdown('<div class="h-div" style="margin:16px 0 12px;"></div>', unsafe_allow_html=True)
-    elif not qa_question:
+    else:
         st.markdown("""
 <div style='font-size:0.62rem;color:rgba(100,150,200,0.4);font-family:monospace;
      text-align:center;padding:8px;'>
@@ -2923,6 +2859,7 @@ def render_insights():
             if i + 1 < len(top20):
                 _render_country_card(c2, top20[i + 1])
     elif trend_df is not None:
+        # Fallback: show top rising/falling from trend data
         st.markdown("""
 <div style='font-size:0.6rem;color:rgba(0,180,255,0.4);font-family:monospace;
      letter-spacing:0.15em;margin-bottom:14px;'>
@@ -2934,13 +2871,13 @@ def render_insights():
             for _, r in trend_df.nlargest(15, 'trend_pct').iterrows():
                 lbl = TOPIC_LABELS.get(r['topic'], str(r['topic']).replace('_',' ').title())
                 cnt = COUNTRY_NAMES.get(r['country'], r['country'])
-                st.markdown(f"<div style='display:flex;justify-content:space-between;padding:4px 8px;margin-bottom:3px;background:rgba(255,75,110,0.05);border:1px solid rgba(255,75,110,0.12);border-radius:5px;'><div><div style='font-size:0.72rem;color:#c8d8e8;'>{lbl}</div><div style='font-size:0.58rem;color:rgba(0,150,255,0.5);font-family:monospace;'>{cnt}</div></div><div style='font-size:0.82rem;font-weight:700;color:#ff4b6e;font-family:monospace;'>+{r['trend_pct']:.1f}%</div></div>", unsafe_allow_html=True)
+                st.markdown(f"<div style='display:flex;justify-content:space-between;padding:4px 8px;margin-bottom:3px;background:rgba(255,75,110,0.05);border:1px solid rgba(255,75,110,0.12);border-radius:5px;'><div><div style='font-size:0.72rem;color:#c8d8e8;'>{lbl}</div><div style='font-size:0.58rem;color:rgba(0,150,255,0.5);font-family:monospace;'>{cnt}</div></div><div style='font-size:0.82rem;font-weight:700;color:#e05060;font-family:monospace;'>+{r['trend_pct']:.1f}%</div></div>", unsafe_allow_html=True)
         with cf2:
             st.markdown("<div style='font-size:0.62rem;color:rgba(0,255,157,0.7);font-family:monospace;margin-bottom:8px;'>▼ HIGHEST FALLING</div>", unsafe_allow_html=True)
             for _, r in trend_df.nsmallest(15, 'trend_pct').iterrows():
                 lbl = TOPIC_LABELS.get(r['topic'], str(r['topic']).replace('_',' ').title())
                 cnt = COUNTRY_NAMES.get(r['country'], r['country'])
-                st.markdown(f"<div style='display:flex;justify-content:space-between;padding:4px 8px;margin-bottom:3px;background:rgba(0,255,157,0.04);border:1px solid rgba(0,255,157,0.10);border-radius:5px;'><div><div style='font-size:0.72rem;color:#c8d8e8;'>{lbl}</div><div style='font-size:0.58rem;color:rgba(0,150,255,0.5);font-family:monospace;'>{cnt}</div></div><div style='font-size:0.82rem;font-weight:700;color:#00ff9d;font-family:monospace;'>{r['trend_pct']:.1f}%</div></div>", unsafe_allow_html=True)
+                st.markdown(f"<div style='display:flex;justify-content:space-between;padding:4px 8px;margin-bottom:3px;background:rgba(0,255,157,0.04);border:1px solid rgba(0,255,157,0.10);border-radius:5px;'><div><div style='font-size:0.72rem;color:#c8d8e8;'>{lbl}</div><div style='font-size:0.58rem;color:rgba(0,150,255,0.5);font-family:monospace;'>{cnt}</div></div><div style='font-size:0.82rem;font-weight:700;color:#00d4aa;font-family:monospace;'>{r['trend_pct']:.1f}%</div></div>", unsafe_allow_html=True)
 
     _render_footer()
 
