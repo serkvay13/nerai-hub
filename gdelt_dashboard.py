@@ -3185,8 +3185,8 @@ def render_scenarios():
     # ── Custom Scenario Builder ─────────────────────────────────
     st.subheader("🔧 Build a Custom Scenario")
     st.markdown("""
-    <div style='font-size:0.78rem;color:rgba(150,190,220,0.7);margin-bottom:16px;'>
-    Kendi senaryonu tanımla: hangi ülkede, hangi konuda, ne kadar büyüklükte bir şok simüle etmek istiyorsun?
+    <div style='font-size:0.78rem;color:#0077a8;margin-bottom:16px;font-weight:500;'>
+    Define your own scenario: select a country, topic, shock intensity and duration — then run the simulation.
     </div>""", unsafe_allow_html=True)
 
     c1, c2 = st.columns(2)
