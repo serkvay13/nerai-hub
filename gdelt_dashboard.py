@@ -3185,11 +3185,14 @@ def render_causality():
 
     # Which nodes were in the last scenario run?
     scenario_nodes = set()
-    if sdf is not None and not sdf.empty:
-        latest = sdf['scenario'].iloc[-1]
-        sub = sdf[sdf['scenario'] == latest]
-        if 'series_id' in sub.columns:
-            scenario_nodes = set(sub['series_id'].dropna().tolist())
+    if sdf is not None and not sdf.empty and 'scenario' in sdf.columns:
+        try:
+            latest = sdf['scenario'].dropna().iloc[-1]
+            sub = sdf[sdf['scenario'] == latest]
+            if 'series_id' in sub.columns:
+                scenario_nodes = set(sub['series_id'].dropna().tolist())
+        except (IndexError, KeyError):
+            pass
 
     if cdf is None or cdf.empty:
         st.markdown("""
@@ -3350,7 +3353,8 @@ def scenario_narrative(result_df, sel_result):
     n_total     = len(impacts)
     breadth     = "concentrated in a small cluster of series" if n_elevated < n_total / 2 else "broad across the monitored universe"
 
-    scenario_label = SCENARIO_TEMPLATES.get(sel_result, {}).get('label', sel_result.replace('_', ' ').title())
+    sel_result_str = str(sel_result) if sel_result is not None else ''
+    scenario_label = SCENARIO_TEMPLATES.get(sel_result_str, {}).get('label', sel_result_str.replace('_', ' ').title())
 
     p1 = (
         f"Under the <b>{scenario_label}</b> simulation, the model projects a "
