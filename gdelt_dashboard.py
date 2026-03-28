@@ -3321,13 +3321,83 @@ def render_causality():
     )
 
     if not has_causality:
-        st.info(
-            "**Causal network not yet generated.**\n\n"
-            "Run the causality analysis script to discover which risk series predict others:\n\n"
-            "```bash\npython gdelt_causality.py\n```\n\n"
-            "This performs Granger causality tests across all topic × country pairs and produces "
-            "`causality_network.csv` and `causality_stats.csv`."
+        # ── Rich empty state with demo visualization ──────────
+        st.markdown(
+            '<div style="background:#fff3cd;border:1px solid #ffc107;border-radius:8px;'
+            'padding:14px 18px;margin-bottom:24px;display:flex;align-items:center;gap:12px;">'
+            '<span style="font-size:1.2rem;">⚙️</span>'
+            '<div><strong style="color:#856404;">Data not yet generated.</strong>'
+            '<span style="color:#856404;font-size:0.85rem;"> Run </span>'
+            '<code style="background:#ffe69c;padding:2px 6px;border-radius:4px;font-size:0.82rem;">python gdelt_causality.py</code>'
+            '<span style="color:#856404;font-size:0.85rem;"> to build the network, then refresh. '
+            'Preview below shows the type of insights produced.</span></div></div>',
+            unsafe_allow_html=True
         )
+
+        # Demo Sankey-style network diagram with synthetic but realistic data
+        demo_sources = [
+            'Military Escalation / Iran', 'Political Instability / Russia',
+            'Military Escalation / Iran', 'Regime Instability / Syria',
+            'Political Instability / Russia', 'Terrorism / Pakistan',
+            'Terrorism / Pakistan', 'Military Escalation / Iran',
+            'Coup / Sudan', 'Political Instability / Russia',
+        ]
+        demo_targets = [
+            'International Crisis / Israel', 'Military Escalation / Ukraine',
+            'Instability / Saudi Arabia', 'Terrorism / Lebanon',
+            'Deteriorating Relations / Germany', 'Instability / Afghanistan',
+            'Military Escalation / India', 'Military Crisis / Lebanon',
+            'Instability / Ethiopia', 'Political Instability / Belarus',
+        ]
+        demo_lags  = [1, 1, 2, 1, 2, 1, 2, 3, 1, 1]
+        demo_fstat = [14.2, 11.8, 9.4, 13.1, 7.6, 10.3, 8.9, 6.2, 12.5, 9.8]
+        demo_pvals = [0.001, 0.003, 0.008, 0.002, 0.014, 0.005, 0.011, 0.023, 0.002, 0.007]
+
+        node_labels = list(dict.fromkeys(demo_sources + demo_targets))
+        node_idx    = {n: i for i, n in enumerate(node_labels)}
+        node_colors = [
+            '#e05a2b' if any(s == n for s in demo_sources[:4]) else
+            '#0077a8' if any(t == n for t in demo_targets[:4]) else '#00b4d8'
+            for n in node_labels
+        ]
+
+        fig_demo = go.Figure(go.Sankey(
+            node=dict(
+                pad=18, thickness=16,
+                label=node_labels,
+                color=node_colors,
+                hovertemplate='%{label}<extra></extra>',
+            ),
+            link=dict(
+                source=[node_idx[s] for s in demo_sources],
+                target=[node_idx[t] for t in demo_targets],
+                value=demo_fstat,
+                color=[f'rgba(0,119,168,{0.12 + f/80})' for f in demo_fstat],
+                hovertemplate='<b>%{source.label}</b> → <b>%{target.label}</b><br>'
+                              'F-stat: %{value:.1f}<extra></extra>',
+            ),
+        ))
+        t_demo = {**BASE_THEME}
+        fig_demo.update_layout(
+            **t_demo, height=400,
+            title=dict(
+                text='<b>DEMO — Causal Flow Network</b>  (example relationships — run gdelt_causality.py for real data)',
+                font=dict(size=11, color='#5a6b82'), x=0
+            ),
+        )
+        st.plotly_chart(fig_demo, use_container_width=True, config={'displayModeBar': False})
+
+        # Demo table
+        st.markdown('<div class="sec-hdr">Example: Strongest Causal Relationships (demo)</div>',
+                    unsafe_allow_html=True)
+        demo_df = pd.DataFrame({
+            'Causes →':    demo_sources,
+            'Affects':     demo_targets,
+            'Lag (mo)':    demo_lags,
+            'F-Statistic': [f'{f:.1f}' for f in demo_fstat],
+            'p-value':     [f'{p:.3f}' for p in demo_pvals],
+        })
+        st.dataframe(demo_df, use_container_width=True, hide_index=True)
         return
 
     net = causality_net.copy()
@@ -3449,17 +3519,48 @@ def render_scenarios():
     }
 
     st.markdown('<div class="sec-hdr">Available Scenarios</div>', unsafe_allow_html=True)
-    scen_cols = st.columns(len(SCENARIO_DESCS))
-    for col, (key, desc) in zip(scen_cols, SCENARIO_DESCS.items()):
+
+    SCENARIO_ICONS = {
+        'iran_nuclear_crisis':           '☢️',
+        'russia_escalation':             '🪖',
+        'china_taiwan_tension':          '⚓',
+        'middle_east_oil_crisis':        '🛢️',
+        'global_democratic_backsliding': '🗳️',
+    }
+
+    # 2-column grid then 3-column grid to avoid overcrowding
+    row1 = list(SCENARIO_DESCS.items())[:2]
+    row2 = list(SCENARIO_DESCS.items())[2:]
+
+    cols1 = st.columns(2)
+    for col, (key, desc) in zip(cols1, row1):
         label = key.replace('_', ' ').title()
+        icon  = SCENARIO_ICONS.get(key, '⚡')
         col.markdown(
-            f'<div style="background:#f4f7fb;border-radius:8px;padding:12px;'
-            f'border-left:3px solid #0077a8;min-height:90px;">'
-            f'<div style="font-size:0.75rem;font-weight:700;color:#0d1f3c;margin-bottom:6px;">{label}</div>'
-            f'<div style="font-size:0.72rem;color:#5a6b82;">{desc}</div>'
-            f'<div style="margin-top:8px;font-family:monospace;font-size:0.68rem;'
-            f'color:#0077a8;background:#e8f0fa;padding:4px 6px;border-radius:4px;">'
-            f'python gdelt_scenarios.py --scenario {key}</div></div>',
+            f'<div style="background:#f4f7fb;border-radius:10px;padding:16px 18px;'
+            f'border-left:4px solid #0077a8;margin-bottom:12px;">'
+            f'<div style="font-size:1.3rem;margin-bottom:8px;">{icon}</div>'
+            f'<div style="font-size:0.82rem;font-weight:700;color:#0d1f3c;margin-bottom:6px;">{label}</div>'
+            f'<div style="font-size:0.78rem;color:#5a6b82;line-height:1.5;margin-bottom:10px;">{desc}</div>'
+            f'<code style="font-size:0.72rem;color:#0077a8;background:#e0ecf8;'
+            f'padding:5px 8px;border-radius:5px;display:block;word-break:break-all;">'
+            f'python gdelt_scenarios.py --scenario {key}</code></div>',
+            unsafe_allow_html=True
+        )
+
+    cols2 = st.columns(3)
+    for col, (key, desc) in zip(cols2, row2):
+        label = key.replace('_', ' ').title()
+        icon  = SCENARIO_ICONS.get(key, '⚡')
+        col.markdown(
+            f'<div style="background:#f4f7fb;border-radius:10px;padding:16px 18px;'
+            f'border-left:4px solid #0077a8;margin-bottom:12px;">'
+            f'<div style="font-size:1.3rem;margin-bottom:8px;">{icon}</div>'
+            f'<div style="font-size:0.82rem;font-weight:700;color:#0d1f3c;margin-bottom:6px;">{label}</div>'
+            f'<div style="font-size:0.78rem;color:#5a6b82;line-height:1.5;margin-bottom:10px;">{desc}</div>'
+            f'<code style="font-size:0.72rem;color:#0077a8;background:#e0ecf8;'
+            f'padding:5px 8px;border-radius:5px;display:block;word-break:break-all;">'
+            f'python gdelt_scenarios.py --scenario {key}</code></div>',
             unsafe_allow_html=True
         )
 
@@ -3487,10 +3588,20 @@ def render_scenarios():
     scen_df = load_scenario_results()
 
     if scen_df is None:
-        st.info(
-            "**No scenario results yet.**\n\n"
-            "Run one of the scenarios above in your terminal, then refresh the dashboard to see results."
+        st.markdown(
+            '<div style="background:#f4f7fb;border:1px solid rgba(0,119,168,0.2);border-radius:10px;'
+            'padding:32px;text-align:center;margin-top:8px;">'
+            '<div style="font-size:2rem;margin-bottom:12px;">📊</div>'
+            '<div style="font-size:0.95rem;font-weight:700;color:#0d1f3c;margin-bottom:8px;">'
+            'No scenario results yet</div>'
+            '<div style="font-size:0.82rem;color:#5a6b82;max-width:420px;margin:0 auto 16px;">'
+            'Pick a scenario above, run the command in your terminal, then click Refresh below.</div>'
+            '</div>',
+            unsafe_allow_html=True
         )
+        if st.button('🔄 Refresh Results', key='scen_refresh'):
+            st.cache_data.clear()
+            st.rerun()
         return
 
     st.markdown('<div class="sec-hdr">Latest Scenario Results</div>', unsafe_allow_html=True)
