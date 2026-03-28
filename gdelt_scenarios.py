@@ -111,7 +111,25 @@ def load_data(indices_path='./indices.csv', predictions_path='./predictions.csv'
     print("[*] Loading data...")
 
     indices_df = pd.read_csv(indices_path)
-    if 'date' in indices_df.columns:
+
+    # Handle wide format: date columns are 8-digit strings like '20260217'
+    date_cols = [c for c in indices_df.columns
+                 if c not in ('topic', 'country', 'date', 'value', 'unique_id')
+                 and str(c).isdigit() and len(str(c)) == 8]
+    if date_cols:
+        print(f"[*] Wide format detected ({len(date_cols)} date columns). Converting to long format...")
+        indices_df = indices_df.melt(
+            id_vars=['topic', 'country'],
+            value_vars=date_cols,
+            var_name='date',
+            value_name='value'
+        )
+        # Aggregate to monthly p90
+        indices_df['date'] = pd.to_datetime(indices_df['date'].astype(str), format='%Y%m%d', errors='coerce')
+        indices_df = indices_df.dropna(subset=['date'])
+        indices_df['date'] = indices_df['date'].dt.to_period('M').dt.to_timestamp()
+        indices_df = indices_df.groupby(['date', 'topic', 'country'], as_index=False)['value'].quantile(0.90)
+    elif 'date' in indices_df.columns:
         indices_df['date'] = pd.to_datetime(indices_df['date'])
     elif 'Date' in indices_df.columns:
         indices_df['Date'] = pd.to_datetime(indices_df['Date'])
