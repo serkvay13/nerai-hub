@@ -16,6 +16,59 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+# ===============================================================
+# ACCESS GATE - Solo / Pro tier authentication
+# ===============================================================
+_VALID_CODES = {
+    'NERAI-SOLO-26': 'solo',
+    'NERAI-PRO-26':  'pro',
+    'NERAI-2026':    'pro',
+}
+
+if 'access_tier' not in st.session_state:
+    st.session_state.access_tier = None
+
+if st.session_state.access_tier is None:
+    st.markdown("""
+    <style>
+    #MainMenu,header,footer,[data-testid="stSidebar"]{display:none!important;}
+    .block-container{padding:0!important;max-width:100%!important;}
+    </style>
+    <div style="min-height:100vh;background:linear-gradient(135deg,#0d1f3c 0%,#0a1628 100%);
+         display:flex;align-items:center;justify-content:center;">
+    <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(0,119,168,0.3);
+         border-radius:20px;padding:48px 40px;max-width:400px;width:90%;text-align:center;">
+    <div style="font-size:12px;letter-spacing:3px;color:#0077a8;text-transform:uppercase;
+         font-weight:700;margin-bottom:28px;">&#9635; NERAI Intelligence</div>
+    <div style="font-size:24px;font-weight:700;color:#ffffff;margin-bottom:8px;">
+         Access Dashboard</div>
+    <div style="font-size:14px;color:#7a9ab8;margin-bottom:32px;">
+         Enter your access code to continue.</div>
+    </div></div>
+    """, unsafe_allow_html=True)
+    col1, col2, col3 = st.columns([1,2,1])
+    with col2:
+        _code = st.text_input("Access code", placeholder="e.g. NERAI-PRO-26",
+                              label_visibility="collapsed", key="_gate_input")
+        if st.button("Enter Dashboard", use_container_width=True, type="primary"):
+            _c = _code.strip().upper()
+            if _c in _VALID_CODES:
+                st.session_state.access_tier = _VALID_CODES[_c]
+                st.rerun()
+            else:
+                st.error("Invalid code. Get yours at neraicorp.com/#pricing")
+        st.markdown(
+            '<div style="text-align:center;margin-top:16px;font-size:12px;color:#3a6a8a;">'
+            'No code? <a href="https://neraicorp.com/#pricing" target="_blank" '
+            'style="color:#0077a8;">Subscribe at neraicorp.com</a></div>',
+            unsafe_allow_html=True)
+    st.stop()
+
+# Tier shortcut
+_IS_PRO = st.session_state.access_tier == 'pro'
+
+
+
 # ═══════════════════════════════════════════════════════════════
 # CSS
 # ═══════════════════════════════════════════════════════════════
