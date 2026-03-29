@@ -1183,11 +1183,14 @@ with st.sidebar:
         else:
             st.error(r.stderr[-600:] or 'Failed')
 
+    _max_s = st.slider('Max Series (causality)', 50, 500, 200, 50,
+                        help='Fewer = faster. 200 ≈ 5-8 min. 500 ≈ 30+ min.')
     if st.button('🕸 Run Causal Analysis', use_container_width=True,
-                 help='Run gdelt_causality.py to compute Granger causality network'):
-        with st.spinner('Computing causality network…'):
-            r = subprocess.run([_sys.executable, './gdelt_causality.py'],
-                               capture_output=True, text=True, cwd='.')
+                 help='Run gdelt_causality.py — top-variance series only'):
+        with st.spinner(f'Computing causality for top {_max_s} series… (~5-8 min)'):
+            r = subprocess.run(
+                [_sys.executable, './gdelt_causality.py', '--max-series', str(_max_s)],
+                capture_output=True, text=True, cwd='.')
         if r.returncode == 0:
             st.success('✅ Causal network ready!')
             st.cache_data.clear(); st.rerun()
