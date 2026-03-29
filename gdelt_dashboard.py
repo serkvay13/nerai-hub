@@ -2961,71 +2961,147 @@ def _answer_question(question, df_raw, trend_df, pred_df, insights_df):
 
 
 def _call_claude_for_qa(question, df_raw, trend_df, pred_df, insights_df):
-    """Claude Haiku ile Q&A analiz metni uret."""
+    """Comprehensive multi-paragraph Claude analysis for Insights Q&A."""
+    import anthropic, os, datetime
     try:
-        import anthropic, os
         api_key = os.environ.get('ANTHROPIC_API_KEY', '')
         if not api_key:
-            return ''
-        ctx_parts = []
-        try:
-            parsed = _parse_question(question)
-            country = (parsed or {}).get('country', '')
-            topic   = (parsed or {}).get('topic', '')
-        except Exception:
-            country, topic = '', ''
-        if country:
-            ctx_parts.append('Ulke: ' + country)
-        if topic:
-            ctx_parts.append('Konu: ' + topic)
+            return (
+                '<div style="background:#1a0d0d;border:1px solid #8a3a3a;border-radius:8px;'
+                'padding:14px;margin-top:14px;color:#ff9999;font-size:13px;">'
+                '⚠️ <b>ANTHROPIC_API_KEY</b> Streamlit Cloud Secrets bölümünde tanımlı değil. '
+                'Settings → Secrets kısmına ekleyin.</div>'
+            )
+
+        parsed = _parse_question(question) or {}
+        country  = parsed.get('country', '') or ''
+        topic    = parsed.get('topic', '')   or ''
+        today_str = datetime.datetime.now().strftime('%d %B %Y')
+
+        sections = []
+
+        # ── 1. GDELT Risk Index Trends ──────────────────────────────
         if df_raw is not None and not df_raw.empty and country:
             try:
-                mask = df_raw.index.get_level_values('country').str.lower() == country.lower() \
-                    if 'country' in df_raw.index.names \
-                    else df_raw.get('country', df_raw.iloc[:,0]).str.lower() == country.lower()
-                cdf = df_raw[mask]
-                if not cdf.empty and 'y' in cdf.columns:
-                    vals = cdf[['ds','y']].tail(7).to_dict('records')
-                    ctx_parts.append('Son 7 gunluk risk indeksi: ' + str(vals))
+                ckey = 'country' if 'country' in df_raw.columns else None
+                cdf  = df_raw[df_raw[ckey].str.lower() == country.lower()] if ckey else df_raw
+                if not cdf.empty and 'y' in cdf.columns and 'ds' in cdf.columns:
+                    cdf = cdf.sort_values('ds')
+                    latest  = cdf['ds'].max()
+                    wk_ago  = latest - __import__('pandas').Timedelta(days=7)
+                    recent  = cdf[cdf['ds'] >= wk_ago]
+                    older   = cdf[cdf['ds'] <  wk_ago]
+                    if not recent.empty:
+                        # Top rising topics
+                        r_avg = recent.groupby('topic')['y'].mean() if 'topic' in recent.columns else recent[['y']].mean()
+                        o_avg = older.groupby('topic')['y'].mean()  if 'topic' in older.columns  else older[['y']].mean()
+                        changes = {}
+                        for t in r_avg.index:
+                            if t in o_avg.index and o_avg[t] > 0:
+                                changes[t] = round((r_avg[t] - o_avg[t]) / o_avg[t] * 100, 1)
+                        if changes:
+                            s_asc  = sorted(changes.items(), key=lambda x: x[1])
+                            rising = [(t,v) for t,v in s_asc if v > 0][-5:][::-1]
+                            fall   = [(t,v) for t,v in s_asc if v < 0][:3]
+                            lines  = [f"  ↑ {t}: +{v}%" for t,v in rising]
+                            if fall: lines += [f"  ↓ {t}: {v}%" for t,v in fall]
+                            sections.append("GDELT Risk Endeksi Değişimleri - " + country + " (7 gün):\n" + "\n".join(lines))
             except Exception:
                 pass
+
+        # ── 2. Forward Forecasts ────────────────────────────────────
         if pred_df is not None and not pred_df.empty and country:
             try:
-                pdf = pred_df[pred_df['country'].str.lower() == country.lower()] \
-                    if 'country' in pred_df.columns else pred_df
-                if not pdf.empty and 'yhat' in pdf.columns:
-                    fc = pdf[['ds','yhat']].head(7).to_dict('records')
-                    ctx_parts.append('7 gunluk tahmin: ' + str(fc))
+                import pandas as _pd
+                ckey = 'country' if 'country' in pred_df.columns else None
+                pdf  = pred_df[pred_df[ckey].str.lower() == country.lower()] if ckey else pred_df
+                if not pdf.empty and 'yhat' in pdf.columns and 'ds' in pdf.columns:
+                    future = pdf[pdf['ds'] > _pd.Timestamp.now()].head(60)
+                    if not future.empty:
+                        if 'topic' in future.columns:
+                            fc_avg = future.groupby('topic')['yhat'].mean().sort_values(ascending=False).head(5)
+                            lines  = [f"  {t}: {v:.1f}" for t,v in fc_avg.items()]
+                        else:
+                            lines = [f"  Ortalama tahmin: {future['yhat'].mean():.1f}"]
+                        sections.append("30 Günlük Tahminler - " + country + ":\n" + "\n".join(lines))
             except Exception:
                 pass
+
+        # ── 3. News driving index changes ───────────────────────────
         if insights_df is not None and not insights_df.empty:
             try:
-                col = 'title' if 'title' in insights_df.columns else insights_df.columns[0]
-                news = insights_df[col].head(3).tolist()
-                ctx_parts.append('Guncel haberler: ' + str(news))
+                news_cols = [c for c in ['title','headline','text','event'] if c in insights_df.columns]
+                date_col  = next((c for c in ['date','published','ds'] if c in insights_df.columns), None)
+                topic_col = next((c for c in ['topic','category'] if c in insights_df.columns), None)
+                ctry_col  = next((c for c in ['country','geo'] if c in insights_df.columns), None)
+                if news_cols:
+                    nc = news_cols[0]
+                    df2 = insights_df
+                    if country and ctry_col:
+                        mask = df2[ctry_col].str.lower().str.contains(country.lower(), na=False)
+                        df2  = df2[mask] if mask.any() else insights_df
+                    if topic and topic_col:
+                        mask2 = df2[topic_col].str.lower().str.contains(topic.lower(), na=False)
+                        if mask2.any(): df2 = df2[mask2]
+                    top = df2.head(6)
+                    items = []
+                    for _, row in top.iterrows():
+                        s = str(row[nc])[:120]
+                        if date_col and row.get(date_col): s = '[' + str(row[date_col])[:10] + '] ' + s
+                        if topic_col and row.get(topic_col): s += ' (' + str(row[topic_col]) + ')'
+                        items.append('  • ' + s)
+                    if items:
+                        sections.append("İlgili Haberler:\n" + "\n".join(items))
             except Exception:
                 pass
-        ctx = '\n'.join(ctx_parts) if ctx_parts else 'Veri bulunamadi.'
+
+        if not sections:
+            sections.append("Not: Soru için yeterli yapısal veri bulunamadı; genel analiz yapılacak.")
+
+        context = "\n\n".join(sections)
+
+        prompt = (
+            "Sen NERAI Intelligence Platform'un kıdemli jeopolitik risk analistisin. "
+            "Bugünün tarihi: " + today_str + ".\n\n"
+            "Aşağıda GDELT (Global Database of Events, Language and Tone) platformundan "
+            "alınan gerçek zamanlı veriler yer almaktadır:\n\n"
+            + context +
+            "\n\nKULLANICI SORUSU: " + question + "\n\n"
+            "Lütfen bu soruyu 3-4 paragrafla, şu çerçevede analiz et:\n"
+            "1) Mevcut durum — GDELT verilerine göre risk endeksleri ve son trendler\n"
+            "2) Önemli gelişmeler — Endekslerdeki değişimlere yol açan olaylar ve haberler\n"
+            "3) Öngörüler — Model tahminlerine göre önümüzdeki dönemde beklenen seyir\n"
+            "4) Stratejik değerlendirme — Genel jeopolitik tabloya yansıması\n\n"
+            "Sadece verilen GDELT verilerine dayan. Markdown kullanma, düz paragraf yaz. "
+            "Kullanıcının dilinde yanıtla."
+        )
+
         client = anthropic.Anthropic(api_key=api_key)
         msg = client.messages.create(
             model='claude-haiku-4-5-20251001',
-            max_tokens=500,
-            messages=[{'role': 'user', 'content': (
-                'Sen bir jeopolitik risk analistisin. Asagida GDELT platformundan gelen veriler var. '
-                'Bu verilere dayanarak soruyu 3-5 cumle ile analitik sekilde yanitla. '
-                'Duz metin kullan, markdown kullanma.\n\nVeri:\n' + ctx + '\n\nSoru: ' + question
-            )}]
+            max_tokens=900,
+            messages=[{'role': 'user', 'content': prompt}]
         )
         narrative = msg.content[0].text.strip()
+
         return (
-            '<div style="background:linear-gradient(135deg,#0d3464,#0d3464);'
-            'border:1px solid #1a4a8a;border-radius:10px;padding:16px;margin-top:14px;">'
-            '<div style="color:#1a3a6e;font-size:11px;font-weight:700;letter-spacing:1.5px;margin-bottom:10px;">🤖 AI ANALİZ</div>'
-            '<div style="color:#0d2440;font-size:14px;line-height:1.75;">' + narrative + '</div>'
+            '<div style="background:linear-gradient(135deg,#0d1e38,#0a1628);'
+            'border:1px solid #2a5080;border-radius:12px;padding:20px;margin-top:16px;">'
+            '<div style="color:#5ba3f5;font-size:11px;font-weight:700;letter-spacing:2px;'
+            'margin-bottom:14px;">🤖 AI ANALİZ — GDELT VERİLERİNE DAYALI DEĞERLENDİRME</div>'
+            '<div style="color:#c8d8f0;font-size:14px;line-height:1.85;white-space:pre-wrap;">'
+            + narrative +
+            '</div>'
+            '<div style="color:#3a5a7a;font-size:10px;margin-top:14px;border-top:1px solid #1a3a5a;'
+            'padding-top:8px;">GDELT realtime · claude-haiku-4-5 · ' + today_str + '</div>'
             '</div>'
         )
-    except Exception:
-        return ''
+    except Exception as _e:
+        return (
+            '<div style="background:#1a0808;border:1px solid #8a2a2a;border-radius:8px;'
+            'padding:12px;margin-top:12px;color:#ff9999;font-size:12px;">'
+            '⚠️ AI analiz hatası: ' + str(_e)[:300] + '</div>'
+        )
 
 
 def render_insights():
