@@ -1,0 +1,37 @@
+name: Daily NERAI Data Update
+
+on:
+  schedule:
+    - cron: '0 4 * * *'
+  workflow_dispatch:
+
+jobs:
+  update-data:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run GDELT indices collection
+        run: python gdelt_indices.py
+
+      - name: Run Holt-Winters forecast engine
+        run: python gdelt_forecast_numpy.py || echo "Forecast step skipped"
+
+      - name: Commit and push updated data
+        run: |
+          git config --global user.name "NERAI Data Bot"
+          git config --global user.email "bot@neraicorp.com"
+          git add indices.csv forecast_predictions.csv forecast_trends.csv 2>/dev/null || true
+          git diff --quiet && git diff --staged --quiet && echo "No changes" || (git commit -m "data: auto-update $(date -u +%Y-%m-%d)" && git push)
