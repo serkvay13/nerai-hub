@@ -97,13 +97,13 @@ html,body,[class*="css"]{font-family:'Inter',sans-serif;color:#0d1f3c;}
     letter-spacing:0.1em;text-transform:uppercase;}
 [data-testid="stSidebar"] .stButton>button{
     background:#0d3464 !important;border:1px solid rgba(0,119,168,0.2) !important;
-    color:#0d1f3c !important;font-family:'Inter',sans-serif !important;
+    color:#e8f4ff !important;font-family:'Inter',sans-serif !important;
     font-size:0.78rem !important;letter-spacing:0.04em !important;
     border-radius:8px !important;width:100% !important;
     text-align:left !important;padding:9px 14px !important;
     transition:all 0.2s !important;margin-bottom:3px !important;}
 [data-testid="stSidebar"] .stButton>button:hover{
-    border-color:#0077a8 !important;color:#0077a8 !important;
+    border-color:#4db8d8 !important;color:#7dd3f0 !important;
     background:#1a3a5c !important;}
 
 /* KPI */
@@ -3095,7 +3095,7 @@ def _call_claude_for_qa(question, df_raw, trend_df, pred_df, insights_df):
             '<div style="background:linear-gradient(135deg,#0d1e38,#0a1628);'
             'border:1px solid #2a5080;border-radius:12px;padding:20px;margin-top:16px;">'
             '<div style="color:#5ba3f5;font-size:11px;font-weight:700;letter-spacing:2px;'
-            'margin-bottom:14px;">🤖 AI ANALİZ — GDELT VERİLERİNE DAYALI DEĞERLENDİRME</div>'
+            'margin-bottom:14px;">🤖 AI ANALYSIS — GDELT-BASED ASSESSMENT</div>'
             '<div style="color:#c8d8f0;font-size:14px;line-height:1.85;white-space:pre-wrap;">'
             + narrative +
             '</div>'
@@ -3563,7 +3563,7 @@ def render_causality():
     fig_bar.update_layout(
         height=420, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(232,240,252,0.4)',
         xaxis=dict(title='Cumulative F-Statistic', color='#3a5a7a', gridcolor='rgba(0,100,200,0.1)'),
-        yaxis=dict(color='#1a2a3a', tickfont=dict(size=10)),
+        yaxis=dict(color='#1a2a3a', tickfont=dict(size=10, color='#0d1f3c')),
         margin=dict(l=20, r=20, t=10, b=40)
     )
     st.plotly_chart(fig_bar, use_container_width=True)
