@@ -2,7 +2,7 @@
 """
 Granger Causality Analysis for GDELT Indices
 
-Performs Granger causality testing across all (topic × country) pairs from indices.csv
+Performs Granger causality testing across all (topic Ã country) pairs from indices.csv
 and produces a causality network for consumption by the forecast engine and dashboard.
 """
 
@@ -25,9 +25,9 @@ CONFIG = {
     'OUTPUT_STATS': './causality_stats.csv',
     'MONTHLY_AGG': 'p90',
     'MIN_MONTHS': 1,
-    'MAX_ZERO_RATIO': 0.80,
-    'MAX_LAG': 2,                   # reduced from 3 → 33% fewer tests per pair
-    'P_VALUE_THRESHOLD': 0.10,  # relaxed 0.05→0.10: more relationships detected
+    'MAX_ZERO_RATIO': 0.95,   # raised: daily GDELT data is naturally sparse
+    'MAX_LAG': 2,                   # reduced from 3 â 33% fewer tests per pair
+    'P_VALUE_THRESHOLD': 0.10,  # relaxed 0.05â0.10: more relationships detected
     'CORRELATION_PREFILTER': 0.15,  # lowered: GDELT series have low cross-topic correlation
     'MAX_WORKERS': 4,
 }
@@ -50,13 +50,13 @@ def load_and_aggregate(input_file):
                  and str(c).isdigit() and len(str(c)) == 8]
 
     if date_cols:
-        # Wide format → melt to long
+        # Wide format â melt to long
         print(f"Detected wide format with {len(date_cols)} date columns. Converting to long format...")
         df = df.melt(
             id_vars=['topic', 'country'],
             value_vars=date_cols,
             var_name='ds',
-            value_name='value'
+            value_name='y'
         )
 
     # Ensure ds is datetime
@@ -65,20 +65,17 @@ def load_and_aggregate(input_file):
 
     df['unique_id'] = df['topic'].astype(str) + '_' + df['country'].astype(str)
 
-    # Aggregate to monthly using p90
-    df['year_month'] = df['ds'].dt.to_period('M')
+    # Use daily data directly — no monthly aggregation
+    # Monthly aggregation fails when the data window is < 7 months (Granger needs >= max_lag+5 obs)
+    if 'value' in df.columns and 'y' not in df.columns:
+        df = df.rename(columns={'value': 'y'})
 
-    agg_df = df.groupby(['year_month', 'unique_id', 'topic', 'country']).agg({
-        'value': lambda x: x.quantile(0.90)
-    }).reset_index()
+    n_days = df['ds'].nunique()
+    n_series = df['unique_id'].nunique()
+    print(f"Using {n_days} daily observations per series (no monthly aggregation)")
+    print(f"Found {n_series} unique (topic, country) pairs")
 
-    agg_df.rename(columns={'value': 'y'}, inplace=True)
-    agg_df['ds'] = agg_df['year_month'].dt.to_timestamp()
-
-    print(f"Aggregated to {len(agg_df['year_month'].unique())} months")
-    print(f"Found {agg_df['unique_id'].nunique()} unique (topic, country) pairs")
-
-    return agg_df[['ds', 'unique_id', 'topic', 'country', 'y']]
+    return df[['ds', 'unique_id', 'topic', 'country', 'y']]
 
 
 def filter_series(df):
@@ -120,7 +117,7 @@ def filter_series(df):
 
 def pivot_wide(df):
     """
-    Pivot to wide format: months × unique_id, with value as 'y'.
+    Pivot to wide format: months Ã unique_id, with value as 'y'.
     Returns (wide_df, series_metadata).
     """
     print("Pivoting to wide format...")
@@ -142,7 +139,7 @@ def pivot_wide(df):
     # Fill missing values with forward fill then backward fill
     wide = wide.ffill().bfill()
 
-    print(f"Wide matrix shape: {wide.shape} (months × series)")
+    print(f"Wide matrix shape: {wide.shape} (months Ã series)")
 
     return wide, metadata
 
@@ -223,7 +220,7 @@ def run_causality_analysis(wide_df, metadata, max_series=None):
 
     series_list = wide_df.columns.tolist()
 
-    # Apply max_series limit if specified — sort by variance first (most active series)
+    # Apply max_series limit if specified â sort by variance first (most active series)
     if max_series and max_series < len(series_list):
         variance_all = wide_df.std()
         series_list = variance_all.nlargest(max_series).index.tolist()
@@ -296,7 +293,7 @@ def run_causality_analysis(wide_df, metadata, max_series=None):
     print(f"Total pairs to test: {len(pairs_to_test)} (same-country: {same_country}, same-topic: {same_topic}, cross-cat: {cross_cat})")
     print(f"Series in analysis: {len(series_list)}, series with metadata: {len(series_info)}")
     if len(pairs_to_test) == 0:
-        print("[!] WARNING: 0 pairs to test — check that metadata matches series IDs")
+        print("[!] WARNING: 0 pairs to test â check that metadata matches series IDs")
         return pd.DataFrame()
 
     # Run tests in parallel
@@ -342,9 +339,9 @@ def compute_stats(edges_df, metadata, wide_df):
     """
     print("Computing causality statistics...")
 
-    # ── Crash guard: empty DataFrame when no significant edges found ──
+    # ââ Crash guard: empty DataFrame when no significant edges found ââ
     if edges_df.empty or 'target_id' not in edges_df.columns:
-        print("[!] No significant causal edges — returning empty stats.")
+        print("[!] No significant causal edges â returning empty stats.")
         _cols = ['unique_id', 'topic', 'country', 'n_causes',
                  'n_caused_by', 'top_cause', 'top_cause_lag']
         return pd.DataFrame(columns=_cols)
@@ -438,8 +435,8 @@ def main():
     parser.add_argument(
         '--max-series',
         type=int,
-        default=None,
-        help='Limit analysis to first N series (for testing)'
+        default=150,
+        help='Limit analysis to top N series by variance (default 150 to avoid timeout)'
     )
     parser.add_argument(
         '--input',
