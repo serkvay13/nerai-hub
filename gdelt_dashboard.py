@@ -3095,7 +3095,7 @@ def render_insights():
                     _q, df, trend_df, pred_df, insights_df)
             except Exception as _qa_err:
                 answer_html = f'<div style="color:#ff6b6b;padding:8px;">Analysis error: {_qa_err}</div>'
-                claude_html = ''
+                claude_html = _call_claude_for_qa(_q, df, trend_df, pred_df, insights_df)
                 claude_html = ''
                 claude_html = ''
         if answer_html and len(answer_html.strip()) > 10:
