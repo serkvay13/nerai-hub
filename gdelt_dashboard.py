@@ -3081,7 +3081,13 @@ def _render_footer():
 def load_causality():
     path = './causality_network.csv'
     if os.path.exists(path):
-        return pd.read_csv(path)
+        try:
+            df = pd.read_csv(path)
+            if df.empty or len(df.columns) == 0:
+                return None
+            return df
+        except Exception:
+            return None
     return None
 
 @st.cache_data(ttl=3600)
