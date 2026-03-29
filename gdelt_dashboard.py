@@ -1192,10 +1192,17 @@ with st.sidebar:
                 [_sys.executable, './gdelt_causality.py', '--max-series', str(_max_s)],
                 capture_output=True, text=True, cwd='.')
         if r.returncode == 0:
-            st.success('✅ Causal network ready!')
+            out = (r.stdout or '').strip()
+            # Check if any edges were actually found
+            if 'edges found' in out.lower() and '0 edges' in out.lower():
+                st.warning('⚠️ 0 anlamlı ilişki bulundu — eşik değerleri çok katı olabilir. Tekrar dene veya Max Series artır.')
+            else:
+                st.success('✅ Causal network ready!')
+            with st.expander('📋 Script çıktısı', expanded=False):
+                st.code(out[-1200:] or '(çıktı yok)')
             st.cache_data.clear(); st.rerun()
         else:
-            st.error(r.stderr[-600:] or 'Failed')
+            st.error('Script hatası:\n' + (r.stderr[-800:] or r.stdout[-400:] or 'Bilinmeyen hata'))
 
     if st.button('⚡ Refresh All Data', use_container_width=True, type='primary',
                  help='Run full pipeline: indices → causality → forecast'):
