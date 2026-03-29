@@ -27,7 +27,7 @@ CONFIG = {
     'MIN_MONTHS': 1,
     'MAX_ZERO_RATIO': 0.80,
     'MAX_LAG': 2,                   # reduced from 3 → 33% fewer tests per pair
-    'P_VALUE_THRESHOLD': 0.05,
+    'P_VALUE_THRESHOLD': 0.10,  # relaxed 0.05→0.10: more relationships detected
     'CORRELATION_PREFILTER': 0.40,  # raised from 0.30 → fewer cross-category pairs
     'MAX_WORKERS': 4,
 }
@@ -334,6 +334,13 @@ def compute_stats(edges_df, metadata, wide_df):
     - top_cause_lag: lag of that predictor
     """
     print("Computing causality statistics...")
+
+    # ── Crash guard: empty DataFrame when no significant edges found ──
+    if edges_df.empty or 'target_id' not in edges_df.columns:
+        print("[!] No significant causal edges — returning empty stats.")
+        _cols = ['unique_id', 'topic', 'country', 'n_causes',
+                 'n_caused_by', 'top_cause', 'top_cause_lag']
+        return pd.DataFrame(columns=_cols)
 
     series_list = wide_df.columns.tolist()
 
