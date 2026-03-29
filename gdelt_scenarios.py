@@ -439,10 +439,13 @@ def run_scenario(scenario_name, custom_shocks=None, causality_network=None,
             direction = 'stable'
 
         results_rows.append({
+            'series_id': f"{topic}_{country}",
+            'scenario': scenario_name,
             'topic': topic,
             'country': country,
             'baseline_avg': baseline_avg,
             'shocked_avg': shocked_avg,
+            'delta': shocked_avg - baseline_avg,
             'delta_pct': delta_pct,
             'peak_month': peak_month,
             'direction': direction,
