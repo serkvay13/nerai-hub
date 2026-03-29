@@ -3015,11 +3015,23 @@ def render_insights():
         key='insights_question'
     )
 
-    if qa_question and qa_question.strip():
+    qa_submitted = st.button('🔍 Sor / Ask', use_container_width=True, type='primary', key='qa_btn')
+    if (qa_submitted or st.session_state.get('_qa_last')) and qa_question and qa_question.strip():
+        if qa_submitted:
+            st.session_state['_qa_last'] = qa_question.strip()
+        _q = st.session_state.get('_qa_last', qa_question.strip())
         with st.spinner("Analysing data…"):
-            answer_html = _answer_question(
-                qa_question, df, trend_df, pred_df, insights_df)
-        st.markdown(answer_html, unsafe_allow_html=True)
+            try:
+                answer_html = _answer_question(
+                    _q, df, trend_df, pred_df, insights_df)
+            except Exception as _qa_err:
+                answer_html = f'<div style="color:#ff6b6b;padding:8px;">Analysis error: {_qa_err}</div>'
+        if answer_html and len(answer_html.strip()) > 10:
+            st.markdown(answer_html, unsafe_allow_html=True)
+        else:
+            st.info('ℹ️ No data found for this question. Try mentioning a country name (e.g. Turkey, Germany) or topic (e.g. military, protest).')
+    elif qa_submitted:
+        st.warning('⚠️ Please type a question first.')
         st.markdown('<div class="h-div" style="margin:16px 0 12px;"></div>', unsafe_allow_html=True)
     else:
         st.markdown("""
