@@ -26,9 +26,9 @@ CONFIG = {
     'MONTHLY_AGG': 'p90',
     'MIN_MONTHS': 1,
     'MAX_ZERO_RATIO': 0.80,
-    'MAX_LAG': 3,
+    'MAX_LAG': 2,                   # reduced from 3 → 33% fewer tests per pair
     'P_VALUE_THRESHOLD': 0.05,
-    'CORRELATION_PREFILTER': 0.30,
+    'CORRELATION_PREFILTER': 0.40,  # raised from 0.30 → fewer cross-category pairs
     'MAX_WORKERS': 4,
 }
 
@@ -223,10 +223,12 @@ def run_causality_analysis(wide_df, metadata, max_series=None):
 
     series_list = wide_df.columns.tolist()
 
-    # Apply max_series limit if specified
-    if max_series:
-        series_list = series_list[:max_series]
+    # Apply max_series limit if specified — sort by variance first (most active series)
+    if max_series and max_series < len(series_list):
+        variance_all = wide_df.std()
+        series_list = variance_all.nlargest(max_series).index.tolist()
         wide_df = wide_df[series_list]
+        print(f"[*] Limited to top {max_series} series by variance (from {len(variance_all)} total)")
 
     # Compute variance for prefiltering
     variance = wide_df.std()
