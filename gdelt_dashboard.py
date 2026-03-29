@@ -1314,8 +1314,16 @@ with st.sidebar:
 
             st.markdown('<div class="sec-hdr" style="margin-top:14px">History window</div>',
                         unsafe_allow_html=True)
-            pred_hist_months = st.slider("hist_months", 12, 60, 24,
-                                         label_visibility='collapsed')
+            if _IS_PRO:
+                pred_hist_months = st.slider("hist_months", 3, 60, 24,
+                                             label_visibility='collapsed')
+            else:
+                pred_hist_months = 3
+                st.markdown(
+                    '<div style="font-size:11px;color:#e07b20;padding:4px 0;">'
+                    '⚠️ Solo: 3 ay görüntülüyor. '
+                    'Pro ile 60 aya kadar geçmişe gidin.</div>',
+                    unsafe_allow_html=True)
         else:
             sel_pred_topic   = all_topics[0] if all_topics else ''
             sel_pred_country = 'US'
@@ -1768,6 +1776,21 @@ def render_indices():
                                  **{d.strftime('%d %b'):fmt(v,norm_method) for d,v in s.items()}})
             if rows:
                 st.dataframe(pd.DataFrame(rows).set_index('Country'), use_container_width=True)
+                # ── CSV Export — Pro only ──────────────────────────────
+                if _IS_PRO:
+                    _csv_bytes = pd.DataFrame(rows).to_csv(index=False).encode('utf-8')
+                    st.download_button(
+                        label='⬇️  Download as CSV (Pro)',
+                        data=_csv_bytes,
+                        file_name=f'nerai_{sel_topic}_indices.csv',
+                        mime='text/csv',
+                        use_container_width=True,
+                    )
+                else:
+                    st.markdown(
+                        '<div style="font-size:11px;color:#e07b20;padding:5px 0;">'
+                        'U0001f512 CSV download — <b>Pro</b> plan only.</div>',
+                        unsafe_allow_html=True)
 
     _render_footer()
 
@@ -3691,6 +3714,90 @@ def render_scenarios():
 
 
 # ═══════════════════════════════════════════════════════════════
+# PAGE: API ACCESS (Pro only)
+# ═══════════════════════════════════════════════════════════════
+def render_api():
+    st.markdown("""
+    <div style='padding:28px 0 16px 0;'>
+      <div style='font-size:11px;letter-spacing:0.12em;color:#0077a8;
+                  text-transform:uppercase;margin-bottom:6px;'>NERAI Intelligence</div>
+      <div style='font-size:22px;font-weight:700;color:#0d1f3c;'>API Access</div>
+      <div style='font-size:13px;color:#5a6b82;margin-top:4px;'>Pro plan: direct data access</div>
+    </div>""", unsafe_allow_html=True)
+    st.markdown('<div class="h-div"></div>', unsafe_allow_html=True)
+
+    if not _IS_PRO:
+        st.markdown("""
+        <div style='background:rgba(224,123,32,0.06);border:1px solid rgba(224,123,32,0.28);
+             border-radius:10px;padding:28px;text-align:center;margin:24px 0;'>
+          <div style='font-size:22px;margin-bottom:10px;'>U0001f512 Pro Feature</div>
+          <div style='color:#5a6b82;font-size:0.88rem;line-height:1.8;'>
+            API access is included in the <b>NERAI Pro</b> plan (€39/month).<br>
+            Upgrade at <a href='https://neraicorp.com' target='_blank'
+            style='color:#0077a8;'>neraicorp.com</a> or contact
+            <a href='mailto:info@neraicorp.com' style='color:#0077a8;'>info@neraicorp.com</a>.
+          </div>
+        </div>""", unsafe_allow_html=True)
+        _render_footer()
+        return
+
+    st.markdown("""
+    <div style='background:rgba(0,119,168,0.05);border:1px solid rgba(0,119,168,0.2);
+         border-radius:10px;padding:22px 26px;margin-bottom:20px;'>
+      <div style='font-size:13px;font-weight:700;color:#0077a8;margin-bottom:14px;'>
+        U0001f511 Your Pro Data Access
+      </div>
+      <div style='font-size:0.84rem;color:#2a3a5a;line-height:2.2;'>
+        <b>Dashboard URL:</b>
+        <code style='background:rgba(0,0,0,0.06);padding:2px 6px;border-radius:4px;'>
+          https://nerai-intelligence.streamlit.app
+        </code><br>
+        <b>Datasets:</b> indices.csv · forecast_predictions.csv · causality_network.csv<br>
+        <b>Format:</b> CSV — downloadable from Indices &amp; Predictions pages<br>
+        <b>Update cadence:</b> Daily automated pipeline<br>
+        <b>Coverage:</b> 18 risk dimensions × 195 countries · 2,400+ series
+      </div>
+    </div>""", unsafe_allow_html=True)
+
+    c1, c2 = st.columns(2)
+    with c1:
+        st.markdown("""
+        <div style='background:white;border:1px solid #dde6f0;border-radius:8px;padding:16px 18px;'>
+          <div style='font-size:12px;font-weight:700;color:#0077a8;margin-bottom:8px;'>
+            U0001f4ca Risk Indices
+          </div>
+          <div style='font-size:0.78rem;color:#5a6b82;line-height:1.9;'>
+            Source: GDELT Event Database<br>
+            Aggregation: P90 monthly<br>
+            Dimensions: 18 topics × 195 countries<br>
+            File: <code>indices.csv</code>
+          </div>
+        </div>""", unsafe_allow_html=True)
+    with c2:
+        st.markdown("""
+        <div style='background:white;border:1px solid #dde6f0;border-radius:8px;padding:16px 18px;'>
+          <div style='font-size:12px;font-weight:700;color:#0077a8;margin-bottom:8px;'>
+            U0001f52e 12-Month Forecasts
+          </div>
+          <div style='font-size:0.78rem;color:#5a6b82;line-height:1.9;'>
+            Model: N-HiTS / Holt-Winters<br>
+            Horizon: 12 months ahead<br>
+            Intervals: 80% + 95% CI<br>
+            File: <code>forecast_predictions.csv</code>
+          </div>
+        </div>""", unsafe_allow_html=True)
+
+    st.markdown("""
+    <div style='background:#f8fbff;border:1px solid #dde6f0;border-radius:8px;
+         padding:14px 18px;margin-top:16px;font-size:0.82rem;color:#5a6b82;line-height:1.8;'>
+      <b>Need webhooks, higher frequency, or custom data pipelines?</b><br>
+      Contact <a href='mailto:info@neraicorp.com' style='color:#0077a8;'>info@neraicorp.com</a>
+      for enterprise API access.
+    </div>""", unsafe_allow_html=True)
+    _render_footer()
+
+
+# ═══════════════════════════════════════════════════════════════
 # ROUTING
 # ═══════════════════════════════════════════════════════════════
 page = st.session_state.get('page', 'home')
@@ -3702,6 +3809,7 @@ elif page == 'predictions': render_predictions()
 elif page == 'causality':   render_causality()
 elif page == 'scenarios':   render_scenarios()
 elif page == 'insights':    render_insights()
+elif page == 'api':         render_api()
 else:
     st.session_state.page = 'home'
     st.rerun()
