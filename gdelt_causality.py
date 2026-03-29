@@ -28,7 +28,7 @@ CONFIG = {
     'MAX_ZERO_RATIO': 0.80,
     'MAX_LAG': 2,                   # reduced from 3 → 33% fewer tests per pair
     'P_VALUE_THRESHOLD': 0.10,  # relaxed 0.05→0.10: more relationships detected
-    'CORRELATION_PREFILTER': 0.40,  # raised from 0.30 → fewer cross-category pairs
+    'CORRELATION_PREFILTER': 0.15,  # lowered: GDELT series have low cross-topic correlation
     'MAX_WORKERS': 4,
 }
 
