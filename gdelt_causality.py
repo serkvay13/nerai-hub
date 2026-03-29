@@ -165,8 +165,8 @@ def test_pair(source_id, target_id, source_vals, target_vals):
         if valid_idx.sum() < max_lag + 5:
             return None
 
-        src_clean = source_vals[valid_idx].values
-        tgt_clean = target_vals[valid_idx].values
+        src_clean = source_vals[valid_idx]  # already numpy array
+        tgt_clean = target_vals[valid_idx]  # already numpy array
 
         # Run Granger causality test
         data = np.column_stack([tgt_clean, src_clean])
@@ -204,8 +204,8 @@ def test_pair(source_id, target_id, source_vals, target_vals):
             'f_stat': best_f,
         }
 
-    except (ValueError, np.linalg.LinAlgError, RuntimeError):
-        # Skip pairs that cause numerical issues
+    except Exception:
+        # Skip pairs that cause any numerical or type issues
         return None
 
 
@@ -290,7 +290,14 @@ def run_causality_analysis(wide_df, metadata, max_series=None):
             except KeyError:
                 continue
 
-    print(f"Total pairs to test: {len(pairs_to_test)}")
+    same_country = sum(1 for _,_,p in pairs_to_test if p==1)
+    same_topic   = sum(1 for _,_,p in pairs_to_test if p==2)
+    cross_cat    = sum(1 for _,_,p in pairs_to_test if p==3)
+    print(f"Total pairs to test: {len(pairs_to_test)} (same-country: {same_country}, same-topic: {same_topic}, cross-cat: {cross_cat})")
+    print(f"Series in analysis: {len(series_list)}, series with metadata: {len(series_info)}")
+    if len(pairs_to_test) == 0:
+        print("[!] WARNING: 0 pairs to test — check that metadata matches series IDs")
+        return pd.DataFrame()
 
     # Run tests in parallel
     edges = []
