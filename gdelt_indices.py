@@ -197,9 +197,9 @@ def download_gdelt_day(filename):
         except urllib.error.HTTPError as e:
             if e.code == 404:
                 return filename, None
-            print(f"  [!] HTTP {e.code} — {filename} (attempt {attempt+1}/{RETRY_COUNT})")
+            print(f"  [!] HTTP {e.code} â {filename} (attempt {attempt+1}/{RETRY_COUNT})")
         except Exception as e:
-            print(f"  [!] Error — {filename}: {e} (attempt {attempt+1}/{RETRY_COUNT})")
+            print(f"  [!] Error â {filename}: {e} (attempt {attempt+1}/{RETRY_COUNT})")
         if attempt < RETRY_COUNT - 1:
             time.sleep(RETRY_DELAY)
     return filename, None
@@ -207,10 +207,10 @@ def download_gdelt_day(filename):
 
 def compute_day_indices(df):
     """
-    V4 — Sentiment-Weighted Index with directional scoring and geo weighting.
+    V4 â Sentiment-Weighted Index with directional scoring and geo weighting.
 
     Improvements:
-      1. Per-country denominators (not global) — removes media-size bias
+      1. Per-country denominators (not global) â removes media-size bias
       2. Directional scoring: instability topics reward negative values, stability topics reward positive
       3. ActionGeo weighted 1.0, Actor geo weighted 0.4 each (max 1.0 per event)
       4. CAMEO code prefix matching
@@ -312,21 +312,33 @@ def load_existing_indices(filepath):
         return pd.DataFrame(index=idx)
 
 
-def get_missing_dates(indices):
+def get_missing_dates(indices, target_days=365):
+    """
+    Return all missing dates in the last target_days window.
+    Looks both backward (historical backfill) and forward (daily update).
+    Keeps existing data intact.
+    """
     yesterday = datetime.datetime.now() - datetime.timedelta(days=1)
-    if len(indices.columns) == 0:
-        start = yesterday - datetime.timedelta(days=30)
-        print("Warning: First run — downloading last 30 days.")
-    else:
-        last = str(indices.columns[-1])
-        start = datetime.datetime.strptime(last, '%Y%m%d') + datetime.timedelta(days=1)
+    ideal_start = yesterday - datetime.timedelta(days=target_days)
 
-    date_list = []
-    cur = start
+    # Build full target date range
+    cur = ideal_start
+    all_dates = []
     while cur <= yesterday:
-        date_list.append(int(cur.strftime('%Y%m%d')))
+        all_dates.append(int(cur.strftime('%Y%m%d')))
         cur += datetime.timedelta(days=1)
-    return sorted(date_list)
+
+    if len(indices.columns) == 0:
+        print(f"First run — downloading last {target_days} days of history.")
+        return sorted(all_dates)
+
+    # Find dates missing from existing data
+    existing = set(int(str(c)) for c in indices.columns)
+    missing = sorted(d for d in all_dates if d not in existing)
+
+    if missing:
+        print(f"Historical backfill: {len(missing)} missing dates out of {len(all_dates)} (last {target_days} days).")
+    return missing
 
 
 # ============================================================
@@ -336,9 +348,9 @@ def run():
     print("=" * 60)
     print("GDELT INDEX GENERATOR v4.0  (Directional + Geo-Weighted)")
     print("=" * 60)
-    print("Formula: Sigma(NumMentions × Geo_Weight × Directional_Intensity)")
-    print("         ───────────────────────────────────────────────────────")
-    print("         Sigma(NumMentions × Geo_Weight)  [per-country denominator]")
+    print("Formula: Sigma(NumMentions Ã Geo_Weight Ã Directional_Intensity)")
+    print("         âââââââââââââââââââââââââââââââââââââââââââââââââââââââ")
+    print("         Sigma(NumMentions Ã Geo_Weight)  [per-country denominator]")
     print("=" * 60)
 
     indices = load_existing_indices(OUTPUT_FILE)
@@ -362,12 +374,12 @@ def run():
                 if day_results:
                     indices[str(filename)] = pd.Series(day_results)
                     success += 1
-                    print(f"  [{i:>4}/{total}] ✓ {filename}  ({len(df):,} events)")
+                    print(f"  [{i:>4}/{total}] â {filename}  ({len(df):,} events)")
                 else:
                     skipped += 1
             else:
                 skipped += 1
-                print(f"  [{i:>4}/{total}] ✗ {filename}  (skipped)")
+                print(f"  [{i:>4}/{total}] â {filename}  (skipped)")
 
             if i % 10 == 0:
                 indices.to_csv(OUTPUT_FILE)
@@ -378,7 +390,7 @@ def run():
 
     print("\n" + "=" * 60)
     print(f"Completed! Success: {success}  Skipped: {skipped}")
-    print(f"  Total: {len(indices.columns)} days x {len(indices):,} (topic×country)")
+    print(f"  Total: {len(indices.columns)} days x {len(indices):,} (topicÃcountry)")
     print(f"  Output: {OUTPUT_FILE}")
     print("=" * 60)
     return indices
