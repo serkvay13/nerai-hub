@@ -3238,6 +3238,14 @@ def render_causality():
     st.markdown('<div class="h-div"></div>', unsafe_allow_html=True)
 
     cdf = load_causality()
+    # Normalise column names: support both gdelt_causality.py output formats
+    if cdf is not None and not cdf.empty and 'source_id' in cdf.columns:
+        cdf = cdf.rename(columns={
+            'source_id': 'source',
+            'target_id': 'target',
+            'f_stat':    'max_f_stat',
+            'p_value':   'min_p_value',
+        })
     sdf = load_scenario_results()
 
     # Which nodes were in the last scenario run?
@@ -3387,6 +3395,48 @@ SCENARIO_TEMPLATES = {
 }
 
 
+# ── Geopolitical context per scenario ──────────────────────────────
+SCENARIO_GEO_CONTEXT = {
+    'iran_nuclear_crisis': (
+        "In real-world terms, Iranian nuclear escalation would immediately pressure global oil markets "
+        "(+10-20% typical spike), trigger GCC defensive mobilisation, raise Strait of Hormuz disruption risk "
+        "(20% of global oil transits daily), and activate Hezbollah vectors in Lebanon. "
+        "US/EU sanctions packages would likely expand within weeks, and Israeli preemptive action risk "
+        "would be priced into regional sovereign bond spreads. Historical analogues: 2006, 2012, 2019 episodes "
+        "each produced 10-25% crude premiums and EM currency weakness in oil-importers."
+    ),
+    'russia_escalation': (
+        "Further Russian military escalation would intensify: NATO Article 5 discussions on Baltic state exposure, "
+        "European gas/energy price volatility (residual dependency), continued Ukrainian grain export disruption "
+        "(Ukraine ~10% of global wheat), EUR/CHF safe-haven pressure, and an expanded Western sanctions cycle. "
+        "Diplomatically, expect emergency UNSC sessions, possible new SWIFT exclusions, and German/French-led "
+        "back-channel ceasefire efforts. Capital flows into US Treasuries and gold would accelerate."
+    ),
+    'china_taiwan_tension': (
+        "Taiwan produces approximately 90% of the world's most advanced semiconductors (TSMC). "
+        "A credible cross-strait military threat would trigger: US carrier group deployments, "
+        "technology export restrictions, semiconductor price spikes across consumer electronics and automotive, "
+        "and South Korea/Japan security posture upgrades. "
+        "Equity markets would reprice the tech sector globally, and USD strength would spike as a safe haven. "
+        "Insurance premiums for trans-Pacific shipping would surge within 48 hours of escalation signals."
+    ),
+    'middle_east_oil_crisis': (
+        "Oil supply disruption from Gulf infrastructure attacks would impact: Brent/WTI spread widening, "
+        "inflation trajectories in energy-importing economies (particularly South/Southeast Asia), "
+        "EM currency pressure on current-account-deficit countries, and US strategic reserve activation debates. "
+        "The 2019 Aramco drone attacks precedent suggests a 5-10% supply shock adds $10-20/barrel short-term. "
+        "Airlines, shipping, and petrochemicals would face immediate margin compression; gold and USD would rally."
+    ),
+    'global_democratic_backsliding': (
+        "A synchronised democratic backsliding wave produces slow-burning but structural effects: "
+        "weakening of international norm enforcement (WTO, ICC, UN mechanisms), reduced multilateral cooperation "
+        "on climate and trade deals, increased political risk premium in EM sovereign debt (especially frontier markets), "
+        "and potential populist-nationalist contagion across regions via media amplification. "
+        "Long-term, rule-of-law score deterioration in ESG frameworks would trigger institutional investor reallocation "
+        "away from affected markets, compounding the economic damage of the political shift."
+    ),
+}
+
 def scenario_narrative(result_df, sel_result):
     """Return (p1_html, p2_html) plain-English analysis of a scenario result."""
     val_cols = [c for c in result_df.columns if c not in ('scenario', 'series_id', 'topic', 'country')]
@@ -3443,7 +3493,8 @@ def scenario_narrative(result_df, sel_result):
         f"in the network graph and are the most likely vectors of second-order propagation."
     )
 
-    return p1, p2
+    geo_ctx = SCENARIO_GEO_CONTEXT.get(str(sel_result_str), '')
+    return p1, p2, geo_ctx
 
 
 def render_scenarios():
@@ -3559,40 +3610,76 @@ def render_scenarios():
         if not result_df.empty:
             val_col_list = [c for c in result_df.columns if c not in ('scenario','series_id','topic','country')]
             if val_col_list:
-                # Impact chart
-                x_vals = result_df['series_id'] if 'series_id' in result_df.columns else result_df.index
-                y_vals = result_df[val_col_list[0]]
-                bar_colors = ['rgba(220,60,60,0.75)' if v >= 0 else 'rgba(0,140,220,0.75)'
-                              for v in y_vals]
+                # ── Pick best value column ───────────────────────
+                y_col = next((c for c in ['delta_pct', 'delta', 'shocked_avg'] if c in result_df.columns), val_col_list[0])
+                # ── Build series_id if missing ────────────────────
+                rdf = result_df.copy()
+                if 'series_id' not in rdf.columns and 'topic' in rdf.columns and 'country' in rdf.columns:
+                    rdf['series_id'] = rdf['topic'] + '_' + rdf['country']
+                x_src = rdf['series_id'] if 'series_id' in rdf.columns else rdf.index.astype(str)
+                y_vals = rdf[y_col]
+                # ── Top-40 by absolute impact ─────────────────────
+                impact_df = pd.DataFrame({'sid': x_src.values, 'val': y_vals.values})
+                impact_df['abs'] = impact_df['val'].abs()
+                impact_df = impact_df.nlargest(40, 'abs').sort_values('val', ascending=False)
+                # ── Human-readable labels ─────────────────────────
+                def _sid_label(sid):
+                    parts = str(sid).rsplit('_', 1)
+                    if len(parts) == 2:
+                        t = parts[0].replace('_', ' ').title()
+                        c = COUNTRY_NAMES.get(parts[1], parts[1])
+                        return f"{t}<br>({c})"
+                    return str(sid)
+                impact_df['label'] = impact_df['sid'].apply(_sid_label)
+                y_title = 'Δ Risk (% vs baseline)' if y_col == 'delta_pct' else 'Δ Risk Index (vs baseline)'
+                bar_colors = ['rgba(220,60,60,0.82)' if v >= 0 else 'rgba(0,140,220,0.82)' for v in impact_df['val']]
+                scen_lbl = SCENARIO_TEMPLATES.get(str(sel_result), {}).get('label', str(sel_result).replace('_',' ').title())
                 fig = go.Figure(go.Bar(
-                    x=x_vals, y=y_vals,
+                    x=impact_df['label'], y=impact_df['val'],
                     marker_color=bar_colors,
                     marker_line_color='rgba(80,80,100,0.2)',
-                    marker_line_width=0.8
+                    marker_line_width=0.8,
+                    hovertemplate='<b>%{x}</b><br>Impact: %{y:.5f}<extra></extra>'
                 ))
                 fig.update_layout(
-                    height=360,
+                    title=dict(text=f'Top 40 Most Impacted Series — {scen_lbl}',
+                               font=dict(size=12, color='#1a2a3a'), x=0.5, xanchor='center'),
+                    height=440,
                     paper_bgcolor='rgba(0,0,0,0)',
                     plot_bgcolor='rgba(232,240,252,0.45)',
-                    xaxis=dict(tickangle=-45, color='#3a5a7a', tickfont=dict(size=9)),
-                    yaxis=dict(title='Δ Risk Index (vs baseline)', color='#3a5a7a',
+                    xaxis=dict(tickangle=-40, color='#3a5a7a', tickfont=dict(size=8),
+                               title=dict(text='Risk Series (Topic · Country)', font=dict(size=10, color='#5a7a9a'))),
+                    yaxis=dict(title=y_title, color='#3a5a7a',
                                gridcolor='rgba(0,80,160,0.1)', zeroline=True,
                                zerolinecolor='rgba(0,80,160,0.3)', zerolinewidth=1.5),
-                    margin=dict(l=20, r=20, t=10, b=90)
+                    margin=dict(l=20, r=20, t=50, b=130)
                 )
                 st.plotly_chart(fig, use_container_width=True)
+                st.markdown("""<div style='font-size:0.72rem;color:#4a6a8a;line-height:1.6;padding:8px 12px;
+                     background:rgba(0,80,160,0.04);border-radius:6px;margin-bottom:8px;'>
+                  <b>How to read:</b> Each bar = one risk dimension × country pair.
+                  <span style='color:#dc3c3c;font-weight:700;'>Red</span> = risk rises above baseline after shock.
+                  <span style='color:#008cdc;font-weight:700;'>Blue</span> = risk falls below baseline.
+                  Only the 40 most impacted series are shown, sorted by impact magnitude.
+                </div>""", unsafe_allow_html=True)
 
             # ── Plain-English Analysis ──────────────────────────
-            p1, p2 = scenario_narrative(result_df, sel_result)
-            if p1:
+            narr3 = scenario_narrative(result_df, sel_result)
+            if narr3 and narr3[0]:
+                p1, p2, p3 = narr3
+                geo_block = (f"<div style='margin-top:14px;padding:12px 16px;"
+                             f"background:rgba(0,85,168,0.06);border-left:3px solid #0077a8;"
+                             f"border-radius:4px;font-size:0.82rem;color:#0a3a6a;line-height:1.7;'>"
+                             f"<b>&#127758; Geopolitical Context:</b> {p3}</div>") if p3 else ''
                 st.markdown(f"""
                 <div style='background:#f0f6fc;border:1px solid rgba(0,119,168,0.18);
                      border-radius:10px;padding:20px 24px;margin:20px 0;line-height:1.8;
                      font-size:0.85rem;color:#1a2a3a;'>
                   <div style='font-size:0.7rem;font-weight:700;color:#0077a8;letter-spacing:0.1em;
-                       text-transform:uppercase;margin-bottom:10px;'>📝 Analytical Summary</div>
+                       text-transform:uppercase;margin-bottom:10px;'>&#128203; Analytical Summary</div>
                   <p style='margin:0 0 12px;'>{p1}</p>
-                  <p style='margin:0;'>{p2}</p>
+                  <p style='margin:0 0 4px;'>{p2}</p>
+                  {geo_block}
                 </div>""", unsafe_allow_html=True)
 
             # Raw data table (collapsible)
