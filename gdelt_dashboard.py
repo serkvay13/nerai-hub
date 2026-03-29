@@ -3097,6 +3097,7 @@ def render_insights():
                 answer_html = f'<div style="color:#ff6b6b;padding:8px;">Analysis error: {_qa_err}</div>'
                 claude_html = ''
                 claude_html = ''
+                claude_html = ''
         if answer_html and len(answer_html.strip()) > 10:
             st.markdown(answer_html, unsafe_allow_html=True)
         if 'claude_html' in dir() and claude_html:
