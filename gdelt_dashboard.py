@@ -2960,6 +2960,97 @@ def _answer_question(question, df_raw, trend_df, pred_df, insights_df):
 
 
 
+
+@st.cache_data(ttl=3600)
+def load_enriched_articles():
+    """Load RSS-fetched quality articles (last 30 days)."""
+    try:
+        if not os.path.exists('enriched_articles.csv'):
+            return None
+        df = pd.read_csv('enriched_articles.csv', dtype=str)
+        return df
+    except Exception:
+        return None
+
+
+@st.cache_data(ttl=3600)
+def load_commodities():
+    """Load commodity price data."""
+    try:
+        if not os.path.exists('commodities.csv'):
+            return None
+        return pd.read_csv('commodities.csv')
+    except Exception:
+        return None
+
+
+def _build_qa_context(question, article_df, commodity_df):
+    """Build extra context string from articles and commodity prices for Claude prompt."""
+    parts = []
+    q_lower = question.lower()
+    words = set(re.findall(r'\b\w{4,}\b', q_lower))
+
+    if article_df is not None and len(article_df) > 0:
+        def score(row):
+            t = str(row.get('title','')) + ' ' + str(row.get('summary','')) + ' ' + str(row.get('countries','')) + ' ' + str(row.get('topics',''))
+            return sum(1 for w in words if w in t.lower())
+        scores = article_df.apply(score, axis=1)
+        top = article_df[scores > 0].copy()
+        top['_sc'] = scores[scores > 0]
+        top = top.nlargest(6, '_sc')
+        if len(top) > 0:
+            parts.append('\n\n=== RECENT EXPERT ANALYSIS (Quality Sources) ===')
+            for _, r in top.iterrows():
+                src  = str(r.get('source',''))
+                date = str(r.get('date',''))[:10]
+                ttl  = str(r.get('title',''))
+                smm  = str(r.get('summary',''))[:300]
+                url  = str(r.get('url',''))
+                parts.append(f'[{src} | {date}] {ttl}\n{smm}\n{url}')
+
+    COMM_MAP = {
+        'oil': ['CL=F','BZ=F'], 'crude': ['CL=F','BZ=F'], 'brent': ['BZ=F'], 'wti': ['CL=F'],
+        'gas': ['NG=F'], 'natural gas': ['NG=F'], 'lng': ['NG=F'],
+        'gold': ['GC=F'], 'silver': ['SI=F'], 'copper': ['HG=F'], 'platinum': ['PL=F'],
+        'wheat': ['ZW=F'], 'corn': ['ZC=F'], 'soybean': ['ZS=F'],
+        'vix': ['^VIX'], 'fear': ['^VIX'], 'volatility': ['^VIX'],
+        'dollar': ['DX-Y.NYB'], 'usd': ['DX-Y.NYB','EURUSD=X'],
+        'euro': ['EURUSD=X'], 'treasury': ['^TNX'], 'bond': ['^TNX'],
+        'ruble': ['USDRUB=X'], 'yuan': ['USDCNY=X'], 'stock': ['^GSPC'],
+        'opec': ['CL=F','BZ=F','NG=F'], 'energy': ['CL=F','BZ=F','NG=F'],
+        'metal': ['GC=F','SI=F','HG=F'], 'inflation': ['GC=F','^VIX','DX-Y.NYB'],
+        'commodity': None, 'price': None, 'market': ['^GSPC','^VIX'],
+        'russia': ['USDRUB=X','CL=F'], 'china': ['USDCNY=X'],
+        'sanction': ['USDRUB=X','CL=F'], 'petrol': ['CL=F','BZ=F'],
+    }
+
+    if commodity_df is not None and len(commodity_df) > 0:
+        tickers = set()
+        for kw, tkrs in COMM_MAP.items():
+            if kw in q_lower:
+                if tkrs:
+                    tickers.update(tkrs)
+                else:
+                    tickers.update(commodity_df['ticker'].unique())
+        if tickers:
+            latest = commodity_df['date'].max()
+            rows = commodity_df[(commodity_df['date'] == latest) & (commodity_df['ticker'].isin(tickers))]
+            if len(rows) > 0:
+                parts.append(f'\n\n=== LIVE MARKET DATA (as of {latest}) ===')
+                for _, r in rows.iterrows():
+                    c1d = r.get('chg_1d_pct', 0)
+                    c7d = r.get('chg_7d_pct', 0)
+                    try:
+                        c1d_s = f"{float(c1d)*100:.2f}%"
+                        c7d_s = f"{float(c7d)*100:.2f}%"
+                    except Exception:
+                        c1d_s = c7d_s = 'N/A'
+                    parts.append(f"{r['name']}: {r['price']} {r['unit']} | 1d: {c1d_s} | 7d: {c7d_s}")
+
+    return '\n'.join(parts)
+
+
+
 def _call_claude_for_qa(question, df_raw, trend_df, pred_df, insights_df):
     """Comprehensive multi-paragraph Claude analysis for Insights Q&A."""
     import anthropic, os, datetime
@@ -3178,7 +3269,10 @@ def render_insights():
                     _q, df, trend_df, pred_df, insights_df)
             except Exception as _qa_err:
                 answer_html = f'<div style="color:#ff6b6b;padding:8px;">Analysis error: {_qa_err}</div>'
-            claude_html = _call_claude_for_qa(_q, df, trend_df, pred_df, insights_df)
+            _art_df  = load_enriched_articles()
+            _com_df  = load_commodities()
+            _ext_ctx = _build_qa_context(_q, _art_df, _com_df)
+            claude_html = _call_claude_for_qa(_q + _ext_ctx, df, trend_df, pred_df, insights_df)
         if answer_html and len(answer_html.strip()) > 10:
             st.markdown(answer_html, unsafe_allow_html=True)
         if 'claude_html' in dir() and claude_html:
