@@ -1,6 +1,6 @@
 """
-commodity_data.py -- Fetch daily commodity & market prices via yfinance
-Saves to commodities.csv for NERAI dashboard Q&A context.
+commodity_data.py — Fetch daily commodity & market prices via yfinance
+Saves to commodities.csv for use in NERAI dashboard Q&A context.
 Run daily via GitHub Actions.
 """
 
@@ -10,17 +10,21 @@ import os
 from datetime import datetime, timezone, timedelta
 
 TICKERS = {
+    # Energy
     "CL=F":     {"name": "WTI Crude Oil",    "category": "energy",     "unit": "USD/bbl"},
     "BZ=F":     {"name": "Brent Crude Oil",  "category": "energy",     "unit": "USD/bbl"},
     "NG=F":     {"name": "Natural Gas",      "category": "energy",     "unit": "USD/MMBtu"},
     "HO=F":     {"name": "Heating Oil",      "category": "energy",     "unit": "USD/gal"},
+    # Metals
     "GC=F":     {"name": "Gold",             "category": "metals",     "unit": "USD/oz"},
     "SI=F":     {"name": "Silver",           "category": "metals",     "unit": "USD/oz"},
     "HG=F":     {"name": "Copper",           "category": "metals",     "unit": "USD/lb"},
     "PL=F":     {"name": "Platinum",         "category": "metals",     "unit": "USD/oz"},
+    # Agriculture
     "ZW=F":     {"name": "Wheat",            "category": "agriculture","unit": "USc/bu"},
     "ZC=F":     {"name": "Corn",             "category": "agriculture","unit": "USc/bu"},
     "ZS=F":     {"name": "Soybeans",         "category": "agriculture","unit": "USc/bu"},
+    # Financial / Macro
     "^VIX":     {"name": "VIX Fear Index",   "category": "financial",  "unit": "index"},
     "DX-Y.NYB": {"name": "USD Index",        "category": "financial",  "unit": "index"},
     "^TNX":     {"name": "10Y US Treasury",  "category": "financial",  "unit": "% yield"},
@@ -31,17 +35,20 @@ TICKERS = {
 }
 
 
-def fetch_prices():
+def fetch_prices() -> pd.DataFrame:
     end_date   = datetime.now(timezone.utc).date()
     start_date = end_date - timedelta(days=730)
+
     rows = []
     for ticker_sym, meta in TICKERS.items():
         try:
             tk   = yf.Ticker(ticker_sym)
             hist = tk.history(start=str(start_date), end=str(end_date), interval="1d")
+
             if hist.empty:
                 print(f"[COMM] No data for {ticker_sym}")
                 continue
+
             for date_idx, row in hist.iterrows():
                 close = row.get("Close")
                 if close is None:
@@ -50,20 +57,29 @@ def fetch_prices():
                     close = float(close.iloc[0])
                 else:
                     close = float(close)
+
                 rows.append({
-                    "date": str(date_idx.date()), "ticker": ticker_sym,
-                    "name": meta["name"], "category": meta["category"],
-                    "unit": meta["unit"], "price": round(close, 4),
+                    "date":     str(date_idx.date()),
+                    "ticker":   ticker_sym,
+                    "name":     meta["name"],
+                    "category": meta["category"],
+                    "unit":     meta["unit"],
+                    "price":    round(close, 4),
                 })
-            print(f"[COMM] {meta['name']}: {len(hist)} rows")
+
+            print(f"[COMM] {meta['name']} ({ticker_sym}): {len(hist)} rows")
+
         except Exception as e:
-            print(f"[COMM] Error {ticker_sym}: {e}")
+            print(f"[COMM] Error fetching {ticker_sym}: {e}")
+
     if not rows:
         return pd.DataFrame()
-    return pd.DataFrame(rows).sort_values(["ticker", "date"]).reset_index(drop=True)
+
+    df = pd.DataFrame(rows)
+    return df.sort_values(["ticker", "date"]).reset_index(drop=True)
 
 
-def compute_changes(df):
+def compute_changes(df: pd.DataFrame) -> pd.DataFrame:
     dfs = []
     for ticker, grp in df.groupby("ticker"):
         grp = grp.sort_values("date").copy()
@@ -74,19 +90,24 @@ def compute_changes(df):
 
 
 def run():
-    print(f"[COMM] Starting at {datetime.now(timezone.utc).isoformat()}")
+    print(f"[COMM] Starting commodity fetch at {datetime.now(timezone.utc).isoformat()}")
+
     df = fetch_prices()
     if df.empty:
         print("[COMM] No data fetched.")
         return
+
     df = compute_changes(df)
+
     cutoff = (datetime.now(timezone.utc) - timedelta(days=730)).strftime("%Y-%m-%d")
     df = df[df["date"] >= cutoff]
+
     csv_path = "commodities.csv"
     df.to_csv(csv_path, index=False)
     print(f"[COMM] Saved {len(df)} rows to {csv_path}")
+
     latest_date = df["date"].max()
-    latest = df[df["date"] == latest_date][["name","price","unit","chg_1d_pct"]].copy()
+    latest = df[df["date"] == latest_date][["name", "price", "unit", "chg_1d_pct"]].copy()
     latest["chg_1d_pct"] = (latest["chg_1d_pct"] * 100).round(2).astype(str) + "%"
     print(f"\n[COMM] Latest prices ({latest_date}):")
     print(latest.to_string(index=False))
