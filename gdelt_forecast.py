@@ -393,7 +393,7 @@ def compute_trends(monthly: pd.DataFrame,
         return 'stable'
 
     m['direction'] = m.apply(direction, axis=1)
-    m[['topic', 'country']] = m['unique_id'].str.split('||', expand=True)
+    m[['topic', 'country']] = m['unique_id'].str.split('||', n=1, expand=True)
     return m[['topic', 'country', 'last_value', 'avg_12m', 'trend_pct', 'direction']]
 
 
@@ -486,7 +486,7 @@ def run():
 
     # ── Parse unique_id ──────────────────────────────────────────
     forecasts[['topic', 'country']] = (
-        forecasts['unique_id'].str.split('||', expand=True)
+        forecasts['unique_id'].str.split('||', n=1, expand=True)
     )
     for col in ['yhat', 'yhat_lower', 'yhat_upper']:
         forecasts[col] = forecasts[col].clip(lower=0)
