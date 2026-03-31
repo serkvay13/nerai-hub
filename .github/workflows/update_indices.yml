@@ -65,7 +65,9 @@ jobs:
           python-version: '3.11'
 
       - name: Install forecast dependencies
-        run: pip install pandas numpy neuralforecast
+        run: |
+          pip install pandas numpy statsforecast
+          pip install neuralforecast || echo "neuralforecast unavailable, using statsforecast only"
 
       - name: Pull latest indices.csv
         run: git pull
