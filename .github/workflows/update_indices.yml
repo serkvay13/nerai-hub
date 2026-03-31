@@ -6,7 +6,6 @@ on:
   workflow_dispatch:
 
 jobs:
-  # ─── Job 1: Update daily indices ──────────────────────────
   update-indices:
     runs-on: ubuntu-latest
     permissions:
@@ -24,25 +23,33 @@ jobs:
           python-version: '3.11'
 
       - name: Install data dependencies
-        run: pip install pandas
+        run: pip install pandas feedparser yfinance
 
       - name: Run GDELT indices script
         run: python gdelt_indices.py
 
-      - name: Commit updated indices.csv
+      - name: Run RSS enrichment script
+        run: python rss_enrichment.py
+        continue-on-error: true
+
+      - name: Run commodity data script
+        run: python commodity_data.py
+        continue-on-error: true
+
+      - name: Commit updated data files
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
           git add indices.csv
-          git diff --staged --quiet || git commit -m "chore: auto-update GDELT indices [$(date +%Y-%m-%d)]"
+          git add -f enriched_articles.csv || true
+          git add -f commodities.csv || true
+          git diff --staged --quiet || git commit -m "chore: auto-update GDELT indices + RSS/commodity data [$(date +%Y-%m-%d)]"
           git push
 
-  # ─── Job 2: Re-train forecast (weekly, Sunday) ────────────
   update-forecast:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-    # Only run on Sundays (cron day-of-week = 0) or manual dispatch
     if: github.event_name == 'workflow_dispatch' || (github.event_name == 'schedule' && startsWith(github.run_id, '0'))
     needs: update-indices
 
@@ -58,8 +65,7 @@ jobs:
           python-version: '3.11'
 
       - name: Install forecast dependencies
-        run: |
-          pip install pandas numpy neuralforecast
+        run: pip install pandas numpy neuralforecast
 
       - name: Pull latest indices.csv
         run: git pull
