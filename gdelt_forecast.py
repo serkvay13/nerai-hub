@@ -1,103 +1,83 @@
 #!/usr/bin/env python3
 """
-GDELT FORECAST ENGINE v3.1  --  High-Quality Statistical Forecasting
-=====================================================================
+GDELT FORECAST ENGINE v4.0  --  Best-Quality Hybrid Forecasting
+===============================================================
 
-Models  : AutoARIMA + AutoETS ensemble (via statsforecast)
-          - AutoARIMA: gold-standard ARIMA with automatic order selection
-          - AutoETS: Exponential Smoothing with automatic model selection
-          - Ensemble: simple average of both models
-          - Winner of M3, M4, M5 international forecasting competitions
+Strategy: always try the best available model tier, never fail silently.
 
-Why statsforecast over neuralforecast:
-  - 100x faster (Cython/C++ backend, no PyTorch)
-  - Better accuracy on monthly macroeconomic series (proven by research)
-  - Reliable on any CI runner (no GPU, no memory constraints)
-  - Proper prediction intervals via maximum likelihood estimation
+Tier 1 (BEST): neuralforecast N-HiTS on CPU
+  - Deep learning, neural hierarchical interpolation
+  - Best for capturing complex non-linear patterns
+  - Used when available AND enough memory
 
-Input  : ./indices.csv        (daily topic x country GDELT indices)
-Output : ./predictions.csv    (12-month-ahead forecasts per topic x country)
-         ./forecast_trends.csv (trend summary: rising / stable / falling)
+Tier 2 (EXCELLENT): statsforecast 3-model ensemble
+  - AutoARIMA + AutoETS + AutoTheta combination
+  - Won M3/M4/M5 international forecasting competitions
+  - Statistically proven on monthly macroeconomic data
+  - Always reliable, no GPU/memory constraints
+
+Tier 3 (FALLBACK): built-in Holt-Winters
+  - Pure numpy, zero dependencies
+  - Only used if both above fail
+
+Blending: if both Tier 1 + Tier 2 produce results,
+  final = 0.45 * N-HiTS + 0.55 * statsforecast ensemble
+  (statsforecast gets higher weight for monthly macro series
+   per M4 competition findings)
+
+Input  : ./indices.csv
+Output : ./predictions.csv   (date, topic, country, yhat, yhat_lower, yhat_upper)
+         ./forecast_trends.csv (topic, country, trend, current_value, forecast_6m, ...)
 """
 
-import sys
-import warnings
+import os, sys, warnings, gc
 import pandas as pd
 import numpy as np
 from datetime import datetime
 
 warnings.filterwarnings('ignore')
 
-# ── Try importing statsforecast ───────────────────────────────────────────────
-try:
-    from statsforecast import StatsForecast
-    from statsforecast.models import AutoARIMA, AutoETS, AutoTheta
-    HAVE_STATSFORECAST = True
-    print("[FORECAST] Using statsforecast (AutoARIMA + AutoETS + AutoTheta ensemble)")
-except ImportError:
-    HAVE_STATSFORECAST = False
-    print("[FORECAST] statsforecast not available -- using built-in Holt-Winters")
-
-# ── Constants ─────────────────────────────────────────────────────────────────
 INPUT_CSV     = 'indices.csv'
 OUTPUT_PREDS  = 'predictions.csv'
 OUTPUT_TRENDS = 'forecast_trends.csv'
-HORIZON       = 12      # months ahead
-MIN_MONTHS    = 18      # minimum history required
+HORIZON       = 12
+MIN_MONTHS    = 18
 CONF_LEVEL    = 95
 
+# ─── Tier detection ───────────────────────────────────────────────────────────
+HAVE_NF = False
+HAVE_SF = False
 
-# ── Fallback: built-in damped Holt-Winters ────────────────────────────────────
-def _holt_winters_fallback(series: np.ndarray, horizon: int):
-    n = len(series)
-    if n < 2:
-        v = float(series[-1]) if n else 0.0
-        yhat = np.full(horizon, v)
-        err  = abs(v) * 0.2 + 0.01
-        return yhat, yhat - err, yhat + err
+try:
+    from statsforecast import StatsForecast
+    from statsforecast.models import AutoARIMA, AutoETS, AutoTheta
+    HAVE_SF = True
+    print("[FORECAST] Tier 2 available: statsforecast (AutoARIMA + AutoETS + AutoTheta)")
+except ImportError:
+    print("[FORECAST] statsforecast not installed")
 
-    alpha, beta, phi = 0.35, 0.12, 0.92
-    level = series[0]
-    trend = (series[min(2, n-1)] - series[0]) / max(1, min(2, n-1))
-    levels, trends = [level], [trend]
-
-    for t in range(1, n):
-        pl, pt = levels[-1], trends[-1]
-        nl = alpha * series[t] + (1 - alpha) * (pl + phi * pt)
-        nt = beta * (nl - pl) + (1 - beta) * phi * pt
-        levels.append(nl); trends.append(nt)
-
-    fitted = np.array([levels[t] + phi * trends[t] for t in range(n - 1)])
-    residuals = series[1:] - fitted
-    rmse = float(np.sqrt(np.mean(residuals ** 2))) + 0.001
-
-    yhat = np.zeros(horizon); phi_h = 1.0; phi_cum = 0.0
-    ll, lt = levels[-1], trends[-1]
-    for h in range(1, horizon + 1):
-        phi_cum += phi_h; phi_h *= phi
-        yhat[h - 1] = ll + phi_cum * lt
-
-    margin = 1.96 * rmse * np.sqrt(np.arange(1, horizon + 1))
-    yhat   = np.maximum(yhat, 0)
-    return yhat, np.maximum(yhat - margin, 0), yhat + margin
+try:
+    import torch
+    from neuralforecast import NeuralForecast
+    from neuralforecast.models import NHITS
+    HAVE_NF = True
+    print(f"[FORECAST] Tier 1 available: neuralforecast N-HiTS (torch {torch.__version__})")
+    # Check available memory -- skip NF if < 3GB free
+    try:
+        import psutil
+        free_gb = psutil.virtual_memory().available / 1e9
+        print(f"[FORECAST]   Available RAM: {free_gb:.1f} GB")
+        if free_gb < 3.0:
+            HAVE_NF = False
+            print("[FORECAST]   Insufficient RAM for N-HiTS -- using statsforecast only")
+    except ImportError:
+        pass  # psutil not available, try anyway
+except ImportError:
+    print("[FORECAST] neuralforecast not installed")
 
 
-# ── Trend classification ───────────────────────────────────────────────────────
-def classify_trend(current: float, forecasts: np.ndarray) -> str:
-    if len(forecasts) == 0:
-        return 'stable'
-    mid6 = float(np.mean(forecasts[:6]))
-    pct  = (mid6 - current) / (abs(current) + 1e-9)
-    if   pct >  0.08: return 'rising'
-    elif pct < -0.08: return 'falling'
-    return 'stable'
-
-
-# ── Main ───────────────────────────────────────────────────────────────────────
-def run():
-    print(f"[FORECAST] Starting at {datetime.utcnow().isoformat()}Z")
-
-    # ── Load indices ─────────────────────────────────────────────────────────
+# ─── Data loading ─────────────────────────────────────────────────────────────
+def load_monthly():
     try:
         df = pd.read_csv(INPUT_CSV)
     except FileNotFoundError:
@@ -106,13 +86,12 @@ def run():
 
     df['date'] = pd.to_datetime(df['date'], errors='coerce')
     df = df.dropna(subset=['date'])
-    print(f"[FORECAST] Loaded {len(df):,} rows  ({df['date'].min().date()} to {df['date'].max().date()})")
+    print(f"[FORECAST] Loaded {len(df):,} rows ({df['date'].min().date()} to {df['date'].max().date()})")
 
-    # ── Detect format & convert to long ──────────────────────────────────────
     cols = df.columns.tolist()
     if 'topic' in cols and 'country' in cols:
-        val_col = [c for c in cols if c not in ('date','topic','country')][0]
-        df_long = df[['date','topic','country',val_col]].copy()
+        val = [c for c in cols if c not in ('date','topic','country')][0]
+        df_long = df[['date','topic','country',val]].copy()
         df_long.columns = ['date','topic','country','value']
     else:
         series_cols = [c for c in cols if c != 'date']
@@ -123,165 +102,233 @@ def run():
         df_long = df_long[['date','topic','country','value']]
 
     df_long['value'] = pd.to_numeric(df_long['value'], errors='coerce').fillna(0)
-
-    # ── Monthly aggregation (75th percentile -- captures risk spikes) ─────────
     df_long['month'] = df_long['date'].dt.to_period('M')
+
     monthly = (df_long.groupby(['month','topic','country'])['value']
                .quantile(0.75).reset_index())
     monthly['ds'] = monthly['month'].dt.to_timestamp()
     monthly = monthly.sort_values('ds').rename(columns={'value': 'y'})
+    monthly['unique_id'] = monthly['topic'] + '|' + monthly['country']
+    return monthly
 
-    # Future dates for predictions
-    last_month   = monthly['ds'].max()
-    future_dates = pd.date_range(
-        start=last_month + pd.offsets.MonthBegin(1),
-        periods=HORIZON, freq='MS'
-    )
 
-    series_list = monthly[['topic','country']].drop_duplicates()
-    print(f"[FORECAST] {len(series_list):,} unique series  |  horizon = {HORIZON} months")
-
-    pred_rows  = []
-    trend_rows = []
-    forecasted = 0
-    skipped    = 0
-
-    # ════════════════════════════════════════════════════════════════════════════
-    if HAVE_STATSFORECAST:
-        # ── statsforecast batch forecasting ─────────────────────────────────
-        # Build panel dataframe: unique_id = "topic|country"
-        monthly['unique_id'] = monthly['topic'] + '|' + monthly['country']
-
-        # Filter series with enough history
-        counts = monthly.groupby('unique_id')['ds'].count()
-        valid_ids = counts[counts >= MIN_MONTHS].index
-        panel = monthly[monthly['unique_id'].isin(valid_ids)][['unique_id','ds','y']].copy()
-        panel = panel.sort_values(['unique_id','ds'])
-
-        print(f"[FORECAST] Forecasting {len(valid_ids):,} series with statsforecast...")
-        skipped = len(series_list) - len(valid_ids)
-
-        models = [
-            AutoARIMA(season_length=12, approximation=True, stepwise=True),
+# ─── Tier 2: statsforecast ensemble ──────────────────────────────────────────
+def forecast_statsforecast(panel: pd.DataFrame, horizon: int):
+    print("[FORECAST] Running Tier 2: AutoARIMA + AutoETS + AutoTheta ensemble...")
+    sf = StatsForecast(
+        models=[
+            AutoARIMA(season_length=12, approximation=True, stepwise=True, nmodels=20),
             AutoETS(season_length=12, damped=True),
-            AutoTheta(season_length=12),
-        ]
+            AutoTheta(season_length=12, decomposition_type='multiplicative'),
+        ],
+        freq='MS', n_jobs=-1,
+        fallback_model=AutoETS(season_length=12)
+    )
+    fcst = sf.forecast(df=panel, h=horizon, level=[CONF_LEVEL])
+    return fcst
 
-        sf = StatsForecast(models=models, freq='MS', n_jobs=-1, fallback_model=AutoETS(season_length=12))
 
-        try:
-            fcst = sf.forecast(df=panel, h=HORIZON, level=[CONF_LEVEL])
-        except Exception as e:
-            print(f"[FORECAST] statsforecast error: {e} -- falling back to Holt-Winters")
-            HAVE_STATSFORECAST_RUNTIME = False
-        else:
-            HAVE_STATSFORECAST_RUNTIME = True
+# ─── Tier 1: neuralforecast N-HiTS ────────────────────────────────────────────
+def forecast_nhits(panel: pd.DataFrame, horizon: int):
+    print("[FORECAST] Running Tier 1: N-HiTS deep learning (CPU mode)...")
+    nf = NeuralForecast(
+        models=[NHITS(
+            h=horizon,
+            input_size=min(36, max(24, int(len(panel) / len(panel['unique_id'].unique()) * 0.6))),
+            max_steps=300,          # reduced from 2000 for CI stability
+            batch_size=32,
+            n_freq_downsample=[2, 1, 1],
+            mlp_units=[[128, 128], [128, 128], [128, 128]],  # smaller than default
+            accelerator='cpu',
+            enable_progress_bar=False,
+            enable_model_summary=False,
+        )],
+        freq='MS'
+    )
+    nf.fit(panel)
+    fcst = nf.predict()
+    # Add confidence intervals using 1.5x std of residuals as proxy
+    nf_yhat = fcst['NHITS'].values
+    nf_std  = float(np.std(panel.groupby('unique_id')['y'].apply(lambda s: s.diff().dropna()).values.flatten())) + 0.01
+    fcst['NHITS-lo-95'] = np.maximum(nf_yhat - 1.96 * nf_std * np.sqrt(np.tile(np.arange(1,horizon+1), len(fcst)//horizon + 1)[:len(nf_yhat)]), 0)
+    fcst['NHITS-hi-95'] = nf_yhat + 1.96 * nf_std * np.sqrt(np.tile(np.arange(1,horizon+1), len(fcst)//horizon + 1)[:len(nf_yhat)])
+    return fcst
 
-        if HAVE_STATSFORECAST_RUNTIME:
-            # Ensemble: average of all model yhats
-            model_names = [type(m).__name__ for m in models]
-            yhat_cols   = [c for c in fcst.columns if c in model_names or
-                           any(c.startswith(mn) for mn in model_names
-                               if not c.endswith('-lo-95') and not c.endswith('-hi-95'))]
 
-            # Build output
-            for uid, grp in fcst.groupby('unique_id'):
-                topic, country = uid.split('|', 1)
-                grp = grp.sort_values('ds').reset_index(drop=True)
+# ─── Holt-Winters fallback ────────────────────────────────────────────────────
+def _hw_single(y, h):
+    n = len(y)
+    if n < 2:
+        v = float(y[-1]) if n else 0.0
+        err = abs(v)*0.2+0.01
+        yh = np.full(h, v)
+        return yh, yh-err, yh+err
+    alpha, beta, phi = 0.35, 0.12, 0.92
+    l, t = y[0], (y[min(2,n-1)] - y[0]) / max(1, min(2,n-1))
+    ls, ts = [l], [t]
+    for v in y[1:]:
+        nl = alpha*v + (1-alpha)*(ls[-1]+phi*ts[-1])
+        nt = beta*(nl-ls[-1]) + (1-beta)*phi*ts[-1]
+        ls.append(nl); ts.append(nt)
+    fitted = np.array([ls[i]+phi*ts[i] for i in range(n-1)])
+    rmse = float(np.sqrt(np.mean((y[1:]-fitted)**2)))+0.001
+    yh = np.zeros(h); pc = 0.0; ph = 1.0
+    for i in range(h):
+        pc += ph; ph *= phi
+        yh[i] = ls[-1] + pc*ts[-1]
+    m = 1.96*rmse*np.sqrt(np.arange(1,h+1))
+    yh = np.maximum(yh,0)
+    return yh, np.maximum(yh-m,0), yh+m
 
-                # Ensemble yhat (mean of all model predictions)
-                yhat_arr = np.array([grp[mn].values for mn in model_names
-                                     if mn in grp.columns]).mean(axis=0)
 
-                # CI: use widest available (most conservative)
-                lo_cols = [c for c in grp.columns if 'lo' in c and '95' in c]
-                hi_cols = [c for c in grp.columns if 'hi' in c and '95' in c]
-                if lo_cols and hi_cols:
-                    lower = np.array([grp[c].values for c in lo_cols]).min(axis=0)
-                    upper = np.array([grp[c].values for c in hi_cols]).max(axis=0)
-                else:
-                    rmse  = float(np.std(yhat_arr)) + 0.01
-                    margin = 1.96 * rmse * np.sqrt(np.arange(1, HORIZON+1))
-                    lower = np.maximum(yhat_arr - margin, 0)
-                    upper = yhat_arr + margin
+# ─── Trend classification ─────────────────────────────────────────────────────
+def classify_trend(current, yhat6):
+    pct = (float(np.mean(yhat6)) - current) / (abs(current)+1e-9)
+    if pct > 0.08:  return 'rising'
+    if pct < -0.08: return 'falling'
+    return 'stable'
 
-                yhat_arr = np.maximum(yhat_arr, 0)
-                lower    = np.maximum(lower, 0)
 
-                for i, dt in enumerate(grp['ds'].values):
-                    pred_rows.append({
-                        'date':       str(dt)[:10],
-                        'topic':      topic,
-                        'country':    country,
-                        'yhat':       round(float(yhat_arr[i]), 4),
-                        'yhat_lower': round(float(lower[i]), 4),
-                        'yhat_upper': round(float(upper[i]), 4),
-                    })
+# ─── Build output rows from forecast df ──────────────────────────────────────
+def fcst_to_rows(fcst_df, model_col, lo_col, hi_col, monthly):
+    pred_rows, trend_rows = [], []
+    for uid, grp in fcst_df.groupby('unique_id'):
+        topic, country = uid.split('|', 1)
+        grp = grp.sort_values('ds').reset_index(drop=True)
+        yhat  = np.maximum(grp[model_col].values.astype(float), 0)
+        lower = np.maximum(grp[lo_col].values.astype(float), 0)  if lo_col in grp else np.maximum(yhat-1,0)
+        upper = grp[hi_col].values.astype(float) if hi_col in grp else yhat+1
 
-                # Trend
-                hist_mask = (monthly['topic'] == topic) & (monthly['country'] == country)
-                hist_vals = monthly[hist_mask].sort_values('ds')['y'].values
-                current   = float(hist_vals[-1]) if len(hist_vals) > 0 else 0.0
-                trend     = classify_trend(current, yhat_arr)
-                pct_chg   = (float(np.mean(yhat_arr[:6])) - current) / (abs(current) + 1e-9)
-                trend_rows.append({
-                    'topic':         topic,
-                    'country':       country,
-                    'trend':         trend,
-                    'current_value': round(current, 4),
-                    'forecast_6m':   round(float(np.mean(yhat_arr[:6])), 4),
-                    'pct_change_6m': round(pct_chg * 100, 2),
-                    'model':         'AutoARIMA+AutoETS+AutoTheta ensemble',
-                })
-                forecasted += 1
-
-    # ════════════════════════════════════════════════════════════════════════════
-    if not HAVE_STATSFORECAST or forecasted == 0:
-        # ── Fallback: series-by-series Holt-Winters ──────────────────────────
-        print("[FORECAST] Using built-in Holt-Winters fallback...")
-        for _, row in series_list.iterrows():
-            topic, country = row['topic'], row['country']
-            mask   = (monthly['topic'] == topic) & (monthly['country'] == country)
-            series = monthly[mask].sort_values('ds')['y'].values
-            if len(series) < MIN_MONTHS:
-                skipped += 1; continue
-            try:
-                yhat, lower, upper = _holt_winters_fallback(series, HORIZON)
-            except Exception:
-                skipped += 1; continue
-
-            for i, dt in enumerate(future_dates):
-                pred_rows.append({
-                    'date':       dt.strftime('%Y-%m-%d'),
-                    'topic':      topic, 'country': country,
-                    'yhat':       round(float(yhat[i]), 4),
-                    'yhat_lower': round(float(lower[i]), 4),
-                    'yhat_upper': round(float(upper[i]), 4),
-                })
-
-            current = float(series[-1])
-            trend   = classify_trend(current, yhat)
-            pct_chg = (float(np.mean(yhat[:6])) - current) / (abs(current) + 1e-9)
-            trend_rows.append({
-                'topic':         topic,    'country':       country,
-                'trend':         trend,    'current_value': round(current, 4),
-                'forecast_6m':   round(float(np.mean(yhat[:6])), 4),
-                'pct_change_6m': round(pct_chg * 100, 2),
-                'model':         'Holt-Winters damped trend',
+        for i, row in grp.iterrows():
+            pred_rows.append({
+                'date': str(row['ds'])[:10], 'topic': topic, 'country': country,
+                'yhat': round(float(yhat[i]),4), 'yhat_lower': round(float(lower[i]),4),
+                'yhat_upper': round(float(upper[i]),4),
             })
-            forecasted += 1
 
-    # ── Save ──────────────────────────────────────────────────────────────────
-    print(f"[FORECAST] Forecasted: {forecasted}  Skipped (too short): {skipped}")
-    if forecasted == 0:
-        print("[FORECAST] No series forecasted. Exiting.")
+        hist = monthly[(monthly['topic']==topic) & (monthly['country']==country)].sort_values('ds')['y'].values
+        current = float(hist[-1]) if len(hist) else 0.0
+        trend   = classify_trend(current, yhat[:6])
+        pct_chg = (float(np.mean(yhat[:6])) - current) / (abs(current)+1e-9)
+        trend_rows.append({
+            'topic': topic, 'country': country, 'trend': trend,
+            'current_value': round(current,4),
+            'forecast_6m':   round(float(np.mean(yhat[:6])),4),
+            'pct_change_6m': round(pct_chg*100,2),
+        })
+    return pred_rows, trend_rows
+
+
+# ─── Main ────────────────────────────────────────────────────────────────────
+def run():
+    print(f"[FORECAST] Starting v4.0 at {datetime.utcnow().isoformat()}Z")
+    monthly = load_monthly()
+
+    # Filter series with enough history
+    counts  = monthly.groupby('unique_id')['ds'].count()
+    valid   = counts[counts >= MIN_MONTHS].index
+    panel   = monthly[monthly['unique_id'].isin(valid)][['unique_id','ds','y']].copy()
+    skipped = len(counts) - len(valid)
+    print(f"[FORECAST] Valid series: {len(valid)}  Skipped (< {MIN_MONTHS} months): {skipped}")
+
+    if len(valid) == 0:
+        print("[FORECAST] No valid series. Exiting.")
+        sys.exit(1)
+
+    last_month   = monthly['ds'].max()
+    future_dates = pd.date_range(start=last_month+pd.offsets.MonthBegin(1), periods=HORIZON, freq='MS')
+
+    sf_fcst = None
+    nf_fcst = None
+
+    # ── Tier 2: statsforecast (always try first as primary) ──────────────────
+    if HAVE_SF:
+        try:
+            sf_fcst = forecast_statsforecast(panel, HORIZON)
+            print(f"[FORECAST] statsforecast complete: {len(sf_fcst)} rows")
+        except Exception as e:
+            print(f"[FORECAST] statsforecast failed: {e}")
+            sf_fcst = None
+
+    # ── Tier 1: neuralforecast N-HiTS (enhancer) ─────────────────────────────
+    if HAVE_NF and sf_fcst is not None:
+        try:
+            nf_fcst = forecast_nhits(panel, HORIZON)
+            print(f"[FORECAST] N-HiTS complete: {len(nf_fcst)} rows")
+        except Exception as e:
+            print(f"[FORECAST] N-HiTS failed (non-fatal): {e}")
+            nf_fcst = None
+        finally:
+            gc.collect()  # free torch memory
+
+    # ── Build final predictions ───────────────────────────────────────────────
+    pred_rows, trend_rows = [], []
+
+    if sf_fcst is not None and nf_fcst is not None:
+        # BLEND: 55% statsforecast + 45% N-HiTS
+        print("[FORECAST] Blending statsforecast + N-HiTS (55% / 45%)")
+        merged = sf_fcst.merge(nf_fcst[['unique_id','ds','NHITS','NHITS-lo-95','NHITS-hi-95']],
+                               on=['unique_id','ds'], how='left')
+        # statsforecast ensemble yhat
+        sf_cols = ['AutoARIMA','AutoETS','AutoTheta']
+        avail_sf = [c for c in sf_cols if c in merged.columns]
+        sf_yhat  = merged[avail_sf].mean(axis=1).values
+        nf_yhat  = merged['NHITS'].values
+        blend_yhat = np.where(nf_yhat.isna() if hasattr(nf_yhat,'isna') else np.isnan(nf_yhat),
+                              sf_yhat, 0.55*sf_yhat + 0.45*nf_yhat)
+
+        # CI: take widest from both models for conservative estimate
+        lo_sf = merged[[c for c in merged.columns if 'lo' in c and '95' in c and 'NHITS' not in c]].min(axis=1).values
+        hi_sf = merged[[c for c in merged.columns if 'hi' in c and '95' in c and 'NHITS' not in c]].max(axis=1).values
+        lo_nf = merged.get('NHITS-lo-95', pd.Series(lo_sf)).values
+        hi_nf = merged.get('NHITS-hi-95', pd.Series(hi_sf)).values
+        blend_lo = np.minimum(lo_sf, lo_nf)
+        blend_hi = np.maximum(hi_sf, hi_nf)
+
+        merged['yhat_blend'] = np.maximum(blend_yhat, 0)
+        merged['lo_blend']   = np.maximum(blend_lo, 0)
+        merged['hi_blend']   = blend_hi
+        pred_rows, trend_rows = fcst_to_rows(merged, 'yhat_blend', 'lo_blend', 'hi_blend', monthly)
+
+    elif sf_fcst is not None:
+        # statsforecast only
+        print("[FORECAST] Using statsforecast ensemble only")
+        sf_cols = ['AutoARIMA','AutoETS','AutoTheta']
+        avail   = [c for c in sf_cols if c in sf_fcst.columns]
+        sf_fcst['yhat_ens'] = sf_fcst[avail].mean(axis=1)
+        lo_col = next((c for c in sf_fcst.columns if 'lo' in c and '95' in c), None)
+        hi_col = next((c for c in sf_fcst.columns if 'hi' in c and '95' in c), None)
+        pred_rows, trend_rows = fcst_to_rows(sf_fcst, 'yhat_ens', lo_col or 'yhat_ens', hi_col or 'yhat_ens', monthly)
+
+    else:
+        # Tier 3: Holt-Winters fallback
+        print("[FORECAST] Using built-in Holt-Winters fallback")
+        for uid, grp in panel.groupby('unique_id'):
+            topic, country = uid.split('|',1)
+            y = grp.sort_values('ds')['y'].values
+            yh, lo, hi = _hw_single(y, HORIZON)
+            for i, dt in enumerate(future_dates):
+                pred_rows.append({'date': dt.strftime('%Y-%m-%d'), 'topic': topic, 'country': country,
+                                  'yhat': round(float(yh[i]),4), 'yhat_lower': round(float(lo[i]),4),
+                                  'yhat_upper': round(float(hi[i]),4)})
+            current = float(y[-1])
+            pct = (float(np.mean(yh[:6]))-current)/(abs(current)+1e-9)
+            trend_rows.append({'topic': topic, 'country': country,
+                               'trend': classify_trend(current, yh[:6]),
+                               'current_value': round(current,4),
+                               'forecast_6m': round(float(np.mean(yh[:6])),4),
+                               'pct_change_6m': round(pct*100,2)})
+
+    if not pred_rows:
+        print("[FORECAST] No predictions generated. Exiting.")
         sys.exit(1)
 
     pd.DataFrame(pred_rows).to_csv(OUTPUT_PREDS, index=False)
     pd.DataFrame(trend_rows).to_csv(OUTPUT_TRENDS, index=False)
-    print(f"[FORECAST] Saved {len(pred_rows):,} rows to {OUTPUT_PREDS}")
-    print(f"[FORECAST] Saved {len(trend_rows):,} rows to {OUTPUT_TRENDS}")
-    print(f"[FORECAST] Complete: {forecasted} x {HORIZON} = {forecasted*HORIZON} forecasts")
+    n = len(pd.DataFrame(pred_rows)[['topic','country']].drop_duplicates())
+    print(f"[FORECAST] Saved {len(pred_rows):,} rows ({n} series x {HORIZON} months)")
+    print(f"[FORECAST] Trend summary: {pd.DataFrame(trend_rows)['trend'].value_counts().to_dict()}")
+    print(f"[FORECAST] DONE.")
 
 
 if __name__ == '__main__':
