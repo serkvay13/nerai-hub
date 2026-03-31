@@ -38,8 +38,8 @@ INPUT_FILE   = './indices.csv'
 OUTPUT_PREDS = './predictions.csv'
 OUTPUT_TRENDS= './forecast_trends.csv'
 HORIZON      = 12    # months ahead to forecast
-INPUT_SIZE   = 36    # months of lookback (≥3 annual cycles)
-MIN_MONTHS   = 18    # minimum history required per series
+INPUT_SIZE   = 6    # months of lookback (≥3 annual cycles)
+MIN_MONTHS   = 6    # minimum history required per series
 BLEND_SF     = 0.55  # statsforecast weight in blend
 BLEND_NF     = 0.45  # neuralforecast weight in blend
 
@@ -193,7 +193,7 @@ def forecast_nhits(monthly: pd.DataFrame,
 
         model = NHITS(
             h                         = horizon,
-            input_size                = max(input_size, 24),
+            input_size                = max(input_size, horizon),
             max_steps                 = 500,
             learning_rate             = 3e-4,
             batch_size                = 32,
