@@ -502,6 +502,7 @@ date,ticker,name,category,unit,price,chg_1d_pct,chg_7d_pct
 2026-03-26,BZ=F,Brent Crude Oil,energy,USD/bbl,108.01,0.0566,0.0444
 2026-03-27,BZ=F,Brent Crude Oil,energy,USD/bbl,112.57,0.0422,0.0483
 2026-03-30,BZ=F,Brent Crude Oil,energy,USD/bbl,112.78,0.0019,0.038
+2026-03-31,BZ=F,Brent Crude Oil,energy,USD/bbl,118.35,0.0494,0.0549
 2024-04-01,CL=F,WTI Crude Oil,energy,USD/bbl,83.71,,
 2024-04-02,CL=F,WTI Crude Oil,energy,USD/bbl,85.15,0.0172,
 2024-04-03,CL=F,WTI Crude Oil,energy,USD/bbl,85.43,0.0033,
@@ -1005,6 +1006,7 @@ date,ticker,name,category,unit,price,chg_1d_pct,chg_7d_pct
 2026-03-26,CL=F,WTI Crude Oil,energy,USD/bbl,94.48,0.0461,-0.018
 2026-03-27,CL=F,WTI Crude Oil,energy,USD/bbl,99.64,0.0546,0.0345
 2026-03-30,CL=F,WTI Crude Oil,energy,USD/bbl,102.88,0.0325,0.0701
+2026-03-31,CL=F,WTI Crude Oil,energy,USD/bbl,101.38,-0.0146,0.0311
 2024-04-01,DX-Y.NYB,USD Index,financial,index,105.02,,
 2024-04-02,DX-Y.NYB,USD Index,financial,index,104.82,-0.0019,
 2024-04-03,DX-Y.NYB,USD Index,financial,index,104.25,-0.0054,
@@ -1508,6 +1510,7 @@ date,ticker,name,category,unit,price,chg_1d_pct,chg_7d_pct
 2026-03-26,DX-Y.NYB,USD Index,financial,index,99.9,0.003,0.0032
 2026-03-27,DX-Y.NYB,USD Index,financial,index,100.15,0.0025,0.0006
 2026-03-30,DX-Y.NYB,USD Index,financial,index,100.51,0.0036,0.0129
+2026-03-31,DX-Y.NYB,USD Index,financial,index,99.96,-0.0055,0.0031
 2024-04-01,EURUSD=X,EUR/USD,financial,rate,1.0793,,
 2024-04-02,EURUSD=X,EUR/USD,financial,rate,1.0737,-0.0052,
 2024-04-03,EURUSD=X,EUR/USD,financial,rate,1.0769,0.003,
@@ -2024,6 +2027,7 @@ date,ticker,name,category,unit,price,chg_1d_pct,chg_7d_pct
 2026-03-26,EURUSD=X,EUR/USD,financial,rate,1.1561,-0.0046,0.0053
 2026-03-27,EURUSD=X,EUR/USD,financial,rate,1.1535,-0.0022,-0.0003
 2026-03-30,EURUSD=X,EUR/USD,financial,rate,1.1492,-0.0037,0.0024
+2026-03-31,EURUSD=X,EUR/USD,financial,rate,1.146,-0.0028,-0.0102
 2024-04-01,GC=F,Gold,metals,USD/oz,2236.5,,
 2024-04-02,GC=F,Gold,metals,USD/oz,2261.0,0.011,
 2024-04-03,GC=F,Gold,metals,USD/oz,2294.3999,0.0148,
@@ -2527,6 +2531,7 @@ date,ticker,name,category,unit,price,chg_1d_pct,chg_7d_pct
 2026-03-26,GC=F,Gold,metals,USD/oz,4375.5,-0.0383,-0.1251
 2026-03-27,GC=F,Gold,metals,USD/oz,4492.0,0.0266,-0.0814
 2026-03-30,GC=F,Gold,metals,USD/oz,4526.0,0.0076,-0.0162
+2026-03-31,GC=F,Gold,metals,USD/oz,4647.6001,0.0269,0.0169
 2024-04-01,HG=F,Copper,metals,USD/lb,4.046,,
 2024-04-02,HG=F,Copper,metals,USD/lb,4.07,0.0059,
 2024-04-03,HG=F,Copper,metals,USD/lb,4.193,0.0302,
@@ -3030,6 +3035,7 @@ date,ticker,name,category,unit,price,chg_1d_pct,chg_7d_pct
 2026-03-26,HG=F,Copper,metals,USD/lb,5.4465,-0.0149,-0.0489
 2026-03-27,HG=F,Copper,metals,USD/lb,5.467,0.0038,-0.0157
 2026-03-30,HG=F,Copper,metals,USD/lb,5.476,0.0016,0.0079
+2026-03-31,HG=F,Copper,metals,USD/lb,5.5875,0.0204,0.0459
 2024-04-01,HO=F,Heating Oil,energy,USD/gal,2.6271,,
 2024-04-02,HO=F,Heating Oil,energy,USD/gal,2.7119,0.0323,
 2024-04-03,HO=F,Heating Oil,energy,USD/gal,2.7324,0.0076,
@@ -3533,6 +3539,7 @@ date,ticker,name,category,unit,price,chg_1d_pct,chg_7d_pct
 2026-03-26,HO=F,Heating Oil,energy,USD/gal,4.2734,0.0667,0.0641
 2026-03-27,HO=F,Heating Oil,energy,USD/gal,4.4955,0.052,0.0709
 2026-03-30,HO=F,Heating Oil,energy,USD/gal,4.3643,-0.0292,0.0051
+2026-03-31,HO=F,Heating Oil,energy,USD/gal,4.1634,-0.046,-0.0966
 2024-04-01,NG=F,Natural Gas,energy,USD/MMBtu,1.837,,
 2024-04-02,NG=F,Natural Gas,energy,USD/MMBtu,1.862,0.0136,
 2024-04-03,NG=F,Natural Gas,energy,USD/MMBtu,1.841,-0.0113,
@@ -4036,6 +4043,7 @@ date,ticker,name,category,unit,price,chg_1d_pct,chg_7d_pct
 2026-03-26,NG=F,Natural Gas,energy,USD/MMBtu,2.999,0.0159,-0.0112
 2026-03-27,NG=F,Natural Gas,energy,USD/MMBtu,3.095,0.032,0.0098
 2026-03-30,NG=F,Natural Gas,energy,USD/MMBtu,2.887,-0.0672,-0.0881
+2026-03-31,NG=F,Natural Gas,energy,USD/MMBtu,2.884,-0.001,-0.0682
 2024-04-01,PL=F,Platinum,metals,USD/oz,900.9,,
 2024-04-02,PL=F,Platinum,metals,USD/oz,922.2,0.0236,
 2024-04-03,PL=F,Platinum,metals,USD/oz,934.0,0.0128,
@@ -4539,6 +4547,7 @@ date,ticker,name,category,unit,price,chg_1d_pct,chg_7d_pct
 2026-03-26,PL=F,Platinum,metals,USD/oz,1838.3,-0.0451,-0.1377
 2026-03-27,PL=F,Platinum,metals,USD/oz,1870.6,0.0176,-0.0884
 2026-03-30,PL=F,Platinum,metals,USD/oz,1885.6,0.008,-0.0276
+2026-03-31,PL=F,Platinum,metals,USD/oz,1950.0,0.0342,-0.0105
 2024-04-01,SI=F,Silver,metals,USD/oz,24.954,,
 2024-04-02,SI=F,Silver,metals,USD/oz,25.804,0.0341,
 2024-04-03,SI=F,Silver,metals,USD/oz,26.945,0.0442,
@@ -5042,6 +5051,7 @@ date,ticker,name,category,unit,price,chg_1d_pct,chg_7d_pct
 2026-03-26,SI=F,Silver,metals,USD/oz,67.671,-0.0648,-0.1491
 2026-03-27,SI=F,Silver,metals,USD/oz,69.545,0.0277,-0.0996
 2026-03-30,SI=F,Silver,metals,USD/oz,70.324,0.0112,-0.0082
+2026-03-31,SI=F,Silver,metals,USD/oz,74.69,0.0621,0.0768
 2024-04-01,USDCNY=X,USD/CNY,financial,rate,7.2203,,
 2024-04-02,USDCNY=X,USD/CNY,financial,rate,7.2297,0.0013,
 2024-04-03,USDCNY=X,USD/CNY,financial,rate,7.2324,0.0004,
@@ -5558,6 +5568,7 @@ date,ticker,name,category,unit,price,chg_1d_pct,chg_7d_pct
 2026-03-26,USDCNY=X,USD/CNY,financial,rate,6.901,0.0013,-0.0078
 2026-03-27,USDCNY=X,USD/CNY,financial,rate,6.9107,0.0014,0.0035
 2026-03-30,USDCNY=X,USD/CNY,financial,rate,6.9116,0.0001,0.0057
+2026-03-31,USDCNY=X,USD/CNY,financial,rate,6.9116,0.0,0.0017
 2024-04-01,USDRUB=X,USD/RUB,financial,rate,92.57,,
 2024-04-02,USDRUB=X,USD/RUB,financial,rate,92.28,-0.0031,
 2024-04-03,USDRUB=X,USD/RUB,financial,rate,92.28,0.0,
@@ -6074,6 +6085,7 @@ date,ticker,name,category,unit,price,chg_1d_pct,chg_7d_pct
 2026-03-26,USDRUB=X,USD/RUB,financial,rate,80.9965,0.0063,-0.0031
 2026-03-27,USDRUB=X,USD/RUB,financial,rate,81.3715,0.0046,-0.0121
 2026-03-30,USDRUB=X,USD/RUB,financial,rate,80.8146,-0.0068,-0.0364
+2026-03-31,USDRUB=X,USD/RUB,financial,rate,81.289,0.0059,-0.0564
 2024-04-01,ZC=F,Corn,agriculture,USc/bu,435.5,,
 2024-04-02,ZC=F,Corn,agriculture,USc/bu,426.5,-0.0207,
 2024-04-03,ZC=F,Corn,agriculture,USc/bu,431.75,0.0123,
@@ -6576,6 +6588,7 @@ date,ticker,name,category,unit,price,chg_1d_pct,chg_7d_pct
 2026-03-26,ZC=F,Corn,agriculture,USc/bu,467.0,-0.0005,0.0286
 2026-03-27,ZC=F,Corn,agriculture,USc/bu,462.0,-0.0107,-0.0027
 2026-03-30,ZC=F,Corn,agriculture,USc/bu,455.75,-0.0135,-0.0298
+2026-03-31,ZC=F,Corn,agriculture,USc/bu,457.75,0.0044,-0.0166
 2024-04-01,ZS=F,Soybeans,agriculture,USc/bu,1185.75,,
 2024-04-02,ZS=F,Soybeans,agriculture,USc/bu,1174.0,-0.0099,
 2024-04-03,ZS=F,Soybeans,agriculture,USc/bu,1182.25,0.007,
@@ -7078,6 +7091,7 @@ date,ticker,name,category,unit,price,chg_1d_pct,chg_7d_pct
 2026-03-26,ZS=F,Soybeans,agriculture,USc/bu,1173.75,0.0017,0.0145
 2026-03-27,ZS=F,Soybeans,agriculture,USc/bu,1159.25,-0.0124,-0.0022
 2026-03-30,ZS=F,Soybeans,agriculture,USc/bu,1159.75,0.0004,-0.0075
+2026-03-31,ZS=F,Soybeans,agriculture,USc/bu,1171.0,0.0097,0.0084
 2024-04-01,ZW=F,Wheat,agriculture,USc/bu,557.0,,
 2024-04-02,ZW=F,Wheat,agriculture,USc/bu,545.25,-0.0211,
 2024-04-03,ZW=F,Wheat,agriculture,USc/bu,556.0,0.0197,
@@ -7580,6 +7594,7 @@ date,ticker,name,category,unit,price,chg_1d_pct,chg_7d_pct
 2026-03-26,ZW=F,Wheat,agriculture,USc/bu,605.0,0.0121,0.0259
 2026-03-27,ZW=F,Wheat,agriculture,USc/bu,605.0,0.0,0.0012
 2026-03-30,ZW=F,Wheat,agriculture,USc/bu,607.0,0.0033,-0.0016
+2026-03-31,ZW=F,Wheat,agriculture,USc/bu,616.25,0.0152,0.0353
 2024-04-01,^GSPC,S&P 500,financial,index,5243.77,,
 2024-04-02,^GSPC,S&P 500,financial,index,5205.8101,-0.0072,
 2024-04-03,^GSPC,S&P 500,financial,index,5211.4902,0.0011,
@@ -8081,6 +8096,7 @@ date,ticker,name,category,unit,price,chg_1d_pct,chg_7d_pct
 2026-03-26,^GSPC,S&P 500,financial,index,6477.1602,-0.0174,-0.0356
 2026-03-27,^GSPC,S&P 500,financial,index,6368.8501,-0.0167,-0.0386
 2026-03-30,^GSPC,S&P 500,financial,index,6343.7202,-0.0039,-0.0398
+2026-03-31,^GSPC,S&P 500,financial,index,6528.52,0.0291,0.0034
 2024-04-01,^TNX,10Y US Treasury,financial,% yield,4.329,,
 2024-04-02,^TNX,10Y US Treasury,financial,% yield,4.365,0.0083,
 2024-04-03,^TNX,10Y US Treasury,financial,% yield,4.355,-0.0023,
@@ -8582,6 +8598,7 @@ date,ticker,name,category,unit,price,chg_1d_pct,chg_7d_pct
 2026-03-26,^TNX,10Y US Treasury,financial,% yield,4.416,0.0203,0.0509
 2026-03-27,^TNX,10Y US Treasury,financial,% yield,4.44,0.0054,0.0425
 2026-03-30,^TNX,10Y US Treasury,financial,% yield,4.342,-0.0221,0.0142
+2026-03-31,^TNX,10Y US Treasury,financial,% yield,4.311,-0.0071,-0.0182
 2024-04-01,^VIX,VIX Fear Index,financial,index,13.65,,
 2024-04-02,^VIX,VIX Fear Index,financial,index,14.61,0.0703,
 2024-04-03,^VIX,VIX Fear Index,financial,index,14.33,-0.0192,
@@ -9083,3 +9100,4 @@ date,ticker,name,category,unit,price,chg_1d_pct,chg_7d_pct
 2026-03-26,^VIX,VIX Fear Index,financial,index,27.44,0.0833,0.2266
 2026-03-27,^VIX,VIX Fear Index,financial,index,31.05,0.1316,0.2375
 2026-03-30,^VIX,VIX Fear Index,financial,index,30.61,-0.0142,0.2722
+2026-03-31,^VIX,VIX Fear Index,financial,index,25.25,-0.1751,-0.0571
