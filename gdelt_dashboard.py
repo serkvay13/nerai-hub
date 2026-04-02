@@ -1305,8 +1305,8 @@ with st.sidebar:
                 index=list(topic_display_p.values()).index('Political Instability')
                       if 'Political Instability' in topic_display_p.values() else 0,
                 label_visibility='collapsed')
-            sel_pred_topic = [k for k,v in topic_display_p.items() if v==pred_label][0]
-
+            sel_pred_topic = next((k for k,v in topic_display_p.items() if v==pred_label), list(topic_display_p.keys())[0])
+            
             st.markdown('<div class="sec-hdr" style="margin-top:14px">Country</div>',
                         unsafe_allow_html=True)
             pred_c_opts = [f"{COUNTRY_NAMES.get(c,c)} ({c})"
