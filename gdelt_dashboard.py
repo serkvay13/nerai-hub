@@ -1299,7 +1299,7 @@ with st.sidebar:
         st.markdown('<div class="sec-hdr">Forecast Filters</div>', unsafe_allow_html=True)
         if has_predictions:
             topic_display_p = {t: TOPIC_LABELS.get(t, t.replace('_',' ').title())
-                               for t in sorted(pred_df['topic'].dropna()unique())}
+                               for t in sorted(pred_df['topic'].dropna().unique())}
             pred_label = st.selectbox(
                 "pred_topic", list(topic_display_p.values()),
                 index=list(topic_display_p.values()).index('Political Instability')
