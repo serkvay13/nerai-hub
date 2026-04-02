@@ -484,10 +484,11 @@ def run():
         forecasts = forecast_holtwinters(monthly, HORIZON)
         model_label = "Holt-Winters (fallback)"
 
+      
     # ── Parse unique_id ──────────────────────────────────────────
-    forecasts[['topic', 'country']] = (
-        forecasts['unique_id'].str.split('||', n=1, expand=True)
-    )
+        _uid_map = monthly[['unique_id', 'topic', 'country']].drop_duplicates().set_index('unique_id')
+        forecasts['topic']   = forecasts['unique_id'].map(_uid_map['topic'])
+        forecasts['country'] = forecasts['unique_id'].map(_uid_map['country'])
     for col in ['yhat', 'yhat_lower', 'yhat_upper']:
         forecasts[col] = forecasts[col].clip(lower=0)
 
