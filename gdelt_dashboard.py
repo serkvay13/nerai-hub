@@ -7,6 +7,7 @@ import pandas as pd
 import numpy as np
 import plotly.graph_objects as go
 import datetime, os, json
+import re
 import urllib.request, urllib.parse
 
 st.set_page_config(
@@ -2233,7 +2234,11 @@ def render_predictions():
                 hist_max = None
             if hist_max and hist_max > 0:
                 return yhat_vals / hist_max * 100
-        return yhat_vals * 1000   # fallback: scale small raw values
+        # Fallback: auto-normalise predictions to 0-100 using their own range
+        ymax = yhat_vals.max() if hasattr(yhat_vals, 'max') else max(yhat_vals)
+        if ymax and ymax > 0:
+            return yhat_vals / ymax * 100
+        return yhat_vals * 100
 
     # ── Main chart — historical + forecast ───────────────────
     col_left, col_right = st.columns([4, 2])
@@ -2290,7 +2295,9 @@ def render_predictions():
                                else 1.0
                 scale = 100 / raw_hist_max if raw_hist_max > 0 else 1.0
             else:
-                scale = 1.0
+                # Auto-scale: normalize predictions to 0-100 using their own max
+                fc_max = fc['yhat'].max() if len(fc) > 0 else 1.0
+                scale = 100 / fc_max if fc_max > 0 else 1.0
 
             yhat = fc['yhat']       * scale
             y_lo = fc['yhat_lower'] * scale
