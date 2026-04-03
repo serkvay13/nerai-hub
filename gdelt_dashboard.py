@@ -440,6 +440,12 @@ def load_data(filepath='./indices.csv'):
     if os.path.exists(filepath):
         df = pd.read_csv(filepath,sep=',',header=0,index_col=[0,1])
         df.columns = pd.to_datetime(df.columns,format='%Y%m%d')
+        # Interpolate zero gaps in date columns (missing GDELT data)
+        date_cols = [c for c in df.columns if c not in ['topic', 'country']]
+        if date_cols:
+            df[date_cols] = df[date_cols].replace(0, np.nan)
+            df[date_cols] = df[date_cols].interpolate(axis=1, method='linear', limit_direction='both')
+            df[date_cols] = df[date_cols].fillna(0)
         return df,False
     return _demo_data(),True
 
@@ -459,9 +465,24 @@ def apply_norm(df_topic,method):
     out = df_topic.copy().astype(float)
     for c in out.index:
         row = out.loc[c]
+        # Replace zeros with NaN for interpolation, then forward-fill
+        row_clean = row.replace(0, np.nan)
+        if row_clean.notna().sum() >= 2:
+            row_clean = row_clean.interpolate(method='linear', limit_direction='both')
+            row = row_clean.fillna(0)
         if method=='Score (0–100)':
-            mn,mx = row.min(),row.max()
-            out.loc[c] = (row-mn)/(mx-mn)*100 if mx>mn else row*0
+            # Use 2nd-98th percentile for robust normalization
+            vals = row[row > 0]
+            if len(vals) > 2:
+                p2, p98 = np.percentile(vals, [2, 98])
+                if p98 > p2:
+                    out.loc[c] = ((row - p2) / (p98 - p2) * 100).clip(0, 100)
+                else:
+                    mn, mx = row.min(), row.max()
+                    out.loc[c] = (row - mn) / (mx - mn) * 100 if mx > mn else row * 0
+            else:
+                mn, mx = row.min(), row.max()
+                out.loc[c] = (row - mn) / (mx - mn) * 100 if mx > mn else row * 0
         elif method=='Z-Score':
             mu,sd = row.mean(),row.std()
             out.loc[c] = (row-mu)/sd if sd>0 else row*0
@@ -1088,6 +1109,15 @@ def load_predictions():
     if os.path.exists(pred_file):
         try:
             preds = pd.read_csv(pred_file, parse_dates=['ds'])
+            # --- Normalize raw event counts to 0-100 per topic+country ---
+            if preds is not None and 'yhat' in preds.columns and len(preds) > 0:
+                for tc_cols in [['topic', 'country']]:
+                    if all(c in preds.columns for c in tc_cols):
+                        grp_max = preds.groupby(tc_cols)['yhat'].transform('max')
+                        for col in ['yhat', 'yhat_lower', 'yhat_upper']:
+                            if col in preds.columns:
+                                preds[col] = np.where(grp_max > 0, preds[col] / grp_max * 100, 0)
+                        break
         except Exception:
             preds = None
     if os.path.exists(trend_file):
@@ -2234,11 +2264,7 @@ def render_predictions():
                 hist_max = None
             if hist_max and hist_max > 0:
                 return yhat_vals / hist_max * 100
-        # Fallback: auto-normalise predictions to 0-100 using their own range
-        ymax = yhat_vals.max() if hasattr(yhat_vals, 'max') else max(yhat_vals)
-        if ymax and ymax > 0:
-            return yhat_vals / ymax * 100
-        return yhat_vals * 100
+        return yhat_vals  # Already normalized at load time
 
     # ── Main chart — historical + forecast ───────────────────
     col_left, col_right = st.columns([4, 2])
@@ -2295,9 +2321,7 @@ def render_predictions():
                                else 1.0
                 scale = 100 / raw_hist_max if raw_hist_max > 0 else 1.0
             else:
-                # Auto-scale: normalize predictions to 0-100 using their own max
-                fc_max = fc['yhat'].max() if len(fc) > 0 else 1.0
-                scale = 100 / fc_max if fc_max > 0 else 1.0
+                scale = 1.0  # Already normalized at load time
 
             yhat = fc['yhat']       * scale
             y_lo = fc['yhat_lower'] * scale
