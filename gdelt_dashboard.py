@@ -2256,15 +2256,8 @@ def render_predictions():
     # ── Normalise predictions to score 0-100 for display ─────
     # Use the same max as historical indices for comparability
     def _norm_pred_series(topic, country, yhat_vals):
-        if topic in df.index.get_level_values('topic') and \
-           country in df.index.get_level_values('country'):
-            try:
-                hist_max = float(df.xs(topic, level='topic').loc[country].max())
-            except Exception:
-                hist_max = None
-            if hist_max and hist_max > 0:
-                return yhat_vals / hist_max * 100
-        return yhat_vals  # Already normalized at load time
+        # Predictions already normalized to 0-100 at load time
+        return yhat_vals
 
     # ── Main chart — historical + forecast ───────────────────
     col_left, col_right = st.columns([4, 2])
@@ -2319,7 +2312,7 @@ def render_predictions():
                                if (sel_pred_topic in df.index.get_level_values('topic') and
                                    sel_pred_country in df.index.get_level_values('country')) \
                                else 1.0
-                scale = 100 / raw_hist_max if raw_hist_max > 0 else 1.0
+                scale = 1.0  # Predictions already normalized at load time
             else:
                 scale = 1.0  # Already normalized at load time
 
