@@ -1,25 +1,25 @@
 #!/usr/bin/env python3
 """
-GDELT FORECAST ENGINE v5.0  —  Hybrid Deep Learning + Statistical Ensemble
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+GDELT FORECAST ENGINE v5.0  â  Hybrid Deep Learning + Statistical Ensemble
+âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 
 Architecture (3 tiers, graceful degradation):
 
-  Tier 1  — N-HiTS (Deep Learning, global model)
-              neuralforecast · AAAI 2023 · trains on ALL series simultaneously
-              CPU mode · max_steps=500 · batch_size=32 (GitHub Actions safe)
+  Tier 1  â N-HiTS (Deep Learning, global model)
+              neuralforecast Â· AAAI 2023 Â· trains on ALL series simultaneously
+              CPU mode Â· max_steps=500 Â· batch_size=32 (GitHub Actions safe)
 
-  Tier 2  — Statistical Ensemble  (always runs)
+  Tier 2  â Statistical Ensemble  (always runs)
               AutoARIMA + AutoETS(damped) + AutoTheta  via statsforecast
-              M4/M5 competition winners · fully parallelised · n_jobs=-1
+              M4/M5 competition winners Â· fully parallelised Â· n_jobs=-1
 
-  Blend   — When both succeed: 0.55 × StatEnsemble + 0.45 × N-HiTS
+  Blend   â When both succeed: 0.55 Ã StatEnsemble + 0.45 Ã N-HiTS
               Confidence intervals: take the wider (more conservative) bound
 
-  Tier 3  — Built-in Holt-Winters  (pure numpy, zero dependencies)
+  Tier 3  â Built-in Holt-Winters  (pure numpy, zero dependencies)
               Runs only if BOTH libraries are absent
 
-Input  : ./indices.csv        (wide format: rows=topic×country, cols=YYYYMMDD)
+Input  : ./indices.csv        (wide format: rows=topicÃcountry, cols=YYYYMMDD)
 Output : ./predictions.csv    (date, topic, country, yhat, yhat_lower, yhat_upper)
          ./forecast_trends.csv (topic, country, last_value, avg_12m, trend_pct, direction)
 """
@@ -33,29 +33,29 @@ import pandas as pd
 
 warnings.filterwarnings('ignore')
 
-# ─── CONFIG ───────────────────────────────────────────────────────────────────
+# âââ CONFIG âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 INPUT_FILE   = './indices.csv'
 OUTPUT_PREDS = './predictions.csv'
 OUTPUT_TRENDS= './forecast_trends.csv'
 HORIZON      = 12    # months ahead to forecast
-INPUT_SIZE   = 6    # months of lookback (≥3 annual cycles)
+INPUT_SIZE   = 6    # months of lookback (â¥3 annual cycles)
 MIN_MONTHS   = 6    # minimum history required per series
 BLEND_SF     = 0.55  # statsforecast weight in blend
 BLEND_NF     = 0.45  # neuralforecast weight in blend
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
+# âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 # 1.  DATA LOADING
 #     indices.csv layout:
 #       row index cols 0,1 : topic, country
 #       remaining columns   : YYYYMMDD date strings  (daily observations)
-# ═══════════════════════════════════════════════════════════════════════════════
+# âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 
 def load_monthly(filepath: str = INPUT_FILE,
                  agg: str = 'p90',
                  min_months: int = MIN_MONTHS) -> pd.DataFrame:
     """
-    Read wide-format indices.csv → long-format monthly DataFrame.
+    Read wide-format indices.csv â long-format monthly DataFrame.
 
     Returns: unique_id, ds (month-start timestamp), y, topic, country
     """
@@ -72,8 +72,8 @@ def load_monthly(filepath: str = INPUT_FILE,
         )
 
     raw = raw[date_cols]
-    print(f"[DATA]  {len(raw):,} series  ×  {len(date_cols):,} days "
-          f"({date_cols[0]} → {date_cols[-1]})")
+    print(f"[DATA]  {len(raw):,} series  Ã  {len(date_cols):,} days "
+          f"({date_cols[0]} â {date_cols[-1]})")
 
     # Melt to long format
     df = raw.reset_index()
@@ -124,9 +124,9 @@ def load_monthly(filepath: str = INPUT_FILE,
     return monthly
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# 2.  TIER 2 — STATISTICAL ENSEMBLE  (always-on backbone)
-# ═══════════════════════════════════════════════════════════════════════════════
+# âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+# 2.  TIER 2 â STATISTICAL ENSEMBLE  (always-on backbone)
+# âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 
 def forecast_statsforecast(monthly: pd.DataFrame,
                            horizon: int = HORIZON) -> pd.DataFrame:
@@ -166,9 +166,9 @@ def forecast_statsforecast(monthly: pd.DataFrame,
     return fc[['unique_id', 'ds', 'yhat', 'yhat_lower', 'yhat_upper']]
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# 3.  TIER 1 — N-HiTS  (deep learning enhancer, CPU mode)
-# ═══════════════════════════════════════════════════════════════════════════════
+# âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+# 3.  TIER 1 â N-HiTS  (deep learning enhancer, CPU mode)
+# âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 
 def forecast_nhits(monthly: pd.DataFrame,
                    horizon: int = HORIZON,
@@ -180,7 +180,7 @@ def forecast_nhits(monthly: pd.DataFrame,
     """
     try:
         import torch
-        # Force CPU — avoids CUDA OOM on shared runners
+        # Force CPU â avoids CUDA OOM on shared runners
         os.environ['CUDA_VISIBLE_DEVICES'] = ''
 
         from neuralforecast import NeuralForecast
@@ -189,7 +189,7 @@ def forecast_nhits(monthly: pd.DataFrame,
         train = monthly[['unique_id', 'ds', 'y']].copy()
         n_uid = train['unique_id'].nunique()
         print(f"[NF]    Training N-HiTS (CPU) on {n_uid:,} series ...")
-        print(f"        torch {torch.__version__} · max_steps=500 · batch_size=32")
+        print(f"        torch {torch.__version__} Â· max_steps=500 Â· batch_size=32")
 
         model = NHITS(
             h                         = horizon,
@@ -255,13 +255,13 @@ def forecast_nhits(monthly: pd.DataFrame,
         return preds[['unique_id', 'ds', 'yhat_nf', 'yhat_lower_nf', 'yhat_upper_nf']]
 
     except Exception as exc:
-        print(f"[NF]    N-HiTS failed ({type(exc).__name__}: {exc}) → skipping")
+        print(f"[NF]    N-HiTS failed ({type(exc).__name__}: {exc}) â skipping")
         return None
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# 4.  TIER 3 — HOLT-WINTERS  (pure numpy, zero-dependency fallback)
-# ═══════════════════════════════════════════════════════════════════════════════
+# âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+# 4.  TIER 3 â HOLT-WINTERS  (pure numpy, zero-dependency fallback)
+# âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 
 def holt_winters_forecast(series: np.ndarray, h: int,
                           alpha: float = 0.35,
@@ -319,9 +319,9 @@ def forecast_holtwinters(monthly: pd.DataFrame,
     return pd.DataFrame(rows)
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
+# âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 # 5.  BLEND
-# ═══════════════════════════════════════════════════════════════════════════════
+# âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 
 def blend(sf_fc: pd.DataFrame, nf_fc: pd.DataFrame,
           w_sf: float = BLEND_SF, w_nf: float = BLEND_NF) -> pd.DataFrame:
@@ -356,15 +356,15 @@ def blend(sf_fc: pd.DataFrame, nf_fc: pd.DataFrame,
     n_blended = have_nf.sum()
     n_total   = len(merged)
     print(f"[BLEND] {n_blended:,}/{n_total:,} rows blended "
-          f"(SF×{w_sf} + NF×{w_nf}); "
+          f"(SFÃ{w_sf} + NFÃ{w_nf}); "
           f"{n_total-n_blended:,} rows SF-only")
 
     return merged[['unique_id', 'ds', 'yhat', 'yhat_lower', 'yhat_upper']]
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
+# âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 # 6.  TREND METRICS
-# ═══════════════════════════════════════════════════════════════════════════════
+# âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 
 def compute_trends(monthly: pd.DataFrame,
                    forecasts: pd.DataFrame) -> pd.DataFrame:
@@ -393,23 +393,25 @@ def compute_trends(monthly: pd.DataFrame,
         return 'stable'
 
     m['direction'] = m.apply(direction, axis=1)
-    m[['topic', 'country']] = m['unique_id'].str.split('||', n=1, expand=True)
+    _uid = monthly[['unique_id', 'topic', 'country']].drop_duplicates().set_index('unique_id')
+    m['topic']   = m['unique_id'].map(_uid['topic'])
+    m['country'] = m['unique_id'].map(_uid['country'])
     return m[['topic', 'country', 'last_value', 'avg_12m', 'trend_pct', 'direction']]
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
+# âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 # 7.  MAIN
-# ═══════════════════════════════════════════════════════════════════════════════
+# âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 
 def run():
     t0  = datetime.datetime.utcnow()
     now = t0.strftime('%Y-%m-%dT%H:%M:%SZ')
     print("=" * 60)
-    print("GDELT FORECAST ENGINE v5.0  —  Hybrid Ensemble")
+    print("GDELT FORECAST ENGINE v5.0  â  Hybrid Ensemble")
     print(f"Run started: {now}")
     print("=" * 60)
 
-    # ── Capability detection ─────────────────────────────────────
+    # ââ Capability detection âââââââââââââââââââââââââââââââââââââ
     HAVE_SF = False
     HAVE_NF = False
 
@@ -433,12 +435,12 @@ def run():
         ram_gb = psutil.virtual_memory().available / 1e9
         print(f"[FORECAST] Available RAM: {ram_gb:.1f} GB")
         if ram_gb < 2.0:
-            print("[FORECAST] Low RAM — disabling N-HiTS")
+            print("[FORECAST] Low RAM â disabling N-HiTS")
             HAVE_NF = False
     except ImportError:
         pass
 
-    # ── Load data ────────────────────────────────────────────────
+    # ââ Load data ââââââââââââââââââââââââââââââââââââââââââââââââ
     if not os.path.exists(INPUT_FILE):
         print(f"[!] {INPUT_FILE} not found. Run gdelt_indices.py first.")
         sys.exit(1)
@@ -446,15 +448,15 @@ def run():
     monthly = load_monthly(INPUT_FILE)
 
     if len(monthly) == 0:
-        print(f"[!] No series with ≥{MIN_MONTHS} months of data.")
+        print(f"[!] No series with â¥{MIN_MONTHS} months of data.")
         sys.exit(1)
 
-    # ── Forecast ─────────────────────────────────────────────────
+    # ââ Forecast âââââââââââââââââââââââââââââââââââââââââââââââââ
     if HAVE_SF:
         sf_fc = forecast_statsforecast(monthly, HORIZON)
     elif not HAVE_NF:
         # Last resort: pure Holt-Winters
-        print("[FORECAST] No libraries — using built-in Holt-Winters")
+        print("[FORECAST] No libraries â using built-in Holt-Winters")
         sf_fc = forecast_holtwinters(monthly, HORIZON)
     else:
         sf_fc = None
@@ -464,11 +466,11 @@ def run():
     else:
         nf_fc = None
 
-    # ── Combine ──────────────────────────────────────────────────
+    # ââ Combine ââââââââââââââââââââââââââââââââââââââââââââââââââ
     if sf_fc is not None and nf_fc is not None:
         print("[FORECAST] Blending SF ensemble + N-HiTS ...")
         forecasts = blend(sf_fc, nf_fc)
-        model_label = f"Hybrid (SF×{BLEND_SF} + N-HiTS×{BLEND_NF})"
+        model_label = f"Hybrid (SFÃ{BLEND_SF} + N-HiTSÃ{BLEND_NF})"
     elif sf_fc is not None:
         forecasts = sf_fc
         model_label = "Statistical Ensemble (AutoARIMA + AutoETS + AutoTheta)"
@@ -480,35 +482,35 @@ def run():
         })
         model_label = "N-HiTS (Deep Learning)"
     else:
-        print("[FORECAST] All tiers failed — using Holt-Winters")
+        print("[FORECAST] All tiers failed â using Holt-Winters")
         forecasts = forecast_holtwinters(monthly, HORIZON)
         model_label = "Holt-Winters (fallback)"
 
-      
-    # ── Parse unique_id ──────────────────────────────────────────
-        _uid_map = monthly[['unique_id', 'topic', 'country']].drop_duplicates().set_index('unique_id')
-        forecasts['topic']   = forecasts['unique_id'].map(_uid_map['topic'])
-        forecasts['country'] = forecasts['unique_id'].map(_uid_map['country'])
+
+    # ââ Parse unique_id ââââââââââââââââââââââââââââââââââââââââââ
+    _uid_map = monthly[['unique_id', 'topic', 'country']].drop_duplicates().set_index('unique_id')
+    forecasts['topic']   = forecasts['unique_id'].map(_uid_map['topic'])
+    forecasts['country'] = forecasts['unique_id'].map(_uid_map['country'])
     for col in ['yhat', 'yhat_lower', 'yhat_upper']:
         forecasts[col] = forecasts[col].clip(lower=0)
 
-    # ── Trend metrics ────────────────────────────────────────────
+    # ââ Trend metrics ââââââââââââââââââââââââââââââââââââââââââââ
     print("\n[TRENDS] Computing trend metrics ...")
     trends = compute_trends(monthly, forecasts)
 
-    # ── Save ─────────────────────────────────────────────────────
+    # ââ Save âââââââââââââââââââââââââââââââââââââââââââââââââââââ
     out = forecasts[['topic', 'country', 'ds', 'yhat', 'yhat_lower', 'yhat_upper']]
     out.to_csv(OUTPUT_PREDS,  index=False)
     trends.to_csv(OUTPUT_TRENDS, index=False)
 
-    # ── Summary ──────────────────────────────────────────────────
+    # ââ Summary ââââââââââââââââââââââââââââââââââââââââââââââââââ
     elapsed = (datetime.datetime.utcnow() - t0).seconds
     n_series = out[['topic', 'country']].drop_duplicates().shape[0]
 
     print(f"\n{'=' * 60}")
-    print(f"✓  Forecasting complete  ({elapsed}s)")
+    print(f"â  Forecasting complete  ({elapsed}s)")
     print(f"   Model      : {model_label}")
-    print(f"   Predictions: {len(out):,} rows  ({n_series:,} series × {HORIZON} months)")
+    print(f"   Predictions: {len(out):,} rows  ({n_series:,} series Ã {HORIZON} months)")
     print(f"   Saved to   : {OUTPUT_PREDS}")
     print(f"   Trends     : {OUTPUT_TRENDS}")
     print("=" * 60)
@@ -516,11 +518,11 @@ def run():
     rising  = trends[trends['direction'] == 'rising'].nlargest(5, 'trend_pct')
     falling = trends[trends['direction'] == 'falling'].nsmallest(5, 'trend_pct')
 
-    print("\n🔺  TOP 5 RISING RISKS (next 12 months):")
+    print("\nðº  TOP 5 RISING RISKS (next 12 months):")
     for _, r in rising.iterrows():
         print(f"   {r['topic']:<36}  {r['country']}  +{r['trend_pct']:.1f}%")
 
-    print("\n🔻  TOP 5 FALLING RISKS:")
+    print("\nð»  TOP 5 FALLING RISKS:")
     for _, r in falling.iterrows():
         print(f"   {r['topic']:<36}  {r['country']}  {r['trend_pct']:.1f}%")
     print()
