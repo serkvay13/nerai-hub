@@ -1568,14 +1568,14 @@ with st.sidebar:
             out = (r.stdout or '').strip()
             # Check if any edges were actually found
             if 'edges found' in out.lower() and '0 edges' in out.lower():
-                st.warning('⚠️ 0 anlamlı ilişki bulundu — eşik değerleri çok katı olabilir. Tekrar dene veya Max Series artır.')
+                st.warning('⚠️ 0 significant relationships found — threshold values may be too strict. Try again or increase Max Series.')
             else:
                 st.success('✅ Causal network ready!')
-            with st.expander('📋 Script çıktısı', expanded=False):
-                st.code(out[-1200:] or '(çıktı yok)')
+            with st.expander('📋 Script output', expanded=False):
+                st.code(out[-1200:] or '(no output)')
             st.cache_data.clear(); st.rerun()
         else:
-            st.error('Script hatası:\n' + (r.stderr[-800:] or r.stdout[-400:] or 'Bilinmeyen hata'))
+            st.error('Script error:\n' + (r.stderr[-800:] or r.stdout[-400:] or 'Unknown error'))
 
     if st.button('⚡ Refresh All Data', use_container_width=True, type='primary',
                  help='Run full pipeline: indices → causality → forecast'):
@@ -1636,7 +1636,7 @@ with st.sidebar:
         st.markdown('<div class="sec-hdr" style="margin-top:18px">Normalization</div>', unsafe_allow_html=True)
         norm_method = st.radio("norm", ['Score (0–100)','Z-Score','Raw'],
             index=0, label_visibility='collapsed',
-            help="Score 0–100: tarihin en yüksek değeri=100 | Z-Score: ortalamadan sapma | Raw: ham veri")
+                help="Score 0–100: highest value in history=100 | Z-Score: deviation from mean | Raw: raw data")
 
     elif st.session_state.page == 'profile':
         st.markdown('<div class="sec-hdr">Country</div>', unsafe_allow_html=True)
@@ -1705,8 +1705,8 @@ with st.sidebar:
                 pred_hist_months = 3
                 st.markdown(
                     '<div style="font-size:11px;color:#e07b20;padding:4px 0;">'
-                    '⚠️ Solo: 3 months görüntülüyor. '
-                    'Pro ile 60 monthsa kadar geçmişe gidin.</div>',
+                    '⚠️ Solo: Showing 3 months. '
+                    'Upgrade to Pro for up to 60 months of history.</div>',
                     unsafe_allow_html=True)
         else:
             sel_pred_topic   = all_topics[0] if all_topics else ''
@@ -2201,7 +2201,7 @@ def render_indices():
                             else:
                                 st.markdown('<div style="color:rgba(100,150,180,0.4);font-size:0.72rem;padding:8px 0;">No news found for this peak period.</div>', unsafe_allow_html=True)
         else:
-            st.info("Sidebar'dan en az bir ülke seçin.")
+                st.info("Select at least one country from the sidebar.")
 
     with col_map:
         st.markdown('<div class="sec-hdr">Global Risk Map</div>', unsafe_allow_html=True)
@@ -3625,15 +3625,15 @@ def _call_claude_for_qa(question, df_raw, trend_df, pred_df, insights_df):
         prompt = (
             "You are a senior geopolitical risk analyst for the NERAI Intelligence Platform. "
             "Today's date: " + today_str + ".\n\n"
-            "Aşağıda GDELT (Global Database of Events, Language and Tone) platformundan "
-            "alınan gerçek zamanlı veriler yer almaktadır:\n\n"
+                "Below is real-time data from the GDELT (Global Database of Events, Language and Tone) platform:\n\n"
+
             + context +
             "\n\nUSER QUESTION: " + question + "\n\n"
-            "Lütfen bu soruyu 3-4 paragrafla, şu çerçevede analiz et:\n"
-            "1) Mevcut durum — GDELT verilerine göre risk endeksleri ve son trendler\n"
-            "2) Önemli gelişmeler — Endekslerdeki değişimlere yol açan olaylar ve haberler\n"
-            "3) Öngörüler — Model tahminlerine göre önümüzdeki dönemde beklenen seyir\n"
-            "4) Stratejik değerlendirme — Genel jeopolitik tabloya yansıması\n\n"
+                "Please analyze this question in 3-4 paragraphs within the following framework:\n"
+                "1) Current situation \u2014 Risk indices and recent trends based on GDELT data\n"
+                "2) Key developments \u2014 Events and news driving changes in the indices\n"
+                "3) Forecasts \u2014 Expected trajectory based on model predictions\n"
+                "4) Strategic assessment \u2014 Implications for the overall geopolitical landscape\n\n"
             "Base your analysis strictly on the provided GDELT data. Do not use Markdown, write plain paragraphs. "
             "Respond in English."
         )
@@ -3662,7 +3662,7 @@ def _call_claude_for_qa(question, df_raw, trend_df, pred_df, insights_df):
         return (
             '<div style="background:#1a0808;border:1px solid #8a2a2a;border-radius:8px;'
             'padding:12px;margin-top:12px;color:#ff9999;font-size:12px;">'
-            '⚠️ AI analiz hatası: ' + str(_e)[:300] + '</div>'
+            '⚠️ AI analysis error: ' + str(_e)[:300] + '</div>'
         )
 
 
@@ -3837,6 +3837,54 @@ def _node_label(node):
         return parts[0].replace('_', ' ').title(), parts[1]
     return node, ''
 
+
+
+def _edge_interpretation(source, target, f_stat, p_val, lag):
+    """Generate a plain-English interpretation of a single causal edge."""
+    s_lbl, s_cc = _node_label(source)
+    t_lbl, t_cc = _node_label(target)
+    s_country = COUNTRY_NAMES.get(s_cc, s_cc)
+    t_country = COUNTRY_NAMES.get(t_cc, t_cc)
+    if f_stat > 50:
+        strength_desc = 'This is an exceptionally powerful causal signal'
+    elif f_stat > 10:
+        strength_desc = 'This represents a robust causal signal'
+    elif f_stat > 5:
+        strength_desc = 'This is a moderate but statistically meaningful signal'
+    else:
+        strength_desc = 'This is a relatively weak but still statistically significant signal'
+    if p_val < 0.001:
+        sig = 'highly significant (p < 0.001)'
+    elif p_val < 0.01:
+        sig = 'very significant (p < 0.01)'
+    elif p_val < 0.05:
+        sig = 'statistically significant (p < 0.05)'
+    else:
+        sig = 'marginally significant'
+    if s_cc == t_cc:
+        geo_mechanism = (
+            'Within {}, this suggests a domestic transmission mechanism: '
+            'changes in {} statistically precede shifts in {} by approximately '
+            '{} month{}. This intra-country link likely reflects internal policy spillovers, '
+            'institutional feedback loops, or correlated domestic dynamics.'
+        ).format(s_country, s_lbl.lower(), t_lbl.lower(), lag, 's' if lag > 1 else '')
+    else:
+        geo_mechanism = (
+            'This cross-border link ({} to {}) indicates that {} dynamics in {} '
+            'have a measurable statistical impact on {} in {} with a {}-month delay. '
+            'This does not necessarily imply direct bilateral causation; instead, it may '
+            'reflect indirect transmission through global trade networks, commodity price '
+            'channels, shared alliance structures, regional contagion effects, or common '
+            'exposure to systemic geopolitical shocks that affect both countries with different '
+            'time lags.'
+        ).format(s_country, t_country, s_lbl.lower(), s_country,
+                 t_lbl.lower(), t_country, lag)
+    return (
+        '<b>{} ({}) \u2192 {} ({})</b> '
+        '<span style="color:#607890;">[F={:.1f}, lag={}m, {}]</span><br>'
+        '{}. {}'
+    ).format(s_lbl, s_country, t_lbl, t_country, f_stat, lag, sig,
+             strength_desc, geo_mechanism)
 
 def build_network_figure(filtered, highlight_nodes=None, focus_node=None):
     """Build an interactive Plotly network diagram from a filtered edge DataFrame."""
@@ -4290,6 +4338,73 @@ def render_causality():
         st.plotly_chart(fig_bar, use_container_width=True)
 
     st.markdown("<div style='background:rgba(10,20,50,0.4);border:1px solid rgba(0,180,255,0.15);border-radius:8px;padding:14px 18px;margin:15px 0;font-size:0.75rem;color:#8ab4d8;line-height:1.7;'><b style=\'color:#00d4ff;\'>How to Interpret?</b><br>F-Statistic: The higher the value, the stronger the causal relationship. F &gt; 10 = strong, F &gt; 50 = very strong relationship.<br>Lag (Delay): The time delay between events (months). Lag=1 means a change in one event affects another 1 month later.<br>p-value: Values below 0.05 indicate statistically significant relationships.</div>", unsafe_allow_html=True)
+
+
+        # -- Detailed Edge Breakdown for Top Influencers --
+        with st.expander('Detailed Edge Breakdown \u2014 Why Are These Top Influencers?', expanded=True):
+            st.markdown(
+                "<div style='font-size:0.82rem;color:#8ab4d8;margin-bottom:12px;'>"
+                "Each top influencer's causal connections are listed below, showing which events they "
+                "statistically predict and the potential transmission mechanism. <b>Cross-border links "
+                "do not necessarily imply direct bilateral causation</b> \u2014 they may reflect indirect "
+                "transmission through global trade, shared alliances, commodity channels, or regional "
+                "contagion effects.</div>", unsafe_allow_html=True
+            )
+            for _rank, _nd in enumerate(influence.index[:5], 1):
+                _nd_lbl, _nd_cc = _node_label(_nd)
+                _nd_country = COUNTRY_NAMES.get(_nd_cc, _nd_cc)
+                _nd_edges = filtered[filtered['source'] == _nd].sort_values('max_f_stat', ascending=False)
+                _nd_targets = filtered[filtered['target'] == _nd].sort_values('max_f_stat', ascending=False)
+                st.markdown(
+                    "<div style='margin:18px 0 8px;padding:10px 14px;background:rgba(0,180,255,0.06);"
+                    "border-left:3px solid #00d4ff;border-radius:4px;'>"
+                    "<b style='color:#00d4ff;font-size:0.95rem;'>#{} {} ({})</b>"
+                    " &mdash; <span style='color:#8ab4d8;font-size:0.82rem;'>"
+                    "Cumulative F-Stat: {:.1f} | {} outgoing, {} incoming causal links</span>"
+                    "</div>".format(_rank, _nd_lbl, _nd_country, float(influence[_nd]),
+                                   len(_nd_edges), len(_nd_targets)),
+                    unsafe_allow_html=True
+                )
+                if len(_nd_edges) > 0:
+                    st.markdown("<div style='margin:2px 0 4px 10px;font-size:0.72rem;color:#00d4ff;font-weight:600;'>CAUSES (outgoing):</div>", unsafe_allow_html=True)
+                    for _, _erow in _nd_edges.head(5).iterrows():
+                        _interp = _edge_interpretation(
+                            _erow['source'], _erow['target'],
+                            float(_erow['max_f_stat']), float(_erow['min_p_value']),
+                            int(_erow['best_lag'])
+                        )
+                        st.markdown(
+                            "<div style='margin:4px 0 4px 20px;padding:8px 12px;"
+                            "background:rgba(10,20,50,0.3);border-radius:6px;"
+                            "font-size:0.78rem;color:#a0b8d0;line-height:1.6;'>"
+                            "{}</div>".format(_interp), unsafe_allow_html=True
+                        )
+                    if len(_nd_edges) > 5:
+                        st.markdown(
+                            "<div style='margin:2px 0 0 20px;font-size:0.72rem;color:#607890;'>"
+                            "... and {} more outgoing edges. See Full Causal Edge List below.</div>".format(
+                                len(_nd_edges) - 5), unsafe_allow_html=True
+                        )
+                if len(_nd_targets) > 0:
+                    st.markdown("<div style='margin:8px 0 4px 10px;font-size:0.72rem;color:#e07020;font-weight:600;'>CAUSED BY (incoming):</div>", unsafe_allow_html=True)
+                    for _, _trow in _nd_targets.head(3).iterrows():
+                        _t_interp = _edge_interpretation(
+                            _trow['source'], _trow['target'],
+                            float(_trow['max_f_stat']), float(_trow['min_p_value']),
+                            int(_trow['best_lag'])
+                        )
+                        st.markdown(
+                            "<div style='margin:4px 0 4px 20px;padding:8px 12px;"
+                            "background:rgba(50,20,10,0.2);border-radius:6px;border-left:2px solid rgba(224,112,32,0.3);"
+                            "font-size:0.78rem;color:#b09880;line-height:1.6;'>"
+                            "{}</div>".format(_t_interp), unsafe_allow_html=True
+                        )
+                    if len(_nd_targets) > 3:
+                        st.markdown(
+                            "<div style='margin:2px 0 0 20px;font-size:0.72rem;color:#607890;'>"
+                            "... and {} more incoming edges.</div>".format(
+                                len(_nd_targets) - 3), unsafe_allow_html=True
+                        )
 
     # -- Edge table --
     with st.expander('Full Causal Edge List', expanded=False):
