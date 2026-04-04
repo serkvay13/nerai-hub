@@ -507,21 +507,16 @@ def hex_to_rgba(h, a=0.06):
     return f'rgba({r},{g},{b},{a})'
 
 BASE_THEME = dict(
-    paper_bgcolor='rgba(0,0,0,0)',plot_bgcolor='rgba(13,18,32,0.9)',
+    paper_bgcolor='rgba(0,0,0,0)',
+    plot_bgcolor='rgba(13,18,32,0.9)',
     font=dict(family='Inter,sans-serif',color='#8899aa',size=11),
     margin=dict(l=45,r=15,t=38,b=40),
     xaxis=dict(gridcolor='rgba(0,212,255,0.06)',linecolor='rgba(0,212,255,0.15)',
                tickfont=dict(size=10,color='#6b7c93'),zeroline=False),
     yaxis=dict(gridcolor='rgba(0,212,255,0.06)',linecolor='rgba(0,212,255,0.15)',
                tickfont=dict(size=10,color='#6b7c93'),zeroline=False),
-)',plot_bgcolor='rgba(13,18,32,0.9)',
-    font=dict(family='Inter,sans-serif',color='#8899aa',size=11),
-    margin=dict(l=45,r=15,t=38,b=40),
-    xaxis=dict(gridcolor='rgba(0,212,255,0.06)',linecolor='rgba(0,212,255,0.15)',
-               tickfont=dict(size=10,color='#6b7c93')),
-    yaxis=dict(gridcolor='rgba(0,212,255,0.06)',linecolor='rgba(0,212,255,0.15)',
-               tickfont=dict(size=10,color='#6b7c93')),
 )
+
 
 # ═══════════════════════════════════════════════════════════════
 # DATA LOAD
