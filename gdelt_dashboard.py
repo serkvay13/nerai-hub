@@ -391,6 +391,33 @@ GLOBE_HTML = """
 </div>
 """
 
+
+
+def _fmt_num(val, decimals=2):
+    """Format a number sensibly: use K/M suffix for large values."""
+    try:
+        v = float(val)
+        if v != v or abs(v) == float('inf'):
+            return '—'
+        if abs(v) >= 1_000_000:
+            return f'{v/1_000_000:.1f}M'
+        if abs(v) >= 1_000:
+            return f'{v/1_000:.1f}K'
+        return f'{v:.{decimals}f}'
+    except (TypeError, ValueError):
+        return '—'
+
+def _safe_pct_chg(new_val, old_val, cap=200):
+    """Safe percentage change: returns 0 when denominator is near zero."""
+    try:
+        n, o = float(new_val), float(old_val)
+        if abs(o) < 1e-9:
+            return 0.0
+        raw = _safe_pct_chg(n, o)
+        return max(-cap, min(cap, raw))
+    except (TypeError, ValueError, ZeroDivisionError):
+        return 0.0
+
 def _safe_pct(val, maxabs=500):
     """Cap percentage to +/-maxabs to prevent display of astronomical values."""
     if val is None or (isinstance(val, float) and (val != val)): return 0.0
@@ -3071,6 +3098,7 @@ def render_predictions():
                 hist_max = raw.max()
                 if hist_max > 0:
                     hist_series = raw_monthly / hist_max * 100
+                    hist_series = max(-200.0, min(200.0, float(hist_series) if hist_series is not None and hist_series == hist_series else 0.0))
                 else:
                     hist_series = raw_monthly
             except Exception:
@@ -3314,6 +3342,7 @@ def _compute_country_insights(_df_raw, _trend_df):
         rows = []
         for country in countries:
             risk_score = min(raw_means[country] / global_p95 * 100, 100)
+            risk_score = max(-200.0, min(200.0, float(risk_score) if risk_score is not None and risk_score == risk_score else 0.0))
             change     = change_pcts[country]
 
             # ── Trend data for this country ─────────────────────
@@ -3616,7 +3645,7 @@ def _answer_question(question, df_raw, trend_df, pred_df, insights_df):
                 prv_avg = sum(prv_vals) / len(prv_vals)
                 if prv_avg < 0.001:
                     continue
-                pct = (cur_avg - prv_avg) / prv_avg * 100
+                pct = _safe_pct_chg(cur_avg, prv_avg)
                 if abs(pct) < 2:
                     continue
                 lbl = TOPIC_LABELS.get(topic, topic.replace('_', ' ').title())
@@ -3657,8 +3686,8 @@ def _answer_question(question, df_raw, trend_df, pred_df, insights_df):
                 idx_3m  = min(2, len(t_pred) - 1)
                 val_3m  = float(t_pred.iloc[idx_3m]['yhat'])
                 val_12m = float(t_pred.iloc[-1]['yhat'])
-                pct_3m  = (val_3m  - base_val) / base_val * 100
-                pct_12m = (val_12m - base_val) / base_val * 100
+                pct_3m  = _safe_pct_chg(val_3m, base_val)
+                pct_12m = _safe_pct_chg(val_12m, base_val)
                 lbl     = TOPIC_LABELS.get(topic, topic.replace('_', ' ').title())
                 ds_end  = t_pred.iloc[-1]['ds']
                 ds_str  = ds_end.strftime('%B %Y') if hasattr(ds_end, 'strftime') else str(ds_end)
@@ -3916,7 +3945,7 @@ def _call_claude_for_qa(question, df_raw, trend_df, pred_df, insights_df):
                         changes = {}
                         for t in r_avg.index:
                             if t in o_avg.index and o_avg[t] > 0:
-                                changes[t] = round((r_avg[t] - o_avg[t]) / o_avg[t] * 100, 1)
+                                changes[t] = round(_safe_pct_chg(r_avg[t], o_avg[t]), 1)
                         if changes:
                             s_asc  = sorted(changes.items(), key=lambda x: x[1])
                             rising = [(t,v) for t,v in s_asc if v > 0][-5:][::-1]
