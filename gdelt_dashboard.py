@@ -1514,8 +1514,9 @@ def render_home():
     # ── Animated Hero ────────────────────────────────────────
 
     # === 3D GLOBE ===
+    st.markdown("""<style>.main .block-container{background:linear-gradient(180deg,#030811 0%,#081018 50%,#030811 100%) !important;padding-top:0 !important}.stApp>header{background:transparent !important}[data-testid="stVerticalBlock"]{background:transparent !important}</style>""", unsafe_allow_html=True)
     _globe_html = """
-<div style="width:100%;height:510px;background:#050a15;display:flex;align-items:center;justify-content:center;overflow:hidden;border-radius:12px;position:relative">
+<div style="width:100%;height:510px;background:transparent;display:flex;align-items:center;justify-content:center;overflow:hidden;border-radius:0;position:relative">
 <canvas id="earthG"></canvas>
 <script src="https://cdn.jsdelivr.net/npm/topojson-client@3"></script>
 <script>
@@ -1546,7 +1547,7 @@ var ag=X.createRadialGradient(cx,cy,R*0.92,cx,cy,R*1.3);ag.addColorStop(0,"rgba(
 var og=X.createRadialGradient(cx-R*0.25,cy-R*0.25,0,cx,cy,R);og.addColorStop(0,"#0c2440");og.addColorStop(0.6,"#081a30");og.addColorStop(1,"#040d1a");X.fillStyle=og;X.beginPath();X.arc(cx,cy,R,0,6.28);X.fill();
 X.strokeStyle="rgba(0,140,180,0.04)";X.lineWidth=0.4;for(var la=-80;la<=80;la+=30){X.beginPath();var st=false;for(var lo=-180;lo<=180;lo+=4){var p=proj(lo,la);if(p.z>0){if(!st){X.moveTo(p.x,p.y);st=true;}else X.lineTo(p.x,p.y);}else st=false;}X.stroke();}
 for(var i=0;i<polys.length;i++){var poly=polys[i];if(poly.length<4)continue;var pts=[];var anyV=false;var step=1;if(poly.length>200)step=2;for(var j=0;j<poly.length;j+=step){var p=proj(poly[j][0],poly[j][1]);pts.push(p);if(p.z>0)anyV=true;}if(!anyV)continue;X.beginPath();var st=false;for(var j=0;j<pts.length;j++){if(pts[j].z>0){if(!st){X.moveTo(pts[j].x,pts[j].y);st=true;}else X.lineTo(pts[j].x,pts[j].y);}else if(st){X.lineTo(pts[j].x,pts[j].y);st=false;}}X.closePath();
-var lg=X.createRadialGradient(cx-R*0.25,cy-R*0.25,0,cx,cy,R*1.1);lg.addColorStop(0,"rgba(0,230,190,0.55)");lg.addColorStop(0.5,"rgba(0,200,170,0.4)");lg.addColorStop(1,"rgba(0,140,120,0.25)");X.fillStyle=lg;X.fill();
+var lg=X.createRadialGradient(cx-R*0.25,cy-R*0.25,0,cx,cy,R*1.1);lg.addColorStop(0,"rgba(0,210,220,0.5)");lg.addColorStop(0.5,"rgba(0,185,210,0.35)");lg.addColorStop(1,"rgba(0,130,170,0.2)");X.fillStyle=lg;X.fill();
 X.strokeStyle="rgba(0,212,170,0.3)";X.lineWidth=0.6;X.stroke();}
 var eg=X.createRadialGradient(cx,cy,R*0.82,cx,cy,R);eg.addColorStop(0,"rgba(0,0,0,0)");eg.addColorStop(0.7,"rgba(0,0,0,0)");eg.addColorStop(1,"rgba(0,80,100,0.25)");X.fillStyle=eg;X.beginPath();X.arc(cx,cy,R,0,6.28);X.fill();
 var hg=X.createRadialGradient(cx-R*0.3,cy-R*0.3,0,cx-R*0.3,cy-R*0.3,R*0.7);hg.addColorStop(0,"rgba(120,220,255,0.05)");hg.addColorStop(1,"rgba(0,0,0,0)");X.fillStyle=hg;X.beginPath();X.arc(cx,cy,R,0,6.28);X.fill();
