@@ -1550,80 +1550,50 @@ def render_home():
     )
     _stc.html(_globe_html, height=510, scrolling=False)
     st.markdown(f"""
-    <div class="home-hero">
-      <!-- Corner HUD brackets -->
-      <div class="home-corner home-corner-tl"></div>
-      <div class="home-corner home-corner-tr"></div>
-      <div class="home-corner home-corner-bl"></div>
-      <div class="home-corner home-corner-br"></div>
-      <!-- Glowing orbs -->
-      <div class="home-orb" style="width:320px;height:320px;top:-100px;left:-80px;background:rgba(0,70,200,0.13);"></div>
-      <div class="home-orb" style="width:260px;height:260px;top:-60px;right:-60px;background:rgba(80,0,180,0.10);"></div>
-      <div class="home-orb" style="width:220px;height:220px;bottom:-70px;left:50%;transform:translateX(-50%);background:rgba(0,120,230,0.09);"></div>
-      <!-- Floating hexagons -->
-      <div class="hex-deco" style="width:70px;height:80px;top:12%;left:4%;animation-delay:0s;"></div>
-      <div class="hex-deco" style="width:55px;height:63px;top:18%;right:6%;animation-delay:3s;"></div>
-      <div class="hex-deco" style="width:45px;height:52px;bottom:18%;left:10%;animation-delay:6s;opacity:0.6;"></div>
-      <div class="hex-deco" style="width:40px;height:46px;bottom:22%;right:9%;animation-delay:1.5s;opacity:0.5;"></div>
-      <!-- Main content -->
-      <div style="position:relative;z-index:2;padding:12px 0;">
-        <!-- CSS Text Logo -->
-        <div class="nerai-logo-wrap">
-          <div class="nerai-logo-ring"></div>
-          <div class="nerai-logo-ring nerai-logo-ring-2"></div>
-          <div class="nerai-logo-brand">
-            <span class="nerai-logo-hex">◈</span>
-            <span class="nerai-logo-ner">NER</span><span class="nerai-logo-ai">AI</span>
-          </div>
-        </div>
-        <!-- Sub-brand line -->
-        <div style="font-size:0.65rem;letter-spacing:0.35em;text-transform:uppercase;
-             color:rgba(0,200,255,0.4);font-family:'Share Tech Mono',monospace;
-             margin-bottom:6px;">Intelligence Hub</div>
-        <div class="hero-tagline">Geopolitical Risk Intelligence Platform</div>
-        <!-- Separator -->
-        <div style="height:1px;background:linear-gradient(90deg,transparent,rgba(0,200,255,0.4),rgba(123,47,255,0.3),transparent);
-             width:60%;margin:0 auto 30px;"></div>
-        <!-- Stats row -->
-        <div class="home-stat-row">
-          <div class="home-stat">
-            <div class="home-stat-val">{len(all_countries)}</div>
-            <div class="home-stat-lbl">Countries</div>
-          </div>
-          <div style="width:1px;background:rgba(0,150,255,0.15);align-self:stretch;"></div>
-          <div class="home-stat">
-            <div class="home-stat-val">{len(all_topics)}</div>
-            <div class="home-stat-lbl">Risk Topics</div>
-          </div>
-          <div style="width:1px;background:rgba(0,150,255,0.15);align-self:stretch;"></div>
-          <div class="home-stat">
-            <div class="home-stat-val">{len(date_cols)}</div>
-            <div class="home-stat-lbl">Days of Data</div>
-          </div>
-          <div style="width:1px;background:rgba(0,150,255,0.15);align-self:stretch;"></div>
-          <div class="home-stat">
-            <div class="home-stat-val">{len(df):,}</div>
-            <div class="home-stat-lbl">Data Points</div>
-          </div>
-        </div>
-        <!-- Live status bar -->
-        <div style="display:inline-flex;align-items:center;gap:12px;
-             background:rgba(0,20,50,0.6);border:1px solid rgba(0,150,255,0.2);
-             border-radius:20px;padding:5px 18px;
-             font-size:0.68rem;color:rgba(0,200,255,0.6);
-             font-family:'Share Tech Mono',monospace;letter-spacing:0.1em;">
-          <span class="live-dot"></span>
-          <span>LIVE</span>
-          <span style="color:rgba(0,150,255,0.3);">|</span>
-          <span>GDELT PROJECT</span>
-          <span style="color:rgba(0,150,255,0.3);">|</span>
-          <span>LAST UPDATE: {date_cols[-1].strftime('%d %b %Y') if len(date_cols) else 'N/A'}</span>
-          <span style="color:rgba(0,150,255,0.3);">|</span>
-          <span style="color:{'#ffaa00' if is_demo else '#00d4aa'};">{'⚠ DEMO' if is_demo else '✓ ONLINE'}</span>
-        </div>
-      </div>
-    </div>
-    """, unsafe_allow_html=True)
+<canvas id="c" style="display:block;"></canvas>
+<script>
+var C=document.getElementById('c'),X=C.getContext('2d'),W,H,rot=0,t=0;
+function resize(){W=C.width=window.innerWidth||800;H=C.height=window.innerHeight||510;}
+resize();
+var cities=[
+['Washington',-77.04,38.90,1],['London',-0.12,51.51,1],['Moscow',37.62,55.76,1],
+['Beijing',116.40,39.90,1],['Delhi',77.21,28.61,1],['Tokyo',139.69,35.69,1],
+['NYC',-74.01,40.71,0],['Paris',2.35,48.86,0],['Dubai',55.27,25.20,0],
+['Sydney',151.21,-33.87,0],['Sao Paulo',-46.63,-23.55,0],['Lagos',3.39,6.52,0],
+['Cairo',31.24,30.04,0],['Istanbul',28.98,41.01,0],['Singapore',103.82,1.35,0],
+['Taipei',121.56,25.03,0],['Tehran',51.39,35.69,0],['Riyadh',46.68,24.71,0],
+['Seoul',126.98,37.57,0],['Nairobi',36.82,-1.29,0]
+];
+var conns=[[0,1],[1,2],[2,3],[3,5],[4,3],[0,4],[1,7],[6,1],[8,4],[9,3],[10,0],[11,1],[12,8],[13,1],[14,3],[15,3],[16,2],[17,8],[18,3],[19,4]];
+var stars=[];for(var i=0;i<200;i++)stars.push({x:Math.random(),y:Math.random(),s:Math.random()*1.5+0.5,b:Math.random()});
+function ll2(la,lo,r){var a=la*Math.PI/180,o=lo*Math.PI/180;return{x:r*Math.cos(a)*Math.cos(o),y:r*Math.sin(a),z:r*Math.cos(a)*Math.sin(o)};}
+function rY(p,a){var c=Math.cos(a),s=Math.sin(a);return{x:p.x*c+p.z*s,y:p.y,z:-p.x*s+p.z*c};}
+function rX(p,a){var c=Math.cos(a),s=Math.sin(a);return{x:p.x,y:p.y*c-p.z*s,z:p.y*s+p.z*c};}
+function pj(p){var d=600,s=d/(d+p.z);return{x:W/2+p.x*s,y:H/2-p.y*s,s:s,z:p.z};}
+function frame(){
+X.clearRect(0,0,W,H);
+var i,j,p,pr,pp,R=Math.min(W,H)*0.34,tx=-0.15;
+for(i=0;i<stars.length;i++){var fl=0.5+0.5*Math.sin(t*2+stars[i].b*50);X.fillStyle='rgba(180,210,255,'+(0.3+0.4*fl)+')';X.fillRect(stars[i].x*W,stars[i].y*H,stars[i].s,stars[i].s);}
+var grd=X.createRadialGradient(W/2,H/2,R*0.9,W/2,H/2,R*1.5);grd.addColorStop(0,'rgba(0,180,255,0.08)');grd.addColorStop(0.4,'rgba(0,180,255,0.04)');grd.addColorStop(1,'rgba(0,180,255,0)');X.fillStyle=grd;X.fillRect(0,0,W,H);
+var sg=X.createRadialGradient(W/2-R*0.15,H/2-R*0.15,R*0.05,W/2,H/2,R);sg.addColorStop(0,'rgba(15,40,70,0.9)');sg.addColorStop(0.7,'rgba(8,20,40,0.95)');sg.addColorStop(1,'rgba(0,180,255,0.15)');X.beginPath();X.arc(W/2,H/2,R,0,Math.PI*2);X.fillStyle=sg;X.fill();
+X.beginPath();X.arc(W/2,H/2,R,0,Math.PI*2);X.strokeStyle='rgba(0,180,255,0.3)';X.lineWidth=2;X.stroke();
+X.beginPath();X.arc(W/2,H/2,R+3,0,Math.PI*2);X.strokeStyle='rgba(0,180,255,0.1)';X.lineWidth=4;X.stroke();
+X.lineWidth=0.5;
+for(var lat=-60;lat<=60;lat+=30){X.beginPath();var f=true;for(var lon=0;lon<=360;lon+=3){p=ll2(lat,lon,R);pr=rX(rY(p,rot),tx);pp=pj(pr);if(pr.z<0){if(f){X.moveTo(pp.x,pp.y);f=false;}else X.lineTo(pp.x,pp.y);}else f=true;}X.strokeStyle='rgba(0,180,255,0.12)';X.stroke();}
+for(var lon2=0;lon2<360;lon2+=30){X.beginPath();var f2=true;for(var lat2=-90;lat2<=90;lat2+=3){p=ll2(lat2,lon2,R);pr=rX(rY(p,rot),tx);pp=pj(pr);if(pr.z<0){if(f2){X.moveTo(pp.x,pp.y);f2=false;}else X.lineTo(pp.x,pp.y);}else f2=true;}X.strokeStyle='rgba(0,180,255,0.08)';X.stroke();}
+for(i=0;i<conns.length;i++){var ca=cities[conns[i][0]],cb=cities[conns[i][1]];var pA=ll2(ca[2],ca[1],R),pB=ll2(cb[2],cb[1],R);var rA=rX(rY(pA,rot),tx),rB=rX(rY(pB,rot),tx);if(rA.z>0||rB.z>0)continue;var ppA=pj(rA),ppB=pj(rB);var mx=(ppA.x+ppB.x)/2,my=(ppA.y+ppB.y)/2,dx=ppB.x-ppA.x,dy=ppB.y-ppA.y;var cx=mx-dy*0.3,cy=my+dx*0.3;var pulse=(t*0.5+conns[i][0]*0.3)%1;X.beginPath();X.moveTo(ppA.x,ppA.y);X.quadraticCurveTo(cx,cy,ppB.x,ppB.y);var ag=X.createLinearGradient(ppA.x,ppA.y,ppB.x,ppB.y);ag.addColorStop(0,'rgba(0,220,255,0)');ag.addColorStop(Math.max(0,pulse-0.15),'rgba(0,220,255,0)');ag.addColorStop(pulse,'rgba(0,220,255,0.6)');ag.addColorStop(Math.min(1,pulse+0.15),'rgba(0,220,255,0)');ag.addColorStop(1,'rgba(0,220,255,0)');X.strokeStyle=ag;X.lineWidth=1.2;X.stroke();X.beginPath();X.moveTo(ppA.x,ppA.y);X.quadraticCurveTo(cx,cy,ppB.x,ppB.y);X.strokeStyle='rgba(0,180,255,0.08)';X.lineWidth=0.6;X.stroke();}
+for(i=0;i<cities.length;i++){var c=cities[i];p=ll2(c[2],c[1],R);pr=rX(rY(p,rot),tx);if(pr.z>0)continue;pp=pj(pr);var isM=c[3],dR=isM?4:2.5;var gg=X.createRadialGradient(pp.x,pp.y,0,pp.x,pp.y,dR*4);gg.addColorStop(0,isM?'rgba(0,255,200,0.5)':'rgba(0,180,255,0.4)');gg.addColorStop(1,'rgba(0,180,255,0)');X.fillStyle=gg;X.fillRect(pp.x-dR*4,pp.y-dR*4,dR*8,dR*8);if(isM){var pR=dR+4+3*Math.sin(t*2+i);X.beginPath();X.arc(pp.x,pp.y,pR,0,Math.PI*2);X.strokeStyle='rgba(0,255,200,'+(0.15+0.1*Math.sin(t*2))+')';X.lineWidth=0.8;X.stroke();}X.beginPath();X.arc(pp.x,pp.y,dR,0,Math.PI*2);X.fillStyle=isM?'#00ffc8':'#00b4ff';X.fill();X.font=(isM?'bold 10px':'9px')+' Consolas,monospace';X.fillStyle=isM?'rgba(0,255,200,0.9)':'rgba(0,180,255,0.7)';X.fillText(c[0],pp.x+dR+4,pp.y+3);}
+var sa=t*0.8;X.beginPath();X.ellipse(W/2,H/2,R*1.08,R*0.15,sa,0,Math.PI*2);X.strokeStyle='rgba(0,180,255,'+(0.06+0.04*Math.sin(t*3))+')';X.lineWidth=1;X.stroke();
+X.beginPath();X.ellipse(W/2,H/2,R*1.15,R*0.12,sa+1.2,0,Math.PI*2);X.strokeStyle='rgba(0,255,200,0.04)';X.lineWidth=0.8;X.stroke();
+X.font='bold 11px Consolas,monospace';X.fillStyle='rgba(0,180,255,0.6)';X.textAlign='center';X.fillText('N E R A I   G L O B A L   I N T E L L I G E N C E',W/2,30);
+X.font='9px Consolas,monospace';
+var tk=['ACTIVE MONITORS: 47','DATA STREAMS: 1,247','RISK ALERTS: 3','COVERAGE: 196 NATIONS'];
+var tw2=W/(tk.length+1);for(i=0;i<tk.length;i++){var tx2=tw2*(i+1);X.fillStyle='rgba(0,180,255,0.35)';X.fillText(tk[i],tx2,H-18);X.beginPath();X.arc(tx2-X.measureText(tk[i]).width/2-8,H-22,2.5,0,Math.PI*2);X.fillStyle=i===2?'rgba(255,75,110,0.8)':'rgba(0,255,200,0.6)';X.fill();}
+X.textAlign='left';
+rot-=0.003;t+=0.016;requestAnimationFrame(frame);}
+frame();window.addEventListener('resize',resize);
+</script>
+""", unsafe_allow_html=True)
 
     # ── Module Tiles ─────────────────────────────────────────
     st.markdown("""
