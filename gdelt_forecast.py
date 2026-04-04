@@ -57,7 +57,7 @@ def load_monthly(filepath):
     return monthly
 
 
-# ââ TIER 1: statsmodels (always available) âââââââââââââââââââââ
+# Ã¢ÂÂÃ¢ÂÂ TIER 1: statsmodels (always available) Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 
 def forecast_series_sm(y_values, h=HORIZON):
     from statsmodels.tsa.holtwinters import ExponentialSmoothing
@@ -72,7 +72,7 @@ def forecast_series_sm(y_values, h=HORIZON):
     fc = None
     resid = None
 
-    # Try seasonal ETS first if enough data (24+ months)
+    # Try seasonal ETS first (24+ months)
     if n >= 24:
         try:
             model = ExponentialSmoothing(
@@ -98,23 +98,42 @@ def forecast_series_sm(y_values, h=HORIZON):
         except Exception:
             return forecast_series_numpy(y, h)
 
-    # Detect flat forecast: if range < 2% of mean, inject historical trend
+    # Check if forecast lacks month-to-month variation
     fc_mean = np.mean(fc) if np.mean(fc) > 1e-9 else 1e-9
-    fc_range = (np.max(fc) - np.min(fc)) / abs(fc_mean) if abs(fc_mean) > 1e-9 else 0
+    fc_std = np.std(fc)
+    cv = fc_std / abs(fc_mean) if abs(fc_mean) > 1e-9 else 0
 
-    if fc_range < 0.02:
+    if cv < 0.03:  # Coefficient of variation < 3% = too flat
+        # 1. Compute trend from recent history
         lookback = min(n, 12)
         recent = y[-lookback:]
         x_hist = np.arange(lookback)
-        slope, intercept = np.polyfit(x_hist, recent, deg=1)
+        slope, _ = np.polyfit(x_hist, recent, deg=1)
 
-        # Apply gently-damped historical trend on top of ETS level
+        # 2. Extract monthly seasonal pattern from historical data
+        # Detrend the full series, then compute avg deviation per month position
+        x_full = np.arange(n)
+        trend_coef = np.polyfit(x_full, y, deg=1)
+        detrended = y - np.polyval(trend_coef, x_full)
+
+        cycle_len = min(n, 12)
+        seasonal = np.zeros(cycle_len)
+        counts = np.zeros(cycle_len)
+        for i in range(n):
+            pos = i % cycle_len
+            seasonal[pos] += detrended[i]
+            counts[pos] += 1
+        seasonal = seasonal / np.maximum(counts, 1)
+        seasonal = seasonal - np.mean(seasonal)  # center
+
+        # 3. Build forecast: ETS level + damped trend + seasonal pattern
         base = fc[0]
-        phi = 0.95  # gentle damping - trend persists but slowly decays
+        phi = 0.95
         cumulative = 0.0
         for k in range(h):
             cumulative += slope * (phi ** (k + 1))
-            fc[k] = max(base + cumulative, 0)
+            season_k = seasonal[(n + k) % cycle_len]
+            fc[k] = max(base + cumulative + season_k, 0)
 
     sigma = max(np.std(resid) if resid is not None else fc_mean * 0.1,
                 fc_mean * 0.05, 0.01)
@@ -128,24 +147,43 @@ def forecast_series_numpy(y_values, h=HORIZON):
     y = np.array(y_values, dtype=float)
     y = np.clip(y, 0, None)
     n = len(y)
+
     if n < 2:
         last = y[-1] if n > 0 else 0
         return np.full(h, last), np.full(h, last*0.7), np.full(h, last*1.3)
+
+    # Linear trend
     x = np.arange(n)
     slope, intercept = np.polyfit(x, y, deg=1)
+
+    # Extract seasonal pattern from detrended data
+    detrended = y - (intercept + slope * x)
+    cycle_len = min(n, 12)
+    seasonal = np.zeros(cycle_len)
+    counts = np.zeros(cycle_len)
+    for i in range(n):
+        pos = i % cycle_len
+        seasonal[pos] += detrended[i]
+        counts[pos] += 1
+    seasonal = seasonal / np.maximum(counts, 1)
+    seasonal = seasonal - np.mean(seasonal)
+
+    # Build forecast: damped trend + seasonal
     phi = 0.90
     fc = []
     for k in range(1, h + 1):
-        damped = slope * (1 - phi**k) / (1 - phi)
-        fc.append(max(intercept + slope * (n - 1) + damped, 0))
+        damped = slope * phi * (1 - phi**k) / (1 - phi)
+        season_k = seasonal[(n + k - 1) % cycle_len]
+        fc.append(max(intercept + slope * (n - 1) + damped + season_k, 0))
     fc = np.array(fc)
+
     resid = y - (intercept + slope * x)
     sigma = max(np.std(resid), np.mean(np.abs(y)) * 0.05, 0.01)
     steps = np.arange(1, h + 1)
     lo = np.clip(fc - 1.645 * sigma * np.sqrt(steps), 0, None)
     hi = fc + 1.645 * sigma * np.sqrt(steps)
-    return fc, lo, hi
 
+    return fc, lo, hi
 
 def forecast_statsmodels(monthly, horizon=HORIZON):
     print(f"[SM] Forecasting {monthly['unique_id'].nunique():,} series with ExponentialSmoothing ...")
@@ -171,7 +209,7 @@ def forecast_statsmodels(monthly, horizon=HORIZON):
     return pd.DataFrame(rows)
 
 
-# ââ TIER 2: N-HiTS (optional deep learning) âââââââââââââââââââ
+# Ã¢ÂÂÃ¢ÂÂ TIER 2: N-HiTS (optional deep learning) Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 
 def forecast_nhits(monthly, horizon=HORIZON):
     try:
@@ -227,7 +265,7 @@ def forecast_nhits(monthly, horizon=HORIZON):
         return None
 
 
-# ââ BLEND ââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+# Ã¢ÂÂÃ¢ÂÂ BLEND Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 
 def blend(sm_fc, nf_fc, w_sm=BLEND_SM, w_nf=BLEND_NF):
     merged = sm_fc.merge(nf_fc, on=['unique_id', 'ds'], how='left')
@@ -250,7 +288,7 @@ def blend(sm_fc, nf_fc, w_sm=BLEND_SM, w_nf=BLEND_NF):
     return merged[['unique_id', 'ds', 'yhat', 'yhat_lower', 'yhat_upper']]
 
 
-# ââ MAIN âââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+# Ã¢ÂÂÃ¢ÂÂ MAIN Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 
 def run():
     t0 = datetime.datetime.utcnow()
