@@ -4340,71 +4340,71 @@ def render_causality():
     st.markdown("<div style='background:rgba(10,20,50,0.4);border:1px solid rgba(0,180,255,0.15);border-radius:8px;padding:14px 18px;margin:15px 0;font-size:0.75rem;color:#8ab4d8;line-height:1.7;'><b style=\'color:#00d4ff;\'>How to Interpret?</b><br>F-Statistic: The higher the value, the stronger the causal relationship. F &gt; 10 = strong, F &gt; 50 = very strong relationship.<br>Lag (Delay): The time delay between events (months). Lag=1 means a change in one event affects another 1 month later.<br>p-value: Values below 0.05 indicate statistically significant relationships.</div>", unsafe_allow_html=True)
 
 
-        # -- Detailed Edge Breakdown for Top Influencers --
-        with st.expander('Detailed Edge Breakdown \u2014 Why Are These Top Influencers?', expanded=True):
+    # -- Detailed Edge Breakdown for Top Influencers --
+    with st.expander('Detailed Edge Breakdown \u2014 Why Are These Top Influencers?', expanded=True):
+        st.markdown(
+            "<div style='font-size:0.82rem;color:#8ab4d8;margin-bottom:12px;'>"
+            "Each top influencer's causal connections are listed below, showing which events they "
+            "statistically predict and the potential transmission mechanism. <b>Cross-border links "
+            "do not necessarily imply direct bilateral causation</b> \u2014 they may reflect indirect "
+            "transmission through global trade, shared alliances, commodity channels, or regional "
+            "contagion effects.</div>", unsafe_allow_html=True
+        )
+        for _rank, _nd in enumerate(influence.index[:5], 1):
+            _nd_lbl, _nd_cc = _node_label(_nd)
+            _nd_country = COUNTRY_NAMES.get(_nd_cc, _nd_cc)
+            _nd_edges = filtered[filtered['source'] == _nd].sort_values('max_f_stat', ascending=False)
+            _nd_targets = filtered[filtered['target'] == _nd].sort_values('max_f_stat', ascending=False)
             st.markdown(
-                "<div style='font-size:0.82rem;color:#8ab4d8;margin-bottom:12px;'>"
-                "Each top influencer's causal connections are listed below, showing which events they "
-                "statistically predict and the potential transmission mechanism. <b>Cross-border links "
-                "do not necessarily imply direct bilateral causation</b> \u2014 they may reflect indirect "
-                "transmission through global trade, shared alliances, commodity channels, or regional "
-                "contagion effects.</div>", unsafe_allow_html=True
+                "<div style='margin:18px 0 8px;padding:10px 14px;background:rgba(0,180,255,0.06);"
+                "border-left:3px solid #00d4ff;border-radius:4px;'>"
+                "<b style='color:#00d4ff;font-size:0.95rem;'>#{} {} ({})</b>"
+                " &mdash; <span style='color:#8ab4d8;font-size:0.82rem;'>"
+                "Cumulative F-Stat: {:.1f} | {} outgoing, {} incoming causal links</span>"
+                "</div>".format(_rank, _nd_lbl, _nd_country, float(influence[_nd]),
+                               len(_nd_edges), len(_nd_targets)),
+                unsafe_allow_html=True
             )
-            for _rank, _nd in enumerate(influence.index[:5], 1):
-                _nd_lbl, _nd_cc = _node_label(_nd)
-                _nd_country = COUNTRY_NAMES.get(_nd_cc, _nd_cc)
-                _nd_edges = filtered[filtered['source'] == _nd].sort_values('max_f_stat', ascending=False)
-                _nd_targets = filtered[filtered['target'] == _nd].sort_values('max_f_stat', ascending=False)
-                st.markdown(
-                    "<div style='margin:18px 0 8px;padding:10px 14px;background:rgba(0,180,255,0.06);"
-                    "border-left:3px solid #00d4ff;border-radius:4px;'>"
-                    "<b style='color:#00d4ff;font-size:0.95rem;'>#{} {} ({})</b>"
-                    " &mdash; <span style='color:#8ab4d8;font-size:0.82rem;'>"
-                    "Cumulative F-Stat: {:.1f} | {} outgoing, {} incoming causal links</span>"
-                    "</div>".format(_rank, _nd_lbl, _nd_country, float(influence[_nd]),
-                                   len(_nd_edges), len(_nd_targets)),
-                    unsafe_allow_html=True
-                )
-                if len(_nd_edges) > 0:
-                    st.markdown("<div style='margin:2px 0 4px 10px;font-size:0.72rem;color:#00d4ff;font-weight:600;'>CAUSES (outgoing):</div>", unsafe_allow_html=True)
-                    for _, _erow in _nd_edges.head(5).iterrows():
-                        _interp = _edge_interpretation(
-                            _erow['source'], _erow['target'],
-                            float(_erow['max_f_stat']), float(_erow['min_p_value']),
-                            int(_erow['best_lag'])
-                        )
-                        st.markdown(
-                            "<div style='margin:4px 0 4px 20px;padding:8px 12px;"
-                            "background:rgba(10,20,50,0.3);border-radius:6px;"
-                            "font-size:0.78rem;color:#a0b8d0;line-height:1.6;'>"
-                            "{}</div>".format(_interp), unsafe_allow_html=True
-                        )
-                    if len(_nd_edges) > 5:
-                        st.markdown(
-                            "<div style='margin:2px 0 0 20px;font-size:0.72rem;color:#607890;'>"
-                            "... and {} more outgoing edges. See Full Causal Edge List below.</div>".format(
-                                len(_nd_edges) - 5), unsafe_allow_html=True
-                        )
-                if len(_nd_targets) > 0:
-                    st.markdown("<div style='margin:8px 0 4px 10px;font-size:0.72rem;color:#e07020;font-weight:600;'>CAUSED BY (incoming):</div>", unsafe_allow_html=True)
-                    for _, _trow in _nd_targets.head(3).iterrows():
-                        _t_interp = _edge_interpretation(
-                            _trow['source'], _trow['target'],
-                            float(_trow['max_f_stat']), float(_trow['min_p_value']),
-                            int(_trow['best_lag'])
-                        )
-                        st.markdown(
-                            "<div style='margin:4px 0 4px 20px;padding:8px 12px;"
-                            "background:rgba(50,20,10,0.2);border-radius:6px;border-left:2px solid rgba(224,112,32,0.3);"
-                            "font-size:0.78rem;color:#b09880;line-height:1.6;'>"
-                            "{}</div>".format(_t_interp), unsafe_allow_html=True
-                        )
-                    if len(_nd_targets) > 3:
-                        st.markdown(
-                            "<div style='margin:2px 0 0 20px;font-size:0.72rem;color:#607890;'>"
-                            "... and {} more incoming edges.</div>".format(
-                                len(_nd_targets) - 3), unsafe_allow_html=True
-                        )
+            if len(_nd_edges) > 0:
+                st.markdown("<div style='margin:2px 0 4px 10px;font-size:0.72rem;color:#00d4ff;font-weight:600;'>CAUSES (outgoing):</div>", unsafe_allow_html=True)
+                for _, _erow in _nd_edges.head(5).iterrows():
+                    _interp = _edge_interpretation(
+                        _erow['source'], _erow['target'],
+                        float(_erow['max_f_stat']), float(_erow['min_p_value']),
+                        int(_erow['best_lag'])
+                    )
+                    st.markdown(
+                        "<div style='margin:4px 0 4px 20px;padding:8px 12px;"
+                        "background:rgba(10,20,50,0.3);border-radius:6px;"
+                        "font-size:0.78rem;color:#a0b8d0;line-height:1.6;'>"
+                        "{}</div>".format(_interp), unsafe_allow_html=True
+                    )
+                if len(_nd_edges) > 5:
+                    st.markdown(
+                        "<div style='margin:2px 0 0 20px;font-size:0.72rem;color:#607890;'>"
+                        "... and {} more outgoing edges. See Full Causal Edge List below.</div>".format(
+                            len(_nd_edges) - 5), unsafe_allow_html=True
+                    )
+            if len(_nd_targets) > 0:
+                st.markdown("<div style='margin:8px 0 4px 10px;font-size:0.72rem;color:#e07020;font-weight:600;'>CAUSED BY (incoming):</div>", unsafe_allow_html=True)
+                for _, _trow in _nd_targets.head(3).iterrows():
+                    _t_interp = _edge_interpretation(
+                        _trow['source'], _trow['target'],
+                        float(_trow['max_f_stat']), float(_trow['min_p_value']),
+                        int(_trow['best_lag'])
+                    )
+                    st.markdown(
+                        "<div style='margin:4px 0 4px 20px;padding:8px 12px;"
+                        "background:rgba(50,20,10,0.2);border-radius:6px;border-left:2px solid rgba(224,112,32,0.3);"
+                        "font-size:0.78rem;color:#b09880;line-height:1.6;'>"
+                        "{}</div>".format(_t_interp), unsafe_allow_html=True
+                    )
+                if len(_nd_targets) > 3:
+                    st.markdown(
+                        "<div style='margin:2px 0 0 20px;font-size:0.72rem;color:#607890;'>"
+                        "... and {} more incoming edges.</div>".format(
+                            len(_nd_targets) - 3), unsafe_allow_html=True
+                    )
 
     # -- Edge table --
     with st.expander('Full Causal Edge List', expanded=False):
