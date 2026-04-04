@@ -533,17 +533,14 @@ def load_data(filepath='./indices.csv'):
     if os.path.exists(filepath):
         df = pd.read_csv(filepath,sep=',',header=0,index_col=[0,1])
         df.columns = pd.to_datetime(df.columns,format='%Y%m%d')
-        # Interpolate gap periods: values below 5% of row median are treated as missing GDELT data
+        # Vectorized gap detection: values below 5% of row median are treated as missing
         date_cols = [c for c in df.columns if c not in ['topic', 'country']]
         if date_cols:
-            for idx in df.index:
-                row = df.loc[idx, date_cols]
-                nonzero = row[row > 0]
-                if len(nonzero) > 0:
-                    thr = nonzero.median() * 0.05
-                    df.loc[idx, date_cols] = row.where(row > thr, np.nan)
-                else:
-                    df.loc[idx, date_cols] = row.replace(0, np.nan)
+            pos_vals = df[date_cols].where(df[date_cols] > 0)
+            row_medians = pos_vals.median(axis=1)
+            threshold = row_medians * 0.05
+            mask = df[date_cols].lt(threshold, axis=0) | (df[date_cols] == 0)
+            df[date_cols] = df[date_cols].where(~mask, np.nan)
             df[date_cols] = df[date_cols].interpolate(axis=1, method='linear', limit_direction='both')
             df[date_cols] = df[date_cols].ffill(axis=1).bfill(axis=1)
             df[date_cols] = df[date_cols].fillna(0)
@@ -1756,19 +1753,17 @@ def render_indices():
     df_recent_raw = df_topic_raw[date_cols[-n_days:]]
     df_norm       = apply_norm(df_topic_raw, norm_method)
     # Fill remaining zero-gaps after normalization
-    for _idx in df_norm.index:
-        _r = df_norm.loc[_idx]
-        _nz = _r[_r > 0]
-        if len(_nz) > 2:
-            _t = _nz.median() * 0.05
-            df_norm.loc[_idx] = _r.where(_r > _t, np.nan).interpolate(method='linear', limit_direction='both').ffill().bfill().fillna(0)
+    _pv = df_norm.where(df_norm > 0)
+    _rm = _pv.median(axis=1)
+    _th = _rm * 0.05
+    _mk = df_norm.lt(_th, axis=0) | (df_norm == 0)
+    df_norm = df_norm.where(~_mk, np.nan).interpolate(axis=1, method='linear', limit_direction='both').ffill(axis=1).bfill(axis=1).fillna(0)
     df_recent     = apply_norm(df_recent_raw, norm_method)
-    for _idx in df_recent.index:
-        _r = df_recent.loc[_idx]
-        _nz = _r[_r > 0]
-        if len(_nz) > 2:
-            _t = _nz.median() * 0.05
-            df_recent.loc[_idx] = _r.where(_r > _t, np.nan).interpolate(method='linear', limit_direction='both').ffill().bfill().fillna(0)
+    _pv2 = df_recent.where(df_recent > 0)
+    _rm2 = _pv2.median(axis=1)
+    _th2 = _rm2 * 0.05
+    _mk2 = df_recent.lt(_th2, axis=0) | (df_recent == 0)
+    df_recent = df_recent.where(~_mk2, np.nan).interpolate(axis=1, method='linear', limit_direction='both').ffill(axis=1).bfill(axis=1).fillna(0)
     norm_suffix   = {'Raw':'','Score (0–100)':' · Score 0–100','Z-Score':' · Z-Score'}[norm_method]
     sel_label     = TOPIC_LABELS.get(sel_topic, sel_topic.replace('_',' ').title())
 
