@@ -1726,11 +1726,7 @@ with st.sidebar:
         profile_country = 'US'
         bi_a = 'US'; bi_b = 'RS'; bi_days = 60
     # ── NERAI watermark overlay ──
-    st.markdown("""<div style="position:fixed;top:0;left:0;width:100vw;height:100vh;pointer-events:none;z-index:1;overflow:hidden;opacity:0.04;">
-    <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-35deg);font-size:110px;font-weight:900;letter-spacing:30px;white-space:nowrap;color:#00d4ff;font-family:monospace;text-shadow:0 0 40px rgba(0,212,255,0.3);">NERAI &nbsp; NERAI &nbsp; NERAI &nbsp; NERAI</div>
-    <div style="position:absolute;top:25%;left:50%;transform:translate(-50%,-50%) rotate(-35deg);font-size:110px;font-weight:900;letter-spacing:30px;white-space:nowrap;color:#00d4ff;font-family:monospace;text-shadow:0 0 40px rgba(0,212,255,0.3);">NERAI &nbsp; NERAI &nbsp; NERAI &nbsp; NERAI</div>
-    <div style="position:absolute;top:75%;left:50%;transform:translate(-50%,-50%) rotate(-35deg);font-size:110px;font-weight:900;letter-spacing:30px;white-space:nowrap;color:#00d4ff;font-family:monospace;text-shadow:0 0 40px rgba(0,212,255,0.3);">NERAI &nbsp; NERAI &nbsp; NERAI &nbsp; NERAI</div>
-    </div>""", unsafe_allow_html=True)
+    st.markdown("""<div style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-35deg);pointer-events:none;z-index:1;font-size:140px;font-weight:900;letter-spacing:40px;white-space:nowrap;color:rgba(0,212,255,0.04);font-family:monospace;text-shadow:0 0 60px rgba(0,212,255,0.15);">NERAI</div>""", unsafe_allow_html=True)
 
     if st.session_state.page not in ('predictions',):
         sel_pred_topic   = all_topics[0] if all_topics else ''
