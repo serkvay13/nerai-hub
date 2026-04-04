@@ -33,7 +33,36 @@ if 'access_tier' not in st.session_state:
 if st.session_state.access_tier is None:
     st.markdown("""
     <style>
-    #MainMenu, header, footer, [data-testid="stSidebar"] { display: none !important; }
+    .stApp { background: #0a0e17 !important; }
+    [data-testid="stForm"] {
+      background: linear-gradient(135deg, #0d1220 0%, #111827 100%) !important;
+      border: 1px solid rgba(0,212,255,0.2) !important;
+      border-radius: 16px !important;
+      padding: 40px !important;
+      box-shadow: 0 0 60px rgba(0,212,255,0.08) !important;
+      max-width: 420px !important;
+      margin: 60px auto !important;
+    }
+    [data-testid="stForm"] input {
+      background: #0a0e17 !important;
+      border: 1px solid rgba(0,212,255,0.2) !important;
+      color: #e0e8f0 !important;
+      border-radius: 8px !important;
+    }
+    [data-testid="stForm"] input:focus {
+      border-color: #00d4ff !important;
+      box-shadow: 0 0 12px rgba(0,212,255,0.2) !important;
+    }
+    [data-testid="stForm"] button {
+      background: linear-gradient(135deg, #00d4ff 0%, #00b4d8 100%) !important;
+      color: #0a0e17 !important;
+      font-weight: 700 !important;
+      border: none !important;
+      border-radius: 8px !important;
+    }
+    [data-testid="stForm"] button:hover {
+      box-shadow: 0 0 20px rgba(0,212,255,0.4) !important;
+    }
     </style>
     """, unsafe_allow_html=True)
 
@@ -79,231 +108,286 @@ _IS_PRO = st.session_state.access_tier == 'pro'
 # ═══════════════════════════════════════════════════════════════
 st.markdown("""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=DM+Serif+Display&display=swap');
-
-/* ROOT PALETTE */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=DM+Serif+Display&family=JetBrains+Mono:wght@400;500&display=swap');
 :root {
-    --navy:#0d1f3c; --teal:#0077a8; --sky:#0d3464; --silver:#5a6b82;
-    --border:rgba(0,119,168,0.14); --hot:#e05060; --warm:#f59e0b;
-    --cool:#00d4aa; --mild:#00b4d8; --white:#ffffff;
+  --bg-primary: #0a0e17;
+  --bg-secondary: #0d1220;
+  --bg-card: #111827;
+  --bg-card-hover: #151d2e;
+  --accent: #00d4ff;
+  --accent2: #00ffc8;
+  --accent-dim: rgba(0,212,255,0.15);
+  --text-primary: #e0e8f0;
+  --text-secondary: #8899aa;
+  --text-dim: #5a6b82;
+  --border: rgba(0,212,255,0.12);
+  --border-glow: rgba(0,212,255,0.25);
+  --glow: 0 0 20px rgba(0,212,255,0.15);
+  --glow-strong: 0 0 30px rgba(0,212,255,0.25), 0 0 60px rgba(0,212,255,0.1);
+  --navy: #0d1220;
+  --teal: #00d4ff;
+  --sky: #00b4d8;
+  --silver: #8899aa;
+  --hot: #ff6b6b;
+  --warm: #ffd93d;
+  --cool: #00ffc8;
+  --mild: #a29bfe;
 }
 
-/* BASE */
-.stApp { background:#f4f7fb; }
-html,body,[class*="css"]{font-family:'Inter',sans-serif;color:#0d1f3c;}
-
-/* SIDEBAR */
-[data-testid="stSidebar"]{background:#ffffff;border-right:1px solid rgba(0,119,168,0.14);}
-[data-testid="stSidebar"] label{color:#0077a8 !important;font-size:0.7rem !important;
-    letter-spacing:0.1em;text-transform:uppercase;}
-[data-testid="stSidebar"] .stButton>button{
-    background:#0d3464 !important;border:1px solid rgba(0,119,168,0.2) !important;
-    color:#e8f4ff !important;font-family:'Inter',sans-serif !important;
-    font-size:0.78rem !important;letter-spacing:0.04em !important;
-    border-radius:8px !important;width:100% !important;
-    text-align:left !important;padding:9px 14px !important;
-    transition:all 0.2s !important;margin-bottom:3px !important;}
-[data-testid="stSidebar"] .stButton>button:hover{
-    border-color:#4db8d8 !important;color:#7dd3f0 !important;
-    background:#1a3a5c !important;}
-
-/* KPI */
-.kpi-card{background:#ffffff;border:1px solid rgba(0,119,168,0.14);
-    border-radius:12px;padding:16px 18px;position:relative;overflow:hidden;
-    box-shadow:0 2px 12px rgba(13,31,60,0.07);transition:box-shadow 0.2s;}
-.kpi-card:hover{box-shadow:0 4px 20px rgba(0,119,168,0.14);}
-.kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;
-    background:linear-gradient(90deg,#0077a8,#00d4aa);}
-.kpi-label{font-size:0.65rem;letter-spacing:0.15em;text-transform:uppercase;
-    color:#0077a8;font-weight:600;margin-bottom:4px;}
-.kpi-value{font-size:2.1rem;font-weight:700;line-height:1;color:#0d1f3c;}
-.kpi-sub{font-size:0.68rem;margin-top:5px;color:#5a6b82;}
-.kpi-up{color:#00d4aa;}.kpi-down{color:#e05060;}.kpi-neu{color:#5a6b82;}
-.badge-low{color:#00d4aa;font-size:0.6rem;background:rgba(0,212,170,0.1);
-    border:1px solid rgba(0,212,170,0.3);border-radius:4px;padding:2px 7px;}
-.badge-med{color:#f59e0b;font-size:0.6rem;background:rgba(245,158,11,0.1);
-    border:1px solid rgba(245,158,11,0.3);border-radius:4px;padding:2px 7px;}
-.badge-high{color:#e06030;font-size:0.6rem;background:rgba(224,96,48,0.1);
-    border:1px solid rgba(224,96,48,0.3);border-radius:4px;padding:2px 7px;}
-.badge-crit{color:#e05060;font-size:0.6rem;background:rgba(224,80,96,0.1);
-    border:1px solid rgba(224,80,96,0.3);border-radius:4px;padding:2px 7px;}
-
-/* HERO */
-.hero-title{font-size:2rem;font-weight:700;letter-spacing:0.03em;
-    color:#0d1f3c;font-family:'DM Serif Display',serif;}
-.hero-sub{font-size:0.72rem;letter-spacing:0.18em;text-transform:uppercase;color:#0077a8;}
-.live-dot{display:inline-block;width:7px;height:7px;border-radius:50%;
-    background:#00d4aa;animation:pulse 2s infinite;margin-right:5px;vertical-align:middle;}
-@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.8)}}
-
-/* SECTION HEADER */
-.sec-hdr{font-size:0.65rem;letter-spacing:0.2em;text-transform:uppercase;
-    color:#0077a8;font-weight:600;
-    padding:8px 0 6px;border-bottom:2px solid rgba(0,119,168,0.18);margin-bottom:12px;}
-
-/* SIGNAL CARD */
-.signal-card{background:#ffffff;border:1px solid rgba(0,119,168,0.14);
-    border-radius:10px;padding:10px 14px;margin-bottom:8px;
-    display:flex;align-items:center;justify-content:space-between;
-    transition:box-shadow 0.2s;}
-.signal-card:hover{box-shadow:0 2px 12px rgba(0,119,168,0.12);}
-.signal-name{font-size:0.75rem;color:#0d1f3c;font-weight:600;}
-.signal-topic{font-size:0.62rem;color:#0077a8;}
-.signal-val{font-size:1rem;font-weight:700;color:#0d1f3c;text-align:right;}
-
-/* NORM BADGE */
-.norm-raw{color:#5a6b82;}.norm-score{color:#0077a8;}.norm-z{color:#00d4aa;}
-
-/* DIVIDER */
-.h-div{height:1px;background:linear-gradient(90deg,transparent,rgba(0,119,168,0.2),transparent);margin:12px 0;}
-
-#MainMenu,footer,.stDeployButton{visibility:hidden;display:none;}
-::-webkit-scrollbar{width:4px;}
-::-webkit-scrollbar-thumb{background:rgba(0,119,168,0.2);border-radius:2px;}
-
-/* BILATERAL */
-.vs-badge{display:inline-block;background:rgba(0,119,168,0.1);
-    border:1px solid rgba(0,119,168,0.3);border-radius:50%;
-    width:38px;height:38px;line-height:38px;text-align:center;
-    font-size:0.72rem;font-weight:700;color:#0077a8;}
-.relation-status{border-radius:10px;padding:18px 12px;text-align:center;
-    background:#0d3464;margin:4px 0;}
-.metric-mini{background:#ffffff;border:1px solid rgba(0,119,168,0.14);
-    border-radius:8px;padding:12px 10px;text-align:center;}
-.metric-mini-label{font-size:0.58rem;letter-spacing:0.12em;text-transform:uppercase;
-    color:#0077a8;font-weight:600;margin-bottom:4px;}
-.metric-mini-val{font-size:1.5rem;font-weight:700;line-height:1.1;color:#0d1f3c;}
-.pair-card{background:#ffffff;border:1px solid rgba(0,119,168,0.14);
-    border-radius:8px;padding:11px 15px;margin-bottom:7px;
-    display:flex;align-items:center;gap:12px;}
-
-/* COUNTRY PROFILE */
-.prof-header{background:linear-gradient(135deg,#0d3464,#f4f7fb);
-    border:1px solid rgba(0,119,168,0.18);border-radius:12px;
-    padding:14px 20px;margin-bottom:14px;
-    display:flex;align-items:center;justify-content:space-between;
-    box-shadow:0 2px 12px rgba(13,31,60,0.06);}
-.prof-country{font-size:1.25rem;font-weight:700;color:#0d1f3c;}
-.prof-sub{font-size:0.6rem;color:#0077a8;
-    letter-spacing:0.12em;margin-top:3px;text-transform:uppercase;}
-.prof-section-title{font-size:0.58rem;letter-spacing:0.18em;text-transform:uppercase;
-    color:#0077a8;font-weight:600;
-    padding-bottom:5px;border-bottom:1px solid rgba(0,119,168,0.15);margin-bottom:9px;}
-.idx-row{display:flex;align-items:center;justify-content:space-between;
-    padding:6px 0;border-bottom:1px solid rgba(0,119,168,0.08);}
-.idx-label{font-size:0.72rem;color:#5a6b82;}
-.idx-val{font-size:0.82rem;font-weight:700;color:#0d1f3c;}
-.idx-bar-bg{background:#0d3464;border-radius:3px;height:3px;margin-top:3px;}
-.alarm-row{background:#ffffff;border:1px solid rgba(0,119,168,0.14);
-    border-radius:8px;padding:8px 11px;margin-bottom:6px;
-    display:flex;align-items:center;justify-content:space-between;}
-.alarm-label{font-size:0.72rem;color:#0d1f3c;font-weight:600;}
-.alarm-meta{font-size:0.58rem;color:#0077a8;margin-top:2px;}
-.rel-compact{background:#f4f7fb;border-radius:7px;padding:8px 12px;
-    margin-bottom:5px;display:flex;align-items:center;justify-content:space-between;
-    border-left:3px solid transparent;}
-
-/* NEWS CARD */
-.news-card{background:#ffffff;border:1px solid rgba(0,119,168,0.14);
-    border-radius:12px;padding:14px 16px;margin-bottom:10px;transition:box-shadow 0.2s;}
-.news-card:hover{box-shadow:0 4px 16px rgba(0,119,168,0.12);}
-.news-title{font-size:0.82rem;color:#0d1f3c;font-weight:600;line-height:1.45;}
-.news-source{font-size:0.62rem;color:#0077a8;margin-top:4px;}
-.news-date{font-size:0.6rem;color:#5a6b82;}
-.news-url{font-size:0.6rem;color:#0077a8;}
-
-/* CAT BUTTON */
-.cat-item{background:#0d3464;border:1px solid rgba(0,119,168,0.15);
-    border-radius:8px;padding:7px 12px;margin-bottom:4px;cursor:pointer;
-    font-size:0.68rem;color:#0d1f3c;letter-spacing:0.05em;
-    transition:all 0.2s;display:block;}
-.cat-item:hover,.cat-item.active{border-color:#0077a8;color:#0077a8;background:#1a3a5c;}
-
-/* HOME PAGE HERO */
-.home-hero{
-    background:linear-gradient(135deg,#0d1f3c 0%,#0a2d4a 60%,#0d1f3c 100%);
-    border-radius:16px;padding:50px 40px;margin-bottom:32px;
-    position:relative;overflow:hidden;text-align:center;
-    box-shadow:0 8px 40px rgba(13,31,60,0.18);}
-.home-hero::before{content:'';position:absolute;inset:0;
-    background-image:
-        linear-gradient(rgba(0,119,168,0.07) 1px,transparent 1px),
-        linear-gradient(90deg,rgba(0,119,168,0.07) 1px,transparent 1px);
-    background-size:50px 50px;pointer-events:none;}
-.home-corner{position:absolute;width:22px;height:22px;}
-.home-corner-tl{top:14px;left:14px;border-top:2px solid rgba(0,180,216,0.5);border-left:2px solid rgba(0,180,216,0.5);}
-.home-corner-tr{top:14px;right:14px;border-top:2px solid rgba(0,180,216,0.5);border-right:2px solid rgba(0,180,216,0.5);}
-.home-corner-bl{bottom:14px;left:14px;border-bottom:2px solid rgba(0,180,216,0.5);border-left:2px solid rgba(0,180,216,0.5);}
-.home-corner-br{bottom:14px;right:14px;border-bottom:2px solid rgba(0,180,216,0.5);border-right:2px solid rgba(0,180,216,0.5);}
-.home-orb{position:absolute;border-radius:50%;filter:blur(70px);pointer-events:none;}
-
-/* LOGO */
-.nerai-logo-wrap{position:relative;z-index:2;margin-bottom:14px;display:inline-block;}
-.nerai-logo-brand{display:inline-flex;align-items:center;gap:6px;line-height:1;}
-.nerai-logo-hex{font-size:3rem;color:#00d4aa;}
-.nerai-logo-ner{font-size:4.4rem;font-weight:900;letter-spacing:0.04em;
-    font-family:'Inter',sans-serif;color:#ffffff;}
-.nerai-logo-ai{font-size:4.4rem;font-weight:900;letter-spacing:0.04em;
-    font-family:'Inter',sans-serif;
-    background:linear-gradient(135deg,#00d4aa 0%,#0077a8 100%);
-    -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
-.nerai-logo-ring,.nerai-logo-ring-2{display:none;}
-@keyframes logo-hex-pulse{0%,100%{opacity:0.9;}50%{opacity:1;}}
-@keyframes logo-text-glow{0%,100%{opacity:0.95;}50%{opacity:1;}}
-
-/* TAGLINE */
-.hero-tagline{font-size:0.8rem;letter-spacing:0.3em;text-transform:uppercase;
-    color:rgba(0,212,170,0.8);font-family:'Inter',sans-serif;margin:8px 0 28px;}
-.hex-deco{display:none;}
-
-/* HOME STATS */
-.home-stat-row{display:flex;justify-content:center;gap:50px;margin-bottom:30px;position:relative;z-index:2;}
-.home-stat{text-align:center;}
-.home-stat-val{font-size:2rem;font-weight:700;color:#00d4aa;font-family:'Inter',sans-serif;}
-.home-stat-lbl{font-size:0.6rem;letter-spacing:0.18em;color:rgba(0,212,170,0.7);text-transform:uppercase;}
-
-/* HOME MODULES */
-.home-module{background:#ffffff;border:1px solid rgba(0,119,168,0.16);
-    border-radius:14px;padding:30px 22px 24px;text-align:center;
-    position:relative;overflow:hidden;min-height:190px;
-    display:flex;flex-direction:column;align-items:center;justify-content:center;
-    transition:box-shadow 0.25s,transform 0.25s;
-    box-shadow:0 2px 12px rgba(13,31,60,0.07);}
-.home-module:hover{box-shadow:0 8px 32px rgba(0,119,168,0.16);transform:translateY(-4px);}
-.home-module::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;
-    background:linear-gradient(90deg,#0077a8,#00d4aa);}
-.home-module-icon{font-size:2.8rem;margin-bottom:12px;line-height:1;}
-.home-module-title{font-size:0.9rem;font-weight:700;color:#0d1f3c;
-    letter-spacing:0.06em;text-transform:uppercase;margin-bottom:8px;}
-.home-module-desc{font-size:0.67rem;color:#5a6b82;line-height:1.6;}
-.home-module-btn{
-    margin-top:16px;padding:7px 20px;
-    background:#0d3464;border:1px solid rgba(0,119,168,0.25);
-    border-radius:6px;color:#0077a8;font-size:0.68rem;font-family:'Inter',sans-serif;
-    cursor:pointer;transition:all 0.2s;display:inline-block;}
-.home-module-btn:hover{background:#0077a8;color:#ffffff;border-color:#0077a8;}
-
-/* PEAK NEWS */
-.peak-news-box{background:#ffffff;border:1px solid rgba(0,119,168,0.2);
-    border-radius:10px;padding:14px 16px;margin-top:10px;}
-.peak-date-badge{background:rgba(0,119,168,0.1);border:1px solid rgba(0,119,168,0.25);
-    border-radius:4px;padding:2px 8px;font-size:0.6rem;color:#0077a8;
-    display:inline-block;margin-bottom:8px;}
-.peak-news-item{padding:7px 0;border-bottom:1px solid rgba(0,119,168,0.08);}
-.peak-news-item:last-child{border-bottom:none;}
-.peak-news-headline{font-size:0.75rem;color:#0d1f3c;line-height:1.4;}
-.peak-news-src{font-size:0.58rem;color:#0077a8;margin-top:2px;}
-
-/* ── News Topics radio label colors ── */
-div[data-testid="stRadio"] label p {
-    color: #0077a8 !important;
-    font-weight: 600 !important;
-    font-size: 0.74rem !important;
-    letter-spacing: 0.06em !important;
-    text-transform: uppercase !important;
+/* ── Global dark background ── */
+.stApp, .main, [data-testid="stAppViewContainer"] {
+  background: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
 }
-div[data-testid="stRadio"] label:has(input:checked) p { color: #00d4aa !important; }
-div[data-testid="stRadio"] label:hover p { color: #00b4d8 !important; }
+[data-testid="stHeader"] { background: transparent !important; }
+#MainMenu, footer, .stDeployButton { display:none !important; }
+
+/* ── Sidebar dark glass ── */
+[data-testid="stSidebar"] {
+  background: linear-gradient(180deg, #0d1220 0%, #0a0e17 100%) !important;
+  border-right: 1px solid var(--border) !important;
+  box-shadow: 4px 0 30px rgba(0,0,0,0.5) !important;
+}
+[data-testid="stSidebar"] * { color: var(--text-primary) !important; }
+[data-testid="stSidebar"] .stButton > button {
+  background: transparent !important;
+  color: var(--text-secondary) !important;
+  border: 1px solid transparent !important;
+  border-radius: 8px !important;
+  padding: 8px 16px !important;
+  text-align: left !important;
+  transition: all 0.3s ease !important;
+  font-size: 13px !important;
+  width: 100% !important;
+}
+[data-testid="stSidebar"] .stButton > button:hover {
+  background: rgba(0,212,255,0.08) !important;
+  border-color: var(--border-glow) !important;
+  color: var(--accent) !important;
+  box-shadow: var(--glow) !important;
+}
+[data-testid="stSidebar"] hr {
+  border-color: var(--border) !important;
+  margin: 12px 0 !important;
+}
+
+/* ── Typography ── */
+h1, h2, h3, h4, h5, h6, .stMarkdown h1, .stMarkdown h2, .stMarkdown h3 {
+  color: var(--text-primary) !important;
+  font-family: 'Inter', sans-serif !important;
+}
+p, span, label, .stMarkdown p { color: var(--text-secondary) !important; }
+
+/* ── KPI Cards (futuristic glow) ── */
+.kpi-card, [data-testid="stMetric"] {
+  background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-secondary) 100%) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 12px !important;
+  padding: 20px !important;
+  box-shadow: var(--glow) !important;
+  transition: all 0.3s ease !important;
+  position: relative !important;
+  overflow: hidden !important;
+}
+.kpi-card:hover, [data-testid="stMetric"]:hover {
+  border-color: var(--border-glow) !important;
+  box-shadow: var(--glow-strong) !important;
+  transform: translateY(-2px) !important;
+}
+.kpi-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+}
+[data-testid="stMetricValue"] {
+  color: var(--accent) !important;
+  font-weight: 700 !important;
+  font-size: 28px !important;
+  text-shadow: 0 0 20px rgba(0,212,255,0.3) !important;
+}
+[data-testid="stMetricLabel"] {
+  color: var(--text-secondary) !important;
+  text-transform: uppercase !important;
+  letter-spacing: 1px !important;
+  font-size: 11px !important;
+}
+[data-testid="stMetricDelta"] svg { fill: var(--accent2) !important; }
+[data-testid="stMetricDelta"] div { color: var(--accent2) !important; }
+
+/* ── Signal/News Cards ── */
+.signal-card, .news-card {
+  background: var(--bg-card) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 10px !important;
+  padding: 16px !important;
+  margin-bottom: 10px !important;
+  transition: all 0.3s ease !important;
+}
+.signal-card:hover, .news-card:hover {
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 15px rgba(0,212,255,0.12) !important;
+}
+
+/* ── Tabs ── */
+.stTabs [data-baseweb="tab-list"] {
+  background: var(--bg-secondary) !important;
+  border-radius: 10px !important;
+  padding: 4px !important;
+  gap: 4px !important;
+  border: 1px solid var(--border) !important;
+}
+.stTabs [data-baseweb="tab"] {
+  background: transparent !important;
+  color: var(--text-dim) !important;
+  border-radius: 8px !important;
+  font-size: 13px !important;
+  padding: 8px 16px !important;
+}
+.stTabs [aria-selected="true"] {
+  background: rgba(0,212,255,0.12) !important;
+  color: var(--accent) !important;
+  box-shadow: 0 0 10px rgba(0,212,255,0.1) !important;
+}
+.stTabs [data-baseweb="tab-border"] { display: none !important; }
+.stTabs [data-baseweb="tab-highlight"] { background: var(--accent) !important; }
+
+/* ── Expander ── */
+[data-testid="stExpander"] {
+  background: var(--bg-card) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 10px !important;
+}
+[data-testid="stExpander"] summary { color: var(--text-primary) !important; }
+[data-testid="stExpander"] summary:hover { color: var(--accent) !important; }
+
+/* ── Selectbox / Multiselect ── */
+[data-testid="stSelectbox"], [data-testid="stMultiSelect"] {
+  background: var(--bg-card) !important;
+}
+[data-baseweb="select"] > div {
+  background: var(--bg-secondary) !important;
+  border-color: var(--border) !important;
+  color: var(--text-primary) !important;
+}
+[data-baseweb="popover"] {
+  background: var(--bg-card) !important;
+  border: 1px solid var(--border-glow) !important;
+}
+[data-baseweb="popover"] li { color: var(--text-primary) !important; }
+[data-baseweb="popover"] li:hover { background: rgba(0,212,255,0.1) !important; }
+
+/* ── DataFrame / Tables ── */
+[data-testid="stDataFrame"], .stDataFrame {
+  background: var(--bg-card) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 10px !important;
+}
+
+/* ── Slider ── */
+[data-testid="stSlider"] [data-baseweb="slider"] div {
+  background: var(--accent) !important;
+}
+
+/* ── Hero Section ── */
+.hero-section {
+  background: linear-gradient(135deg, #0d1220 0%, #111827 50%, #0d1220 100%) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 16px !important;
+  padding: 32px !important;
+  position: relative !important;
+  overflow: hidden !important;
+}
+.hero-section::before {
+  content: '';
+  position: absolute;
+  top: -50%; left: -50%;
+  width: 200%; height: 200%;
+  background: radial-gradient(circle at 30% 40%, rgba(0,212,255,0.05) 0%, transparent 50%);
+  animation: heroGlow 8s ease-in-out infinite;
+}
+@keyframes heroGlow {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(20px, -20px); }
+}
+
+/* ── Badge styling ── */
+.badge, .tier-badge {
+  background: rgba(0,212,255,0.12) !important;
+  color: var(--accent) !important;
+  border: 1px solid var(--border-glow) !important;
+  border-radius: 20px !important;
+  padding: 4px 12px !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.5px !important;
+  text-shadow: 0 0 8px rgba(0,212,255,0.3) !important;
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-primary); }
+::-webkit-scrollbar-thumb {
+  background: rgba(0,212,255,0.2);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover { background: rgba(0,212,255,0.4); }
+
+/* ── Animations ── */
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+@keyframes glowPulse {
+  0%, 100% { box-shadow: 0 0 5px rgba(0,212,255,0.2); }
+  50% { box-shadow: 0 0 20px rgba(0,212,255,0.4), 0 0 40px rgba(0,212,255,0.1); }
+}
+@keyframes borderGlow {
+  0%, 100% { border-color: rgba(0,212,255,0.12); }
+  50% { border-color: rgba(0,212,255,0.35); }
+}
+.glow-animate { animation: glowPulse 3s ease-in-out infinite; }
+.border-animate { animation: borderGlow 4s ease-in-out infinite; }
+
+/* ── Profile section ── */
+.profile-header {
+  background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-secondary) 100%) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 14px !important;
+  padding: 24px !important;
+}
+
+/* ── Plotly chart container ── */
+.js-plotly-plot, .plotly {
+  border-radius: 10px !important;
+  overflow: hidden !important;
+}
+
+/* ── Streamlit elements ── */
+.stAlert {
+  background: var(--bg-card) !important;
+  border-color: var(--border) !important;
+  color: var(--text-primary) !important;
+}
+.stProgress > div > div {
+  background: linear-gradient(90deg, var(--accent), var(--accent2)) !important;
+}
+.stSpinner > div { border-color: var(--accent) transparent transparent !important; }
+
+/* ── Heatmap overrides ── */
+.heatmap-container {
+  background: var(--bg-card) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 12px !important;
+  padding: 16px !important;
+}
+
+/* ── Column gap fix ── */
+[data-testid="column"] { padding: 0 8px !important; }
+
+/* ── Login page override ── */
+.login-container {
+  background: var(--bg-card) !important;
+  border: 1px solid var(--border-glow) !important;
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -367,8 +451,8 @@ TOPIC_LABELS = {
     'confiscate_property':'Property Confiscation','human_rights_abuses':'Human Rights Abuses',
     'corruption':'Corruption',
 }
-GLOW_COLORS = ['#0077a8','#00d4aa','#f59e0b','#e05060','#00b4d8',
-               '#5a6b82','#0099cc','#f0c75e','#c97a8a','#7ec8b8']
+GLOW_COLORS = ['#00d4ff','#00ffc8','#ff6b6b','#ffd93d','#a29bfe',
+               '#00b4d8','#ff8a5c','#55efc4','#fd79a8','#74b9ff']
 
 TENSION_WEIGHTS = {
     'deteriorating_bilateral_relations':3.0,
@@ -423,13 +507,20 @@ def hex_to_rgba(h, a=0.06):
     return f'rgba({r},{g},{b},{a})'
 
 BASE_THEME = dict(
-    paper_bgcolor='rgba(0,0,0,0)',plot_bgcolor='rgba(244,247,251,0.8)',
-    font=dict(family='Inter,sans-serif',color='#5a6b82',size=11),
+    paper_bgcolor='rgba(0,0,0,0)',plot_bgcolor='rgba(13,18,32,0.9)',
+    font=dict(family='Inter,sans-serif',color='#8899aa',size=11),
     margin=dict(l=45,r=15,t=38,b=40),
-    xaxis=dict(gridcolor='rgba(0,119,168,0.1)',linecolor='rgba(0,119,168,0.15)',
-               tickfont=dict(size=10,color='#5a6b82')),
-    yaxis=dict(gridcolor='rgba(0,119,168,0.1)',linecolor='rgba(0,119,168,0.15)',
-               tickfont=dict(size=10,color='#5a6b82')),
+    xaxis=dict(gridcolor='rgba(0,212,255,0.06)',linecolor='rgba(0,212,255,0.15)',
+               tickfont=dict(size=10,color='#6b7c93'),zeroline=False),
+    yaxis=dict(gridcolor='rgba(0,212,255,0.06)',linecolor='rgba(0,212,255,0.15)',
+               tickfont=dict(size=10,color='#6b7c93'),zeroline=False),
+)',plot_bgcolor='rgba(13,18,32,0.9)',
+    font=dict(family='Inter,sans-serif',color='#8899aa',size=11),
+    margin=dict(l=45,r=15,t=38,b=40),
+    xaxis=dict(gridcolor='rgba(0,212,255,0.06)',linecolor='rgba(0,212,255,0.15)',
+               tickfont=dict(size=10,color='#6b7c93')),
+    yaxis=dict(gridcolor='rgba(0,212,255,0.06)',linecolor='rgba(0,212,255,0.15)',
+               tickfont=dict(size=10,color='#6b7c93')),
 )
 
 # ═══════════════════════════════════════════════════════════════
@@ -552,7 +643,7 @@ def chart_timeseries_with_peaks(df_n, countries, title, method, show_peaks=True)
                 fig.add_trace(go.Scatter(
                     x=[pk], y=[pk_val], mode='markers',
                     marker=dict(size=10, color=col, symbol='star',
-                                line=dict(color='white',width=1.5)),
+                                line=dict(color='#0d1220',width=1.5)),
                     name=f'{COUNTRY_NAMES.get(c,c)} peak',
                     hovertemplate=f'<b>⚡ PEAK — {COUNTRY_NAMES.get(c,c)}</b><br>'
                                   f'{pk.strftime("%d %b %Y")}<br>'
@@ -649,15 +740,15 @@ def chart_ranking(df_n,date_col,n=12):
         row = row.nlargest(n,'value').sort_values('value')
     except: return go.Figure()
     n_rows = len(row)
-    RANK_PALETTE = ['#00b4d8','#0077a8','#00d4aa','#f59e0b','#e05060','#5a6b82','#c97a8a','#7ec8b8','#f0c75e','#0099cc','#e06030','#00c4a0']
+    RANK_PALETTE = ['#00d4ff','#00ffc8','#00b4d8','#ffd93d','#ff6b6b','#a29bfe','#fd79a8','#55efc4','#74b9ff','#ff8a5c','#6c5ce7','#81ecec']
     colors = [RANK_PALETTE[i % len(RANK_PALETTE)] for i in range(n_rows)]
     fig = go.Figure(go.Bar(
         x=row['value'],y=row['name'],orientation='h',
-        marker=dict(color=colors,line=dict(color='rgba(0,119,168,0.15)',width=0.5)),
+        marker=dict(color=colors,line=dict(color='rgba(0,212,255,0.15)',width=0.5)),
         hovertemplate='<b>%{y}</b><br>Value: %{x:.4f}<extra></extra>'
     ))
     t = {**BASE_THEME}
-    t['xaxis'] = dict(gridcolor='rgba(0,119,168,0.1)',tickfont=dict(size=10,color='#5a6b82'))
+    t['xaxis'] = dict(gridcolor='rgba(0,212,255,0.06)',tickfont=dict(size=10,color='#6b7c93'))
     t['yaxis'] = dict(tickfont=dict(size=10,color='#0d1f3c'),gridcolor='rgba(0,0,0,0)')
     fig.update_layout(**t,height=330,
         title=dict(text='Country Ranking',font=dict(size=12,color='#0077a8'),x=0.01))
@@ -697,7 +788,7 @@ def gauge_chart(value,title,color,height=210):
         }
     ))
     fig.update_layout(paper_bgcolor='rgba(0,0,0,0)',
-                      font=dict(family='Inter,sans-serif',color='#5a6b82'),
+                      font=dict(family='Inter,sans-serif',color='#8899aa'),
                       height=height,margin=dict(l=15,r=15,t=45,b=5))
     return fig
 
@@ -1148,21 +1239,23 @@ if 'page' not in st.session_state:
 # ═══════════════════════════════════════════════════════════════
 with st.sidebar:
     st.markdown("""
-    <div style='padding:10px 0 18px;border-bottom:1px solid rgba(0,150,255,0.15);margin-bottom:16px;'>
-      <div style='font-size:1.35rem;font-weight:900;letter-spacing:0.1em;
-           font-family:"Exo 2",sans-serif;line-height:1.1;'>
-        <span style='color:rgba(0,230,255,0.95);
-             text-shadow:0 0 14px rgba(0,210,255,0.9),0 0 30px rgba(0,160,255,0.45);'>◈</span>
-        <span style='color:#ffffff;
-             text-shadow:0 0 18px rgba(0,210,255,0.35),0 0 35px rgba(0,140,255,0.15);'> NER</span><span style='background:linear-gradient(135deg,#007a99,#0099ff,#8b3fff);
-             -webkit-background-clip:text;-webkit-text-fill-color:transparent;
-             background-clip:text;'>AI</span>
-      </div>
-      <div style='font-size:0.58rem;color:rgba(0,210,255,0.55);letter-spacing:0.28em;
-           font-family:"Share Tech Mono",monospace;margin-top:3px;'>
-        INTELLIGENCE HUB
-      </div>
-    </div>""", unsafe_allow_html=True)
+    <div style='text-align:center;padding:16px 0 20px 0;'>
+      <svg width='180' height='48' viewBox='0 0 180 48' xmlns='http://www.w3.org/2000/svg'>
+        <!-- Dot Grid -->
+        <g>
+          <circle cx='8' cy='10' r='3' fill='#00d4ff'/><circle cx='18' cy='10' r='3' fill='#e0e8f0'/><circle cx='28' cy='10' r='3' fill='#00d4ff'/><circle cx='38' cy='10' r='3' fill='#e0e8f0'/>
+          <circle cx='8' cy='19' r='3' fill='#e0e8f0'/><circle cx='18' cy='19' r='3' fill='#00d4ff'/><circle cx='28' cy='19' r='3' fill='#e0e8f0'/><circle cx='38' cy='19' r='3' fill='#00d4ff'/>
+          <circle cx='8' cy='28' r='3' fill='#00d4ff'/><circle cx='18' cy='28' r='3' fill='#e0e8f0'/><circle cx='28' cy='28' r='3' fill='#00d4ff'/><circle cx='38' cy='28' r='3' fill='#e0e8f0'/>
+          <circle cx='8' cy='37' r='3' fill='#e0e8f0'/><circle cx='18' cy='37' r='3' fill='#00d4ff'/><circle cx='28' cy='37' r='3' fill='#e0e8f0'/><circle cx='38' cy='37' r='3' fill='#00d4ff'/>
+        </g>
+        <!-- NER text (white) -->
+        <text x='50' y='36' font-family='Inter,sans-serif' font-weight='800' font-size='30' fill='#e0e8f0' letter-spacing='-1'>NER</text>
+        <!-- AI text (cyan) -->
+        <text x='118' y='36' font-family='Inter,sans-serif' font-weight='800' font-size='30' fill='#00d4ff' letter-spacing='-1'>AI</text>
+      </svg>
+      <div style='color:#5a6b82;font-size:10px;letter-spacing:2px;margin-top:4px;text-transform:uppercase;'>Intelligence Hub</div>
+    </div>
+    """, unsafe_allow_html=True)
 
     # ── Navigation ──────────────────────────────────────────
     st.markdown('<div class="sec-hdr">Navigation</div>', unsafe_allow_html=True)
@@ -2301,7 +2394,7 @@ def render_predictions():
                 name='Historical',
                 mode='lines+markers',
                 line=dict(color='#0077a8', width=2.5),
-                marker=dict(size=5, color='#0077a8', line=dict(color='white', width=1)),
+                marker=dict(size=5, color='#0077a8', line=dict(color='#0d1220', width=1)),
                 hovertemplate='<b>%{x|%b %Y}</b><br>Score: %{y:.1f}<extra>Historical</extra>'
             ))
 
@@ -2343,7 +2436,7 @@ def render_predictions():
                 name='12-Month Forecast',
                 mode='lines+markers',
                 line=dict(color='#f59e0b', width=3),
-                marker=dict(size=7, color='#f59e0b', line=dict(color='white', width=1.5)),
+                marker=dict(size=7, color='#f59e0b', line=dict(color='#0d1220', width=1.5)),
                 hovertemplate='<b>%{x|%b %Y}</b><br>Forecast: %{y:.1f}<extra>Forecast</extra>'
             ))
             # TODAY line
@@ -2364,7 +2457,7 @@ def render_predictions():
             margin=dict(l=50, r=20, t=55, b=40),
             xaxis=dict(gridcolor='rgba(0,119,168,0.06)', tickfont=dict(size=10, color='#5a6b82'), showgrid=False),
             yaxis=dict(title='Risk Score (0–100)', title_font=dict(size=10, color='#5a6b82'),
-                       gridcolor='rgba(0,119,168,0.1)', tickfont=dict(size=10, color='#5a6b82'), zeroline=False),
+                       gridcolor='rgba(0,212,255,0.06)', tickfont=dict(size=10, color='#5a6b82'), zeroline=False),
             legend=dict(
                 bgcolor='rgba(255,255,255,0.92)', bordercolor='rgba(0,119,168,0.2)',
                 borderwidth=1, font=dict(size=10, color='#0d1f3c'),
