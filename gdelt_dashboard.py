@@ -737,7 +737,7 @@ def chart_heatmap(df_n, top_n, method):
     return fig
 
 def heatmap_glow_html(df_n, top_n, method):
-    """Animated heatmap with sequential cell glow effect."""
+    """Animated heatmap with random cell glow effect and bigger square cells."""
     import json as _json
     means = df_n.mean(axis=1).nlargest(top_n)
     sel = means.index.tolist()
@@ -749,7 +749,6 @@ def heatmap_glow_html(df_n, top_n, method):
     step = max(1, len(dates_str)//18)
     xlabels = [d if i%step==0 else '' for i,d in enumerate(dates_str)]
     ylabels = [COUNTRY_NAMES.get(c,c) for c in sel]
-    # Normalize matrix for color mapping
     import numpy as _np
     mat = _np.array(matrix)
     vmin, vmax = float(_np.nanmin(mat)), float(_np.nanmax(mat))
@@ -758,24 +757,27 @@ def heatmap_glow_html(df_n, top_n, method):
     mat_vals = [[round(float(v),1) for v in row] for row in mat]
     rows = len(ylabels)
     cols = len(xlabels)
+    cell_size = max(28, min(38, 520 // rows))
     ttl = f"Top {top_n} Countries \u2014 Heatmap"
-    return f"""<div style="font-family:monospace;padding:8px;">
+    html = f"""<div style="font-family:monospace;padding:8px;">
 <div style="color:#00B8D4;font-size:13px;margin-bottom:12px;">{ttl}</div>
 <div style="display:flex;align-items:flex-start;">
-<div style="display:flex;flex-direction:column;margin-right:6px;margin-top:2px;">
-""" + ''.join([f'<div style="height:{max(14,340//rows)}px;display:flex;align-items:center;justify-content:flex-end;padding-right:4px;"><span style="color:#8aa0bc;font-size:10px;white-space:nowrap;">{y}</span></div>' for y in ylabels]) + f"""
+<div style="display:flex;flex-direction:column;margin-right:6px;margin-top:0px;">
+"""
+    for y in ylabels:
+        html += f'<div style="height:{cell_size+2}px;display:flex;align-items:center;justify-content:flex-end;padding-right:6px;"><span style="color:#8aa0bc;font-size:10px;white-space:nowrap;">{y}</span></div>'
+    html += f"""</div>
+<div id="hgrid" style="display:grid;grid-template-rows:repeat({rows},{cell_size}px);grid-template-columns:repeat({cols},{cell_size}px);gap:2px;overflow-x:auto;">
+"""
+    for r in range(rows):
+        for c in range(cols):
+            html += f'<div class="hc" data-r="{r}" data-c="{c}" data-v="{mat_vals[r][c]}" style="width:{cell_size}px;height:{cell_size}px;border-radius:3px;transition:filter 0.4s,box-shadow 0.4s;" title="{ylabels[r]}\n{xlabels[c]}\nValue: {mat_vals[r][c]}"></div>'
+    html += """</div>
+<div style="display:flex;flex-direction:column;align-items:center;margin-left:12px;justify-content:space-between;">
+<span style="color:#5a6b82;font-size:9px;">""" + str(round(vmax)) + """</span>
+<div style="width:12px;height:""" + str(cell_size * rows) + """px;margin:4px 0;border-radius:4px;background:linear-gradient(to bottom,#e05060,#f59e0b,#0077a8,#00b4d8,#0d3464);"></div>
+<span style="color:#5a6b82;font-size:9px;">""" + str(round(vmin)) + """</span>
 </div>
-<div id="hgrid" style="display:grid;grid-template-rows:repeat({rows},{max(14,340//rows)}px);grid-template-columns:repeat({cols},1fr);gap:1px;flex:1;">
-""" + ''.join([f'<div class="hc" data-r="{r}" data-c="{c}" data-v="{mat_vals[r][c]}" style="background:rgba(0,0,0,0);border-radius:2px;transition:all 0.3s;" title="{ylabels[r]}: {mat_vals[r][c]}"></div>' for r in range(rows) for c in range(cols)]) + f"""
-</div>
-<div style="display:flex;flex-direction:column;align-items:center;margin-left:10px;height:340px;justify-content:space-between;">
-<span style="color:#5a6b82;font-size:9px;">{round(vmax)}</span>
-<div style="width:10px;flex:1;margin:4px 0;border-radius:4px;background:linear-gradient(to bottom,#e05060,#f59e0b,#0077a8,#00b4d8,#0d3464);"></div>
-<span style="color:#5a6b82;font-size:9px;">{round(vmin)}</span>
-</div>
-</div>
-<div style="display:flex;justify-content:space-between;margin-left:80px;margin-right:30px;margin-top:4px;">
-""" + ''.join([f'<span style="color:#5a6b82;font-size:8px;transform:rotate(-45deg);display:inline-block;width:1px;white-space:nowrap;">{x}</span>' for x in xlabels if x]) + """
 </div>
 </div>
 <script>
@@ -783,7 +785,7 @@ def heatmap_glow_html(df_n, top_n, method):
 var matN=""" + _json.dumps(mat_norm) + """;
 var cells=document.querySelectorAll('.hc');
 function valToColor(t){
-var stops=[[0,13,52,100],[0,180,212,255],[0,119,168,255],[245,158,11,255],[224,80,96,255]];
+var stops=[[13,52,100],[0,180,212],[0,119,168],[245,158,11],[224,80,96]];
 var pos=[0,0.25,0.5,0.75,1.0];
 var i=0;for(var k=0;k<pos.length-1;k++){if(t>=pos[k]&&t<=pos[k+1]){i=k;break;}}
 var f=(t-pos[i])/(pos[i+1]-pos[i]);
@@ -794,25 +796,30 @@ return 'rgb('+r+','+g+','+b+')';
 }
 cells.forEach(function(c){
 var r=parseInt(c.dataset.r),col=parseInt(c.dataset.c);
-var v=matN[r][col];
-c.style.background=valToColor(v);
+c.style.background=valToColor(matN[r][col]);
 });
-var total=cells.length,idx=0;
-function glowNext(){
-var prev=(idx-1+total)%total;
-var prev2=(idx-2+total)%total;
-cells[prev2].style.filter='brightness(1)';
-cells[prev2].style.boxShadow='none';
-cells[prev].style.filter='brightness(1.3)';
-cells[prev].style.boxShadow='0 0 6px rgba(0,184,212,0.3)';
-cells[idx].style.filter='brightness(1.8)';
-cells[idx].style.boxShadow='0 0 12px rgba(0,184,212,0.6)';
-idx=(idx+1)%total;
+var total=cells.length;
+var glowing=new Set();
+function randomGlow(){
+if(glowing.size>0){
+glowing.forEach(function(i){
+cells[i].style.filter='brightness(1)';
+cells[i].style.boxShadow='none';
+});
+glowing.clear();
 }
-setInterval(glowNext,60);
+var count=Math.floor(Math.random()*4)+2;
+for(var n=0;n<count;n++){
+var i=Math.floor(Math.random()*total);
+glowing.add(i);
+cells[i].style.filter='brightness(1.7)';
+cells[i].style.boxShadow='0 0 14px rgba(0,184,212,0.5)';
+}
+}
+setInterval(randomGlow,400);
 })();
-</script>"""
-
+</scrip""" + """t>"""
+    return html
 def chart_world(df_n,date_col):
     try:
         row = df_n[[date_col]].reset_index()
@@ -2130,7 +2137,7 @@ def render_indices():
     col_h, col_r = st.columns([3,2])
     with col_h:
         st.markdown('<div class="sec-hdr">Country Heatmap</div>', unsafe_allow_html=True)
-        _stc.html(heatmap_glow_html(df_recent, heatmap_n, norm_method), height=440, scrolling=False)
+        _stc.html(heatmap_glow_html(df_recent, heatmap_n, norm_method), height=580, scrolling=False)
     with col_r:
         st.markdown('<div class="sec-hdr">Country Ranking</div>', unsafe_allow_html=True)
         if map_date in df_norm.columns:
