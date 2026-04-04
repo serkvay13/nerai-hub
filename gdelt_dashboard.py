@@ -1206,33 +1206,47 @@ deteri_norm, incr_norm  = _get_bilateral_specific_norm(df)
 # ── Load pre-computed predictions (if available) ─────────────
 @st.cache_data(ttl=3600)
 def load_predictions():
-    pred_file   = './predictions.csv'
-    trend_file  = './forecast_trends.csv'
+    pred_file = './predictions.csv'
+    trend_file = './forecast_trends.csv'
     preds, trends = None, None
     if os.path.exists(pred_file):
         try:
             preds = pd.read_csv(pred_file, parse_dates=['ds'])
-            # Raw prediction values kept; normalization done in chart rendering using historical scale
+            # Max-normalize predictions to 0-100 per (topic, country) series
+            if 'yhat' in preds.columns:
+                grp_max = preds.groupby(['topic', 'country'])['yhat'].transform('max')
+                grp_max = grp_max.where(grp_max > 0, 1.0)
+                for col in ['yhat', 'yhat_lower', 'yhat_upper']:
+                    if col in preds.columns:
+                        preds[col] = preds[col] / grp_max * 100
         except Exception:
             preds = None
     if os.path.exists(trend_file):
         try:
             trends = pd.read_csv(trend_file)
-            # Validate: drop rows with NaN topic or country (bad data from old script runs)
             if trends is not None and 'topic' in trends.columns and 'country' in trends.columns:
                 trends = trends.dropna(subset=['topic', 'country'])
-                trends['topic']   = trends['topic'].astype(str).str.strip()
+                trends['topic'] = trends['topic'].astype(str).str.strip()
                 trends['country'] = trends['country'].astype(str).str.strip()
-                # Filter out rows where topic/country look invalid (single chars or empty)
                 trends = trends[trends['topic'].str.len() > 2]
                 trends = trends[trends['country'].str.len() >= 2]
-                # Cap trend_pct to reasonable range
-                if 'trend_pct' in trends.columns:
-                    trends['trend_pct'] = trends['trend_pct'].clip(-500, 500)
                 if len(trends) == 0:
                     trends = None
         except Exception:
             trends = None
+    # Recalculate trend_pct from normalized predictions
+    if preds is not None and trends is not None and 'yhat' in preds.columns:
+        sorted_preds = preds.sort_values('ds')
+        first_vals = sorted_preds.groupby(['topic', 'country'])['yhat'].first()
+        last_vals = sorted_preds.groupby(['topic', 'country'])['yhat'].last()
+        calc_pct = ((last_vals - first_vals) / first_vals.abs().clip(lower=0.01)) * 100
+        calc_pct = calc_pct.clip(-200, 200).reset_index()
+        calc_pct.columns = ['topic', 'country', 'trend_pct']
+        trends = trends.drop(columns=['trend_pct'], errors='ignore')
+        trends = trends.merge(calc_pct, on=['topic', 'country'], how='left')
+        trends['trend_pct'] = trends['trend_pct'].fillna(0)
+        trends['direction'] = np.where(trends['trend_pct'] > 1, 'rising',
+                               np.where(trends['trend_pct'] < -1, 'falling', 'stable'))
     return preds, trends
 
 pred_df, trend_df = load_predictions()
@@ -2410,12 +2424,7 @@ def render_predictions():
     # ── Normalise predictions to score 0-100 for display ─────
     # Use the same max as historical indices for comparability
     def _norm_pred_series(topic, country, yhat_vals):
-        # Normalize using historical max for the topic+country
-        try:
-            hmax = float(df.xs(topic, level='topic').loc[country].max())
-            return yhat_vals / hmax * 100 if hmax > 0 else yhat_vals
-        except Exception:
-            return yhat_vals
+        return yhat_vals  # Already normalized at load time
 
     # ── Main chart — historical + forecast ───────────────────
     col_left, col_right = st.columns([4, 2])
@@ -2464,24 +2473,9 @@ def render_predictions():
             ))
 
         if len(fc) > 0:
-            if hist_series is not None and len(hist_series) > 0:
-                raw_hist_max = float(df.xs(sel_pred_topic, level='topic')
-                    .loc[sel_pred_country].max()) \
-                    if (sel_pred_topic in df.index.get_level_values('topic') and
-                        sel_pred_country in df.index.get_level_values('country')) \
-                    else 1.0
-                if raw_hist_max > 0:
-                    yhat = fc['yhat'] / raw_hist_max * 100
-                    y_lo = fc['yhat_lower'] / raw_hist_max * 100
-                    y_hi = fc['yhat_upper'] / raw_hist_max * 100
-                else:
-                    yhat = fc['yhat']
-                    y_lo = fc['yhat_lower']
-                    y_hi = fc['yhat_upper']
-            else:
-                yhat = fc['yhat']
-                y_lo = fc['yhat_lower']
-                y_hi = fc['yhat_upper']
+            yhat = fc['yhat']
+            y_lo = fc['yhat_lower']
+            y_hi = fc['yhat_upper']
             fc_end_val = round(float(yhat.iloc[-1]), 1)
 
             # Outer CI (95%)
