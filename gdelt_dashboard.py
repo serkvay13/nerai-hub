@@ -1389,6 +1389,76 @@ with st.sidebar:
 # ═══════════════════════════════════════════════════════════════
 def render_home():
 
+    # === NERAI GLOBE ===
+    try:
+        import streamlit.components.v1 as _stc
+        _GLOBE_HTML = """<!DOCTYPE html><html><head><meta charset="UTF-8"><style>*{margin:0;padding:0;box-sizing:border-box;}body{background:#000;overflow:hidden;}canvas{display:block;width:100%;height:500px;}
+/* === NERAI NAV === */
+section[data-testid="stSidebar"] div.stButton>button{background:linear-gradient(135deg,#0d2137 0%,#1a3a5c 100%)!important;border:1px solid rgba(0,212,255,.5)!important;color:#fff!important;border-radius:8px!important;font-weight:600!important;letter-spacing:1px!important;transition:all .25s ease!important;box-shadow:0 0 6px rgba(0,212,255,.15)!important;width:100%!important;text-align:left!important;padding:10px 16px!important;margin-bottom:4px!important;}
+section[data-testid="stSidebar"] div.stButton>button:hover{box-shadow:0 0 20px rgba(0,212,255,.7),0 0 40px rgba(0,212,255,.25)!important;transform:translateX(5px) scale(1.02)!important;background:linear-gradient(135deg,#1a3a5c 0%,#0d4a7a 100%)!important;border-color:#00ffff!important;color:#00ffff!important;}
+section[data-testid="stSidebar"] div.stButton>button:active{transform:translateX(3px) scale(.98)!important;box-shadow:0 0 30px rgba(0,212,255,.9)!important;}
+/* === END NAV === */
+</style></head><body><canvas id="ng"></canvas><script>(function(){
+const cv=document.getElementById('ng');
+if(!cv)return;
+const ctx=cv.getContext('2d');
+function resize(){cv.width=cv.offsetWidth||900;cv.height=cv.offsetHeight||500;}
+resize();
+const W=cv.width,H=cv.height,CX=W/2,CY=H/2,R=Math.min(W,H)*0.40;
+const C=[{n:'New York',la:40.7,lo:-74.0,t:0,s:1.4},{n:'London',la:51.5,lo:-0.1,t:2,s:1.3},{n:'Paris',la:48.9,lo:2.4,t:0,s:1.0},{n:'Moscow',la:55.8,lo:37.6,t:1,s:1.3},{n:'Kiev',la:50.4,lo:30.5,t:1,s:1.5},{n:'Dubai',la:25.2,lo:55.3,t:2,s:1.1},{n:'Tehran',la:35.7,lo:51.4,t:1,s:1.2},{n:'Delhi',la:28.6,lo:77.2,t:0,s:1.0},{n:'Shanghai',la:31.2,lo:121.5,t:0,s:1.2},{n:'Tokyo',la:35.7,lo:139.7,t:2,s:1.1},{n:'Sydney',la:-33.9,lo:151.2,t:0,s:0.9},{n:'Sao Paulo',la:-23.5,lo:-46.6,t:0,s:1.0},{n:'Cairo',la:30.0,lo:31.2,t:1,s:1.1},{n:'Singapore',la:1.3,lo:103.8,t:0,s:1.1},{n:'Seoul',la:37.6,lo:126.9,t:0,s:1.0},{n:'Istanbul',la:41.0,lo:28.9,t:2,s:1.1},{n:'Lagos',la:6.5,lo:3.4,t:1,s:0.9},{n:'Riyadh',la:24.7,lo:46.7,t:1,s:1.0},{n:'Mexico',la:19.4,lo:-99.1,t:0,s:0.9}];
+const AR=[{a:0,b:1,t:0,spd:.004},{a:1,b:2,t:0,spd:.005},{a:3,b:4,t:1,spd:.003},{a:6,b:11,t:1,spd:.0035},{a:5,b:9,t:2,spd:.006},{a:7,b:13,t:0,spd:.005},{a:8,b:9,t:0,spd:.004},{a:0,b:10,t:2,spd:.003},{a:1,b:15,t:2,spd:.004},{a:2,b:3,t:0,spd:.0045},{a:11,b:15,t:1,spd:.003},{a:14,b:8,t:0,spd:.005},{a:13,b:7,t:2,spd:.004},{a:17,b:6,t:1,spd:.003},{a:0,b:15,t:0,spd:.0035},{a:18,b:0,t:2,spd:.004}];
+const ST=[];for(let i=0;i<220;i++)ST.push({x:Math.random()*W,y:Math.random()*H,r:Math.random()*1.2,a:.3+Math.random()*.7});
+const at=AR.map(()=>Math.random());
+const AC=['rgba(0,212,255,','rgba(255,60,60,','rgba(255,190,0,'];
+const CC=['#00d4ff','#ff4444','#ffd700'];
+let rot=0,sw=0,fr=0;
+function ll(la,lo,r){const ph=(90-la)*Math.PI/180,th=(lo+rot)*Math.PI/180;return{x:r*Math.sin(ph)*Math.cos(th),y:r*Math.cos(ph),z:r*Math.sin(ph)*Math.sin(th)};}
+function pj(p){const f=R*3,s=f/(f+p.z);return{px:CX+p.x*s,py:CY-p.y*s,s,v:p.z>-R*.12};}
+function ap(c1,c2,n=65){const pts=[];for(let i=0;i<=n;i++){const t=i/n,el=Math.sin(t*Math.PI)*.22;pts.push(ll(c1.la*(1-t)+c2.la*t,c1.lo*(1-t)+c2.lo*t,R*(1+el)));}return pts;}
+function draw(){
+ctx.clearRect(0,0,W,H);
+ST.forEach(s=>{ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fillStyle='rgba(180,210,255,'+(s.a*(.6+.4*Math.sin(fr*.02+s.x)))+')';ctx.fill();});
+const dg=ctx.createRadialGradient(CX,CY,0,CX,CY,R*1.6);dg.addColorStop(0,'rgba(0,40,80,.35)');dg.addColorStop(.6,'rgba(0,20,50,.15)');dg.addColorStop(1,'rgba(0,0,0,0)');ctx.beginPath();ctx.arc(CX,CY,R*1.6,0,Math.PI*2);ctx.fillStyle=dg;ctx.fill();
+const bg=ctx.createRadialGradient(CX-R*.28,CY-R*.28,R*.02,CX,CY,R);bg.addColorStop(0,'#1e3f60');bg.addColorStop(.3,'#0e2240');bg.addColorStop(.7,'#071528');bg.addColorStop(1,'#020810');ctx.beginPath();ctx.arc(CX,CY,R,0,Math.PI*2);ctx.fillStyle=bg;ctx.fill();
+ctx.save();ctx.beginPath();ctx.arc(CX,CY,R,0,Math.PI*2);ctx.clip();
+ctx.lineWidth=.4;
+for(let la=-80;la<=80;la+=15){ctx.beginPath();let f=1;for(let lo=-180;lo<=180;lo+=2){const p=pj(ll(la,lo,R));if(p.v){if(f){ctx.moveTo(p.px,p.py);f=0;}else ctx.lineTo(p.px,p.py);}else f=1;}ctx.strokeStyle=la===0?'rgba(0,212,255,.4)':'rgba(0,180,255,.1)';ctx.stroke();}
+for(let lo=-180;lo<180;lo+=15){ctx.beginPath();let f=1;for(let la=-90;la<=90;la+=2){const p=pj(ll(la,lo,R));if(p.v){if(f){ctx.moveTo(p.px,p.py);f=0;}else ctx.lineTo(p.px,p.py);}else f=1;}ctx.strokeStyle='rgba(0,180,255,.08)';ctx.stroke();}
+const sa=sw*Math.PI/180;
+for(let a=0;a<60;a++){const ag=sa-(a*Math.PI/180);ctx.beginPath();ctx.moveTo(CX,CY);ctx.arc(CX,CY,R,ag,ag+Math.PI/180);ctx.closePath();ctx.fillStyle='rgba(0,255,180,'+((.12*(1-a/60)).toFixed(3))+')';ctx.fill();}
+ctx.beginPath();ctx.moveTo(CX,CY);ctx.lineTo(CX+R*Math.cos(sa),CY+R*Math.sin(sa));ctx.strokeStyle='rgba(0,255,180,.7)';ctx.lineWidth=1.5;ctx.stroke();
+ctx.restore();
+AR.forEach((arc,i)=>{
+const c1=C[arc.a],c2=C[arc.b],pts=ap(c1,c2),col=AC[arc.t];
+ctx.beginPath();let st=0;pts.forEach(p=>{const q=pj(p);if(q.v){if(!st){ctx.moveTo(q.px,q.py);st=1;}else ctx.lineTo(q.px,q.py);}else st=0;});ctx.strokeStyle=col+'.22)';ctx.lineWidth=.8;ctx.stroke();
+const pi=Math.floor(at[i]*pts.length);
+for(let k=0;k<18;k++){const ix=pi-k;if(ix<0)continue;const q=pj(pts[ix]);if(!q.v)continue;ctx.beginPath();ctx.arc(q.px,q.py,k===0?3.5:Math.max(.5,2.2-k*.12),0,Math.PI*2);ctx.fillStyle=col+(((1-k/18)*.85).toFixed(2))+')';ctx.fill();}
+const hq=pj(pts[Math.min(pi,pts.length-1)]);
+if(hq.v){const hg=ctx.createRadialGradient(hq.px,hq.py,0,hq.px,hq.py,9);hg.addColorStop(0,col+'1)');hg.addColorStop(1,col+'0)');ctx.beginPath();ctx.arc(hq.px,hq.py,9,0,Math.PI*2);ctx.fillStyle=hg;ctx.fill();}
+at[i]=(at[i]+arc.spd)%1;});
+for(let rn=0;rn<4;rn++){ctx.beginPath();ctx.arc(CX,CY,R*(1.01+rn*.04),0,Math.PI*2);ctx.strokeStyle='rgba(0,180,255,'+((.22-rn*.05).toFixed(2))+')';ctx.lineWidth=rn===0?1.6:.6;ctx.stroke();}
+const sp=ctx.createRadialGradient(CX-R*.32,CY-R*.32,0,CX-R*.32,CY-R*.32,R*.55);sp.addColorStop(0,'rgba(180,230,255,.13)');sp.addColorStop(.4,'rgba(100,180,255,.05)');sp.addColorStop(1,'rgba(0,0,0,0)');ctx.beginPath();ctx.arc(CX,CY,R,0,Math.PI*2);ctx.fillStyle=sp;ctx.fill();
+ctx.beginPath();ctx.arc(CX,CY,R,0,Math.PI*2);const eg=ctx.createLinearGradient(CX-R,CY,CX+R,CY);eg.addColorStop(0,'rgba(0,212,255,.06)');eg.addColorStop(.5,'rgba(0,212,255,.65)');eg.addColorStop(1,'rgba(0,212,255,.06)');ctx.strokeStyle=eg;ctx.lineWidth=1.8;ctx.stroke();
+C.forEach((c,i)=>{const p=pj(ll(c.la,c.lo,R));if(!p.v)return;const col=CC[c.t],sz=c.s;
+const pr2=6+12*Math.abs(Math.sin(fr*.04+i*.7));ctx.beginPath();ctx.arc(p.px,p.py,pr2*sz,0,Math.PI*2);ctx.strokeStyle=col+'44';ctx.lineWidth=1;ctx.stroke();
+const gr=ctx.createRadialGradient(p.px,p.py,0,p.px,p.py,9*sz);gr.addColorStop(0,col+'cc');gr.addColorStop(1,col+'00');ctx.beginPath();ctx.arc(p.px,p.py,9*sz,0,Math.PI*2);ctx.fillStyle=gr;ctx.fill();
+ctx.beginPath();ctx.arc(p.px,p.py,2.5*sz,0,Math.PI*2);ctx.fillStyle=col;ctx.fill();
+if(p.s>1.03){ctx.font=Math.round(8.5*p.s*sz)+'px monospace';ctx.fillStyle=col+'cc';ctx.fillText(c.n,p.px+7,p.py-4);}});
+ctx.font='bold 11px monospace';ctx.fillStyle='rgba(0,212,255,.7)';ctx.fillText('\\u25c8 NERAI GLOBAL INTELLIGENCE NETWORK',14,22);
+for(let y=0;y<H;y+=4){ctx.fillStyle='rgba(0,0,0,.04)';ctx.fillRect(0,y,W,1);}
+ctx.font='10px monospace';ctx.fillStyle='rgba(0,212,255,.4)';
+const ts=new Date().toUTCString().replace(' GMT','');
+ctx.fillText('\\u25c9 LIVE  |  UTC '+ts+'  |  NODES: 19  |  ARCS: 16',14,H-10);
+const lx=W-145;
+[['\\u25c6','#00d4ff','INTEL HUB'],['\\u25c6','#ff4444','RISK ZONE'],['\\u25c6','#ffd700','CAPITAL']].forEach(([sym,col,lbl],i)=>{ctx.fillStyle=col;ctx.font='10px monospace';ctx.fillText(sym+' '+lbl,lx,22+i*16);});
+rot+=.15;sw=(sw+.6)%360;fr++;requestAnimationFrame(draw);}
+draw();
+})();</script></body></html>"""
+        _stc.html(_GLOBE_HTML, height=510, scrolling=False)
+    except Exception as _ge:
+        st.info(f"Globe yüklenemedi: {_ge}")
+    # === END GLOBE ===
+
 
     # ── Animated Hero ────────────────────────────────────────
     st.markdown(f"""
