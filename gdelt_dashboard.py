@@ -83,7 +83,6 @@ if st.session_state.access_tier is None:
     col_l, col_c, col_r = st.columns([1, 2, 1])
     with col_c:
         st.markdown("""
-               text-transform:uppercase; font-weight:700; margin-bottom:16px;">
                &#9635; NERAI Intelligence</div>
                Access Dashboard</div>
                Enter your access code to continue.</div>
@@ -132,7 +131,6 @@ st.markdown("""
 [data-testid="stSidebar"] .stButton > button {
   border-radius: 8px !important;
   text-align: left !important;
-  font-size: 13px !important;
 [data-testid="stSidebar"] .stButton > button:hover {
   border-color: var(--border-glow) !important;
 [data-testid="stSidebar"] hr {
@@ -153,12 +151,9 @@ p, span, label, .stMarkdown p { color: var(--text-secondary) !important; }
   top: 0; left: 0; right: 0;
 [data-testid="stMetricValue"] {
   font-weight: 700 !important;
-  font-size: 28px !important;
   text-shadow: 0 0 20px rgba(0,212,255,0.3) !important;
 [data-testid="stMetricLabel"] {
   text-transform: uppercase !important;
-  letter-spacing: 1px !important;
-  font-size: 11px !important;
 [data-testid="stMetricDelta"] svg { fill: var(--accent2) !important; }
 [data-testid="stMetricDelta"] div { color: var(--accent2) !important; }
 
@@ -175,7 +170,6 @@ p, span, label, .stMarkdown p { color: var(--text-secondary) !important; }
   gap: 4px !important;
 .stTabs [data-baseweb="tab"] {
   border-radius: 8px !important;
-  font-size: 13px !important;
 .stTabs [aria-selected="true"] {
 .stTabs [data-baseweb="tab-border"] { display: none !important; }
 .stTabs [data-baseweb="tab-highlight"] { background: var(--accent) !important; }
@@ -214,9 +208,7 @@ p, span, label, .stMarkdown p { color: var(--text-secondary) !important; }
 /* ── Badge styling ── */
 .badge, .tier-badge {
   border-radius: 20px !important;
-  font-size: 11px !important;
   font-weight: 600 !important;
-  letter-spacing: 0.5px !important;
   text-shadow: 0 0 8px rgba(0,212,255,0.3) !important;
 
 /* ── Scrollbar ── */
@@ -268,12 +260,10 @@ p, span, label, .stMarkdown p { color: var(--text-secondary) !important; }
 
 section[data-testid="stSidebar"] div[data-testid="stVerticalBlock"] button,
 section[data-testid="stSidebar"] div.stButton>button{
-  letter-spacing:.6px!important;text-transform:uppercase!important;
 section[data-testid="stSidebar"] div.stButton>button:hover{
   border-color:rgba(0,212,255,.55)!important;color:#00d4ff!important;
 section[data-testid="stSidebar"] div.stButton>button:active{
 section[data-testid="stSidebar"] div.stButton>button::before{
-  content:'';position:absolute;width:14px;height:14px;border-radius:50%;
 section[data-testid="stSidebar"] div.stButton>button:active::before{
   animation:rippleAnim .5s ease-out forwards!important;
 
@@ -301,12 +291,10 @@ div[data-testid="stMetric"]:hover{
 
 section[data-testid="stSidebar"] div[data-testid="stVerticalBlock"] button,
 section[data-testid="stSidebar"] div.stButton>button{
-  letter-spacing:.6px!important;text-transform:uppercase!important;
 section[data-testid="stSidebar"] div.stButton>button:hover{
   border-color:rgba(0,212,255,.55)!important;color:#00d4ff!important;
 section[data-testid="stSidebar"] div.stButton>button:active{
 section[data-testid="stSidebar"] div.stButton>button::before{
-  content:'';position:absolute;width:14px;height:14px;border-radius:50%;
 section[data-testid="stSidebar"] div.stButton>button:active::before{
   animation:rippleAnim .5s ease-out forwards!important;
 
@@ -1287,7 +1275,6 @@ with st.sidebar:
         heatmap_n = st.slider("Heatmap top N", 8, 30, 15)
 
         st.markdown(f"""
-             font-size:0.62rem;color:rgba(0,180,255,0.4);font-family:monospace;line-height:2;'>
           📅 {len(date_cols)} days · 📊 {len(all_topics)} topics · {len(all_countries)} countries<br>
           {'⚠ DEMO MODE' if is_demo else '✓ GDELT Project'}
 
@@ -1318,7 +1305,6 @@ with st.sidebar:
     elif st.session_state.page == 'news':
         st.markdown('<div class="sec-hdr">Live News Feed</div>', unsafe_allow_html=True)
         st.markdown(f"""
-             font-size:0.62rem;color:rgba(0,180,255,0.4);font-family:monospace;'>
           Real-time global news<br>
           28 topic categories
 
@@ -1389,83 +1375,11 @@ with st.sidebar:
 # ═══════════════════════════════════════════════════════════════
 def render_home():
 
-    # === NERAI GLOBE ===
-    try:
-        import streamlit.components.v1 as _stc
-        _GLOBE_HTML = """<!DOCTYPE html><html><head><meta charset="UTF-8"><style>*{margin:0;padding:0;box-sizing:border-box;}body{background:#000;overflow:hidden;}canvas{display:block;width:100%;height:500px;}
-/* === NERAI NAV === */
-section[data-testid="stSidebar"] div.stButton>button{background:linear-gradient(135deg,#0d2137 0%,#1a3a5c 100%)!important;border:1px solid rgba(0,212,255,.5)!important;color:#fff!important;border-radius:8px!important;font-weight:600!important;letter-spacing:1px!important;transition:all .25s ease!important;box-shadow:0 0 6px rgba(0,212,255,.15)!important;width:100%!important;text-align:left!important;padding:10px 16px!important;margin-bottom:4px!important;}
-section[data-testid="stSidebar"] div.stButton>button:hover{box-shadow:0 0 20px rgba(0,212,255,.7),0 0 40px rgba(0,212,255,.25)!important;transform:translateX(5px) scale(1.02)!important;background:linear-gradient(135deg,#1a3a5c 0%,#0d4a7a 100%)!important;border-color:#00ffff!important;color:#00ffff!important;}
-section[data-testid="stSidebar"] div.stButton>button:active{transform:translateX(3px) scale(.98)!important;box-shadow:0 0 30px rgba(0,212,255,.9)!important;}
-/* === END NAV === */
-</style></head><body><canvas id="ng"></canvas><script>(function(){
-const cv=document.getElementById('ng');
-if(!cv)return;
-const ctx=cv.getContext('2d');
-function resize(){cv.width=cv.offsetWidth||900;cv.height=cv.offsetHeight||500;}
-resize();
-const W=cv.width,H=cv.height,CX=W/2,CY=H/2,R=Math.min(W,H)*0.40;
-const C=[{n:'New York',la:40.7,lo:-74.0,t:0,s:1.4},{n:'London',la:51.5,lo:-0.1,t:2,s:1.3},{n:'Paris',la:48.9,lo:2.4,t:0,s:1.0},{n:'Moscow',la:55.8,lo:37.6,t:1,s:1.3},{n:'Kiev',la:50.4,lo:30.5,t:1,s:1.5},{n:'Dubai',la:25.2,lo:55.3,t:2,s:1.1},{n:'Tehran',la:35.7,lo:51.4,t:1,s:1.2},{n:'Delhi',la:28.6,lo:77.2,t:0,s:1.0},{n:'Shanghai',la:31.2,lo:121.5,t:0,s:1.2},{n:'Tokyo',la:35.7,lo:139.7,t:2,s:1.1},{n:'Sydney',la:-33.9,lo:151.2,t:0,s:0.9},{n:'Sao Paulo',la:-23.5,lo:-46.6,t:0,s:1.0},{n:'Cairo',la:30.0,lo:31.2,t:1,s:1.1},{n:'Singapore',la:1.3,lo:103.8,t:0,s:1.1},{n:'Seoul',la:37.6,lo:126.9,t:0,s:1.0},{n:'Istanbul',la:41.0,lo:28.9,t:2,s:1.1},{n:'Lagos',la:6.5,lo:3.4,t:1,s:0.9},{n:'Riyadh',la:24.7,lo:46.7,t:1,s:1.0},{n:'Mexico',la:19.4,lo:-99.1,t:0,s:0.9}];
-const AR=[{a:0,b:1,t:0,spd:.004},{a:1,b:2,t:0,spd:.005},{a:3,b:4,t:1,spd:.003},{a:6,b:11,t:1,spd:.0035},{a:5,b:9,t:2,spd:.006},{a:7,b:13,t:0,spd:.005},{a:8,b:9,t:0,spd:.004},{a:0,b:10,t:2,spd:.003},{a:1,b:15,t:2,spd:.004},{a:2,b:3,t:0,spd:.0045},{a:11,b:15,t:1,spd:.003},{a:14,b:8,t:0,spd:.005},{a:13,b:7,t:2,spd:.004},{a:17,b:6,t:1,spd:.003},{a:0,b:15,t:0,spd:.0035},{a:18,b:0,t:2,spd:.004}];
-const ST=[];for(let i=0;i<220;i++)ST.push({x:Math.random()*W,y:Math.random()*H,r:Math.random()*1.2,a:.3+Math.random()*.7});
-const at=AR.map(()=>Math.random());
-const AC=['rgba(0,212,255,','rgba(255,60,60,','rgba(255,190,0,'];
-const CC=['#00d4ff','#ff4444','#ffd700'];
-let rot=0,sw=0,fr=0;
-function ll(la,lo,r){const ph=(90-la)*Math.PI/180,th=(lo+rot)*Math.PI/180;return{x:r*Math.sin(ph)*Math.cos(th),y:r*Math.cos(ph),z:r*Math.sin(ph)*Math.sin(th)};}
-function pj(p){const f=R*3,s=f/(f+p.z);return{px:CX+p.x*s,py:CY-p.y*s,s,v:p.z>-R*.12};}
-function ap(c1,c2,n=65){const pts=[];for(let i=0;i<=n;i++){const t=i/n,el=Math.sin(t*Math.PI)*.22;pts.push(ll(c1.la*(1-t)+c2.la*t,c1.lo*(1-t)+c2.lo*t,R*(1+el)));}return pts;}
-function draw(){
-ctx.clearRect(0,0,W,H);
-ST.forEach(s=>{ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fillStyle='rgba(180,210,255,'+(s.a*(.6+.4*Math.sin(fr*.02+s.x)))+')';ctx.fill();});
-const dg=ctx.createRadialGradient(CX,CY,0,CX,CY,R*1.6);dg.addColorStop(0,'rgba(0,40,80,.35)');dg.addColorStop(.6,'rgba(0,20,50,.15)');dg.addColorStop(1,'rgba(0,0,0,0)');ctx.beginPath();ctx.arc(CX,CY,R*1.6,0,Math.PI*2);ctx.fillStyle=dg;ctx.fill();
-const bg=ctx.createRadialGradient(CX-R*.28,CY-R*.28,R*.02,CX,CY,R);bg.addColorStop(0,'#1e3f60');bg.addColorStop(.3,'#0e2240');bg.addColorStop(.7,'#071528');bg.addColorStop(1,'#020810');ctx.beginPath();ctx.arc(CX,CY,R,0,Math.PI*2);ctx.fillStyle=bg;ctx.fill();
-ctx.save();ctx.beginPath();ctx.arc(CX,CY,R,0,Math.PI*2);ctx.clip();
-ctx.lineWidth=.4;
-for(let la=-80;la<=80;la+=15){ctx.beginPath();let f=1;for(let lo=-180;lo<=180;lo+=2){const p=pj(ll(la,lo,R));if(p.v){if(f){ctx.moveTo(p.px,p.py);f=0;}else ctx.lineTo(p.px,p.py);}else f=1;}ctx.strokeStyle=la===0?'rgba(0,212,255,.4)':'rgba(0,180,255,.1)';ctx.stroke();}
-for(let lo=-180;lo<180;lo+=15){ctx.beginPath();let f=1;for(let la=-90;la<=90;la+=2){const p=pj(ll(la,lo,R));if(p.v){if(f){ctx.moveTo(p.px,p.py);f=0;}else ctx.lineTo(p.px,p.py);}else f=1;}ctx.strokeStyle='rgba(0,180,255,.08)';ctx.stroke();}
-const sa=sw*Math.PI/180;
-for(let a=0;a<60;a++){const ag=sa-(a*Math.PI/180);ctx.beginPath();ctx.moveTo(CX,CY);ctx.arc(CX,CY,R,ag,ag+Math.PI/180);ctx.closePath();ctx.fillStyle='rgba(0,255,180,'+((.12*(1-a/60)).toFixed(3))+')';ctx.fill();}
-ctx.beginPath();ctx.moveTo(CX,CY);ctx.lineTo(CX+R*Math.cos(sa),CY+R*Math.sin(sa));ctx.strokeStyle='rgba(0,255,180,.7)';ctx.lineWidth=1.5;ctx.stroke();
-ctx.restore();
-AR.forEach((arc,i)=>{
-const c1=C[arc.a],c2=C[arc.b],pts=ap(c1,c2),col=AC[arc.t];
-ctx.beginPath();let st=0;pts.forEach(p=>{const q=pj(p);if(q.v){if(!st){ctx.moveTo(q.px,q.py);st=1;}else ctx.lineTo(q.px,q.py);}else st=0;});ctx.strokeStyle=col+'.22)';ctx.lineWidth=.8;ctx.stroke();
-const pi=Math.floor(at[i]*pts.length);
-for(let k=0;k<18;k++){const ix=pi-k;if(ix<0)continue;const q=pj(pts[ix]);if(!q.v)continue;ctx.beginPath();ctx.arc(q.px,q.py,k===0?3.5:Math.max(.5,2.2-k*.12),0,Math.PI*2);ctx.fillStyle=col+(((1-k/18)*.85).toFixed(2))+')';ctx.fill();}
-const hq=pj(pts[Math.min(pi,pts.length-1)]);
-if(hq.v){const hg=ctx.createRadialGradient(hq.px,hq.py,0,hq.px,hq.py,9);hg.addColorStop(0,col+'1)');hg.addColorStop(1,col+'0)');ctx.beginPath();ctx.arc(hq.px,hq.py,9,0,Math.PI*2);ctx.fillStyle=hg;ctx.fill();}
-at[i]=(at[i]+arc.spd)%1;});
-for(let rn=0;rn<4;rn++){ctx.beginPath();ctx.arc(CX,CY,R*(1.01+rn*.04),0,Math.PI*2);ctx.strokeStyle='rgba(0,180,255,'+((.22-rn*.05).toFixed(2))+')';ctx.lineWidth=rn===0?1.6:.6;ctx.stroke();}
-const sp=ctx.createRadialGradient(CX-R*.32,CY-R*.32,0,CX-R*.32,CY-R*.32,R*.55);sp.addColorStop(0,'rgba(180,230,255,.13)');sp.addColorStop(.4,'rgba(100,180,255,.05)');sp.addColorStop(1,'rgba(0,0,0,0)');ctx.beginPath();ctx.arc(CX,CY,R,0,Math.PI*2);ctx.fillStyle=sp;ctx.fill();
-ctx.beginPath();ctx.arc(CX,CY,R,0,Math.PI*2);const eg=ctx.createLinearGradient(CX-R,CY,CX+R,CY);eg.addColorStop(0,'rgba(0,212,255,.06)');eg.addColorStop(.5,'rgba(0,212,255,.65)');eg.addColorStop(1,'rgba(0,212,255,.06)');ctx.strokeStyle=eg;ctx.lineWidth=1.8;ctx.stroke();
-C.forEach((c,i)=>{const p=pj(ll(c.la,c.lo,R));if(!p.v)return;const col=CC[c.t],sz=c.s;
-const pr2=6+12*Math.abs(Math.sin(fr*.04+i*.7));ctx.beginPath();ctx.arc(p.px,p.py,pr2*sz,0,Math.PI*2);ctx.strokeStyle=col+'44';ctx.lineWidth=1;ctx.stroke();
-const gr=ctx.createRadialGradient(p.px,p.py,0,p.px,p.py,9*sz);gr.addColorStop(0,col+'cc');gr.addColorStop(1,col+'00');ctx.beginPath();ctx.arc(p.px,p.py,9*sz,0,Math.PI*2);ctx.fillStyle=gr;ctx.fill();
-ctx.beginPath();ctx.arc(p.px,p.py,2.5*sz,0,Math.PI*2);ctx.fillStyle=col;ctx.fill();
-if(p.s>1.03){ctx.font=Math.round(8.5*p.s*sz)+'px monospace';ctx.fillStyle=col+'cc';ctx.fillText(c.n,p.px+7,p.py-4);}});
-ctx.font='bold 11px monospace';ctx.fillStyle='rgba(0,212,255,.7)';ctx.fillText('\\u25c8 NERAI GLOBAL INTELLIGENCE NETWORK',14,22);
-for(let y=0;y<H;y+=4){ctx.fillStyle='rgba(0,0,0,.04)';ctx.fillRect(0,y,W,1);}
-ctx.font='10px monospace';ctx.fillStyle='rgba(0,212,255,.4)';
-const ts=new Date().toUTCString().replace(' GMT','');
-ctx.fillText('\\u25c9 LIVE  |  UTC '+ts+'  |  NODES: 19  |  ARCS: 16',14,H-10);
-const lx=W-145;
-[['\\u25c6','#00d4ff','INTEL HUB'],['\\u25c6','#ff4444','RISK ZONE'],['\\u25c6','#ffd700','CAPITAL']].forEach(([sym,col,lbl],i)=>{ctx.fillStyle=col;ctx.font='10px monospace';ctx.fillText(sym+' '+lbl,lx,22+i*16);});
-rot+=.15;sw=(sw+.6)%360;fr++;requestAnimationFrame(draw);}
-draw();
-})();</script></body></html>"""
-        _stc.html(_GLOBE_HTML, height=510, scrolling=False)
-    except Exception as _ge:
-        st.info(f"Globe yüklenemedi: {_ge}")
-    # === END GLOBE ===
 
 
     # ── Animated Hero ────────────────────────────────────────
     st.markdown(f"""
              margin-bottom:6px;">Intelligence Hub</div>
-             border-radius:20px;padding:5px 18px;
-             font-size:0.68rem;color:rgba(0,200,255,0.6);
-             font-family:'Share Tech Mono',monospace;letter-spacing:0.1em;">
     """, unsafe_allow_html=True)
 
     # ── NERAI 3D Geopolitical Globe ──────────────────────────────
@@ -1596,7 +1510,6 @@ draw();
 
     # ── Module Tiles ─────────────────────────────────────────
     st.markdown("""
-         margin-bottom:20px;text-align:center;
       SELECT A MODULE TO BEGIN
 
     m1, m2, m3, m4 = st.columns(4)
@@ -1650,10 +1563,8 @@ draw();
                 net = pair['net']
                 clr = '#e05060' if net>=45 else ('#f59e0b' if net>=25 else '#00b4d8')
                 st.markdown(f"""
-                     border-radius:10px;padding:14px 12px;text-align:center;
                      border-top:3px solid {clr};">
                     {n1}
-                       font-family:monospace;margin-bottom:4px;">↔ VS ↔</div>
                     {n2}
                        text-shadow:0 0 14px {clr}55;">{net:.0f}</div>
                     {'CRITICAL' if net>=65 else 'HIGH' if net>=45 else 'ELEVATED' if net>=25 else 'MODERATE'}
@@ -1668,7 +1579,6 @@ draw();
         with col_el:
             clr = '#e05060' if val>=50 else ('#f59e0b' if val>=25 else '#00b4d8')
             st.markdown(f"""
-                 border-radius:8px;padding:10px 8px;text-align:center;">
                 {COUNTRY_NAMES.get(country,country)}
                    text-shadow:0 0 10px {clr}50;">{val:.0f}</div>
 
@@ -1698,7 +1608,6 @@ def render_indices():
     with c2h:
         nm_color = {'Raw':'#2a5080','Score (0–100)':'#00b4d8','Z-Score':'#0077a8'}[norm_method]
         st.markdown(f"""
-             font-size:0.68rem;color:rgba(0,180,255,0.4);'>
           LAST UPDATE<br>
     st.markdown('<div class="h-div"></div>', unsafe_allow_html=True)
 
@@ -1826,9 +1735,7 @@ def render_indices():
             t_sym = '▲' if trnd>0.5 else ('▼' if trnd<-0.5 else '→')
             t_col = '#e06030' if trnd>0.5 else ('#00d4aa' if trnd<-0.5 else '#7a9ab8')
             st.markdown(f"""
-                   font-family:monospace;width:22px;flex-shrink:0;">#{rank}</div>
                   {n1}<span style="color:rgba(123,47,255,0.6);padding:0 6px;">↔</span>{n2}
-                       border-radius:3px;box-shadow:0 0 8px {bar_col}70;"></div>
 
     # Data Table
     with st.expander("📊  Data Table — Selected Countries", expanded=False):
@@ -1897,7 +1804,6 @@ def render_profile():
                 s   = idx['score']
                 col = '#e05060' if s>=65 else ('#e06030' if s>=45 else ('#f59e0b' if s>=25 else '#00b4d8'))
                 st.markdown(f"""
-                           border-radius:3px;box-shadow:0 0 5px {col}60;"></div>
                        text-shadow:0 0 10px {col}40;">{s:.1f}</div>
         else:
             st.markdown('<div style="color:rgba(100,150,180,0.4);font-size:0.72rem;">No data</div>', unsafe_allow_html=True)
@@ -1968,7 +1874,6 @@ def render_profile():
     with g2:
         st.markdown(f"""
                font-family:'Share Tech Mono',monospace;">RELATIONSHIP STATUS</div>
-               text-shadow:0 0 20px {st_col}60;letter-spacing:0.08em;margin:4px 0;">{st_}</div>
             Net Tension: {cur_net:.1f} / 100 &nbsp;·&nbsp; Δ7d: {trend_bi:+.1f}
             {name_a} &nbsp;↔&nbsp; {name_b}
     with g3:
@@ -1978,7 +1883,6 @@ def render_profile():
 
     # Indicator mini cards
     st.markdown("""<div style="font-size:0.6rem;color:rgba(0,180,255,0.38);
-         font-family:'Share Tech Mono',monospace;letter-spacing:0.18em;
     ind_cols = st.columns(4)
     avail_topics = set(df.index.get_level_values('topic').unique())
     for col_el, (topic, label, color) in zip(ind_cols, BILATERAL_INDICATORS):
@@ -2182,13 +2086,9 @@ def render_predictions():
     if not has_predictions:
         import subprocess, sys
         st.markdown("""
-             border-radius:12px;margin:20px 0;'>
-               letter-spacing:0.08em;margin-bottom:10px;'>
             Predictions Not Yet Generated
-               max-width:480px;margin:0 auto;line-height:1.7;'>
             Run the fast Holt-Winters forecast engine (no ML libraries needed)
             or the full N-HiTS deep learning pipeline:
-               font-family:monospace;font-size:0.78rem;
             # Fast option — pure NumPy, runs in ~30 sec<br>
             python gdelt_forecast_numpy.py<br><br>
             # Full option — N-HiTS deep learning (~2 hrs history download)<br>
@@ -2371,7 +2271,6 @@ def render_predictions():
                 st.markdown(f"""
                        text-align:center;flex-shrink:0;'>{arrow}</div>
                            border-radius:2px;'></div>
-                       font-family:monospace;flex-shrink:0;width:44px;
                        text-align:right;'>{pct:+.1f}%</div>
 
     st.markdown('<div class="h-div" style="margin:24px 0;"></div>', unsafe_allow_html=True)
@@ -2384,7 +2283,6 @@ def render_predictions():
 
         with col_rise:
             st.markdown("""
-                 font-family:monospace;letter-spacing:0.18em;
                  margin-bottom:8px;'>▲  HIGHEST RISING RISKS</div>""",
                         unsafe_allow_html=True)
             top_rise = trend_df.nlargest(10, 'trend_pct')
@@ -2398,7 +2296,6 @@ def render_predictions():
 
         with col_fall:
             st.markdown("""
-                 font-family:monospace;letter-spacing:0.18em;
                  margin-bottom:8px;'>▼  HIGHEST FALLING RISKS</div>""",
                         unsafe_allow_html=True)
             top_fall = trend_df.nsmallest(10, 'trend_pct')
@@ -2556,23 +2453,15 @@ def _render_country_card(col, row):
     narrative = _risk_narrative(tr, tf, fc_dir, avg_fc, cname)
 
     col.markdown(f"""
-     border-radius:9px;padding:14px 16px;margin-bottom:12px;
 
        margin-bottom:10px;padding-bottom:8px;
        border-bottom:1px solid rgba(0,100,180,0.10);'>
-           letter-spacing:0.03em;'>{cname}</div>
-           font-family:monospace;letter-spacing:0.12em;'>{country} · GDELT INDEX</div>
-           line-height:1.1;'>{risk:.0f}<span style='font-size:0.58rem;
         {chg_arrow} {change:+.1f}% <span style='color:rgba(140,165,195,0.4);
-        font-size:0.56rem;'>(7d chg)</span></div>
 
-           font-family:monospace;letter-spacing:0.1em;margin-bottom:5px;'>▲ RISING</div>
       {topic_rows(tr, '#e05060')}
-           font-family:monospace;letter-spacing:0.1em;margin-bottom:5px;'>▼ FALLING</div>
       {topic_rows(tf, '#00d4aa')}
 
        margin-bottom:9px;border-left:2px solid {fc_col};'>
-         font-family:monospace;letter-spacing:0.1em;margin-bottom:2px;'>12-MONTH FORECAST</div>
       {fc_arrow} {fc_dir.title()} &nbsp;·&nbsp; {avg_fc:+.1f}% avg predicted change
 
        line-height:1.55;font-style:italic;'>
@@ -2844,14 +2733,10 @@ def _answer_question(question, df_raw, trend_df, pred_df, insights_df):
             )
 
         country_blocks.append(f"""
-     border-radius:8px;padding:14px 16px;margin-bottom:12px;'>
        margin-bottom:10px;padding-bottom:7px;border-bottom:1px solid rgba(0,100,180,0.15);'>
     📍 {cname}
-       letter-spacing:0.1em;margin-bottom:5px;'>■ RECENT ACTIVITY — 7-DAY WINDOW</div>
   {section1_html}
-       letter-spacing:0.1em;margin:10px 0 5px;'>■ FORWARD PROJECTIONS — 12-MONTH MODEL</div>
   {section2_html}
-       letter-spacing:0.1em;margin:10px 0 5px;'>🎯 ASSESSMENT</div>
 
     if not country_blocks:
         return ("<div style='color:#7a9ab8;font-size:0.75rem;padding:10px;'>"
@@ -2864,7 +2749,6 @@ def _answer_question(question, df_raw, trend_df, pred_df, insights_df):
                          if fallback_note else "")
 
     return f"""
-       letter-spacing:0.1em;margin-bottom:10px;'>
     TOPICS ANALYSED: {topic_labels_used}{" + more" if len(topics) > 6 else ""}
   {header_note_html}
   {''.join(country_blocks)}
@@ -3118,7 +3002,6 @@ def render_insights():
     # ── Page header ─────────────────────────────────────────────
     st.markdown("""
     🔍 Intelligence Insights
-       letter-spacing:0.12em;margin-top:3px;'>
     DATA-DRIVEN COUNTRY RISK ANALYSIS &nbsp;·&nbsp; 7-DAY WINDOW + 12-MONTH FORECAST
 
     _indices_ok = df is not None and len(df) > 0
@@ -3147,7 +3030,6 @@ def render_insights():
     # Q&A SECTION — always shown
     # ═══════════════════════════════════════════════════════════
     st.markdown("""
-     border-radius:10px;padding:16px 18px;margin-bottom:20px;'>
     💬 Ask the Data
     Ask any geopolitical question — the system will analyse indices, trends and forecasts to answer.
 
@@ -3184,7 +3066,6 @@ def render_insights():
         st.markdown('<div class="h-div" style="margin:16px 0 12px;"></div>', unsafe_allow_html=True)
     else:
         st.markdown("""
-     text-align:center;padding:8px;'>
   ↑ Type a question above to get a data-driven analysis
         st.markdown('<div class="h-div" style="margin:10px 0 16px;"></div>', unsafe_allow_html=True)
 
@@ -3193,7 +3074,6 @@ def render_insights():
     # ═══════════════════════════════════════════════════════════
     if insights_df is not None and len(insights_df) > 0:
         st.markdown("""
-     letter-spacing:0.15em;margin-bottom:14px;'>
   TOP 20 MOST CRITICAL COUNTRIES &nbsp;·&nbsp; RANKED BY RISK LEVEL + RATE OF CHANGE
         top20 = insights_df.head(20).to_dict('records')
         for i in range(0, len(top20), 2):
@@ -3204,7 +3084,6 @@ def render_insights():
     elif trend_df is not None:
         # Fallback: show top rising/falling from trend data
         st.markdown("""
-     letter-spacing:0.15em;margin-bottom:14px;'>
   TOP RISK MOVEMENTS &nbsp;·&nbsp; 12-MONTH FORECAST TREND
         cf1, cf2 = st.columns(2)
         with cf1:
@@ -3230,7 +3109,6 @@ def render_insights():
 def _render_footer():
     st.markdown("""
          border-top:1px solid rgba(0,150,255,0.08);
-         font-size:0.6rem;color:rgba(0,150,255,0.2);font-family:monospace;letter-spacing:0.1em;'>
       NERAI INTELLIGENCE HUB &nbsp;·&nbsp; DATA: GDELT PROJECT &nbsp;·&nbsp; v3.0
 
 
@@ -3447,8 +3325,6 @@ def render_causality():
 
     if cdf is None or cdf.empty:
         st.markdown("""
-             border-radius:12px;margin:20px 0;'>
-               letter-spacing:0.06em;margin-bottom:10px;'>Causal Network Not Yet Computed</div>
             Click <b>Run Causal Analysis</b> in the sidebar to compute Granger causality relationships
             between all topic × country pairs. This reveals which geopolitical signals
             statistically predict future movements in others — and which countries are most
@@ -3500,8 +3376,6 @@ def render_causality():
     if narr:
         p1, p2, hl_note = narr
         st.markdown(f"""
-             border-radius:10px;padding:18px 22px;margin-bottom:20px;line-height:1.75;
-             font-size:0.85rem;color:#1a2a3a;'>
                text-transform:uppercase;margin-bottom:8px;'>📖 What This Network Shows</div>
           {hl_note}
 
@@ -3687,7 +3561,6 @@ def render_scenarios():
             s_col = '#1a8a3a' if has_result else 'rgba(120,120,130,0.5)'
             s_txt = '✅ Completed' if has_result else '⏳ Not run yet'
             st.markdown(f"""
-                 border-radius:10px;padding:20px;margin-bottom:12px;min-height:130px;'>
 
     cols2 = st.columns(3)
     for i, (key, tmpl) in enumerate(row2):
@@ -3696,7 +3569,6 @@ def render_scenarios():
             s_col = '#1a8a3a' if has_result else 'rgba(120,120,130,0.5)'
             s_txt = '✅ Completed' if has_result else '⏳ Not run yet'
             st.markdown(f"""
-                 border-radius:10px;padding:20px;margin-bottom:12px;min-height:130px;'>
 
     import subprocess, sys as _sys
     st.markdown('<div class="h-div" style="margin:24px 0;"></div>', unsafe_allow_html=True)
@@ -3819,8 +3691,6 @@ def render_scenarios():
                              f"border-radius:4px;font-size:0.82rem;color:#0a3a6a;line-height:1.7;'>"
                              f"<b>&#127758; Geopolitical Context:</b> {p3}</div>") if p3 else ''
                 st.markdown(f"""
-                     border-radius:10px;padding:20px 24px;margin:20px 0;line-height:1.8;
-                     font-size:0.85rem;color:#1a2a3a;'>
                        text-transform:uppercase;margin-bottom:10px;'>&#128203; Analytical Summary</div>
                   {geo_block}
 
@@ -3839,7 +3709,6 @@ def render_api():
 
     if not _IS_PRO:
         st.markdown("""
-             border-radius:10px;padding:28px;text-align:center;margin:24px 0;'>
             API access is included in the <b>NERAI Pro</b> plan (€39/month).<br>
             Upgrade at <a href='https://neraicorp.com' target='_blank'
             style='color:#0077a8;'>neraicorp.com</a> or contact
@@ -3847,7 +3716,6 @@ def render_api():
         return
 
     st.markdown("""
-         border-radius:10px;padding:22px 26px;margin-bottom:20px;'>
         U0001f511 Your Pro Data Access
           https://nerai-intelligence.streamlit.app
 
@@ -3882,7 +3750,6 @@ st.markdown("""<style>
 section[data-testid="stSidebar"] div.stButton>button {
     border-radius: 8px !important;
     font-weight: 600 !important;
-    letter-spacing: 1px !important;
     text-align: left !important;
     margin-bottom: 4px !important;
 section[data-testid="stSidebar"] div.stButton>button:hover {
