@@ -1284,6 +1284,7 @@ with st.sidebar:
         ('causality',   '🕸  CAUSAL NETWORK'),
         ('scenarios',   '⚡  WHAT-IF SCENARIOS'),
         ('insights',    '🔍  INSIGHTS'),
+        ('briefing',    '📋  BRIEFING ROOM'),
     ]
     for page_key, page_label in nav_pages:
         active_style = 'border-color:rgba(0,180,255,0.5) !important;color:#007a99 !important;background:rgba(0,50,110,0.4) !important;' if st.session_state.page == page_key else ''
@@ -3969,6 +3970,267 @@ def render_causality():
         )
 
 
+
+# ── BRIEFING ROOM ─────────────────────────────────────────────────────
+def render_briefing_room():
+    st.markdown(
+        "<div style='padding:6px 0 10px;'>"
+        "<div class='hero-title'>Briefing Room</div>"
+        "<div class='hero-sub'>"
+        "<span class='live-dot'></span>"
+        "NERAI Intelligence Analyses &middot; Strategic Reports"
+        "</div></div>", unsafe_allow_html=True)
+    st.markdown('<div class="h-div"></div>', unsafe_allow_html=True)
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        st.markdown(
+            "<div style='background:rgba(10,20,40,0.6);border:1px solid rgba(0,180,255,0.25);"
+            "border-radius:10px;padding:20px;margin-bottom:14px;'>"
+            "<div style='display:flex;align-items:center;gap:10px;margin-bottom:12px;'>"
+            "<div style='font-size:1.8rem;'>&#128200;</div>"
+            "<div><div style='font-size:1.05rem;font-weight:700;color:#00b4ff;'>NERAI Weekly Bulletin</div>"
+            "<div style='font-size:0.75rem;color:#8aa8c8;'>Week 14 | March 28 - April 4, 2026</div></div>"
+            "</div>"
+            "<div style='display:inline-block;background:#ffd700;color:#000;padding:3px 10px;"
+            "border-radius:3px;font-weight:700;font-size:0.7rem;letter-spacing:0.05em;'>UNCLASSIFIED</div>"
+            "</div>", unsafe_allow_html=True)
+
+        with st.expander("Read Full Bulletin", expanded=False):
+            st.markdown(_weekly_bulletin_html(), unsafe_allow_html=True)
+
+    with col2:
+        st.markdown(
+            "<div style='background:rgba(10,20,40,0.6);border:1px solid rgba(255,75,110,0.3);"
+            "border-radius:10px;padding:20px;margin-bottom:14px;'>"
+            "<div style='display:flex;align-items:center;gap:10px;margin-bottom:12px;'>"
+            "<div style='font-size:1.8rem;'>&#9888;</div>"
+            "<div><div style='font-size:1.05rem;font-weight:700;color:#ff4b6e;'>NERAI Risk Alert</div>"
+            "<div style='font-size:0.75rem;color:#8aa8c8;'>Critical Threat Assessment | April 2026</div></div>"
+            "</div>"
+            "<div style='display:inline-block;background:#ff4b6e;color:#fff;padding:3px 10px;"
+            "border-radius:3px;font-weight:700;font-size:0.7rem;letter-spacing:0.05em;'>SEVERITY: CRITICAL</div>"
+            "</div>", unsafe_allow_html=True)
+
+        with st.expander("Read Full Alert", expanded=False):
+            st.markdown(_risk_alert_html(), unsafe_allow_html=True)
+
+    st.markdown(
+        "<div style='margin-top:30px;padding:14px 20px;background:rgba(10,20,40,0.4);"
+        "border:1px solid rgba(0,180,255,0.15);border-radius:8px;text-align:center;"
+        "color:#8aa8c8;font-size:0.8rem;line-height:1.6;'>"
+        "All analyses produced by NERAI Intelligence using proprietary indices, predictive models "
+        "and causal network analysis. Reports updated weekly."
+        "</div>", unsafe_allow_html=True)
+
+
+def _weekly_bulletin_html():
+    return (
+        "<div style='color:#e0e8f0;line-height:1.75;font-size:0.88rem;'>"
+
+        "<div style='border-bottom:2px solid rgba(0,180,255,0.3);padding-bottom:14px;margin-bottom:18px;'>"
+        "<h2 style='color:#00b4ff;margin:0 0 4px;font-size:1.4em;'>NERAI WEEKLY INTELLIGENCE BULLETIN</h2>"
+        "<div style='color:#8aa8c8;font-size:0.85em;'>Week 14 | March 28 &ndash; April 4, 2026</div>"
+        "</div>"
+
+        "<h3 style='color:#00b4ff;font-size:1.05em;margin:18px 0 8px;'>EXECUTIVE SUMMARY</h3>"
+        "<p style='text-align:justify;'>Week 14 marked a significant escalation in Middle East regional tensions with the "
+        "re-activation of Houthi military operations against Israel, Iranian drone strikes targeting Gulf infrastructure, "
+        "and an accelerating humanitarian crisis across the Levant. NERAI's Military Escalation indices across the region "
+        "have reached their highest levels since October 2025, with 12-month forecasts indicating sustained and potentially "
+        "intensifying conflict dynamics. Energy markets responded sharply, with Brent crude surging past $109 per barrel "
+        "driven by Strait of Hormuz supply-disruption concerns and gold climbing above $4,670 per ounce on safe-haven demand.</p>"
+
+        "<h3 style='color:#ff4b6e;font-size:1.05em;margin:22px 0 8px;'>"
+        "&#9650; 1 &middot; HOUTHI MISSILE STRIKES ON ISRAEL &mdash; NEW FRONT IN REGIONAL WAR</h3>"
+        "<p style='text-align:justify;'>On March 28, 2026, Yemen's Houthi forces launched coordinated ballistic-missile attacks "
+        "targeting Israeli military installations, marking a dramatic re-entry into active combat following months of relative quiet "
+        "after the October 2025 Gaza ceasefire. Houthi military spokesman Brig. Gen. Yahya Saree confirmed two separate salvos "
+        "within hours and vowed continued strikes until the aggression on all resistance fronts stops. Israeli air "
+        "defences intercepted the majority of incoming projectiles, although several reached their intended targets in the Negev "
+        "region. The attacks signal Iran's demonstrated ability to activate multiple proxy fronts simultaneously, raising the "
+        "spectre of a broader regional conflagration that draws in additional state and non-state actors.</p>"
+
+        "<div style='padding:12px 14px;background:rgba(0,180,255,0.08);border-left:3px solid #00b4ff;"
+        "border-radius:4px;margin:12px 0;'>"
+        "<b>NERAI DATA INSIGHTS:</b> The Military Escalation index for Israel currently stands at <b>0.27</b> with a "
+        "12-month forecast showing a <b>+10.1% rising</b> trajectory, indicating sustained combat operations ahead. "
+        "Yemen's Terrorism index is elevated at <b>0.25</b> with a particularly concerning <b>+37.3% rising</b> trend "
+        "&mdash; the steepest increase of any country-topic pair in the current dataset. Israel's Military Clash index "
+        "at <b>0.23</b> continues upward at <b>+10.7%</b>. NERAI's Causal Network analysis identifies strong "
+        "Granger-causal links between Iranian military-escalation decisions and subsequent Houthi activity, confirming "
+        "the proxy-coordination pattern with an estimated 1&ndash;3 month lead-lag relationship.</div>"
+
+        "<div style='padding:12px 14px;background:rgba(255,215,0,0.06);border-left:3px solid #ffd700;"
+        "border-radius:4px;margin:12px 0;'>"
+        "<b>12-MONTH FORECAST:</b> NERAI's predictive models indicate continued escalation across the Middle East "
+        "theatre through Q4 2026. Lebanon shows the highest projected Military Escalation increase at <b>+12.1%</b>, "
+        "followed by Israel at <b>+10.1%</b> and Yemen at <b>+8.4%</b>. The forecast incorporates Iranian strategic "
+        "intent, proxy-force readiness indicators and Israeli response-escalation patterns.</div>"
+
+        "<h3 style='color:#ff4b6e;font-size:1.05em;margin:22px 0 8px;'>"
+        "&#9650; 2 &middot; IRANIAN DRONE STRIKE ON KUWAIT INTERNATIONAL AIRPORT</h3>"
+        "<p style='text-align:justify;'>On April 1, 2026, Iranian drones executed a precision strike on fuel-storage "
+        "facilities at Kuwait International Airport, igniting a fire that burned for over 18 hours and forced extended "
+        "runway closures. The airport had already been partially disabled by earlier strikes in late February and March 2026 "
+        "that damaged radar systems and terminal infrastructure. The strike demonstrates Iran's expanding long-range drone "
+        "capabilities and willingness to target strategic civilian infrastructure in US-allied Gulf states, directly "
+        "challenging the security architecture that underpins Western interests in the region.</p>"
+
+        "<div style='padding:12px 14px;background:rgba(0,180,255,0.08);border-left:3px solid #00b4ff;"
+        "border-radius:4px;margin:12px 0;'>"
+        "<b>NERAI DATA ANALYSIS:</b> Iran's Military Escalation index stands at <b>0.16</b> with a <b>+6.1% rising</b> "
+        "trend. The Deteriorating Bilateral Relations index for the Iran&ndash;Gulf corridor is elevated. Kuwait's "
+        "Government Instability index remains low at 0.01, but NERAI's Country Profile flags potential for rapid "
+        "escalation if critical infrastructure targeting continues. Predictions show sustained escalation probability "
+        "through the next 12 months across all Gulf states.</div>"
+
+        "<p style='text-align:justify;'><b>Broader implications:</b> The attacks create immediate concerns for Gulf energy "
+        "security and the Strait of Hormuz, which handles approximately 20% of global maritime oil transport. Shipping "
+        "insurance premiums have spiked, and several major petroleum companies are rerouting cargoes around the Cape of "
+        "Good Hope, adding 2&ndash;3 weeks to transit times and an estimated $3&ndash;5 per barrel in freight surcharges.</p>"
+
+        "<h3 style='color:#ff4b6e;font-size:1.05em;margin:22px 0 8px;'>"
+        "&#9650; 3 &middot; LEBANON-SYRIA MASS DISPLACEMENT CRISIS</h3>"
+        "<p style='text-align:justify;'>Israeli military operations in Lebanon have displaced nearly one million people "
+        "&mdash; roughly 20% of the country's population. Between March 2 and 27, over 200,000 individuals crossed into "
+        "Syria (180,000 returning Syrian refugees and 28,000+ Lebanese nationals), creating the largest cross-border refugee "
+        "movement in the region since 2015. Israel issued displacement orders south of the Litani River on March 4 and "
+        "expanded the zone south of the Zahrani River on March 12, triggering cascading humanitarian needs and placing "
+        "severe strain on Syria's already fragile infrastructure.</p>"
+
+        "<div style='padding:12px 14px;background:rgba(0,180,255,0.08);border-left:3px solid #00b4ff;"
+        "border-radius:4px;margin:12px 0;'>"
+        "<b>NERAI RISK ASSESSMENT:</b> Lebanon's Military Escalation index is the <b>highest in the current dataset "
+        "at 0.35</b>, with a projected 12-month increase of <b>+12.1%</b> &mdash; the most alarming trajectory in the "
+        "region. Syria's Political Instability index stands at <b>0.08</b> and is rising. Lebanon's Protest index at "
+        "<b>0.10</b> shows a <b>+34.2% rising</b> trend, signalling significant domestic backlash. NERAI's Country "
+        "Profile rates Lebanon in <span style='color:#ff4b6e;font-weight:700;'>CRITICAL</span> risk status across "
+        "political stability, economic outlook and civilian security dimensions.</div>"
+
+        "<h3 style='color:#00b4ff;font-size:1.05em;margin:22px 0 8px;'>MARKET IMPACT</h3>"
+        "<div style='padding:14px;background:rgba(0,180,255,0.06);border-radius:6px;margin:10px 0;'>"
+        "<b>Energy Markets</b><br>"
+        "&bull; Brent Crude: <b>$109.03/barrel</b> (Apr 4) &mdash; up from $104.86 on Apr 1 (+4.0%)<br>"
+        "&bull; WTI Crude: <b>$111.54/barrel</b> (+4.3% weekly)<br><br>"
+        "<b>Safe-Haven Assets</b><br>"
+        "&bull; Gold: <b>$4,673/oz</b> (+2.3% weekly, safe-haven demand)<br>"
+        "&bull; USD Index: 104.7 &mdash; strengthening on risk-off sentiment<br><br>"
+        "<span style='color:#ffd700;'><b>Strait of Hormuz restrictions driving an estimated $5+ per barrel "
+        "premium above baseline.</b></span>"
+        "</div>"
+
+        "<h3 style='color:#00b4ff;font-size:1.05em;margin:22px 0 8px;'>NERAI 12-MONTH OUTLOOK</h3>"
+        "<div style='padding:12px 14px;background:rgba(255,75,110,0.06);border-left:3px solid #ff4b6e;"
+        "border-radius:4px;margin:12px 0;'>"
+        "NERAI's integrated models predict sustained military escalation across the Middle East through Q4 2026, "
+        "with escalating probability of direct Israeli&ndash;Iranian military engagement by Q3 2026. The confluence "
+        "of Houthi re-activation, Gulf infrastructure vulnerability and the Lebanon displacement crisis creates a "
+        "complex conflict ecosystem with elevated risk of further uncontrolled escalation. Energy markets should "
+        "anticipate continued volatility with potential spike events if Strait of Hormuz operations are further "
+        "restricted.</div>"
+
+        "<div style='border-top:1px solid rgba(0,180,255,0.2);margin-top:20px;padding-top:10px;"
+        "color:#8aa8c8;font-size:0.78rem;text-align:center;'>"
+        "Published by NERAI Intelligence | April 4, 2026</div>"
+        "</div>"
+    )
+
+
+def _risk_alert_html():
+    return (
+        "<div style='color:#e0e8f0;line-height:1.75;font-size:0.88rem;'>"
+
+        "<div style='border-bottom:2px solid rgba(255,75,110,0.3);padding-bottom:14px;margin-bottom:18px;'>"
+        "<h2 style='color:#ff4b6e;margin:0 0 4px;font-size:1.4em;'>NERAI RISK ALERT</h2>"
+        "<div style='color:#8aa8c8;font-size:0.85em;'>Critical Threat Assessment | April 2026</div>"
+        "</div>"
+
+        "<h3 style='color:#ff4b6e;font-size:1.05em;margin:18px 0 8px;'>"
+        "&#9888; ALERT 1: STRAIT OF HORMUZ &mdash; ENERGY SUPPLY DISRUPTION</h3>"
+        "<div style='display:inline-block;background:rgba(255,75,110,0.2);color:#ff9999;padding:3px 10px;"
+        "border-radius:3px;font-weight:700;font-size:0.75rem;margin-bottom:10px;'>SEVERITY: CRITICAL</div>"
+        "<p style='text-align:justify;'>The effective closure of the Strait of Hormuz to Western-flagged commercial "
+        "shipping represents the single largest near-term risk to global economic stability. The Strait handles "
+        "approximately 20% of global maritime petroleum transport. Iranian military escalation, demonstrated through "
+        "drone strikes on Gulf infrastructure and ballistic-missile deployments, has created an environment of spiking "
+        "insurance costs, operational delays and significant rerouting expenses.</p>"
+
+        "<div style='padding:12px 14px;background:rgba(0,180,255,0.08);border-left:3px solid #00b4ff;"
+        "border-radius:4px;margin:12px 0;'>"
+        "<b>TRIGGER EVENTS:</b> Iranian drone strike on Kuwait International Airport (Apr 1); Houthi missile attacks "
+        "on Israel (Mar 28); Escalated Iranian military posture across the Gulf; Western naval deployments including "
+        "USS Eisenhower carrier strike group; Shipping insurance providers expanding hazard-zone designations.</div>"
+
+        "<div style='padding:12px 14px;background:rgba(0,180,255,0.08);border-left:3px solid #00b4ff;"
+        "border-radius:4px;margin:12px 0;'>"
+        "<b>NERAI ANALYSIS:</b> Iran's Military Escalation index at <b>0.16</b> (+6.1% rising). Gulf-state "
+        "vulnerability indices elevated &mdash; Kuwait 0.18, Saudi Arabia 0.12, UAE 0.08. Causal-network analysis "
+        "shows strong linkages between Iranian military actions and restrictions on commercial shipping lanes.</div>"
+
+        "<div style='padding:12px 14px;background:rgba(255,215,0,0.06);border-left:3px solid #ffd700;"
+        "border-radius:4px;margin:12px 0;'>"
+        "<b>FORECAST:</b> Under moderate escalation, oil rises to $120&ndash;130/barrel with 2&ndash;4 week "
+        "disruption. Under severe scenario, prices spike to $150+/barrel with 6&ndash;8 week disruptions. "
+        "Sustained military escalation probability assessed at 78% through Q3 2026.</div>"
+
+        "<p><b>WATCH:</b> IRGC vessel positioning; shipping insurance premiums; US 5th Fleet status; "
+        "Saudi Aramco production announcements; tanker AIS routing data.</p>"
+
+        "<h3 style='color:#ffd700;font-size:1.05em;margin:22px 0 8px;'>"
+        "&#9888; ALERT 2: INDIA-PAKISTAN NUCLEAR THRESHOLD</h3>"
+        "<div style='display:inline-block;background:rgba(255,215,0,0.2);color:#ffee99;padding:3px 10px;"
+        "border-radius:3px;font-weight:700;font-size:0.75rem;margin-bottom:10px;'>SEVERITY: HIGH</div>"
+        "<p style='text-align:justify;'>Following the May 2025 Operation Sindoor crisis, structural tensions "
+        "between India and Pakistan remain elevated. While hostilities have subsided, underlying drivers &mdash; "
+        "Kashmir militancy, proxy operations and strategic competition &mdash; persist. Pakistan's fragile economy "
+        "creates incentives for strategic risk-taking by political leadership to generate nationalist sentiment.</p>"
+
+        "<div style='padding:12px 14px;background:rgba(0,180,255,0.08);border-left:3px solid #00b4ff;"
+        "border-radius:4px;margin:12px 0;'>"
+        "<b>NERAI DATA:</b> India Military Escalation <b>0.09</b>, Political Instability <b>0.02</b> (stable). "
+        "Pakistan more volatile &mdash; Military Escalation <b>0.14</b>, Political Instability <b>0.11</b> "
+        "(+8.3% rising), Terrorism <b>0.18</b> (+5.2%). Cross-border infiltration averaging 1.3 incidents/week.</div>"
+
+        "<div style='padding:12px 14px;background:rgba(255,215,0,0.06);border-left:3px solid #ffd700;"
+        "border-radius:4px;margin:12px 0;'>"
+        "<b>FORECAST:</b> NERAI assesses 42% probability of renewed major escalation event within 12 months, "
+        "with 8% conditional probability of nuclear-capable crisis comparable to May 2025.</div>"
+
+        "<p><b>WATCH:</b> Pakistan military exercises; militancy attack frequency; cross-border infiltration; "
+        "Pakistani political instability signals; Indian military posture near LoC; nuclear-force mobilisation.</p>"
+
+        "<h3 style='color:#ff9800;font-size:1.05em;margin:22px 0 8px;'>"
+        "&#9888; ALERT 3: TAIWAN STRAIT &mdash; GREAT-POWER CONFRONTATION</h3>"
+        "<div style='display:inline-block;background:rgba(255,152,0,0.2);color:#ffcc99;padding:3px 10px;"
+        "border-radius:3px;font-weight:700;font-size:0.75rem;margin-bottom:10px;'>SEVERITY: ELEVATED</div>"
+        "<p style='text-align:justify;'>China's December 2025 exercises involving 100+ aircraft (90 crossing the "
+        "Taiwan median line) and 27 rocket launches represent unprecedented peacetime provocation. The 2026 defence "
+        "budget increased 7% to $278 billion, emphasising emerging technologies and Taiwan contingency capabilities.</p>"
+
+        "<div style='padding:12px 14px;background:rgba(0,180,255,0.08);border-left:3px solid #00b4ff;"
+        "border-radius:4px;margin:12px 0;'>"
+        "<b>NERAI ASSESSMENT:</b> China Military Escalation at <b>0.04</b> with acceleration trend (+2.8%). "
+        "International Crisis index for East Asia rising +4.1% monthly. NERAI's Taiwan Strait crisis-probability "
+        "composite has increased 33% from baseline (0.18 to 0.24).</div>"
+
+        "<div style='padding:12px 14px;background:rgba(255,215,0,0.06);border-left:3px solid #ffd700;"
+        "border-radius:4px;margin:12px 0;'>"
+        "<b>FORECAST:</b> 31% probability of significant military incident in Taiwan Strait within 12 months. "
+        "Escalation from incident to major conflict assessed at 18% conditional probability. Baseline scenario: "
+        "continued exercises with periodic crisis scares but no kinetic exchange.</div>"
+
+        "<p><b>WATCH:</b> Chinese exercise announcements; median-line crossings; US carrier deployments; "
+        "Taiwan defence procurement; Chinese political messaging on unification timeline.</p>"
+
+        "<div style='border-top:1px solid rgba(255,75,110,0.3);margin-top:20px;padding-top:10px;"
+        "color:#8aa8c8;font-size:0.78rem;text-align:center;'>"
+        "Published by NERAI Intelligence | April 4, 2026</div>"
+        "</div>"
+    )
+
+
 SCENARIO_TEMPLATES = {
     'iran_nuclear_crisis': {'label': '☢️ Iran Nuclear Crisis', 'icon': '☢️',
         'desc': 'Simulates escalation in Iran nuclear tensions and regional spillover'},
@@ -4382,6 +4644,7 @@ elif page == 'predictions': render_predictions()
 elif page == 'causality':   render_causality()
 elif page == 'scenarios':   render_scenarios()
 elif page == 'insights':    render_insights()
+elif page == 'briefing':    render_briefing_room()
 elif page == 'api':         render_api()
 else:
     st.session_state.page = 'home'
