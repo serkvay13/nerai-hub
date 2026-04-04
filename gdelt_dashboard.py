@@ -1743,7 +1743,10 @@ def render_indices():
     df_topic_raw  = df_topic_raw.reindex(columns=sorted(df_topic_raw.columns))
     df_recent_raw = df_topic_raw[date_cols[-n_days:]]
     df_norm       = apply_norm(df_topic_raw, norm_method)
+    # Fill remaining zero-gaps after normalization
+    df_norm = df_norm.T.replace(0, np.nan).interpolate(method="linear", limit_direction="both").ffill().bfill().fillna(0).T
     df_recent     = apply_norm(df_recent_raw, norm_method)
+    df_recent = df_recent.T.replace(0, np.nan).interpolate(method="linear", limit_direction="both").ffill().bfill().fillna(0).T
     norm_suffix   = {'Raw':'','Score (0–100)':' · Score 0–100','Z-Score':' · Z-Score'}[norm_method]
     sel_label     = TOPIC_LABELS.get(sel_topic, sel_topic.replace('_',' ').title())
 
@@ -1807,7 +1810,7 @@ def render_indices():
         if len(df_norm.columns)>7:
             last    = df_norm.iloc[:,-1]
             prev    = df_norm.iloc[:,-8]
-            changes = ((last-prev)/(prev.abs()+1e-10)*100).dropna()
+            changes = ((last-prev)/(prev.abs().clip(lower=1.0))*100).clip(-999,999).dropna()
             top_up  = changes.nlargest(5)
             top_dn  = changes.nsmallest(3)
             sig_c1, sig_c2 = st.columns(2)
