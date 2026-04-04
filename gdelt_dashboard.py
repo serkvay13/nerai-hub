@@ -1212,17 +1212,7 @@ def load_predictions():
     if os.path.exists(pred_file):
         try:
             preds = pd.read_csv(pred_file, parse_dates=['ds'])
-            # --- Normalize raw event counts to 0-100 per topic+country ---
-            if preds is not None and 'yhat' in preds.columns and len(preds) > 0:
-                for tc_cols in [['topic', 'country']]:
-                    if all(c in preds.columns for c in tc_cols):
-                        grp_min = preds.groupby(tc_cols)['yhat'].transform('min')
-                        grp_max = preds.groupby(tc_cols)['yhat'].transform('max')
-                        grp_range = grp_max - grp_min
-                        for col in ['yhat', 'yhat_lower', 'yhat_upper']:
-                            if col in preds.columns:
-                                preds[col] = np.where(grp_range > 0, (preds[col] - grp_min) / grp_range * 100, 50).clip(0, 120)
-                        break
+            # Raw prediction values kept; normalization done in chart rendering using historical scale
         except Exception:
             preds = None
     if os.path.exists(trend_file):
@@ -1236,6 +1226,9 @@ def load_predictions():
                 # Filter out rows where topic/country look invalid (single chars or empty)
                 trends = trends[trends['topic'].str.len() > 2]
                 trends = trends[trends['country'].str.len() >= 2]
+                # Cap trend_pct to reasonable range
+                if 'trend_pct' in trends.columns:
+                    trends['trend_pct'] = trends['trend_pct'].clip(-500, 500)
                 if len(trends) == 0:
                     trends = None
         except Exception:
@@ -2417,8 +2410,12 @@ def render_predictions():
     # ── Normalise predictions to score 0-100 for display ─────
     # Use the same max as historical indices for comparability
     def _norm_pred_series(topic, country, yhat_vals):
-        # Predictions already normalized to 0-100 at load time
-        return yhat_vals
+        # Normalize using historical max for the topic+country
+        try:
+            hmax = float(df.xs(topic, level='topic').loc[country].max())
+            return yhat_vals / hmax * 100 if hmax > 0 else yhat_vals
+        except Exception:
+            return yhat_vals
 
     # ── Main chart — historical + forecast ───────────────────
     col_left, col_right = st.columns([4, 2])
@@ -2467,19 +2464,24 @@ def render_predictions():
             ))
 
         if len(fc) > 0:
-            if hist_series is not None and hist_series.max() > 0:
-                raw_hist_max = float(df.xs(sel_pred_topic, level='topic')
-                                       .loc[sel_pred_country].max()) \
-                               if (sel_pred_topic in df.index.get_level_values('topic') and
-                                   sel_pred_country in df.index.get_level_values('country')) \
-                               else 1.0
-                scale = 1.0  # Predictions already normalized at load time
+        if hist_series is not None and len(hist_series) > 0:
+            raw_hist_max = float(df.xs(sel_pred_topic, level='topic')
+                .loc[sel_pred_country].max()) \
+                if (sel_pred_topic in df.index.get_level_values('topic') and
+                    sel_pred_country in df.index.get_level_values('country')) \
+                else 1.0
+            if raw_hist_max > 0:
+                yhat = fc['yhat'] / raw_hist_max * 100
+                y_lo = fc['yhat_lower'] / raw_hist_max * 100
+                y_hi = fc['yhat_upper'] / raw_hist_max * 100
             else:
-                scale = 1.0  # Already normalized at load time
-
-            yhat = fc['yhat']       * scale
-            y_lo = fc['yhat_lower'] * scale
-            y_hi = fc['yhat_upper'] * scale
+                yhat = fc['yhat']
+                y_lo = fc['yhat_lower']
+                y_hi = fc['yhat_upper']
+        else:
+            yhat = fc['yhat']
+            y_lo = fc['yhat_lower']
+            y_hi = fc['yhat_upper']
             fc_end_val = round(float(yhat.iloc[-1]), 1)
 
             # Outer CI (95%)
