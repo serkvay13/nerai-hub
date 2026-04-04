@@ -8,6 +8,12 @@ import numpy as np
 import plotly.graph_objects as go
 import datetime, os, json
 import re
+
+def _safe_pct(val, maxabs=500):
+    """Cap percentage to +/-maxabs to prevent display of astronomical values."""
+    if val is None or (isinstance(val, float) and (val != val)): return 0.0
+    return max(-maxabs, min(maxabs, float(val)))
+
 import urllib.request, urllib.parse
 
 st.set_page_config(
@@ -531,6 +537,7 @@ def load_data(filepath='./indices.csv'):
         if date_cols:
             df[date_cols] = df[date_cols].replace(0, np.nan)
             df[date_cols] = df[date_cols].interpolate(axis=1, method='linear', limit_direction='both')
+            df[date_cols] = df[date_cols].ffill(axis=1).bfill(axis=1)
             df[date_cols] = df[date_cols].fillna(0)
         return df,False
     return _demo_data(),True
@@ -1020,7 +1027,7 @@ def compute_country_alarms(_df_raw, country, top_n=5):
             mu     = float(series.mean())
             sd     = float(series.std())
             z      = (recent-mu)/sd if sd>0 else 0.0
-            pct    = (recent-prev7)/(abs(prev7)+1e-10)*100
+            pct    = max(-500, min(500, (recent-prev7)/(abs(prev7)+1e-9)*100)) if abs(prev7) > 1e-9 else 0.0
             flat   = tdf.values.flatten()
             pos    = flat[flat>0]
             g_max  = float(np.percentile(pos,99)) if len(pos) else 1.0
@@ -1981,7 +1988,7 @@ def render_profile():
                   <div>
                     <div class="idx-label">{idx['label']}</div>
                     <div class="idx-bar-bg">
-                      <div style="background:{col};width:{s:.0f}%;height:3px;
+                      <div style="background:{col};width:{_safe_pct(s):.0f}%;height:3px;
                            border-radius:3px;box-shadow:0 0 5px {col}60;"></div>
                     </div>
                   </div>
@@ -2139,7 +2146,7 @@ def render_profile():
               <div class="metric-mini-label">{label}</div>
               <div class="metric-mini-val" style="color:{color};text-shadow:0 0 12px {color}45;">{avg_v:.1f}</div>
               <div style="background:rgba(0,0,0,0.3);border-radius:3px;height:3px;margin:6px 0 5px;">
-                <div style="background:{color};width:{avg_v:.0f}%;height:3px;border-radius:3px;box-shadow:0 0 6px {color}70;"></div>
+                <div style="background:{color};width:{_safe_pct(avg_v):.0f}%;height:3px;border-radius:3px;box-shadow:0 0 6px {color}70;"></div>
               </div>
               <div style="font-size:0.56rem;color:rgba(150,180,200,0.4);font-family:monospace;">{name_a} · {name_b}</div>
             </div>""", unsafe_allow_html=True)
@@ -2463,7 +2470,7 @@ def render_predictions():
 
         # KPI strip
         if current_val is not None and fc_end_val is not None:
-            delta = fc_end_val - current_val
+            delta = max(-100, min(100, fc_end_val - current_val))
             d_col = '#e05060' if delta > 0 else '#00d4aa'
             arrow = '▲' if delta > 0 else '▼'
             k1, k2, k3, k4 = st.columns(4)
@@ -2498,7 +2505,7 @@ def render_predictions():
                          overflow:hidden;text-overflow:ellipsis;'>{row["label"]}</div>
                     <div style='background:rgba(0,0,0,0.3);border-radius:2px;
                          height:2px;width:100%;margin-top:3px;'>
-                      <div style='background:{col_d};width:{bar_w:.0f}%;height:2px;
+                      <div style='background:{col_d};width:{_safe_pct(bar_w):.0f}%;height:2px;
                            border-radius:2px;'></div>
                     </div>
                   </div>
@@ -2597,7 +2604,7 @@ def _compute_country_insights(_df_raw, _trend_df):
                 r_mean = float(c_df[recent_cols].values.mean())
                 p_mean = float(c_df[past_cols].values.mean())
                 raw_means[country]   = r_mean
-                change_pcts[country] = (r_mean - p_mean) / (p_mean + 1e-15) * 100 if p_mean > 1e-15 else 0.0
+                change_pcts[country] = max(-500, min(500, (r_mean - p_mean) / (abs(p_mean) + 1e-9) * 100)) if abs(p_mean) > 1e-9 else 0.0
             except Exception:
                 raw_means[country]   = 0.0
                 change_pcts[country] = 0.0
@@ -2616,6 +2623,7 @@ def _compute_country_insights(_df_raw, _trend_df):
             # ── Trend data for this country ─────────────────────
             if _trend_df is not None:
                 ct = _trend_df[_trend_df['country'] == country].dropna(subset=['trend_pct'])
+            ct = ct.copy(); ct['trend_pct'] = ct['trend_pct'].clip(-500, 500)
                 top_rising  = ct.nlargest(3, 'trend_pct')[['topic','trend_pct']].values.tolist() if len(ct) else []
                 top_falling = ct.nsmallest(3, 'trend_pct')[['topic','trend_pct']].values.tolist() if len(ct) else []
                 avg_fc      = float(ct['trend_pct'].mean()) if len(ct) else 0.0
@@ -3434,13 +3442,13 @@ def render_insights():
             for _, r in trend_df.nlargest(15, 'trend_pct').iterrows():
                 lbl = TOPIC_LABELS.get(r['topic'], str(r['topic']).replace('_',' ').title())
                 cnt = COUNTRY_NAMES.get(r['country'], r['country'])
-                st.markdown(f"<div style='display:flex;justify-content:space-between;padding:4px 8px;margin-bottom:3px;background:rgba(255,75,110,0.05);border:1px solid rgba(255,75,110,0.12);border-radius:5px;'><div><div style='font-size:0.72rem;color:#2a4060;'>{lbl}</div><div style='font-size:0.58rem;color:rgba(0,150,255,0.5);font-family:monospace;'>{cnt}</div></div><div style='font-size:0.82rem;font-weight:700;color:#e05060;font-family:monospace;'>+{r['trend_pct']:.1f}%</div></div>", unsafe_allow_html=True)
+                st.markdown(f"<div style='display:flex;justify-content:space-between;padding:4px 8px;margin-bottom:3px;background:rgba(255,75,110,0.05);border:1px solid rgba(255,75,110,0.12);border-radius:5px;'><div><div style='font-size:0.72rem;color:#2a4060;'>{lbl}</div><div style='font-size:0.58rem;color:rgba(0,150,255,0.5);font-family:monospace;'>{cnt}</div></div><div style='font-size:0.82rem;font-weight:700;color:#e05060;font-family:monospace;'>+{_safe_pct(r['trend_pct']):.1f}%</div></div>", unsafe_allow_html=True)
         with cf2:
             st.markdown("<div style='font-size:0.62rem;color:rgba(0,255,157,0.7);font-family:monospace;margin-bottom:8px;'>▼ HIGHEST FALLING</div>", unsafe_allow_html=True)
             for _, r in trend_df.nsmallest(15, 'trend_pct').iterrows():
                 lbl = TOPIC_LABELS.get(r['topic'], str(r['topic']).replace('_',' ').title())
                 cnt = COUNTRY_NAMES.get(r['country'], r['country'])
-                st.markdown(f"<div style='display:flex;justify-content:space-between;padding:4px 8px;margin-bottom:3px;background:rgba(0,255,157,0.04);border:1px solid rgba(0,255,157,0.10);border-radius:5px;'><div><div style='font-size:0.72rem;color:#2a4060;'>{lbl}</div><div style='font-size:0.58rem;color:rgba(0,150,255,0.5);font-family:monospace;'>{cnt}</div></div><div style='font-size:0.82rem;font-weight:700;color:#00d4aa;font-family:monospace;'>{r['trend_pct']:.1f}%</div></div>", unsafe_allow_html=True)
+                st.markdown(f"<div style='display:flex;justify-content:space-between;padding:4px 8px;margin-bottom:3px;background:rgba(0,255,157,0.04);border:1px solid rgba(0,255,157,0.10);border-radius:5px;'><div><div style='font-size:0.72rem;color:#2a4060;'>{lbl}</div><div style='font-size:0.58rem;color:rgba(0,150,255,0.5);font-family:monospace;'>{cnt}</div></div><div style='font-size:0.82rem;font-weight:700;color:#00d4aa;font-family:monospace;'>{_safe_pct(r['trend_pct']):.1f}%</div></div>", unsafe_allow_html=True)
 
     _render_footer()
 
