@@ -1212,13 +1212,7 @@ def load_predictions():
     if os.path.exists(pred_file):
         try:
             preds = pd.read_csv(pred_file, parse_dates=['ds'])
-            # Max-normalize predictions to 0-100 per (topic, country) series
-            if 'yhat' in preds.columns:
-                grp_max = preds.groupby(['topic', 'country'])['yhat'].transform('max')
-                grp_max = grp_max.where(grp_max > 0, 1.0)
-                for col in ['yhat', 'yhat_lower', 'yhat_upper']:
-                    if col in preds.columns:
-                        preds[col] = preds[col] / grp_max * 100
+            # Keep raw prediction values; scaling done in chart rendering
         except Exception:
             preds = None
     if os.path.exists(trend_file):
@@ -1234,7 +1228,7 @@ def load_predictions():
                     trends = None
         except Exception:
             trends = None
-    # Recalculate trend_pct from normalized predictions
+    # Recalculate trend_pct from raw predictions (% change first to last)
     if preds is not None and trends is not None and 'yhat' in preds.columns:
         sorted_preds = preds.sort_values('ds')
         first_vals = sorted_preds.groupby(['topic', 'country'])['yhat'].first()
@@ -2473,10 +2467,10 @@ def render_predictions():
             ))
 
         if len(fc) > 0:
-            yhat = fc['yhat']
-            y_lo = fc['yhat_lower']
-            y_hi = fc['yhat_upper']
-            # Scale predictions to align with historical data at transition point
+            yhat = fc['yhat'].copy()
+            y_lo = fc['yhat_lower'].copy()
+            y_hi = fc['yhat_upper'].copy()
+            # Scale raw predictions to align with historical at transition point
             if hist_series is not None and len(hist_series) > 0 and len(yhat) > 0:
                 last_hist_val = float(hist_series.iloc[-1])
                 first_pred_val = float(yhat.iloc[0])
@@ -2487,22 +2481,25 @@ def render_predictions():
                     y_hi = y_hi * pscale
             fc_end_val = round(float(yhat.iloc[-1]), 1)
 
-            # Outer CI (95%)
-            fig_fc.add_trace(go.Scatter(
-                x=pd.concat([fc['ds'], fc['ds'].iloc[::-1]]),
-                y=pd.concat([y_hi * 1.06, (y_lo * 0.94).iloc[::-1]]),
-                fill='toself', fillcolor='rgba(245,158,11,0.07)',
-                line=dict(color='rgba(0,0,0,0)'),
-                name='95% Confidence', hoverinfo='skip',
-            ))
-            # Inner CI (80%)
-            fig_fc.add_trace(go.Scatter(
-                x=pd.concat([fc['ds'], fc['ds'].iloc[::-1]]),
-                y=pd.concat([y_hi, y_lo.iloc[::-1]]),
-                fill='toself', fillcolor='rgba(245,158,11,0.16)',
-                line=dict(color='rgba(245,158,11,0.3)', width=0.5),
-                name='80% Confidence', hoverinfo='skip',
-            ))
+            # Only show CI bands if they have meaningful width
+            ci_width = (y_hi - y_lo).mean()
+            if ci_width > 0.5:
+                # Outer CI (95%)
+                fig_fc.add_trace(go.Scatter(
+                    x=pd.concat([fc['ds'], fc['ds'].iloc[::-1]]),
+                    y=pd.concat([y_hi * 1.06, (y_lo * 0.94).iloc[::-1]]),
+                    fill='toself', fillcolor='rgba(245,158,11,0.07)',
+                    line=dict(color='rgba(0,0,0,0)'),
+                    name='95% Confidence', hoverinfo='skip',
+                ))
+                # Inner CI (80%)
+                fig_fc.add_trace(go.Scatter(
+                    x=pd.concat([fc['ds'], fc['ds'].iloc[::-1]]),
+                    y=pd.concat([y_hi, y_lo.iloc[::-1]]),
+                    fill='toself', fillcolor='rgba(245,158,11,0.16)',
+                    line=dict(color='rgba(245,158,11,0.3)', width=0.5),
+                    name='80% Confidence', hoverinfo='skip',
+                ))
             # Forecast — orange/amber
             fig_fc.add_trace(go.Scatter(
                 x=fc['ds'], y=yhat,
