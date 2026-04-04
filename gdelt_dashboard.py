@@ -1705,8 +1705,8 @@ with st.sidebar:
                 pred_hist_months = 3
                 st.markdown(
                     '<div style="font-size:11px;color:#e07b20;padding:4px 0;">'
-                    '⚠️ Solo: 3 ay görüntülüyor. '
-                    'Pro ile 60 aya kadar geçmişe gidin.</div>',
+                    '⚠️ Solo: 3 months görüntülüyor. '
+                    'Pro ile 60 monthsa kadar geçmişe gidin.</div>',
                     unsafe_allow_html=True)
         else:
             sel_pred_topic   = all_topics[0] if all_topics else ''
@@ -4117,25 +4117,25 @@ def render_causality():
     # -- Active Selection Context --
     _ctx_parts = []
     if sel_topic != 'All':
-        _ctx_parts.append(f"Konu: <b>{sel_topic_label}</b>")
+        _ctx_parts.append(f"Topic: <b>{sel_topic_label}</b>")
     else:
-        _ctx_parts.append("Konu: <b>Tumu</b>")
+        _ctx_parts.append("Topic: <b>All</b>")
     if sel_country != 'All':
-        _ctx_parts.append(f"Ulke: <b>{sel_country_label}</b>")
+        _ctx_parts.append(f"Country: <b>{sel_country_label}</b>")
     else:
-        _ctx_parts.append("Ulke: <b>Tumu</b>")
+        _ctx_parts.append("Country: <b>All</b>")
     _ctx_parts.append(f"Min F-Stat: <b>{min_f:.1f}</b>")
-    _ctx_parts.append(f"Max Gecikme: <b>{max_lag} ay</b>")
+    _ctx_parts.append(f"Max Lag: <b>{max_lag} months</b>")
     _ctx_summary = " &middot; ".join(_ctx_parts)
     if sel_topic != 'All' and sel_country != 'All':
-        _strat_text = f"Bu analiz, <b>{sel_country_label}</b> ulkesindeki <b>{sel_topic_label}</b> olaylarinin diger ulke ve olay turleri ile nedensellik iliskisini gostermektedir. Yuksek F-Istatistik degeri, guclu bir ongorucu iliskiye isaret eder."
+        _strat_text = f"This analysis shows the causal relationships between <b>{sel_country_label}</b> events in <b>{sel_topic_label}</b> and other countries/event types. A higher F-Statistic indicates a stronger predictive relationship."
     elif sel_topic != 'All':
-        _strat_text = f"<b>{sel_topic_label}</b> konusundaki olaylarin tum ulkelerdeki nedensellik agi goruntulenmektedir. Bu analiz, hangi ulkelerdeki olaylarin diger ulkeleri etkiledigini ortaya koyar."
+        _strat_text = f"The causal network for <b>{sel_topic_label}</b> events across all countries is displayed. This analysis reveals which countries influence others through this event type."
     elif sel_country != 'All':
-        _strat_text = f"<b>{sel_country_label}</b> ile ilgili tum olay turlerinin nedensellik agi goruntulenmektedir. Bu, secilen ulkedeki olaylarin hangi diger ulke ve olay turlerini tetikledigini gosterir."
+        _strat_text = f"<b>{sel_country_label}</b> across all event types is displayed. This shows which other countries and event types are triggered by events in the selected country."
     else:
-        _strat_text = "Tum ulke ve olay turleri arasindaki nedensellik agi goruntulenmektedir. Filtreleri kullanarak belirli bir ulke veya olay turune odaklanabilirsiniz."
-    st.markdown(f"<div style='background:linear-gradient(135deg,rgba(0,40,80,0.6),rgba(0,20,50,0.4));border:1px solid rgba(0,180,255,0.25);border-radius:10px;padding:16px 20px;margin:10px 0 20px;'><div style='display:flex;align-items:center;gap:10px;margin-bottom:8px;'><span style='font-size:0.75rem;font-weight:700;color:#00d4ff;letter-spacing:0.08em;text-transform:uppercase;'>Aktif Analiz Filtreleri</span></div><div style='font-size:0.82rem;color:#e0e8f0;margin-bottom:8px;'>{_ctx_summary}</div><div style='font-size:0.78rem;color:#8ab4d8;line-height:1.6;'>{_strat_text}</div><div style='font-size:0.7rem;color:#5a7a9a;margin-top:8px;font-style:italic;'>Yukaridaki filtreler tum bolumleri etkiler: KPI metrikleri, ag diyagrami, top influencers ve edge listesi.</div></div>", unsafe_allow_html=True)
+        _strat_text = "The full causal network across all countries and event types is displayed. Use the filters above to focus on a specific country or event type."
+    st.markdown(f"<div style='background:linear-gradient(135deg,rgba(0,40,80,0.6),rgba(0,20,50,0.4));border:1px solid rgba(0,180,255,0.25);border-radius:10px;padding:16px 20px;margin:10px 0 20px;'><div style='display:flex;align-items:center;gap:10px;margin-bottom:8px;'><span style='font-size:0.75rem;font-weight:700;color:#00d4ff;letter-spacing:0.08em;text-transform:uppercase;'>Active Analysis Filters</span></div><div style='font-size:0.82rem;color:#e0e8f0;margin-bottom:8px;'>{_ctx_summary}</div><div style='font-size:0.78rem;color:#8ab4d8;line-height:1.6;'>{_strat_text}</div><div style='font-size:0.7rem;color:#5a7a9a;margin-top:8px;font-style:italic;'>The filters above affect all sections below: KPI metrics, network diagram, top influencers, and edge list.</div></div>", unsafe_allow_html=True)
 
     # -- KPI row --
     kc1, kc2, kc3 = st.columns(3)
@@ -4170,13 +4170,13 @@ def render_causality():
     # -- Focus Node + Network Diagram --
     _net_title = 'Interactive Network Diagram'
     if sel_topic != 'All' and sel_country != 'All':
-        _net_title = f'Nedensellik Agi: {sel_topic_label} - {sel_country_label}'
+        _net_title = f'Causal Network: {sel_topic_label} - {sel_country_label}'
     elif sel_topic != 'All':
-        _net_title = f'Nedensellik Agi: {sel_topic_label} - Tum Ulkeler'
+        _net_title = f'Causal Network: {sel_topic_label} - All Countries'
     elif sel_country != 'All':
-        _net_title = f'Nedensellik Agi: {sel_country_label} - Tum Konular'
+        _net_title = f'Causal Network: {sel_country_label} - All Topics'
     st.subheader(_net_title)
-    st.caption('Granger nedensellik iliskilerini gosteren ag diyagrami. Oklar nedensellik yonunu gosterir (A\u2192B: A olayindaki degisimler B olayini ongorur). Dugum buyuklugu baglanti sayisina baglidir.')
+    st.caption('Granger causality network diagram. Arrows show causality direction (A\u2192B: Changes in event A predict event B). Node size reflects the number of connections.')
     if scenario_nodes:
         st.caption('Orange nodes/edges = series touched by the most recent scenario run')
 
@@ -4206,15 +4206,15 @@ def render_causality():
 
     # -- Top Influencers bar chart --
     if sel_topic != 'All' and sel_country != 'All':
-        _inf_title = f'En Etkili Nedensel Faktörler — {sel_topic_label} · {sel_country_label}'
+        _inf_title = f'Top Causal Influencers — {sel_topic_label} · {sel_country_label}'
     elif sel_topic != 'All':
-        _inf_title = f'En Etkili Nedensel Faktörler — {sel_topic_label}'
+        _inf_title = f'Top Causal Influencers — {sel_topic_label}'
     elif sel_country != 'All':
-        _inf_title = f'En Etkili Nedensel Faktörler — {sel_country_label}'
+        _inf_title = f'Top Causal Influencers — {sel_country_label}'
     else:
-        _inf_title = 'En Etkili Nedensel Faktörler — Tum Konular & Ulkeler'
+        _inf_title = 'Top Causal Influencers — All Topics & Countries'
     st.subheader(_inf_title)
-    st.caption('En yuksek kumulatif F-Istatistik degerine sahip olay-ulke ciftleri. Bu ciftler, diger olaylar uzerinde en guclu ongorucu (nedensel) etkiye sahip olan olaylardir.')
+    st.caption('Event-country pairs with the highest cumulative F-Statistic. These are the events with the strongest predictive (causal) influence over other events.')
     influence = filtered.groupby('source')['max_f_stat'].sum().sort_values(ascending=False).head(15)
     if len(influence) > 0:
         n_bars = len(influence)
@@ -4266,7 +4266,7 @@ def render_causality():
         )
         st.plotly_chart(fig_bar, use_container_width=True)
 
-    st.markdown("<div style='background:rgba(10,20,50,0.4);border:1px solid rgba(0,180,255,0.15);border-radius:8px;padding:14px 18px;margin:15px 0;font-size:0.75rem;color:#8ab4d8;line-height:1.7;'><b style=\'color:#00d4ff;\'>Nasil Yorumlanir?</b><br>F-Istatistik: Deger ne kadar yuksekse, nedensellik iliskisi o kadar gucludur. F &gt; 10 guclu, F &gt; 50 cok guclu iliski demektir.<br>Lag (Gecikme): Olaylar arasindaki gecikme suresi (ay). Lag=1 ise bir olaydaki degisim 1 ay sonra digerini etkiler.<br>p-degeri: 0.05 altindaki degerler istatistiksel olarak anlamli iliskileri gosterir.</div>", unsafe_allow_html=True)
+    st.markdown("<div style='background:rgba(10,20,50,0.4);border:1px solid rgba(0,180,255,0.15);border-radius:8px;padding:14px 18px;margin:15px 0;font-size:0.75rem;color:#8ab4d8;line-height:1.7;'><b style=\'color:#00d4ff;\'>How to Interpret?</b><br>F-Statistic: The higher the value, the stronger the causal relationship. F &gt; 10 = strong, F &gt; 50 = very strong relationship.<br>Lag (Delay): Olaylar arasindaki gecikme suresi (ay). Lag=1 ise bir olaydaki degisim 1 months sonra digerini etkiler.<br>p-value: Values below 0.05 indicate statistically significant relationships.</div>", unsafe_allow_html=True)
 
     # -- Edge table --
     with st.expander('Full Causal Edge List', expanded=False):
