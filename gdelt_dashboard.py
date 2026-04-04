@@ -8,10 +8,8 @@ import numpy as np
 import plotly.graph_objects as go
 import datetime, os, json
 import re
+import streamlit.components.v1 as components
 
-
-# ---- 3D Globe HTML for Home Page ----
-GLOBE_HTML = """
 <div id="globe-container" style="width:100%;height:480px;position:relative;overflow:hidden;border-radius:16px;background:radial-gradient(ellipse at center,#0d1a2d 0%,#060a12 70%);">
 <canvas id="globeCanvas" style="width:100%;height:100%;display:block;"></canvas>
 <div style="position:absolute;top:20px;left:24px;z-index:10;">
@@ -202,195 +200,6 @@ GLOBE_HTML = """
 
 
 # ---- 3D Globe HTML for Home Page ----
-GLOBE_HTML = """
-<div id="globe-container" style="width:100%;height:480px;position:relative;overflow:hidden;border-radius:16px;background:radial-gradient(ellipse at center,#0d1a2d 0%,#060a12 70%);">
-<canvas id="globeCanvas" style="width:100%;height:100%;display:block;"></canvas>
-<div style="position:absolute;top:20px;left:24px;z-index:10;">
-  <div style="font-family:'Inter',system-ui,sans-serif;font-size:11px;color:rgba(0,212,255,0.6);text-transform:uppercase;letter-spacing:2px;">NERAI GLOBAL MONITOR</div>
-  <div style="font-family:'Inter',system-ui,sans-serif;font-size:20px;color:#00d4ff;font-weight:700;margin-top:4px;">Real-Time Geopolitical Risk</div>
-</div>
-<div id="globe-stats" style="position:absolute;bottom:16px;right:20px;z-index:10;font-family:monospace;font-size:11px;color:rgba(0,212,255,0.5);text-align:right;"></div>
-<script>
-(function(){
-  const canvas = document.getElementById('globeCanvas');
-  const ctx = canvas.getContext('2d');
-  let W, H, cx, cy, R, angle=0;
-
-  function resize(){
-    const rect = canvas.parentElement.getBoundingClientRect();
-    W = canvas.width = rect.width * (window.devicePixelRatio||1);
-    H = canvas.height = rect.height * (window.devicePixelRatio||1);
-    canvas.style.width = rect.width+'px';
-    canvas.style.height = rect.height+'px';
-    cx = W/2; cy = H/2; R = Math.min(W,H)*0.32;
-  }
-  resize();
-  window.addEventListener('resize', resize);
-
-  // Hotspot data - major geopolitical risk zones
-  const hotspots = [
-    {lat:48.8,lon:2.3,label:'EU',risk:0.7,color:'#00d4ff'},
-    {lat:38.9,lon:-77,label:'US',risk:0.5,color:'#00ffc8'},
-    {lat:55.7,lon:37.6,label:'RU',risk:0.9,color:'#ff4466'},
-    {lat:39.9,lon:116.4,label:'CN',risk:0.8,color:'#ff8844'},
-    {lat:35.7,lon:51.4,label:'IR',risk:0.85,color:'#ff4466'},
-    {lat:31.5,lon:34.8,label:'IL',risk:0.9,color:'#ff4466'},
-    {lat:33.3,lon:44.4,label:'IQ',risk:0.75,color:'#ff6644'},
-    {lat:9,lon:7.5,label:'NG',risk:0.6,color:'#ffaa00'},
-    {lat:28.6,lon:77.2,label:'IN',risk:0.5,color:'#00d4ff'},
-    {lat:35.6,lon:139.7,label:'JP',risk:0.3,color:'#00ffc8'},
-    {lat:-23.5,lon:-46.6,label:'BR',risk:0.45,color:'#00ffc8'},
-    {lat:37.5,lon:127,label:'KR',risk:0.55,color:'#00d4ff'},
-    {lat:39,lon:125.7,label:'KP',risk:0.95,color:'#ff2244'},
-    {lat:24.7,lon:46.7,label:'SA',risk:0.6,color:'#ffaa00'},
-    {lat:50.4,lon:30.5,label:'UA',risk:0.95,color:'#ff2244'},
-    {lat:-33.9,lon:18.4,label:'ZA',risk:0.4,color:'#00d4ff'},
-    {lat:41,lon:29,label:'TR',risk:0.6,color:'#ffaa00'},
-    {lat:13.7,lon:100.5,label:'TH',risk:0.35,color:'#00ffc8'},
-  ];
-
-  // Connection arcs between hotspots
-  const arcs = [
-    [0,2],[0,3],[1,2],[1,3],[2,14],[4,5],[3,11],[1,9],[6,4],[7,1]
-  ];
-
-  function project(lat, lon, r){
-    const phi = (90-lat)*Math.PI/180;
-    const theta = (lon+angle)*Math.PI/180;
-    const x = r * Math.sin(phi) * Math.cos(theta);
-    const y = r * Math.cos(phi);
-    const z = r * Math.sin(phi) * Math.sin(theta);
-    return {x: cx+x, y: cy-y, z: z, visible: z > -r*0.1};
-  }
-
-  function drawGlobe(t){
-    ctx.clearRect(0,0,W,H);
-
-    // Atmosphere glow
-    const atm = ctx.createRadialGradient(cx,cy,R*0.9,cx,cy,R*1.4);
-    atm.addColorStop(0,'rgba(0,212,255,0.08)');
-    atm.addColorStop(0.5,'rgba(0,212,255,0.03)');
-    atm.addColorStop(1,'transparent');
-    ctx.fillStyle=atm;
-    ctx.fillRect(0,0,W,H);
-
-    // Globe body
-    ctx.beginPath();
-    ctx.arc(cx,cy,R,0,Math.PI*2);
-    const grd = ctx.createRadialGradient(cx-R*0.3,cy-R*0.3,R*0.1,cx,cy,R);
-    grd.addColorStop(0,'#0f1e3a');
-    grd.addColorStop(0.7,'#0a1225');
-    grd.addColorStop(1,'#060a12');
-    ctx.fillStyle=grd;
-    ctx.fill();
-
-    // Grid lines (latitude)
-    ctx.strokeStyle='rgba(0,212,255,0.06)';
-    ctx.lineWidth=0.8;
-    for(let lat=-60;lat<=60;lat+=30){
-      ctx.beginPath();
-      for(let lon=0;lon<=360;lon+=3){
-        const p=project(lat,lon,R);
-        if(lon===0)ctx.moveTo(p.x,p.y);
-        else ctx.lineTo(p.x,p.y);
-      }
-      ctx.stroke();
-    }
-    // Longitude
-    for(let lon=0;lon<360;lon+=30){
-      ctx.beginPath();
-      for(let lat=-90;lat<=90;lat+=3){
-        const p=project(lat,lon,R);
-        if(lat===-90)ctx.moveTo(p.x,p.y);
-        else ctx.lineTo(p.x,p.y);
-      }
-      ctx.stroke();
-    }
-
-    // Draw arcs
-    for(const [a,b] of arcs){
-      const p1=project(hotspots[a].lat,hotspots[a].lon,R);
-      const p2=project(hotspots[b].lat,hotspots[b].lon,R);
-      if(!p1.visible && !p2.visible) continue;
-      const alpha = Math.max(0, Math.min(1, (p1.z+p2.z)/(2*R)+0.5)) * 0.3;
-      ctx.beginPath();
-      const mx=(p1.x+p2.x)/2, my=(p1.y+p2.y)/2 - 30 - Math.abs(p1.x-p2.x)*0.15;
-      ctx.moveTo(p1.x,p1.y);
-      ctx.quadraticCurveTo(mx,my,p2.x,p2.y);
-      ctx.strokeStyle='rgba(0,212,255,'+alpha+')';
-      ctx.lineWidth=1;
-      ctx.stroke();
-    }
-
-    // Draw hotspots
-    for(const h of hotspots){
-      const p=project(h.lat,h.lon,R);
-      if(!p.visible) continue;
-      const alpha = (p.z/R+1)/2;
-      const pulse = 1 + 0.3*Math.sin(t*0.003 + h.lat);
-      const sz = (3 + h.risk*5) * pulse * alpha;
-
-      // Outer glow
-      const gl=ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,sz*3);
-      gl.addColorStop(0,h.color.replace(')',','+alpha*0.4+')').replace('rgb','rgba').replace('#',''));
-      // Simplified glow
-      ctx.beginPath();
-      ctx.arc(p.x,p.y,sz*2.5,0,Math.PI*2);
-      ctx.fillStyle='rgba('+(h.risk>0.7?'255,60,80':'0,212,255')+','+(alpha*0.15)+')';
-      ctx.fill();
-
-      // Core dot
-      ctx.beginPath();
-      ctx.arc(p.x,p.y,sz,0,Math.PI*2);
-      ctx.fillStyle=h.color;
-      ctx.globalAlpha=alpha*0.9;
-      ctx.fill();
-      ctx.globalAlpha=1;
-
-      // Label
-      if(alpha > 0.5 && sz > 3){
-        ctx.font=(9*alpha)+'px monospace';
-        ctx.fillStyle='rgba(224,232,240,'+alpha*0.7+')';
-        ctx.fillText(h.label,p.x+sz+4,p.y+3);
-      }
-    }
-
-    // Rim highlight
-    ctx.beginPath();
-    ctx.arc(cx,cy,R,0,Math.PI*2);
-    ctx.strokeStyle='rgba(0,212,255,0.12)';
-    ctx.lineWidth=1.5;
-    ctx.stroke();
-
-    // Scanline effect
-    const scanY = cy + R * Math.sin(t*0.001);
-    ctx.beginPath();
-    ctx.moveTo(cx-R,scanY);
-    ctx.lineTo(cx+R,scanY);
-    ctx.strokeStyle='rgba(0,212,255,0.08)';
-    ctx.lineWidth=1;
-    ctx.stroke();
-
-    angle += 0.15;
-  }
-
-  function animate(t){
-    drawGlobe(t);
-    requestAnimationFrame(animate);
-  }
-  requestAnimationFrame(animate);
-
-  // Stats display
-  const statsEl = document.getElementById('globe-stats');
-  setInterval(()=>{
-    const d=new Date();
-    statsEl.innerHTML = 'UTC '+d.toISOString().substr(11,8)+'<br>NODES: '+hotspots.length+'<br>LINKS: '+arcs.length;
-  },1000);
-})();
-<\/script>
-</div>
-"""
-
 
 
 def _fmt_num(val, decimals=2):
@@ -804,139 +613,6 @@ p, span, label, .stMarkdown p { color: var(--text-secondary) !important; }
   border: 1px solid var(--border-glow) !important;
 }
 
-/* ═══ NAVIGATION BUTTON ENHANCEMENTS ═══ */
-@keyframes navGlow {
-  0%, 100% { box-shadow: 0 0 5px rgba(0,212,255,0.1), inset 0 0 5px rgba(0,212,255,0.05); }
-  50% { box-shadow: 0 0 15px rgba(0,212,255,0.3), inset 0 0 10px rgba(0,212,255,0.1); }
-}
-@keyframes navPulse {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.02); }
-  100% { transform: scale(1); }
-}
-@keyframes ripple {
-  0% { transform: scale(0); opacity: 0.6; }
-  100% { transform: scale(4); opacity: 0; }
-}
-@keyframes borderSweep {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
-
-/* Sidebar nav buttons */
-section[data-testid="stSidebar"] button[kind="secondary"],
-section[data-testid="stSidebar"] .stButton > button {
-  position: relative !important;
-  overflow: hidden !important;
-  border: 1px solid rgba(0,212,255,0.15) !important;
-  border-radius: 10px !important;
-  background: linear-gradient(135deg, rgba(13,18,32,0.9), rgba(10,14,23,0.95)) !important;
-  color: #b0c4d8 !important;
-  font-weight: 500 !important;
-  letter-spacing: 0.5px !important;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
-  text-transform: uppercase !important;
-  font-size: 12px !important;
-  padding: 12px 16px !important;
-  margin-bottom: 4px !important;
-}
-section[data-testid="stSidebar"] .stButton > button:hover {
-  border-color: rgba(0,212,255,0.5) !important;
-  background: linear-gradient(135deg, rgba(0,212,255,0.12), rgba(0,255,200,0.06)) !important;
-  color: #00d4ff !important;
-  animation: navPulse 0.6s ease-in-out !important;
-  box-shadow: 0 0 20px rgba(0,212,255,0.2), 0 0 40px rgba(0,212,255,0.05), inset 0 1px 0 rgba(0,212,255,0.15) !important;
-  transform: translateX(3px) !important;
-}
-section[data-testid="stSidebar"] .stButton > button:active {
-  transform: scale(0.97) translateX(3px) !important;
-  box-shadow: 0 0 30px rgba(0,212,255,0.4), inset 0 0 15px rgba(0,212,255,0.1) !important;
-}
-/* Active page indicator */
-section[data-testid="stSidebar"] .stButton > button[style*="border-color"] {
-  border-color: #00d4ff !important;
-  background: linear-gradient(135deg, rgba(0,212,255,0.15), rgba(0,255,200,0.05)) !important;
-  color: #00d4ff !important;
-  animation: navGlow 3s ease-in-out infinite !important;
-  box-shadow: 0 0 15px rgba(0,212,255,0.2) !important;
-}
-/* Ripple effect on click */
-section[data-testid="stSidebar"] .stButton > button::after {
-  content: '';
-  position: absolute;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background: rgba(0,212,255,0.4);
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%) scale(0);
-  opacity: 0;
-}
-section[data-testid="stSidebar"] .stButton > button:active::after {
-  animation: ripple 0.6s ease-out !important;
-}
-
-/* ═══ METRIC CARD GLOW ═══ */
-div[data-testid="stMetric"] {
-  border: 1px solid rgba(0,212,255,0.1) !important;
-  border-radius: 12px !important;
-  padding: 16px !important;
-  background: linear-gradient(135deg, rgba(13,18,32,0.8), rgba(10,14,23,0.9)) !important;
-  transition: all 0.3s ease !important;
-}
-div[data-testid="stMetric"]:hover {
-  border-color: rgba(0,212,255,0.3) !important;
-  box-shadow: 0 0 20px rgba(0,212,255,0.1) !important;
-  transform: translateY(-2px) !important;
-}
-
-/* ═══ PARTICLE BACKGROUND ANIMATION ═══ */
-@keyframes float {
-  0%, 100% { transform: translateY(0) rotate(0deg); opacity: 0.3; }
-  25% { transform: translateY(-20px) rotate(90deg); opacity: 0.6; }
-  50% { transform: translateY(-40px) rotate(180deg); opacity: 0.3; }
-  75% { transform: translateY(-20px) rotate(270deg); opacity: 0.6; }
-}
-
-/* ═══ TAB STYLING ═══ */
-.stTabs [data-baseweb="tab"] {
-  border: 1px solid rgba(0,212,255,0.1) !important;
-  border-radius: 8px !important;
-  margin-right: 6px !important;
-  transition: all 0.3s ease !important;
-  background: transparent !important;
-}
-.stTabs [data-baseweb="tab"]:hover {
-  border-color: rgba(0,212,255,0.4) !important;
-  box-shadow: 0 0 10px rgba(0,212,255,0.15) !important;
-}
-.stTabs [aria-selected="true"] {
-  border-color: #00d4ff !important;
-  background: linear-gradient(135deg, rgba(0,212,255,0.12), transparent) !important;
-  box-shadow: 0 0 15px rgba(0,212,255,0.2) !important;
-}
-
-/* ═══ EXPANDER GLOW ═══ */
-details[data-testid="stExpander"] {
-  border: 1px solid rgba(0,212,255,0.1) !important;
-  border-radius: 10px !important;
-  transition: all 0.3s ease !important;
-}
-details[data-testid="stExpander"]:hover {
-  border-color: rgba(0,212,255,0.25) !important;
-}
-details[data-testid="stExpander"][open] {
-  border-color: rgba(0,212,255,0.3) !important;
-  box-shadow: 0 0 15px rgba(0,212,255,0.08) !important;
-}
-
-/* ═══ SCROLLBAR STYLING ═══ */
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: #0a0e17; }
-::-webkit-scrollbar-thumb { background: rgba(0,212,255,0.2); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: rgba(0,212,255,0.4); }
 
 
 /* ═══ NAVIGATION BUTTON ENHANCEMENTS ═══ */
@@ -1073,6 +749,70 @@ details[data-testid="stExpander"][open] {
 ::-webkit-scrollbar-thumb { background: rgba(0,212,255,0.2); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: rgba(0,212,255,0.4); }
 
+
+/* ═══ NAV BUTTON GLOW — v2 ═══ */
+@keyframes navPulse{0%,100%{box-shadow:0 0 8px rgba(0,212,255,.15)}50%{box-shadow:0 0 22px rgba(0,212,255,.45)}}
+@keyframes rippleAnim{0%{transform:scale(0);opacity:.7}100%{transform:scale(3.5);opacity:0}}
+
+section[data-testid="stSidebar"] div[data-testid="stVerticalBlock"] button,
+section[data-testid="stSidebar"] div.stButton>button{
+  position:relative!important;overflow:hidden!important;
+  background:linear-gradient(135deg,rgba(13,18,32,.95),rgba(8,12,20,.98))!important;
+  border:1px solid rgba(0,212,255,.18)!important;border-radius:10px!important;
+  color:#8899bb!important;font-size:11.5px!important;font-weight:600!important;
+  letter-spacing:.6px!important;text-transform:uppercase!important;
+  padding:11px 14px!important;margin-bottom:3px!important;
+  transition:all .35s cubic-bezier(.4,0,.2,1)!important;
+}
+section[data-testid="stSidebar"] div.stButton>button:hover{
+  border-color:rgba(0,212,255,.55)!important;color:#00d4ff!important;
+  background:linear-gradient(135deg,rgba(0,212,255,.1),rgba(0,255,200,.04))!important;
+  transform:translateX(4px) scale(1.01)!important;
+  box-shadow:0 0 18px rgba(0,212,255,.2),inset 0 1px 0 rgba(0,212,255,.12)!important;
+}
+section[data-testid="stSidebar"] div.stButton>button:active{
+  transform:translateX(4px) scale(.97)!important;
+  box-shadow:0 0 28px rgba(0,212,255,.35)!important;
+}
+section[data-testid="stSidebar"] div.stButton>button::before{
+  content:'';position:absolute;width:14px;height:14px;border-radius:50%;
+  background:rgba(0,212,255,.5);top:50%;left:50%;
+  transform:translate(-50%,-50%) scale(0);opacity:0;pointer-events:none;
+}
+section[data-testid="stSidebar"] div.stButton>button:active::before{
+  animation:rippleAnim .5s ease-out forwards!important;
+}
+
+/* Metric cards */
+div[data-testid="stMetric"]{
+  border:1px solid rgba(0,212,255,.08)!important;border-radius:12px!important;
+  background:linear-gradient(135deg,rgba(13,18,32,.7),rgba(8,12,20,.8))!important;
+  transition:all .3s ease!important;padding:14px!important;
+}
+div[data-testid="stMetric"]:hover{
+  border-color:rgba(0,212,255,.28)!important;
+  box-shadow:0 0 18px rgba(0,212,255,.08)!important;
+  transform:translateY(-2px)!important;
+}
+
+/* Tab styling */
+.stTabs [data-baseweb="tab"]{
+  border:1px solid rgba(0,212,255,.1)!important;border-radius:8px!important;
+  margin-right:5px!important;transition:all .25s ease!important;
+}
+.stTabs [data-baseweb="tab"]:hover{border-color:rgba(0,212,255,.35)!important;}
+.stTabs [aria-selected="true"]{
+  border-color:#00d4ff!important;
+  background:linear-gradient(135deg,rgba(0,212,255,.1),transparent)!important;
+  box-shadow:0 0 12px rgba(0,212,255,.18)!important;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:#0a0e17}
+::-webkit-scrollbar-thumb{background:rgba(0,212,255,.25);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:rgba(0,212,255,.45)}
+/* ═══ END NAV CSS v2 ═══ */
 </style>
 """, unsafe_allow_html=True)
 
@@ -2245,14 +1985,67 @@ def render_home():
     </div>
     """, unsafe_allow_html=True)
 
-    # ── 3D Interactive Globe ──
-    import streamlit.components.v1 as stc
-    stc.html(GLOBE_HTML, height=500, scrolling=False)
-
-
-    # ── 3D Interactive Globe ──
-    import streamlit.components.v1 as stc
-    stc.html(GLOBE_HTML, height=500, scrolling=False)
+    # ── NERAI 3D Geopolitical Globe ──────────────────────────────
+    _globe_spots = [
+        ('Ukraine','UA',52,30,0.95,'#ff2244'),('Russia','RU',61,105,0.88,'#ff4455'),
+        ('Israel','IL',31,35,0.9,'#ff3344'),('N. Korea','KP',40,127,0.92,'#ff2233'),
+        ('Iran','IR',33,53,0.85,'#ff4466'),('Gaza','PS',31,34,0.9,'#ff3344'),
+        ('China','CN',35,103,0.75,'#ff8844'),('USA','US',38,-97,0.5,'#00d4ff'),
+        ('EU','DE',51,10,0.55,'#00d4ff'),('Russia/UA','XX',48,37,0.95,'#ff2244'),
+        ('India','IN',22,78,0.5,'#ffaa00'),('Japan','JP',36,138,0.3,'#00ffc8'),
+        ('Korea','KR',37,128,0.4,'#00d4ff'),('Turkey','TR',39,35,0.6,'#ffaa00'),
+        ('Saudi','SA',24,45,0.6,'#ffaa00'),('Nigeria','NG',10,8,0.6,'#ffaa00'),
+        ('Brazil','BR',-14,-51,0.4,'#00ffc8'),('S.Africa','ZA',-29,25,0.4,'#00ffc8'),
+    ]
+    import plotly.graph_objects as _pgo
+    _gfig = _pgo.Figure()
+    _gfig.add_trace(_pgo.Scattergeo(
+        lat=[s[2] for s in _globe_spots],
+        lon=[s[3] for s in _globe_spots],
+        mode='markers+text',
+        text=[s[0] for s in _globe_spots],
+        textposition='top center',
+        textfont=dict(size=9,color='rgba(200,220,240,0.7)'),
+        marker=dict(
+            size=[6+s[4]*12 for s in _globe_spots],
+            color=[s[5] for s in _globe_spots],
+            opacity=0.85,
+            line=dict(width=1,color='rgba(0,212,255,0.3)'),
+            symbol='circle',
+        ),
+        hovertemplate='<b>%{text}</b><extra></extra>',
+    ))
+    # Arc lines between conflict zones
+    _arcs=[('UA','RU',52,30,61,105),('IL','IR',31,35,33,53),('US','CN',38,-97,35,103),('KP','KR',40,127,37,128)]
+    for _a in _arcs:
+        _lats=[_a[2],(_a[2]+_a[4])/2+8,_a[4],None]
+        _lons=[_a[3],(_a[3]+_a[5])/2,_a[5],None]
+        _gfig.add_trace(_pgo.Scattergeo(lat=_lats,lon=_lons,mode='lines',
+            line=dict(width=1.2,color='rgba(0,212,255,0.25)'),hoverinfo='skip',showlegend=False))
+    _gfig.update_layout(
+        height=480,margin=dict(l=0,r=0,t=0,b=0),
+        paper_bgcolor='rgba(6,10,18,1)',plot_bgcolor='rgba(6,10,18,1)',
+        showlegend=False,
+        geo=dict(
+            showframe=False,showcoastlines=True,
+            coastlinecolor='rgba(0,212,255,0.2)',coastlinewidth=0.8,
+            showland=True,landcolor='rgba(13,22,40,1)',
+            showocean=True,oceancolor='rgba(6,12,24,1)',
+            showlakes=False,showcountries=True,
+            countrycolor='rgba(0,212,255,0.08)',countrywidth=0.5,
+            bgcolor='rgba(6,10,18,1)',
+            projection_type='orthographic',
+            lonaxis=dict(showgrid=True,gridcolor='rgba(0,212,255,0.05)',gridwidth=0.5),
+            lataxis=dict(showgrid=True,gridcolor='rgba(0,212,255,0.05)',gridwidth=0.5),
+        ),
+        annotations=[dict(
+            text='<b>NERAI GLOBAL MONITOR</b>  |  Geopolitical Risk Index',
+            x=0.5,y=1.0,xref='paper',yref='paper',showarrow=False,
+            font=dict(size=12,color='rgba(0,212,255,0.7)'),
+        )],
+    )
+    st.plotly_chart(_gfig, use_container_width=True, config={'displayModeBar':False})
+    # ── END Globe ─────────────────────────────────────────────────
 
 
     # ── Module Tiles ─────────────────────────────────────────
@@ -2872,6 +2665,19 @@ def render_profile():
 # ═══════════════════════════════════════════════════════════════
 def render_news():
 
+
+
+    # ── Dynamic News Background ─────────────────────────────────
+    _news_bg_map={
+        'conflict':'rgba(255,40,60,0.05),rgba(255,100,40,0.03)',
+        'diplomacy':'rgba(0,212,255,0.05),rgba(0,255,200,0.03)',
+        'economy':'rgba(0,255,140,0.05),rgba(0,200,255,0.03)',
+        'security':'rgba(255,170,0,0.05),rgba(255,60,40,0.03)',
+        'military':'rgba(255,60,40,0.06),rgba(255,40,80,0.03)',
+    }
+    _nbg=_news_bg_map.get('diplomacy','rgba(0,212,255,0.04),rgba(13,18,32,0.02)')
+    st.markdown(f'<div style="position:fixed;top:0;left:0;width:100vw;height:100vh;pointer-events:none;z-index:0;background:radial-gradient(ellipse at 20%% 30%%, {_nbg.split(",")[0]}, transparent 55%%),radial-gradient(ellipse at 80%% 70%%, {_nbg.split(",")[1]}, transparent 55%%)"></div>',unsafe_allow_html=True)
+    # ── END News BG ───────────────────────────────────────────────
 
     # ── Dynamic News Background ──
     _news_bg_colors = {
