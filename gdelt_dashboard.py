@@ -67,7 +67,6 @@ if 'access_tier' not in st.session_state:
 
 if st.session_state.access_tier is None:
     st.markdown("""
-    <style>
     .stApp { background: #0a0e17 !important; }
     [data-testid="stForm"] {
       background: linear-gradient(135deg, #0d1220 0%, #111827 100%) !important;
@@ -98,21 +97,15 @@ if st.session_state.access_tier is None:
     [data-testid="stForm"] button:hover {
       box-shadow: 0 0 20px rgba(0,212,255,0.4) !important;
     }
-    </style>
     """, unsafe_allow_html=True)
 
     col_l, col_c, col_r = st.columns([1, 2, 1])
     with col_c:
         st.markdown("""
-        <div style="text-align:center; padding: 40px 0 24px 0;">
-          <div style="font-size:11px; letter-spacing:3px; color:#0077a8;
                text-transform:uppercase; font-weight:700; margin-bottom:16px;">
                &#9635; NERAI Intelligence</div>
-          <div style="font-size:26px; font-weight:700; color:#ffffff; margin-bottom:8px;">
                Access Dashboard</div>
-          <div style="font-size:14px; color:#7a9ab8; margin-bottom:28px;">
                Enter your access code to continue.</div>
-        </div>
         """, unsafe_allow_html=True)
 
         _code = st.text_input("Access code", placeholder="e.g. NERAI-PRO-26",
@@ -142,7 +135,6 @@ _IS_PRO = st.session_state.access_tier == 'pro'
 # CSS
 # ═══════════════════════════════════════════════════════════════
 st.markdown("""
-<style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=DM+Serif+Display&family=JetBrains+Mono:wght@400;500&display=swap');
 :root {
   --bg-primary: #0a0e17;
@@ -555,7 +547,6 @@ div[data-testid="stMetric"]:hover{
 ::-webkit-scrollbar-thumb{background:rgba(0,212,255,.25);border-radius:3px}
 ::-webkit-scrollbar-thumb:hover{background:rgba(0,212,255,.45)}
 /* ═══ END NAV CSS v2 ═══ */
-</style>
 """, unsafe_allow_html=True)
 
 # ═══════════════════════════════════════════════════════════════
@@ -1404,22 +1395,6 @@ if 'page' not in st.session_state:
 # ═══════════════════════════════════════════════════════════════
 with st.sidebar:
     st.markdown("""
-    <div style='text-align:center;padding:16px 0 20px 0;'>
-      <svg width='180' height='48' viewBox='0 0 180 48' xmlns='http://www.w3.org/2000/svg'>
-        <!-- Dot Grid -->
-        <g>
-          <circle cx='8' cy='10' r='3' fill='#00d4ff'/><circle cx='18' cy='10' r='3' fill='#e0e8f0'/><circle cx='28' cy='10' r='3' fill='#00d4ff'/><circle cx='38' cy='10' r='3' fill='#e0e8f0'/>
-          <circle cx='8' cy='19' r='3' fill='#e0e8f0'/><circle cx='18' cy='19' r='3' fill='#00d4ff'/><circle cx='28' cy='19' r='3' fill='#e0e8f0'/><circle cx='38' cy='19' r='3' fill='#00d4ff'/>
-          <circle cx='8' cy='28' r='3' fill='#00d4ff'/><circle cx='18' cy='28' r='3' fill='#e0e8f0'/><circle cx='28' cy='28' r='3' fill='#00d4ff'/><circle cx='38' cy='28' r='3' fill='#e0e8f0'/>
-          <circle cx='8' cy='37' r='3' fill='#e0e8f0'/><circle cx='18' cy='37' r='3' fill='#00d4ff'/><circle cx='28' cy='37' r='3' fill='#e0e8f0'/><circle cx='38' cy='37' r='3' fill='#00d4ff'/>
-        </g>
-        <!-- NER text (white) -->
-        <text x='50' y='36' font-family='Inter,sans-serif' font-weight='800' font-size='30' fill='#e0e8f0' letter-spacing='-1'>NER</text>
-        <!-- AI text (cyan) -->
-        <text x='118' y='36' font-family='Inter,sans-serif' font-weight='800' font-size='30' fill='#00d4ff' letter-spacing='-1'>AI</text>
-      </svg>
-      <div style='color:#5a6b82;font-size:10px;letter-spacing:2px;margin-top:4px;text-transform:uppercase;'>Intelligence Hub</div>
-    </div>
     """, unsafe_allow_html=True)
 
     # ── Navigation ──────────────────────────────────────────
@@ -1456,10 +1431,8 @@ with st.sidebar:
         indices_age = f"Last updated: {h}h ago" if h < 48 else f"Last updated: {delta.days}d ago"
 
     st.markdown(f"""
-    <div style='font-size:0.62rem;color:rgba(0,180,255,0.5);font-family:monospace;
          padding:6px 4px;line-height:1.8;'>
       {'✅ ' + indices_age if indices_age else '⚠ No data yet'}
-    </div>""", unsafe_allow_html=True)
 
     if st.button('🔄 Refresh Indices', use_container_width=True,
                  help='Run gdelt_indices.py to fetch latest GDELT data'):
@@ -1541,13 +1514,10 @@ with st.sidebar:
         heatmap_n = st.slider("Heatmap top N", 8, 30, 15)
 
         st.markdown(f"""
-        <div style='margin-top:14px;padding:10px;background:rgba(0,150,255,0.05);
              border:1px solid rgba(0,150,255,0.1);border-radius:6px;
              font-size:0.62rem;color:rgba(0,180,255,0.4);font-family:monospace;line-height:2;'>
-          <span class='live-dot'></span>LIVE DATA<br>
           📅 {len(date_cols)} days · 📊 {len(all_topics)} topics · {len(all_countries)} countries<br>
           {'⚠ DEMO MODE' if is_demo else '✓ GDELT Project'}
-        </div>""", unsafe_allow_html=True)
 
         st.markdown('<div class="sec-hdr" style="margin-top:18px">Normalization</div>', unsafe_allow_html=True)
         norm_method = st.radio("norm", ['Score (0–100)','Z-Score','Raw'],
@@ -1576,13 +1546,10 @@ with st.sidebar:
     elif st.session_state.page == 'news':
         st.markdown('<div class="sec-hdr">Live News Feed</div>', unsafe_allow_html=True)
         st.markdown(f"""
-        <div style='padding:8px;background:rgba(0,150,255,0.05);
              border:1px solid rgba(0,150,255,0.1);border-radius:6px;
              font-size:0.62rem;color:rgba(0,180,255,0.4);font-family:monospace;'>
-          <span class='live-dot'></span>GDELT Project<br>
           Real-time global news<br>
           28 topic categories
-        </div>""", unsafe_allow_html=True)
 
     elif st.session_state.page == 'predictions':
         st.markdown('<div class="sec-hdr">Forecast Filters</div>', unsafe_allow_html=True)
@@ -1650,81 +1617,53 @@ with st.sidebar:
 # PAGE: HOME
 # ═══════════════════════════════════════════════════════════════
 def render_home():
+
+    # === NERAI GLOBE ===
+    try:
+        import plotly.graph_objects as _pgo
+        _lats=[35.9,51.5,40.7,-33.9,55.8,31.2,28.6,-15.8,1.3,48.9,39.9,35.7,-1.3,19.4,30.0]
+        _lons=[14.5,-0.1,-74.0,151.2,37.6,121.5,77.2,-47.9,103.8,2.4,116.4,139.7,36.8,-99.1,31.2]
+        _cities=['Malta','London','New York','Sydney','Moscow','Shanghai','Delhi','Brasilia','Singapore','Paris','Beijing','Tokyo','Nairobi','Mexico City','Cairo']
+        _gfig=_pgo.Figure()
+        _gfig.add_trace(_pgo.Scattergeo(
+            lat=_lats,lon=_lons,
+            mode='markers+text',
+            text=_cities,
+            textposition='top center',
+            textfont=dict(color='#00d4ff',size=8),
+            marker=dict(size=7,color='#00d4ff',opacity=0.85,
+                        line=dict(width=1,color='#ffffff')),
+        ))
+        _gfig.update_layout(
+            height=440,
+            margin=dict(l=0,r=0,t=0,b=0),
+            paper_bgcolor='rgba(0,0,0,0)',
+            plot_bgcolor='rgba(0,0,0,0)',
+            geo=dict(
+                showland=True,landcolor='#1a2035',
+                showocean=True,oceancolor='#0d1117',
+                showcoastlines=True,coastlinecolor='#00d4ff',
+                showcountries=True,countrycolor='#1e3a5f',
+                showframe=False,bgcolor='rgba(0,0,0,0)',
+                projection_type='orthographic',
+                projection_rotation=dict(lon=20,lat=20,roll=0),
+                lataxis=dict(showgrid=True,gridcolor='#1e3a5f'),
+                lonaxis=dict(showgrid=True,gridcolor='#1e3a5f'),
+            )
+        )
+        st.plotly_chart(_gfig,use_container_width=True,config={'displayModeBar':False,'staticPlot':False})
+    except Exception as _ge:
+        st.info(f"Globe unavailable: {_ge}")
+    # === END GLOBE ===
     # ── Animated Hero ────────────────────────────────────────
     st.markdown(f"""
-    <div class="home-hero">
-      <!-- Corner HUD brackets -->
-      <div class="home-corner home-corner-tl"></div>
-      <div class="home-corner home-corner-tr"></div>
-      <div class="home-corner home-corner-bl"></div>
-      <div class="home-corner home-corner-br"></div>
-      <!-- Glowing orbs -->
-      <div class="home-orb" style="width:320px;height:320px;top:-100px;left:-80px;background:rgba(0,70,200,0.13);"></div>
-      <div class="home-orb" style="width:260px;height:260px;top:-60px;right:-60px;background:rgba(80,0,180,0.10);"></div>
-      <div class="home-orb" style="width:220px;height:220px;bottom:-70px;left:50%;transform:translateX(-50%);background:rgba(0,120,230,0.09);"></div>
-      <!-- Floating hexagons -->
-      <div class="hex-deco" style="width:70px;height:80px;top:12%;left:4%;animation-delay:0s;"></div>
-      <div class="hex-deco" style="width:55px;height:63px;top:18%;right:6%;animation-delay:3s;"></div>
-      <div class="hex-deco" style="width:45px;height:52px;bottom:18%;left:10%;animation-delay:6s;opacity:0.6;"></div>
-      <div class="hex-deco" style="width:40px;height:46px;bottom:22%;right:9%;animation-delay:1.5s;opacity:0.5;"></div>
-      <!-- Main content -->
-      <div style="position:relative;z-index:2;padding:12px 0;">
-        <!-- CSS Text Logo -->
-        <div class="nerai-logo-wrap">
-          <div class="nerai-logo-ring"></div>
-          <div class="nerai-logo-ring nerai-logo-ring-2"></div>
-          <div class="nerai-logo-brand">
-            <span class="nerai-logo-hex">◈</span>
-            <span class="nerai-logo-ner">NER</span><span class="nerai-logo-ai">AI</span>
-          </div>
-        </div>
-        <!-- Sub-brand line -->
-        <div style="font-size:0.65rem;letter-spacing:0.35em;text-transform:uppercase;
              color:rgba(0,200,255,0.4);font-family:'Share Tech Mono',monospace;
              margin-bottom:6px;">Intelligence Hub</div>
-        <div class="hero-tagline">Geopolitical Risk Intelligence Platform</div>
-        <!-- Separator -->
-        <div style="height:1px;background:linear-gradient(90deg,transparent,rgba(0,200,255,0.4),rgba(123,47,255,0.3),transparent);
              width:60%;margin:0 auto 30px;"></div>
-        <!-- Stats row -->
-        <div class="home-stat-row">
-          <div class="home-stat">
-            <div class="home-stat-val">{len(all_countries)}</div>
-            <div class="home-stat-lbl">Countries</div>
-          </div>
-          <div style="width:1px;background:rgba(0,150,255,0.15);align-self:stretch;"></div>
-          <div class="home-stat">
-            <div class="home-stat-val">{len(all_topics)}</div>
-            <div class="home-stat-lbl">Risk Topics</div>
-          </div>
-          <div style="width:1px;background:rgba(0,150,255,0.15);align-self:stretch;"></div>
-          <div class="home-stat">
-            <div class="home-stat-val">{len(date_cols)}</div>
-            <div class="home-stat-lbl">Days of Data</div>
-          </div>
-          <div style="width:1px;background:rgba(0,150,255,0.15);align-self:stretch;"></div>
-          <div class="home-stat">
-            <div class="home-stat-val">{len(df):,}</div>
-            <div class="home-stat-lbl">Data Points</div>
-          </div>
-        </div>
-        <!-- Live status bar -->
-        <div style="display:inline-flex;align-items:center;gap:12px;
              background:rgba(0,20,50,0.6);border:1px solid rgba(0,150,255,0.2);
              border-radius:20px;padding:5px 18px;
              font-size:0.68rem;color:rgba(0,200,255,0.6);
              font-family:'Share Tech Mono',monospace;letter-spacing:0.1em;">
-          <span class="live-dot"></span>
-          <span>LIVE</span>
-          <span style="color:rgba(0,150,255,0.3);">|</span>
-          <span>GDELT PROJECT</span>
-          <span style="color:rgba(0,150,255,0.3);">|</span>
-          <span>LAST UPDATE: {date_cols[-1].strftime('%d %b %Y') if len(date_cols) else 'N/A'}</span>
-          <span style="color:rgba(0,150,255,0.3);">|</span>
-          <span style="color:{'#ffaa00' if is_demo else '#00d4aa'};">{'⚠ DEMO' if is_demo else '✓ ONLINE'}</span>
-        </div>
-      </div>
-    </div>
     """, unsafe_allow_html=True)
 
     # ── NERAI 3D Geopolitical Globe ──────────────────────────────
@@ -1855,55 +1794,33 @@ def render_home():
 
     # ── Module Tiles ─────────────────────────────────────────
     st.markdown("""
-    <div style="font-size:0.62rem;letter-spacing:0.35em;text-transform:uppercase;
          color:rgba(0,180,255,0.45);font-family:'Share Tech Mono',monospace;
          margin-bottom:20px;text-align:center;
          display:flex;align-items:center;justify-content:center;gap:14px;">
-      <span style="flex:1;height:1px;background:linear-gradient(90deg,transparent,rgba(0,150,255,0.2));"></span>
       SELECT A MODULE TO BEGIN
-      <span style="flex:1;height:1px;background:linear-gradient(90deg,rgba(0,150,255,0.2),transparent);"></span>
-    </div>""", unsafe_allow_html=True)
 
     m1, m2, m3, m4 = st.columns(4)
 
     with m1:
         st.markdown("""
-        <div class="home-module" style="--mc:#0077a8">
-          <div class="home-module-icon">📊</div>
-          <div class="home-module-title">Indices</div>
-          <div class="home-module-desc">
             Topic-based geopolitical risk indices across {n_c} countries.<br>
             Time series, heatmaps, world maps, signals &amp; alarms.
-          </div>
-        </div>""".format(n_c=len(all_countries)), unsafe_allow_html=True)
         if st.button("→ Open Indices", key='home_to_indices', use_container_width=True):
             st.session_state.page = 'indices'
             st.rerun()
 
     with m2:
         st.markdown("""
-        <div class="home-module" style="--mc:#f59e0b">
-          <div class="home-module-icon">🎯</div>
-          <div class="home-module-title">Country Profile</div>
-          <div class="home-module-desc">
             Deep-dive into any country: top risk scores, active alarms,
             bilateral relations worst &amp; best partners.
-          </div>
-        </div>""", unsafe_allow_html=True)
         if st.button("→ Open Profile", key='home_to_profile', use_container_width=True):
             st.session_state.page = 'profile'
             st.rerun()
 
     with m3:
         st.markdown("""
-        <div class="home-module" style="--mc:#00d4aa">
-          <div class="home-module-icon">📰</div>
-          <div class="home-module-title">News</div>
-          <div class="home-module-desc">
             Live GDELT headlines across 28 topic categories.<br>
             Real-time global news intelligence feed.
-          </div>
-        </div>""", unsafe_allow_html=True)
         if st.button("→ Open News", key='home_to_news', use_container_width=True):
             st.session_state.page = 'news'
             st.rerun()
@@ -1912,17 +1829,9 @@ def render_home():
         pred_status = '✓ READY' if has_predictions else '⏳ PENDING'
         pred_color  = '#0077a8' if has_predictions else '#e06030'
         st.markdown(f"""
-        <div class="home-module" style="--mc:{pred_color}">
-          <div class="home-module-icon">🔮</div>
-          <div class="home-module-title">Predictions</div>
-          <div class="home-module-desc">
             N-HiTS deep learning 12-month forecasts<br>
             for 2,400 topic × country risk series.<br>
-            <span style='color:{pred_color};font-family:monospace;font-size:0.6rem;'>
               {pred_status}
-            </span>
-          </div>
-        </div>""", unsafe_allow_html=True)
         if st.button("→ Open Predictions", key='home_to_pred', use_container_width=True):
             st.session_state.page = 'predictions'
             st.rerun()
@@ -1941,23 +1850,13 @@ def render_home():
                 net = pair['net']
                 clr = '#e05060' if net>=45 else ('#f59e0b' if net>=25 else '#00b4d8')
                 st.markdown(f"""
-                <div style="background:rgba(0,10,28,0.8);border:1px solid {clr}25;
                      border-radius:10px;padding:14px 12px;text-align:center;
                      border-top:3px solid {clr};">
-                  <div style="font-size:0.72rem;color:#1a3a5c;font-weight:600;margin-bottom:4px;">
                     {n1}
-                  </div>
-                  <div style="font-size:0.55rem;color:rgba(123,47,255,0.6);
                        font-family:monospace;margin-bottom:4px;">↔ VS ↔</div>
-                  <div style="font-size:0.72rem;color:#1a3a5c;font-weight:600;margin-bottom:8px;">
                     {n2}
-                  </div>
-                  <div style="font-size:1.4rem;font-weight:700;color:{clr};
                        text-shadow:0 0 14px {clr}55;">{net:.0f}</div>
-                  <div style="font-size:0.58rem;color:{clr};font-family:monospace;">
                     {'CRITICAL' if net>=65 else 'HIGH' if net>=45 else 'ELEVATED' if net>=25 else 'MODERATE'}
-                  </div>
-                </div>""", unsafe_allow_html=True)
 
     # ── Quick stats row ──────────────────────────────────────
     st.markdown('<div class="h-div" style="margin:24px 0 16px;"></div>', unsafe_allow_html=True)
@@ -1969,14 +1868,9 @@ def render_home():
         with col_el:
             clr = '#e05060' if val>=50 else ('#f59e0b' if val>=25 else '#00b4d8')
             st.markdown(f"""
-            <div style="background:rgba(0,10,28,0.7);border:1px solid {clr}20;
                  border-radius:8px;padding:10px 8px;text-align:center;">
-              <div style="font-size:0.65rem;color:#1a4070;margin-bottom:4px;">
                 {COUNTRY_NAMES.get(country,country)}
-              </div>
-              <div style="font-size:1.2rem;font-weight:700;color:{clr};
                    text-shadow:0 0 10px {clr}50;">{val:.0f}</div>
-            </div>""", unsafe_allow_html=True)
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -2000,21 +1894,12 @@ def render_indices():
     c1h, c2h = st.columns([3,1])
     with c1h:
         st.markdown(f"""
-        <div style='padding:6px 0 2px;'>
-          <div class='hero-title'>NERAI Intelligence Hub</div>
-          <div class='hero-sub'><span class='live-dot'></span>
             Geopolitical Risk Intelligence &nbsp;·&nbsp; Data: GDELT Project
-          </div>
-        </div>""", unsafe_allow_html=True)
     with c2h:
         nm_color = {'Raw':'#2a5080','Score (0–100)':'#00b4d8','Z-Score':'#0077a8'}[norm_method]
         st.markdown(f"""
-        <div style='text-align:right;padding-top:12px;font-family:monospace;
              font-size:0.68rem;color:rgba(0,180,255,0.4);'>
           LAST UPDATE<br>
-          <span style='color:#0077a8;font-size:0.9rem;'>{date_cols[-1].strftime('%d %b %Y')}</span><br>
-          <span style='color:{nm_color};font-size:0.7rem;'>▣ {norm_method}</span>
-        </div>""", unsafe_allow_html=True)
     st.markdown('<div class="h-div"></div>', unsafe_allow_html=True)
 
     # KPI Cards
@@ -2033,20 +1918,11 @@ def render_indices():
                 spark_color = '#e05060' if (norm_method=='Score (0–100)' and val>=60) else \
                               '#f59e0b' if (norm_method=='Score (0–100)' and val>=35) else '#00b4d8'
                 st.markdown(f"""
-                <div class='kpi-card' style='--accent:{spark_color};'>
-                  <div class='kpi-label'>{COUNTRY_NAMES.get(c,c)}</div>
-                  <div class='kpi-value'>{fmt(val,norm_method)}</div>
-                  <div class='kpi-sub'>
-                    <span class='{d_cls}'>{d_sym} {fmt(abs(delta),norm_method)} vs 7d</span>
                     &nbsp; {badge}
-                  </div>
-                </div>""", unsafe_allow_html=True)
                 st.plotly_chart(chart_sparkline(series.iloc[-30:],spark_color),
                     use_container_width=True, config={'displayModeBar':False,'staticPlot':True})
             else:
                 st.markdown(f"""
-                <div class='kpi-card'><div class='kpi-label'>{COUNTRY_NAMES.get(c,c)}</div>
-                <div class='kpi-value'>—</div></div>""", unsafe_allow_html=True)
 
     st.markdown('<div class="h-div" style="margin:4px 0 14px"></div>', unsafe_allow_html=True)
 
@@ -2065,23 +1941,11 @@ def render_indices():
                 for c,pct in top_up.items():
                     val = last[c]
                     st.markdown(f"""
-                    <div class='signal-card' style='border-color:rgba(255,107,53,0.2);'>
-                      <div><div class='signal-name'>{COUNTRY_NAMES.get(c,c)}</div>
-                      <div class='signal-topic'>{sel_label}</div></div>
-                      <div><div class='signal-val' style='color:#ff6b35;'>{fmt(val,norm_method)}</div>
-                      <div style='font-size:0.65rem;color:#ff9d6b;text-align:right;'>▲ {pct:+.1f}%</div></div>
-                    </div>""", unsafe_allow_html=True)
             with sig_c2:
                 st.markdown('<div style="font-size:0.65rem;color:#00d4aa;letter-spacing:0.15em;margin-bottom:8px;">▼ DECLINING RISK</div>', unsafe_allow_html=True)
                 for c,pct in top_dn.items():
                     val = last[c]
                     st.markdown(f"""
-                    <div class='signal-card' style='border-color:rgba(0,255,157,0.15);'>
-                      <div><div class='signal-name'>{COUNTRY_NAMES.get(c,c)}</div>
-                      <div class='signal-topic'>{sel_label}</div></div>
-                      <div><div class='signal-val' style='color:#00d4aa;'>{fmt(val,norm_method)}</div>
-                      <div style='font-size:0.65rem;color:#00cc7a;text-align:right;'>{pct:+.1f}%</div></div>
-                    </div>""", unsafe_allow_html=True)
 
     st.markdown('<div class="h-div"></div>', unsafe_allow_html=True)
 
@@ -2106,7 +1970,6 @@ def render_indices():
                         for pk_date in peaks[:1]:  # top 1 peak per country
                             pk_str = pk_date.strftime('%Y-%m-%d')
                             st.markdown(f"""
-                            <div class="peak-date-badge">⚡ {cname} — Peak: {pk_date.strftime('%d %b %Y')}</div>
                             """, unsafe_allow_html=True)
                             with st.spinner(f'Fetching news for {cname}...'):
                                 articles = fetch_peak_news(c, sel_topic, pk_str)
@@ -2121,14 +1984,7 @@ def render_indices():
                                         try: date_disp = pd.Timestamp(date_disp).strftime('%d %b %Y')
                                         except: pass
                                     st.markdown(f"""
-                                    <div class="peak-news-item">
-                                      <div class="peak-news-headline">
-                                        <a href="{url}" target="_blank" style="color:#1a3a70;text-decoration:none;">
                                           {title[:120]}{'...' if len(title)>120 else ''}
-                                        </a>
-                                      </div>
-                                      <div class="peak-news-src">{source} · {date_disp}</div>
-                                    </div>""", unsafe_allow_html=True)
                             else:
                                 st.markdown('<div style="color:rgba(100,150,180,0.4);font-size:0.72rem;padding:8px 0;">No news found for this peak period.</div>', unsafe_allow_html=True)
         else:
@@ -2170,26 +2026,9 @@ def render_indices():
             t_sym = '▲' if trnd>0.5 else ('▼' if trnd<-0.5 else '→')
             t_col = '#e06030' if trnd>0.5 else ('#00d4aa' if trnd<-0.5 else '#7a9ab8')
             st.markdown(f"""
-            <div class="pair-card" style="border-color:rgba(255,255,255,0.06);">
-              <div style="font-size:1rem;font-weight:700;color:rgba(0,150,255,0.35);
                    font-family:monospace;width:22px;flex-shrink:0;">#{rank}</div>
-              <div style="flex:1;min-width:0;">
-                <div style="font-size:0.85rem;font-weight:600;color:#2a4060;margin-bottom:5px;">
                   {n1}<span style="color:rgba(123,47,255,0.6);padding:0 6px;">↔</span>{n2}
-                </div>
-                <div style="background:rgba(0,0,0,0.35);border-radius:3px;height:3px;width:100%;">
-                  <div style="background:{bar_col};width:{min(net,100):.0f}%;height:3px;
                        border-radius:3px;box-shadow:0 0 8px {bar_col}70;"></div>
-                </div>
-              </div>
-              <div style="text-align:right;flex-shrink:0;margin-left:14px;">
-                <div style="font-size:1rem;font-weight:700;color:{bar_col};">{net:.1f}</div>
-                <div style="font-size:0.62rem;color:{t_col};font-family:monospace;">{t_sym} {abs(trnd):.1f}</div>
-              </div>
-              <div style="flex-shrink:0;margin-left:10px;">
-                <span class="{badge_cls}">{badge_txt}</span>
-              </div>
-            </div>""", unsafe_allow_html=True)
 
     # Data Table
     with st.expander("📊  Data Table — Selected Countries", expanded=False):
@@ -2240,28 +2079,13 @@ def render_profile():
 
     # Page header
     st.markdown(f"""
-    <div style='padding:6px 0 2px;'>
-      <div class='hero-title'>Country Intelligence Profile</div>
-      <div class='hero-sub'><span class='live-dot'></span>
         Deep-dive analysis &nbsp;·&nbsp; GDELT Data
-      </div>
-    </div>""", unsafe_allow_html=True)
     st.markdown('<div class="h-div"></div>', unsafe_allow_html=True)
 
     # ── Profile Header ────────────────────────────────────────
     _pc = '#e05060' if _prof_score>=60 else ('#f59e0b' if _prof_score>=35 else '#00b4d8')
     st.markdown(f"""
-    <div class="prof-header">
-      <div>
-        <div class="prof-country">{prof_name}</div>
-        <div class="prof-sub">COUNTRY INTELLIGENCE PROFILE &nbsp;·&nbsp; LAST 7-DAY AVERAGE</div>
-      </div>
-      <div style="text-align:right;">
-        <div style="font-size:1.6rem;font-weight:700;color:{_pc};
              text-shadow:0 0 18px {_pc}55;">{_prof_score:.1f}</div>
-        <div style="margin-top:3px;">{_prof_badge}</div>
-      </div>
-    </div>""", unsafe_allow_html=True)
 
     # ── 3-column profile ──────────────────────────────────────
     pc1, pc2, pc3 = st.columns([4,4,4])
@@ -2273,17 +2097,8 @@ def render_profile():
                 s   = idx['score']
                 col = '#e05060' if s>=65 else ('#e06030' if s>=45 else ('#f59e0b' if s>=25 else '#00b4d8'))
                 st.markdown(f"""
-                <div class="idx-row">
-                  <div>
-                    <div class="idx-label">{idx['label']}</div>
-                    <div class="idx-bar-bg">
-                      <div style="background:{col};width:{_safe_pct(s):.0f}%;height:3px;
                            border-radius:3px;box-shadow:0 0 5px {col}60;"></div>
-                    </div>
-                  </div>
-                  <div class="idx-val" style="color:{col};margin-left:10px;
                        text-shadow:0 0 10px {col}40;">{s:.1f}</div>
-                </div>""", unsafe_allow_html=True)
         else:
             st.markdown('<div style="color:rgba(100,150,180,0.4);font-size:0.72rem;">No data</div>', unsafe_allow_html=True)
 
@@ -2299,17 +2114,8 @@ def render_profile():
                 else:         alm_col,alm_lbl = '#00b4d8','NORMAL'
                 sym = '▲' if pct>0 else '▼'
                 st.markdown(f"""
-                <div class="alarm-row" style="border-color:{alm_col}28;">
-                  <div>
-                    <div class="alarm-label">{alm['label']}</div>
-                    <div class="alarm-meta">z={z:+.2f}σ &nbsp;·&nbsp;
-                      <span style="color:{alm_col};">{sym}{abs(pct):.0f}%</span> vs 7d
-                    </div>
-                  </div>
-                  <span style="font-size:0.58rem;background:{alm_col}18;
                     border:1px solid {alm_col}40;border-radius:3px;
                     color:{alm_col};padding:2px 6px;white-space:nowrap;">{alm_lbl}</span>
-                </div>""", unsafe_allow_html=True)
         else:
             st.markdown('<div style="color:rgba(100,150,180,0.4);font-size:0.72rem;">No alarms</div>', unsafe_allow_html=True)
 
@@ -2321,24 +2127,10 @@ def render_profile():
             for rel in prof_worst:
                 t_sym = '▲' if rel['trend']>0.5 else ('▼' if rel['trend']<-0.5 else '→')
                 st.markdown(f"""
-                <div class="rel-compact" style="border-left-color:{rel['color']};">
-                  <div>
-                    <div style="font-size:0.75rem;font-weight:600;color:#2a4060;">
                       {rel['icon']} {rel['name']}
-                    </div>
-                    <div style="font-size:0.58rem;color:{rel['color']};font-family:monospace;">
                       {rel['status']}
-                    </div>
-                  </div>
-                  <div style="text-align:right;">
-                    <div style="font-size:0.82rem;font-weight:700;color:{rel['color']};">
                       {rel['net']:.1f}
-                    </div>
-                    <div style="font-size:0.55rem;color:#7a9ab8;font-family:monospace;">
                       {t_sym} {abs(rel['trend']):.1f}
-                    </div>
-                  </div>
-                </div>""", unsafe_allow_html=True)
         else:
             st.markdown('<div style="color:rgba(100,150,180,0.4);font-size:0.72rem;padding:8px 0;">Insufficient data</div>', unsafe_allow_html=True)
 
@@ -2348,24 +2140,10 @@ def render_profile():
             for rel in prof_best:
                 t_sym = '▲' if rel['trend']>0.5 else ('▼' if rel['trend']<-0.5 else '→')
                 st.markdown(f"""
-                <div class="rel-compact" style="border-left-color:{rel['color']};">
-                  <div>
-                    <div style="font-size:0.75rem;font-weight:600;color:#2a4060;">
                       {rel['icon']} {rel['name']}
-                    </div>
-                    <div style="font-size:0.58rem;color:{rel['color']};font-family:monospace;">
                       {rel['status']}
-                    </div>
-                  </div>
-                  <div style="text-align:right;">
-                    <div style="font-size:0.82rem;font-weight:700;color:{rel['color']};">
                       {rel['net']:.1f}
-                    </div>
-                    <div style="font-size:0.55rem;color:#7a9ab8;font-family:monospace;">
                       {t_sym} {abs(rel['trend']):.1f}
-                    </div>
-                  </div>
-                </div>""", unsafe_allow_html=True)
 
     st.markdown('<div class="h-div" style="margin:20px 0;"></div>', unsafe_allow_html=True)
 
@@ -2392,21 +2170,10 @@ def render_profile():
             use_container_width=True, config={'displayModeBar':False})
     with g2:
         st.markdown(f"""
-        <div class="relation-status" style="border:2px solid {st_col}25;">
-          <div style="font-size:1.7rem;margin-bottom:4px;">{st_ico}</div>
-          <div style="font-size:0.55rem;color:{st_col}80;letter-spacing:0.3em;
                font-family:'Share Tech Mono',monospace;">RELATIONSHIP STATUS</div>
-          <div style="font-size:1.55rem;font-weight:700;color:{st_col};
                text-shadow:0 0 20px {st_col}60;letter-spacing:0.08em;margin:4px 0;">{st_}</div>
-          <div style="height:1px;background:linear-gradient(90deg,transparent,{st_col}40,transparent);margin:8px 0;"></div>
-          <div style="font-size:0.78rem;font-weight:600;color:{tr_col};font-family:'Share Tech Mono',monospace;">{tr_txt}</div>
-          <div style="font-size:0.6rem;color:rgba(100,150,200,0.45);margin-top:5px;font-family:monospace;">
             Net Tension: {cur_net:.1f} / 100 &nbsp;·&nbsp; Δ7d: {trend_bi:+.1f}
-          </div>
-          <div style="font-size:0.62rem;color:rgba(0,180,255,0.3);margin-top:3px;font-family:monospace;">
             {name_a} &nbsp;↔&nbsp; {name_b}
-          </div>
-        </div>""", unsafe_allow_html=True)
     with g3:
         c_col_g = '#00d4aa' if cur_c>40 else ('#00b4d8' if cur_c>15 else '#4a6a8a')
         st.plotly_chart(gauge_chart(cur_c,'COOPERATION',c_col_g),
@@ -2431,14 +2198,6 @@ def render_profile():
             else: g_max = 1.0
             avg_v = min(100.0,(val_a+val_b)/2/g_max*100)
             st.markdown(f"""
-            <div class="metric-mini">
-              <div class="metric-mini-label">{label}</div>
-              <div class="metric-mini-val" style="color:{color};text-shadow:0 0 12px {color}45;">{avg_v:.1f}</div>
-              <div style="background:rgba(0,0,0,0.3);border-radius:3px;height:3px;margin:6px 0 5px;">
-                <div style="background:{color};width:{_safe_pct(avg_v):.0f}%;height:3px;border-radius:3px;box-shadow:0 0 6px {color}70;"></div>
-              </div>
-              <div style="font-size:0.56rem;color:rgba(150,180,200,0.4);font-family:monospace;">{name_a} · {name_b}</div>
-            </div>""", unsafe_allow_html=True)
 
     # Bilateral trend chart
     st.markdown('<div style="height:6px;"></div>', unsafe_allow_html=True)
@@ -2470,6 +2229,34 @@ def render_profile():
 # ═══════════════════════════════════════════════════════════════
 def render_news():
 
+    # === NERAI NEWS BG ===
+    _topic_colors={
+        'conflict':    ('rgba(40,0,0,0.85)',  '#ff4444'),
+        'war':         ('rgba(40,0,0,0.85)',  '#ff4444'),
+        'military':    ('rgba(40,0,0,0.85)',  '#ff4444'),
+        'diplomacy':   ('rgba(0,30,40,0.85)', '#00d4ff'),
+        'sanctions':   ('rgba(20,10,40,0.85)','#cc88ff'),
+        'economy':     ('rgba(0,25,10,0.85)', '#00ff88'),
+        'trade':       ('rgba(0,25,10,0.85)', '#00ff88'),
+        'energy':      ('rgba(30,20,0,0.85)', '#ffaa00'),
+        'politics':    ('rgba(20,10,40,0.85)','#cc88ff'),
+    }
+    _sel_topic=st.session_state.get('news_topic','').lower() if hasattr(st,'session_state') else ''
+    _bg_color,_accent='rgba(10,15,30,0.85)','#00d4ff'
+    for _k,_v in _topic_colors.items():
+        if _k in _sel_topic:
+            _bg_color,_accent=_v
+            break
+    st.markdown(f"""<style>
+    .main .block-container {{
+        background: {_bg_color} !important;
+        transition: background 0.6s ease !important;
+        border-left: 3px solid {_accent} !important;
+        padding-left: 20px !important;
+    }}
+    </style>""",unsafe_allow_html=True)
+    # === END NEWS BG ===
+
 
 
 
@@ -2528,12 +2315,7 @@ def render_news():
     "></div>""", unsafe_allow_html=True)
 
     st.markdown(f"""
-    <div style='padding:6px 0 10px;'>
-      <div class='hero-title'>Global News Intelligence</div>
-      <div class='hero-sub'><span class='live-dot'></span>
         Live GDELT Headlines &nbsp;·&nbsp; 28 Topic Categories
-      </div>
-    </div>""", unsafe_allow_html=True)
     st.markdown('<div class="h-div"></div>', unsafe_allow_html=True)
 
     cat_names  = [c[0] for c in NEWS_CATEGORIES]
@@ -2553,15 +2335,9 @@ def render_news():
     with right_col:
         cat_q = cat_queries.get(sel_cat, sel_cat)
         st.markdown(f"""
-        <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px;">
-          <div style="font-size:1.1rem;font-weight:700;color:#007a99;letter-spacing:0.08em;">
             {sel_cat}
-          </div>
-          <div style="font-size:0.6rem;color:rgba(0,180,255,0.35);font-family:monospace;
                border:1px solid rgba(0,150,255,0.15);border-radius:4px;padding:2px 8px;">
             LIVE FEED
-          </div>
-        </div>""", unsafe_allow_html=True)
 
         with st.spinner(f'Fetching latest {sel_cat} news...'):
             articles = fetch_gdelt_news(cat_q, max_records=10)
@@ -2579,27 +2355,13 @@ def render_news():
                     except: pass
 
                 st.markdown(f"""
-                <div class="news-card">
-                  <div class="news-title">
-                    <a href="{url}" target="_blank"
                        style="color:#2a4060;text-decoration:none;">
                       {title[:180]}{'...' if len(title)>180 else ''}
-                    </a>
-                  </div>
-                  <div style="display:flex;gap:14px;margin-top:6px;align-items:center;">
-                    <div class="news-source">🌐 {source}</div>
-                    <div class="news-date">📅 {date_disp}</div>
                     {'<div style="font-size:0.58rem;color:rgba(100,180,255,0.3);font-family:monospace;">LANG: '+language.upper()+'</div>' if language else ''}
-                  </div>
-                </div>""", unsafe_allow_html=True)
         else:
             st.markdown(f"""
-            <div style="text-align:center;padding:40px;
                  color:rgba(100,150,200,0.4);font-family:monospace;font-size:0.8rem;">
-              <div style="font-size:2rem;margin-bottom:12px;">📡</div>
               No articles found for "{sel_cat}".<br>
-              <span style="font-size:0.65rem;">GDELT API may be temporarily unavailable.</span>
-            </div>""", unsafe_allow_html=True)
 
         # Globe Map showing topic hotspots
         st.markdown('<div class="h-div" style="margin:20px 0;"></div>', unsafe_allow_html=True)
@@ -2632,32 +2394,19 @@ def render_news():
 # ═══════════════════════════════════════════════════════════════
 def render_predictions():
     st.markdown("""
-    <div style='padding:6px 0 10px;'>
-      <div class='hero-title'>12-Month Risk Forecasts</div>
-      <div class='hero-sub'>
-        <span class='live-dot'></span>
         N-HiTS Deep Learning Model &nbsp;·&nbsp; 2,400 Topic × Country Series
-      </div>
-    </div>""", unsafe_allow_html=True)
     st.markdown('<div class="h-div"></div>', unsafe_allow_html=True)
 
     if not has_predictions:
         import subprocess, sys
         st.markdown("""
-        <div style='text-align:center;padding:40px 20px;
              background:rgba(0,12,32,0.6);border:1px solid rgba(0,150,255,0.12);
              border-radius:12px;margin:20px 0;'>
-          <div style='font-size:3rem;margin-bottom:16px;'>🔮</div>
-          <div style='font-size:1.1rem;font-weight:700;color:#007a99;
                letter-spacing:0.08em;margin-bottom:10px;'>
             Predictions Not Yet Generated
-          </div>
-          <div style='font-size:0.8rem;color:rgba(150,190,220,0.7);
                max-width:480px;margin:0 auto;line-height:1.7;'>
             Run the fast Holt-Winters forecast engine (no ML libraries needed)
             or the full N-HiTS deep learning pipeline:
-          </div>
-          <div style='margin-top:20px;padding:16px 24px;
                background:rgba(0,0,0,0.4);border-radius:8px;
                font-family:monospace;font-size:0.78rem;
                color:rgba(0,230,255,0.7);text-align:left;
@@ -2666,8 +2415,6 @@ def render_predictions():
             python gdelt_forecast_numpy.py<br><br>
             # Full option — N-HiTS deep learning (~2 hrs history download)<br>
             python gdelt_bulk_history.py &amp;&amp; python gdelt_forecast.py
-          </div>
-        </div>""", unsafe_allow_html=True)
 
         # ── Auto-generate button ──────────────────────────────────
         col_l, col_c, col_r = st.columns([2,3,2])
@@ -2844,23 +2591,13 @@ def render_predictions():
                          else '#00d4aa' if dirn == 'falling' else '#7a9ab8')
                 bar_w = min(abs(pct) / 3, 100)
                 st.markdown(f"""
-                <div style='display:flex;align-items:center;gap:8px;
                      padding:5px 0;border-bottom:1px solid rgba(0,100,180,0.06);'>
-                  <div style='font-size:0.7rem;color:{col_d};width:14px;
                        text-align:center;flex-shrink:0;'>{arrow}</div>
-                  <div style='flex:1;min-width:0;'>
-                    <div style='font-size:0.68rem;color:#1a3a5c;white-space:nowrap;
                          overflow:hidden;text-overflow:ellipsis;'>{row["label"]}</div>
-                    <div style='background:rgba(0,0,0,0.3);border-radius:2px;
                          height:2px;width:100%;margin-top:3px;'>
-                      <div style='background:{col_d};width:{_safe_pct(bar_w):.0f}%;height:2px;
                            border-radius:2px;'></div>
-                    </div>
-                  </div>
-                  <div style='font-size:0.68rem;color:{col_d};
                        font-family:monospace;flex-shrink:0;width:44px;
                        text-align:right;'>{pct:+.1f}%</div>
-                </div>""", unsafe_allow_html=True)
 
     st.markdown('<div class="h-div" style="margin:24px 0;"></div>', unsafe_allow_html=True)
 
@@ -2872,7 +2609,6 @@ def render_predictions():
 
         with col_rise:
             st.markdown("""
-            <div style='font-size:0.62rem;color:rgba(255,75,110,0.6);
                  font-family:monospace;letter-spacing:0.18em;
                  margin-bottom:8px;'>▲  HIGHEST RISING RISKS</div>""",
                         unsafe_allow_html=True)
@@ -2882,24 +2618,15 @@ def render_predictions():
                 lbl = TOPIC_LABELS.get(_t, str(_t).replace('_', ' ').title() if _t else 'Unknown')
                 cnt = COUNTRY_NAMES.get(r['country'], r['country'])
                 st.markdown(f"""
-                <div style='display:flex;justify-content:space-between;align-items:center;
                      padding:5px 8px;margin-bottom:3px;
                      background:rgba(255,75,110,0.05);
                      border:1px solid rgba(255,75,110,0.12);border-radius:5px;'>
-                  <div>
-                    <div style='font-size:0.73rem;color:#2a4060;'>{lbl}</div>
-                    <div style='font-size:0.6rem;color:rgba(0,150,255,0.5);
                          font-family:monospace;'>{cnt}</div>
-                  </div>
-                  <div style='font-size:0.85rem;font-weight:700;
                        color:#e05060;font-family:monospace;'>
                     +{r['trend_pct']:.1f}%
-                  </div>
-                </div>""", unsafe_allow_html=True)
 
         with col_fall:
             st.markdown("""
-            <div style='font-size:0.62rem;color:rgba(0,255,157,0.6);
                  font-family:monospace;letter-spacing:0.18em;
                  margin-bottom:8px;'>▼  HIGHEST FALLING RISKS</div>""",
                         unsafe_allow_html=True)
@@ -2909,20 +2636,12 @@ def render_predictions():
                 lbl = TOPIC_LABELS.get(_t, str(_t).replace('_', ' ').title() if _t else 'Unknown')
                 cnt = COUNTRY_NAMES.get(r['country'], r['country'])
                 st.markdown(f"""
-                <div style='display:flex;justify-content:space-between;align-items:center;
                      padding:5px 8px;margin-bottom:3px;
                      background:rgba(0,255,157,0.04);
                      border:1px solid rgba(0,255,157,0.10);border-radius:5px;'>
-                  <div>
-                    <div style='font-size:0.73rem;color:#2a4060;'>{lbl}</div>
-                    <div style='font-size:0.6rem;color:rgba(0,150,255,0.5);
                          font-family:monospace;'>{cnt}</div>
-                  </div>
-                  <div style='font-size:0.85rem;font-weight:700;
                        color:#00d4aa;font-family:monospace;'>
                     {r['trend_pct']:.1f}%
-                  </div>
-                </div>""", unsafe_allow_html=True)
 
     _render_footer()
 
@@ -3070,57 +2789,30 @@ def _render_country_card(col, row):
     narrative = _risk_narrative(tr, tf, fc_dir, avg_fc, cname)
 
     col.markdown(f"""
-<div style='background:rgba(0,15,45,0.65);border:1px solid rgba(0,100,180,0.18);
      border-radius:9px;padding:14px 16px;margin-bottom:12px;
      box-shadow:0 2px 12px rgba(0,0,0,0.3);'>
 
-  <div style='display:flex;justify-content:space-between;align-items:flex-start;
        margin-bottom:10px;padding-bottom:8px;
        border-bottom:1px solid rgba(0,100,180,0.10);'>
-    <div>
-      <div style='font-size:0.98rem;font-weight:700;color:#0d3464;
            letter-spacing:0.03em;'>{cname}</div>
-      <div style='font-size:0.57rem;color:rgba(0,180,255,0.35);
            font-family:monospace;letter-spacing:0.12em;'>{country} · GDELT INDEX</div>
-    </div>
-    <div style='text-align:right;'>
-      <div style='font-size:1.15rem;font-weight:800;color:{risk_col};
            line-height:1.1;'>{risk:.0f}<span style='font-size:0.58rem;
            color:rgba(200,220,240,0.35);'>/100</span></div>
-      <div style='font-size:0.63rem;color:{chg_col};font-family:monospace;'>
         {chg_arrow} {change:+.1f}% <span style='color:rgba(140,165,195,0.4);
         font-size:0.56rem;'>(7d chg)</span></div>
-    </div>
-  </div>
 
-  <div style='display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;'>
-    <div>
-      <div style='font-size:0.56rem;color:rgba(255,75,110,0.55);
            font-family:monospace;letter-spacing:0.1em;margin-bottom:5px;'>▲ RISING</div>
       {topic_rows(tr, '#e05060')}
-    </div>
-    <div>
-      <div style='font-size:0.56rem;color:rgba(0,255,157,0.55);
            font-family:monospace;letter-spacing:0.1em;margin-bottom:5px;'>▼ FALLING</div>
       {topic_rows(tf, '#00d4aa')}
-    </div>
-  </div>
 
-  <div style='background:rgba(0,0,0,0.25);border-radius:5px;padding:6px 10px;
        margin-bottom:9px;border-left:2px solid {fc_col};'>
-    <div style='font-size:0.56rem;color:rgba(140,175,215,0.45);
          font-family:monospace;letter-spacing:0.1em;margin-bottom:2px;'>12-MONTH FORECAST</div>
-    <div style='font-size:0.69rem;color:{fc_col};font-weight:600;'>
       {fc_arrow} {fc_dir.title()} &nbsp;·&nbsp; {avg_fc:+.1f}% avg predicted change
-    </div>
-  </div>
 
-  <div style='font-size:0.64rem;color:rgba(175,205,235,0.65);
        line-height:1.55;font-style:italic;'>
     "{narrative}"
-  </div>
 
-</div>""", unsafe_allow_html=True)
 
 
 # ── Q&A helpers ────────────────────────────────────────────────
@@ -3389,23 +3081,14 @@ def _answer_question(question, df_raw, trend_df, pred_df, insights_df):
             )
 
         country_blocks.append(f"""
-<div style='background:rgba(5,15,40,0.6);border:1px solid rgba(0,120,200,0.18);
      border-radius:8px;padding:14px 16px;margin-bottom:12px;'>
-  <div style='font-size:0.82rem;font-weight:700;color:#0d3464;letter-spacing:0.04em;
        margin-bottom:10px;padding-bottom:7px;border-bottom:1px solid rgba(0,100,180,0.15);'>
     📍 {cname}
-    <span style='font-size:0.55rem;color:rgba(0,180,255,0.35);font-family:monospace;margin-left:6px;'>{country}</span>
-  </div>
-  <div style='font-size:0.6rem;color:rgba(0,200,255,0.5);font-family:monospace;
        letter-spacing:0.1em;margin-bottom:5px;'>■ RECENT ACTIVITY — 7-DAY WINDOW</div>
   {section1_html}
-  <div style='font-size:0.6rem;color:rgba(0,200,255,0.5);font-family:monospace;
        letter-spacing:0.1em;margin:10px 0 5px;'>■ FORWARD PROJECTIONS — 12-MONTH MODEL</div>
   {section2_html}
-  <div style='font-size:0.6rem;color:rgba(0,200,255,0.5);font-family:monospace;
        letter-spacing:0.1em;margin:10px 0 5px;'>🎯 ASSESSMENT</div>
-  <p style='color:#2d4a6a;font-size:0.73rem;line-height:1.75;margin:0;'>{assess_text}</p>
-</div>""")
 
     if not country_blocks:
         return ("<div style='color:#7a9ab8;font-size:0.75rem;padding:10px;'>"
@@ -3418,18 +3101,12 @@ def _answer_question(question, df_raw, trend_df, pred_df, insights_df):
                          if fallback_note else "")
 
     return f"""
-<div style='font-family:system-ui,sans-serif;'>
-  <div style='font-size:0.58rem;color:rgba(0,200,255,0.4);font-family:monospace;
        letter-spacing:0.1em;margin-bottom:10px;'>
     TOPICS ANALYSED: {topic_labels_used}{" + more" if len(topics) > 6 else ""}
-  </div>
   {header_note_html}
   {''.join(country_blocks)}
-  <div style='font-size:0.58rem;color:rgba(100,140,180,0.35);font-family:monospace;
        margin-top:6px;border-top:1px solid rgba(0,80,160,0.1);padding-top:6px;'>
     SOURCE: GDELT PROJECT · INDICES WINDOW TO {last_date.upper()} · PROPHET 12-MONTH FORECAST
-  </div>
-</div>"""
 
 
 
@@ -3678,15 +3355,9 @@ def _call_claude_for_qa(question, df_raw, trend_df, pred_df, insights_df):
 def render_insights():
     # ── Page header ─────────────────────────────────────────────
     st.markdown("""
-<div style='padding:10px 0 6px;'>
-  <div style='font-size:1.55rem;font-weight:800;color:#0d3464;letter-spacing:0.04em;'>
     🔍 Intelligence Insights
-  </div>
-  <div style='font-size:0.65rem;color:rgba(0,180,255,0.45);font-family:monospace;
        letter-spacing:0.12em;margin-top:3px;'>
     DATA-DRIVEN COUNTRY RISK ANALYSIS &nbsp;·&nbsp; 7-DAY WINDOW + 12-MONTH FORECAST
-  </div>
-</div>""", unsafe_allow_html=True)
 
     _indices_ok = df is not None and len(df) > 0
     if not _indices_ok:
@@ -3714,15 +3385,9 @@ def render_insights():
     # Q&A SECTION — always shown
     # ═══════════════════════════════════════════════════════════
     st.markdown("""
-<div style='background:rgba(0,30,70,0.5);border:1px solid rgba(0,150,255,0.2);
      border-radius:10px;padding:16px 18px;margin-bottom:20px;'>
-  <div style='font-size:0.95rem;font-weight:700;color:#1a4a8a;margin-bottom:4px;'>
     💬 Ask the Data
-  </div>
-  <div style='font-size:0.65rem;color:rgba(100,170,230,0.55);font-family:monospace;'>
     Ask any geopolitical question — the system will analyse indices, trends and forecasts to answer.
-  </div>
-</div>""", unsafe_allow_html=True)
 
     qa_question = st.text_input(
         "question",
@@ -3757,10 +3422,8 @@ def render_insights():
         st.markdown('<div class="h-div" style="margin:16px 0 12px;"></div>', unsafe_allow_html=True)
     else:
         st.markdown("""
-<div style='font-size:0.62rem;color:rgba(100,150,200,0.4);font-family:monospace;
      text-align:center;padding:8px;'>
   ↑ Type a question above to get a data-driven analysis
-</div>""", unsafe_allow_html=True)
         st.markdown('<div class="h-div" style="margin:10px 0 16px;"></div>', unsafe_allow_html=True)
 
     # ═══════════════════════════════════════════════════════════
@@ -3768,10 +3431,8 @@ def render_insights():
     # ═══════════════════════════════════════════════════════════
     if insights_df is not None and len(insights_df) > 0:
         st.markdown("""
-<div style='font-size:0.6rem;color:rgba(0,180,255,0.4);font-family:monospace;
      letter-spacing:0.15em;margin-bottom:14px;'>
   TOP 20 MOST CRITICAL COUNTRIES &nbsp;·&nbsp; RANKED BY RISK LEVEL + RATE OF CHANGE
-</div>""", unsafe_allow_html=True)
         top20 = insights_df.head(20).to_dict('records')
         for i in range(0, len(top20), 2):
             c1, c2 = st.columns(2)
@@ -3781,10 +3442,8 @@ def render_insights():
     elif trend_df is not None:
         # Fallback: show top rising/falling from trend data
         st.markdown("""
-<div style='font-size:0.6rem;color:rgba(0,180,255,0.4);font-family:monospace;
      letter-spacing:0.15em;margin-bottom:14px;'>
   TOP RISK MOVEMENTS &nbsp;·&nbsp; 12-MONTH FORECAST TREND
-</div>""", unsafe_allow_html=True)
         cf1, cf2 = st.columns(2)
         with cf1:
             st.markdown("<div style='font-size:0.62rem;color:rgba(255,75,110,0.7);font-family:monospace;margin-bottom:8px;'>▲ HIGHEST RISING</div>", unsafe_allow_html=True)
@@ -3808,11 +3467,9 @@ def render_insights():
 # ═══════════════════════════════════════════════════════════════
 def _render_footer():
     st.markdown("""
-    <div style='margin-top:40px;padding:16px;text-align:center;
          border-top:1px solid rgba(0,150,255,0.08);
          font-size:0.6rem;color:rgba(0,150,255,0.2);font-family:monospace;letter-spacing:0.1em;'>
       NERAI INTELLIGENCE HUB &nbsp;·&nbsp; DATA: GDELT PROJECT &nbsp;·&nbsp; v3.0
-    </div>""", unsafe_allow_html=True)
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -4001,13 +3658,7 @@ def causal_network_narrative(filtered, highlight_nodes=None):
 
 def render_causality():
     st.markdown("""
-    <div style='padding:6px 0 10px;'>
-      <div class='hero-title'>Causal Network Analysis</div>
-      <div class='hero-sub'>
-        <span class='live-dot'></span>
         Granger Causality &nbsp;·&nbsp; Cross-Series Influence Detection
-      </div>
-    </div>""", unsafe_allow_html=True)
     st.markdown('<div class="h-div"></div>', unsafe_allow_html=True)
 
     cdf = load_causality()
@@ -4034,19 +3685,13 @@ def render_causality():
 
     if cdf is None or cdf.empty:
         st.markdown("""
-        <div style='text-align:center;padding:40px 20px;
              background:rgba(232,240,252,0.7);border:1px solid rgba(0,119,168,0.15);
              border-radius:12px;margin:20px 0;'>
-          <div style='font-size:3rem;margin-bottom:16px;'>🕸</div>
-          <div style='font-size:1.1rem;font-weight:700;color:#0055a8;
                letter-spacing:0.06em;margin-bottom:10px;'>Causal Network Not Yet Computed</div>
-          <div style='font-size:0.82rem;color:#3a5a7a;max-width:520px;margin:0 auto;line-height:1.75;'>
             Click <b>Run Causal Analysis</b> in the sidebar to compute Granger causality relationships
             between all topic × country pairs. This reveals which geopolitical signals
             statistically predict future movements in others — and which countries are most
             exposed if a shock occurs upstream.
-          </div>
-        </div>""", unsafe_allow_html=True)
         st.subheader("Preview: What the edge table looks like")
         demo = pd.DataFrame({
             'source': ['political_instability_RU','military_posture_IR','protest_activity_TR'],
@@ -4094,15 +3739,10 @@ def render_causality():
     if narr:
         p1, p2, hl_note = narr
         st.markdown(f"""
-        <div style='background:#f0f6fc;border:1px solid rgba(0,119,168,0.18);
              border-radius:10px;padding:18px 22px;margin-bottom:20px;line-height:1.75;
              font-size:0.85rem;color:#1a2a3a;'>
-          <div style='font-size:0.7rem;font-weight:700;color:#0077a8;letter-spacing:0.1em;
                text-transform:uppercase;margin-bottom:8px;'>📖 What This Network Shows</div>
-          <p style='margin:0 0 8px;'>{p1}</p>
-          <p style='margin:0;'>{p2}</p>
           {hl_note}
-        </div>""", unsafe_allow_html=True)
 
     # ── Interactive Network Diagram ────────────────────────────
     st.subheader("🕸 Interactive Network Diagram")
@@ -4272,13 +3912,7 @@ def scenario_narrative(result_df, sel_result):
 
 def render_scenarios():
     st.markdown("""
-    <div style='padding:6px 0 10px;'>
-      <div class='hero-title'>What-If Scenario Engine</div>
-      <div class='hero-sub'>
-        <span class='live-dot'></span>
         Shock Simulation &nbsp;·&nbsp; ARIMA Re-Forecast &nbsp;·&nbsp; Spillover Propagation
-      </div>
-    </div>""", unsafe_allow_html=True)
     st.markdown('<div class="h-div"></div>', unsafe_allow_html=True)
 
     sdf = load_scenario_results()
@@ -4294,13 +3928,7 @@ def render_scenarios():
             s_col = '#1a8a3a' if has_result else 'rgba(120,120,130,0.5)'
             s_txt = '✅ Completed' if has_result else '⏳ Not run yet'
             st.markdown(f"""
-            <div style='background:#f0f6fc;border:1px solid rgba(0,119,168,0.18);
                  border-radius:10px;padding:20px;margin-bottom:12px;min-height:130px;'>
-              <div style='font-size:1.8rem;margin-bottom:10px;'>{tmpl['icon']}</div>
-              <div style='font-weight:700;color:#0055a8;margin-bottom:8px;font-size:1rem;'>{tmpl['label']}</div>
-              <div style='font-size:0.75rem;color:#4a6a8a;line-height:1.5;margin-bottom:10px;'>{tmpl['desc']}</div>
-              <div style='font-size:0.7rem;color:{s_col};font-weight:600;'>{s_txt}</div>
-            </div>""", unsafe_allow_html=True)
 
     cols2 = st.columns(3)
     for i, (key, tmpl) in enumerate(row2):
@@ -4309,13 +3937,7 @@ def render_scenarios():
             s_col = '#1a8a3a' if has_result else 'rgba(120,120,130,0.5)'
             s_txt = '✅ Completed' if has_result else '⏳ Not run yet'
             st.markdown(f"""
-            <div style='background:#f0f6fc;border:1px solid rgba(0,119,168,0.18);
                  border-radius:10px;padding:20px;margin-bottom:12px;min-height:130px;'>
-              <div style='font-size:1.8rem;margin-bottom:10px;'>{tmpl['icon']}</div>
-              <div style='font-weight:700;color:#0055a8;margin-bottom:8px;font-size:1rem;'>{tmpl['label']}</div>
-              <div style='font-size:0.75rem;color:#4a6a8a;line-height:1.5;margin-bottom:10px;'>{tmpl['desc']}</div>
-              <div style='font-size:0.7rem;color:{s_col};font-weight:600;'>{s_txt}</div>
-            </div>""", unsafe_allow_html=True)
 
     import subprocess, sys as _sys
     st.markdown('<div class="h-div" style="margin:24px 0;"></div>', unsafe_allow_html=True)
@@ -4342,9 +3964,7 @@ def render_scenarios():
     # ── Custom Scenario Builder ─────────────────────────────────
     st.subheader("🔧 Build a Custom Scenario")
     st.markdown("""
-    <div style='font-size:0.82rem;color:#0077a8;margin-bottom:16px;font-weight:500;'>
     Define your own scenario: select a country, topic, shock intensity and duration — then run the simulation.
-    </div>""", unsafe_allow_html=True)
 
     c1, c2 = st.columns(2)
     with c1:
@@ -4430,11 +4050,7 @@ def render_scenarios():
                 st.plotly_chart(fig, use_container_width=True)
                 st.markdown("""<div style='font-size:0.72rem;color:#4a6a8a;line-height:1.6;padding:8px 12px;
                      background:rgba(0,80,160,0.04);border-radius:6px;margin-bottom:8px;'>
-                  <b>How to read:</b> Each bar = one risk dimension × country pair.
-                  <span style='color:#dc3c3c;font-weight:700;'>Red</span> = risk rises above baseline after shock.
-                  <span style='color:#008cdc;font-weight:700;'>Blue</span> = risk falls below baseline.
                   Only the 40 most impacted series are shown, sorted by impact magnitude.
-                </div>""", unsafe_allow_html=True)
 
             # ── Plain-English Analysis ──────────────────────────
             narr3 = scenario_narrative(result_df, sel_result)
@@ -4445,15 +4061,10 @@ def render_scenarios():
                              f"border-radius:4px;font-size:0.82rem;color:#0a3a6a;line-height:1.7;'>"
                              f"<b>&#127758; Geopolitical Context:</b> {p3}</div>") if p3 else ''
                 st.markdown(f"""
-                <div style='background:#f0f6fc;border:1px solid rgba(0,119,168,0.18);
                      border-radius:10px;padding:20px 24px;margin:20px 0;line-height:1.8;
                      font-size:0.85rem;color:#1a2a3a;'>
-                  <div style='font-size:0.7rem;font-weight:700;color:#0077a8;letter-spacing:0.1em;
                        text-transform:uppercase;margin-bottom:10px;'>&#128203; Analytical Summary</div>
-                  <p style='margin:0 0 12px;'>{p1}</p>
-                  <p style='margin:0 0 4px;'>{p2}</p>
                   {geo_block}
-                </div>""", unsafe_allow_html=True)
 
             # Raw data table (collapsible)
             with st.expander("🔢 Raw Results Table", expanded=False):
@@ -4465,88 +4076,98 @@ def render_scenarios():
 # ═══════════════════════════════════════════════════════════════
 def render_api():
     st.markdown("""
-    <div style='padding:28px 0 16px 0;'>
-      <div style='font-size:11px;letter-spacing:0.12em;color:#0077a8;
                   text-transform:uppercase;margin-bottom:6px;'>NERAI Intelligence</div>
-      <div style='font-size:22px;font-weight:700;color:#0d1f3c;'>API Access</div>
-      <div style='font-size:13px;color:#5a6b82;margin-top:4px;'>Pro plan: direct data access</div>
-    </div>""", unsafe_allow_html=True)
     st.markdown('<div class="h-div"></div>', unsafe_allow_html=True)
 
     if not _IS_PRO:
         st.markdown("""
-        <div style='background:rgba(224,123,32,0.06);border:1px solid rgba(224,123,32,0.28);
              border-radius:10px;padding:28px;text-align:center;margin:24px 0;'>
-          <div style='font-size:22px;margin-bottom:10px;'>U0001f512 Pro Feature</div>
-          <div style='color:#5a6b82;font-size:0.88rem;line-height:1.8;'>
             API access is included in the <b>NERAI Pro</b> plan (€39/month).<br>
             Upgrade at <a href='https://neraicorp.com' target='_blank'
             style='color:#0077a8;'>neraicorp.com</a> or contact
-            <a href='mailto:info@neraicorp.com' style='color:#0077a8;'>info@neraicorp.com</a>.
-          </div>
-        </div>""", unsafe_allow_html=True)
         _render_footer()
         return
 
     st.markdown("""
-    <div style='background:rgba(0,119,168,0.05);border:1px solid rgba(0,119,168,0.2);
          border-radius:10px;padding:22px 26px;margin-bottom:20px;'>
-      <div style='font-size:13px;font-weight:700;color:#0077a8;margin-bottom:14px;'>
         U0001f511 Your Pro Data Access
-      </div>
-      <div style='font-size:0.84rem;color:#2a3a5a;line-height:2.2;'>
-        <b>Dashboard URL:</b>
-        <code style='background:rgba(0,0,0,0.06);padding:2px 6px;border-radius:4px;'>
           https://nerai-intelligence.streamlit.app
-        </code><br>
-        <b>Datasets:</b> indices.csv · forecast_predictions.csv · causality_network.csv<br>
-        <b>Format:</b> CSV — downloadable from Indices &amp; Predictions pages<br>
-        <b>Update cadence:</b> Daily automated pipeline<br>
-        <b>Coverage:</b> 18 risk dimensions × 195 countries · 2,400+ series
-      </div>
-    </div>""", unsafe_allow_html=True)
 
     c1, c2 = st.columns(2)
     with c1:
         st.markdown("""
-        <div style='background:white;border:1px solid #1a3a5c;border-radius:8px;padding:16px 18px;'>
-          <div style='font-size:12px;font-weight:700;color:#0077a8;margin-bottom:8px;'>
             U0001f4ca Risk Indices
-          </div>
-          <div style='font-size:0.78rem;color:#5a6b82;line-height:1.9;'>
             Source: GDELT Event Database<br>
             Aggregation: P90 monthly<br>
             Dimensions: 18 topics × 195 countries<br>
             File: <code>indices.csv</code>
-          </div>
-        </div>""", unsafe_allow_html=True)
     with c2:
         st.markdown("""
-        <div style='background:white;border:1px solid #1a3a5c;border-radius:8px;padding:16px 18px;'>
-          <div style='font-size:12px;font-weight:700;color:#0077a8;margin-bottom:8px;'>
             U0001f52e 12-Month Forecasts
-          </div>
-          <div style='font-size:0.78rem;color:#5a6b82;line-height:1.9;'>
             Model: N-HiTS / Holt-Winters<br>
             Horizon: 12 months ahead<br>
             Intervals: 80% + 95% CI<br>
             File: <code>forecast_predictions.csv</code>
-          </div>
-        </div>""", unsafe_allow_html=True)
 
     st.markdown("""
-    <div style='background:#0d3464;border:1px solid #1a3a5c;border-radius:8px;
          padding:14px 18px;margin-top:16px;font-size:0.82rem;color:#5a6b82;line-height:1.8;'>
-      <b>Need webhooks, higher frequency, or custom data pipelines?</b><br>
       Contact <a href='mailto:info@neraicorp.com' style='color:#0077a8;'>info@neraicorp.com</a>
       for enterprise API access.
-    </div>""", unsafe_allow_html=True)
     _render_footer()
 
 
 # ═══════════════════════════════════════════════════════════════
 # ROUTING
 # ═══════════════════════════════════════════════════════════════
+
+st.markdown("""<style>
+/* === NERAI NAV GLOW === */
+section[data-testid="stSidebar"] div.stButton>button {
+    background: linear-gradient(135deg,#0d2137 0%,#1a3a5c 100%) !important;
+    border: 1px solid rgba(0,212,255,0.5) !important;
+    color: #ffffff !important;
+    border-radius: 8px !important;
+    font-weight: 600 !important;
+    letter-spacing: 1px !important;
+    transition: all 0.25s ease !important;
+    box-shadow: 0 0 6px rgba(0,212,255,0.15) !important;
+    width: 100% !important;
+    text-align: left !important;
+    padding: 10px 16px !important;
+    margin-bottom: 4px !important;
+}
+section[data-testid="stSidebar"] div.stButton>button:hover {
+    box-shadow: 0 0 18px rgba(0,212,255,0.65), 0 0 36px rgba(0,212,255,0.25) !important;
+    transform: translateX(5px) scale(1.02) !important;
+    background: linear-gradient(135deg,#1a3a5c 0%,#0d4a7a 100%) !important;
+    border-color: #00ffff !important;
+    color: #00ffff !important;
+}
+section[data-testid="stSidebar"] div.stButton>button:active {
+    transform: translateX(3px) scale(0.98) !important;
+    box-shadow: 0 0 30px rgba(0,212,255,0.9) !important;
+}
+@keyframes navPulse {
+    0%,100% { box-shadow: 0 0 6px rgba(0,212,255,0.15); }
+    50%      { box-shadow: 0 0 14px rgba(0,212,255,0.5); }
+}
+/* === END NAV GLOW === */
+
+/* === NERAI METRIC GLOW === */
+div[data-testid="metric-container"] {
+    background: linear-gradient(135deg,#0d1e2e,#1a2f45) !important;
+    border: 1px solid rgba(0,212,255,0.25) !important;
+    border-radius: 10px !important;
+    padding: 16px !important;
+    transition: all 0.3s ease !important;
+}
+div[data-testid="metric-container"]:hover {
+    border-color: rgba(0,212,255,0.8) !important;
+    box-shadow: 0 0 20px rgba(0,212,255,0.35) !important;
+    transform: translateY(-2px) !important;
+}
+/* === END METRIC GLOW === */
+</style>""",unsafe_allow_html=True)
 page = st.session_state.get('page', 'home')
 if   page == 'home':        render_home()
 elif page == 'indices':     render_indices()
