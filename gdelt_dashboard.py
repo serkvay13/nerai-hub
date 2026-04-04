@@ -3885,150 +3885,244 @@ def fetch_causal_news(topic, country_code, max_records=5):
 
 
 def build_network_figure(filtered, highlight_nodes=None, focus_node=None):
-    """Build an interactive Plotly network diagram from a filtered edge DataFrame."""
-    import math
+    """Build an interactive D3.js node-editor style network from filtered edge DataFrame."""
+    import json as _json
     if highlight_nodes is None:
         highlight_nodes = set()
 
-    # If focus_node is set, show only its ego-network (direct in/out connections)
-    if focus_node and focus_node != 'All':
-        filtered = filtered[(filtered['source'] == focus_node) | (filtered['target'] == focus_node)].copy()
+    if focus_node and focus_node != "All":
+        filtered = filtered[(filtered["source"] == focus_node) | (filtered["target"] == focus_node)].copy()
 
-    nodes = list(set(filtered['source'].tolist() + filtered['target'].tolist()))
-    n = len(nodes)
-    if n == 0:
+    nodes_set = set(filtered["source"].tolist() + filtered["target"].tolist())
+    if len(nodes_set) == 0:
         return None
 
-    # Topic-based color palette for better distinction
     TOPIC_COLORS = {
-        'political_instability': '#e74c3c',
-        'military_escalation': '#e67e22',
-        'military_clash': '#d35400',
-        'government_instability': '#c0392b',
-        'coup': '#8e44ad',
-        'international_support': '#2980b9',
-        'international_crisis': '#1abc9c',
-        'increasing_bilateral_relations': '#27ae60',
-        'deteriorating_bilateral_relations': '#f39c12',
-        'political_repression': '#9b59b6',
-        'ethnic_religious_violence': '#e91e63',
-        'domestic_violence': '#795548',
-        'property_confiscation': '#607d8b',
-        'dispute_settlement': '#00bcd4',
-        'corruption': '#ff5722',
-        'terrorism': '#f44336',
-        'protest_activity': '#ff9800',
-        'democratization': '#4caf50',
-        'appeal_of_leadership_change': '#3f51b5',
-        'authoritarianism': '#880e4f',
+        "political_instability": "#e74c3c",
+        "military_escalation": "#e67e22",
+        "military_clash": "#d35400",
+        "government_instability": "#c0392b",
+        "coup": "#8e44ad",
+        "international_support": "#2980b9",
+        "international_crisis": "#1abc9c",
+        "increasing_bilateral_relations": "#27ae60",
+        "deteriorating_bilateral_relations": "#f39c12",
+        "political_repression": "#9b59b6",
+        "ethnic_religious_violence": "#e91e63",
+        "domestic_violence": "#795548",
+        "property_confiscation": "#607d8b",
+        "dispute_settlement": "#00bcd4",
+        "corruption": "#ff5722",
+        "terrorism": "#f44336",
+        "protest_activity": "#ff9800",
+        "democratization": "#4caf50",
+        "appeal_of_leadership_change": "#3f51b5",
+        "authoritarianism": "#880e4f",
     }
 
-    def _get_node_color(node):
-        topic_key = node.rsplit('_', 1)[0] if '_' in node else node
-        return TOPIC_COLORS.get(topic_key, '#5dade2')
-
-    # Layout: if focus mode use radial layout, else spring
-    if focus_node and focus_node != 'All' and focus_node in nodes:
-        pos = {}
-        pos[focus_node] = (0.0, 0.0)
-        others = [nd for nd in nodes if nd != focus_node]
-        sources_out = [nd for nd in others if nd in filtered[filtered['source'] == focus_node]['target'].tolist()]
-        sources_in = [nd for nd in others if nd in filtered[filtered['target'] == focus_node]['source'].tolist()]
-        rest = [nd for nd in others if nd not in sources_out and nd not in sources_in]
-        for i, nd in enumerate(sources_out):
-            angle = -math.pi / 3 + (2 * math.pi / 3) * i / max(len(sources_out) - 1, 1)
-            pos[nd] = (1.5 * math.cos(angle), 1.5 * math.sin(angle))
-        for i, nd in enumerate(sources_in):
-            angle = math.pi - math.pi / 3 + (2 * math.pi / 3) * i / max(len(sources_in) - 1, 1)
-            pos[nd] = (1.5 * math.cos(angle), 1.5 * math.sin(angle))
-        for i, nd in enumerate(rest):
-            angle = 2 * math.pi * i / max(len(rest), 1)
-            pos[nd] = (2.2 * math.cos(angle), 2.2 * math.sin(angle))
-    else:
-        try:
-            import networkx as nx
-            G = nx.DiGraph()
-            for _, row in filtered.iterrows():
-                G.add_edge(row['source'], row['target'], weight=float(row['max_f_stat']))
-            pos = nx.spring_layout(G, k=3.0, seed=42, iterations=80)
-        except ImportError:
-            pos = {}
-            for i, node in enumerate(nodes):
-                angle = 2 * math.pi * i / n
-                pos[node] = (math.cos(angle), math.sin(angle))
-
-    out_deg = filtered.groupby('source')['max_f_stat'].sum().to_dict()
-    in_deg = filtered.groupby('target')['max_f_stat'].sum().to_dict()
-
-    edge_traces = []
+    # Build node and edge data for D3
+    degree = {}
     for _, row in filtered.iterrows():
-        x0, y0 = pos[row['source']]
-        x1, y1 = pos[row['target']]
-        f = float(row['max_f_stat'])
-        is_hl = (row['source'] in highlight_nodes or row['target'] in highlight_nodes)
-        is_focus = focus_node and focus_node != 'All' and (row['source'] == focus_node or row['target'] == focus_node)
-        src_color = _get_node_color(row['source'])
-        if is_hl:
-            color = 'rgba(224,112,32,0.85)'
-        elif is_focus:
-            color = src_color
+        degree[row["source"]] = degree.get(row["source"], 0) + row["max_f_stat"]
+        degree[row["target"]] = degree.get(row["target"], 0) + row["max_f_stat"]
+
+    node_list = []
+    for nd in nodes_set:
+        parts = nd.rsplit("_", 1)
+        if len(parts) == 2:
+            label = parts[0].replace("_", " ").title()
+            cc = parts[1].upper()
         else:
-            color = 'rgba(100,160,220,{:.2f})'.format(min(0.6, 0.12 + f / 30))
-        width = 4.0 if (is_hl or is_focus) else max(0.6, min(3.5, f / 8))
-        s_lbl, s_cc = _node_label(row['source'])
-        t_lbl, t_cc = _node_label(row['target'])
-        edge_traces.append(go.Scatter(
-            x=[x0, x1, None], y=[y0, y1, None],
-            mode='lines', line=dict(width=width, color=color),
-            hoverinfo='text',
-            hovertext='{} ({}) &rarr; {} ({})<br>F={:.1f} p={:.3f} lag={}m'.format(
-                s_lbl, COUNTRY_NAMES.get(s_cc, s_cc), t_lbl, COUNTRY_NAMES.get(t_cc, t_cc),
-                f, float(row['min_p_value']), int(row['best_lag'])),
-            showlegend=False
-        ))
+            label = nd
+            cc = ""
+        topic_key = parts[0] if len(parts) == 2 else nd
+        color = TOPIC_COLORS.get(topic_key, "#5dade2")
+        is_hl = nd in highlight_nodes
+        node_list.append({"id": nd, "label": label, "cc": cc, "color": color, "degree": degree.get(nd, 1), "hl": is_hl})
 
-    nx_list, ny_list, ntxt, nhov, ncol, nsz = [], [], [], [], [], []
-    for node in nodes:
-        x, y = pos[node]
-        lbl, cc = _node_label(node)
-        nx_list.append(x)
-        ny_list.append(y)
-        ntxt.append('{}<br><b>{}</b>'.format(lbl, COUNTRY_NAMES.get(cc, cc)))
-        out_f = out_deg.get(node, 0)
-        in_f = in_deg.get(node, 0)
-        nhov.append('<b>{}</b><br><b>{}</b><br>Out-influence: {:.1f}<br>In-influence: {:.1f}<br>Connections out: {}'.format(
-            lbl, COUNTRY_NAMES.get(cc, cc), out_f, in_f, int(filtered[filtered['source'] == node].shape[0])))
-        is_hl = node in highlight_nodes
-        is_center = (focus_node and node == focus_node)
-        if is_hl:
-            ncol.append('#e07020')
-        elif is_center:
-            ncol.append('#e74c3c')
-        else:
-            ncol.append(_get_node_color(node))
-        nsz.append(30 if is_center else (22 if is_hl else max(12, min(36, 12 + out_f / 2.2))))
+    edge_list = []
+    for _, row in filtered.iterrows():
+        edge_list.append({"source": row["source"], "target": row["target"], "weight": float(row["max_f_stat"])})
 
-    node_trace = go.Scatter(
-        x=nx_list, y=ny_list, mode='markers+text',
-        text=ntxt, textposition='top center',
-        textfont=dict(size=8, color='#e0e8f0'),
-        hovertext=nhov, hoverinfo='text',
-        marker=dict(size=nsz, color=ncol,
-                    line=dict(width=2, color='rgba(255,255,255,0.7)')),
-        showlegend=False
-    )
+    max_deg = max((n["degree"] for n in node_list), default=1)
+    for n in node_list:
+        n["size"] = 18 + 30 * (n["degree"] / max_deg)
 
-    fig = go.Figure(data=edge_traces + [node_trace])
-    fig.update_layout(
-        height=580,
-        paper_bgcolor='rgba(0,0,0,0)',
-        plot_bgcolor='rgba(10,20,40,0.3)',
-        xaxis=dict(showgrid=False, zeroline=False, showticklabels=False, showline=False),
-        yaxis=dict(showgrid=False, zeroline=False, showticklabels=False, showline=False),
-        margin=dict(l=10, r=10, t=10, b=10),
-        hovermode='closest',
-    )
-    return fig
+    max_w = max((e["weight"] for e in edge_list), default=1)
+    nodes_json = _json.dumps(node_list)
+    edges_json = _json.dumps(edge_list)
+
+    html = f"""
+    <div id="nerai-graph" style="width:100%;height:750px;background:#070b14;border-radius:12px;position:relative;overflow:hidden;border:1px solid rgba(0,255,255,0.15);">
+      <canvas id="bgCanvas" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;"></canvas>
+      <svg id="netSvg" style="width:100%;height:100%;"></svg>
+      <div id="tooltip" style="position:absolute;display:none;padding:10px 14px;background:rgba(8,14,28,0.95);border:1px solid rgba(0,255,255,0.4);border-radius:8px;color:#e0e0e0;font:12px monospace;pointer-events:none;z-index:10;box-shadow:0 0 20px rgba(0,255,255,0.15);"></div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+    <script>
+    (function() {{
+      const nodes = {nodes_json};
+      const edges = {edges_json};
+      const maxW = {max_w};
+      const container = document.getElementById("nerai-graph");
+      const W = container.offsetWidth;
+      const H = container.offsetHeight;
+
+      // Background grid
+      const bgC = document.getElementById("bgCanvas");
+      bgC.width = W; bgC.height = H;
+      const ctx = bgC.getContext("2d");
+      ctx.strokeStyle = "rgba(0,255,255,0.04)";
+      ctx.lineWidth = 1;
+      for(let x=0;x<W;x+=40){{ ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke(); }}
+      for(let y=0;y<H;y+=40){{ ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke(); }}
+
+      const svg = d3.select("#netSvg");
+      const g = svg.append("g");
+
+      // Zoom behavior
+      const zoom = d3.zoom()
+        .scaleExtent([0.3, 4])
+        .on("zoom", (e) => g.attr("transform", e.transform));
+      svg.call(zoom);
+
+      // Glow filter
+      const defs = svg.append("defs");
+      const flt = defs.append("filter").attr("id","glow");
+      flt.append("feGaussianBlur").attr("stdDeviation","3").attr("result","blur");
+      flt.append("feMerge").selectAll("feMergeNode").data(["blur","SourceGraphic"]).join("feMergeNode").attr("in",d=>d);
+
+      // Arrow filter
+      const fltA = defs.append("filter").attr("id","edgeGlow");
+      fltA.append("feGaussianBlur").attr("stdDeviation","2").attr("result","blur");
+      fltA.append("feMerge").selectAll("feMergeNode").data(["blur","SourceGraphic"]).join("feMergeNode").attr("in",d=>d);
+
+      // Marker arrow
+      defs.append("marker").attr("id","arrow").attr("viewBox","0 0 10 6").attr("refX",10).attr("refY",3)
+        .attr("markerWidth",8).attr("markerHeight",6).attr("orient","auto")
+        .append("path").attr("d","M0,0L10,3L0,6").attr("fill","rgba(0,255,255,0.5)");
+
+      // Force simulation
+      const sim = d3.forceSimulation(nodes)
+        .force("link", d3.forceLink(edges).id(d=>d.id).distance(140))
+        .force("charge", d3.forceManyBody().strength(-350))
+        .force("center", d3.forceCenter(W/2, H/2))
+        .force("collision", d3.forceCollide().radius(d=>d.size+15))
+        .alphaDecay(0.015);
+
+      // Draw edges as bezier curves
+      const linkG = g.append("g");
+      const link = linkG.selectAll("path").data(edges).join("path")
+        .attr("fill","none")
+        .attr("stroke", d => {{
+          const sc = nodes.find(n=>n.id===d.source.id||n.id===d.source);
+          return sc ? sc.color : "#5dade2";
+        }})
+        .attr("stroke-opacity", d => 0.15 + 0.45*(d.weight/maxW))
+        .attr("stroke-width", d => 1 + 2.5*(d.weight/maxW))
+        .attr("filter","url(#edgeGlow)")
+        .attr("marker-end","url(#arrow)");
+
+      // Animated particles on edges
+      const particleG = g.append("g");
+      const particles = particleG.selectAll("circle").data(edges).join("circle")
+        .attr("r", 2)
+        .attr("fill", d => {{
+          const sc = nodes.find(n=>n.id===d.source.id||n.id===d.source);
+          return sc ? sc.color : "#0ff";
+        }})
+        .attr("opacity", 0.8)
+        .attr("filter","url(#glow)");
+      let particleT = 0;
+
+      // Draw nodes as rounded rectangles with header
+      const nodeG = g.append("g");
+      const nodeGroups = nodeG.selectAll("g").data(nodes).join("g")
+        .call(d3.drag()
+          .on("start", (e,d) => {{ if(!e.active) sim.alphaTarget(0.3).restart(); d.fx=d.x; d.fy=d.y; }})
+          .on("drag", (e,d) => {{ d.fx=e.x; d.fy=e.y; }})
+          .on("end", (e,d) => {{ if(!e.active) sim.alphaTarget(0); d.fx=null; d.fy=null; }})
+        );
+
+      // Node body (rounded rect)
+      nodeGroups.append("rect")
+        .attr("rx", 8).attr("ry", 8)
+        .attr("width", d => Math.max(d.label.length*7.5+20, 90))
+        .attr("height", 44)
+        .attr("x", d => -Math.max(d.label.length*7.5+20, 90)/2)
+        .attr("y", -22)
+        .attr("fill", "rgba(10,18,35,0.9)")
+        .attr("stroke", d => d.color)
+        .attr("stroke-width", d => d.hl ? 2.5 : 1.2)
+        .attr("filter","url(#glow)");
+
+      // Node header bar
+      nodeGroups.append("rect")
+        .attr("rx", 8).attr("ry", 8)
+        .attr("width", d => Math.max(d.label.length*7.5+20, 90))
+        .attr("height", 16)
+        .attr("x", d => -Math.max(d.label.length*7.5+20, 90)/2)
+        .attr("y", -22)
+        .attr("fill", d => d.color)
+        .attr("opacity", 0.85);
+
+      // Country code in header
+      nodeGroups.append("text")
+        .attr("y", -10)
+        .attr("text-anchor","middle")
+        .attr("fill","#fff")
+        .attr("font-size","9px")
+        .attr("font-family","monospace")
+        .attr("font-weight","bold")
+        .text(d => d.cc);
+
+      // Label text
+      nodeGroups.append("text")
+        .attr("y", 6)
+        .attr("text-anchor","middle")
+        .attr("fill","#d0d8e8")
+        .attr("font-size","10px")
+        .attr("font-family","monospace")
+        .text(d => d.label.length>16 ? d.label.slice(0,15)+"..." : d.label);
+
+      // Tooltip
+      const tip = document.getElementById("tooltip");
+      nodeGroups.on("mouseover", (e,d) => {{
+        tip.style.display = "block";
+        tip.innerHTML = "<b>"+d.label+" ("+d.cc+")</b><br>Influence: "+d.degree.toFixed(1);
+      }}).on("mousemove", (e) => {{
+        const r = container.getBoundingClientRect();
+        tip.style.left = (e.clientX - r.left + 15) + "px";
+        tip.style.top = (e.clientY - r.top - 10) + "px";
+      }}).on("mouseout", () => {{ tip.style.display = "none"; }});
+
+      // Tick update
+      sim.on("tick", () => {{
+        link.attr("d", d => {{
+          const dx = d.target.x - d.source.x;
+          const dy = d.target.y - d.source.y;
+          const dr = Math.sqrt(dx*dx+dy*dy)*0.8;
+          return "M"+d.source.x+","+d.source.y+"A"+dr+","+dr+" 0 0,1 "+d.target.x+","+d.target.y;
+        }});
+        nodeGroups.attr("transform", d => "translate("+d.x+","+d.y+")");
+
+        // Animate particles along paths
+        particleT = (particleT + 0.004) % 1;
+        particles.each(function(d, i) {{
+          const t = (particleT + i*0.037) % 1;
+          const x = d.source.x + (d.target.x - d.source.x)*t;
+          const y = d.source.y + (d.target.y - d.source.y)*t;
+          d3.select(this).attr("cx", x).attr("cy", y);
+        }});
+      }});
+
+      // Keep simulation warm for particle animation
+      setInterval(() => {{ if(sim.alpha()<0.05) sim.alpha(0.05).restart(); }}, 3000);
+
+    }})();
+    </script>
+    """
+    return html
 
 
 def causal_network_narrative(filtered, highlight_nodes=None):
@@ -4269,7 +4363,7 @@ def render_causality():
     display_filtered = filtered.head(80) if focus_node is None else filtered
     net_fig = build_network_figure(display_filtered, highlight_nodes=scenario_nodes, focus_node=focus_node)
     if net_fig:
-        st.plotly_chart(net_fig, use_container_width=True)
+        import streamlit.components.v1 as components; components.html(net_fig, height=770, scrolling=False)
     else:
         st.info('No edges to display with the current filters.')
 
