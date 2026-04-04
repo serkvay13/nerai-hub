@@ -1514,43 +1514,7 @@ def render_home():
     # ── Animated Hero ────────────────────────────────────────
 
     # === 3D GLOBE ===
-    _globe_html = (
-        '<div style="background:#0a0e1a;border-radius:12px;padding:0;margin-bottom:1rem;">'
-        '<canvas id="nglobe" width="700" height="500" style="display:block;margin:auto;"></canvas>'
-        '<script>'
-        '(function(){'
-        'var cv=document.getElementById("nglobe");if(!cv)return;'
-        'var c=cv.getContext("2d"),W=cv.width,H=cv.height,cx=W/2,cy=H/2,R=180;'
-        'var t=0,stars=[];for(var i=0;i<200;i++)stars.push([Math.random()*W,Math.random()*H,Math.random()*1.5+0.5]);'
-        'var cities=[[51.5,-0.1,"London"],[40.7,-74,"NYC"],[35.7,139.7,"Tokyo"],[39.9,116.4,"Beijing"],[-33.9,151.2,"Sydney"],[55.8,37.6,"Moscow"],[28.6,77.2,"Delhi"]];'
-        'var arcs=[[0,1],[1,3],[3,4],[2,5],[5,6],[6,0],[2,4]];'
-        'function proj(lat,lon){var la=lat*Math.PI/180,lo=lon*Math.PI/180+t*0.003;var x=Math.cos(la)*Math.sin(lo),y=Math.sin(la),z=Math.cos(la)*Math.cos(lo);return z>-0.1?[cx+x*R,cy-y*R,z]:null;}'
-        'function draw(){c.fillStyle="#0a0e1a";c.fillRect(0,0,W,H);'
-        'for(var i=0;i<stars.length;i++){var s=stars[i];var b=0.5+0.5*Math.sin(t*0.02+i);c.fillStyle="rgba(255,255,255,"+b+")";c.beginPath();c.arc(s[0],s[1],s[2],0,6.28);c.fill();}'
-        'c.strokeStyle="rgba(0,255,255,0.08)";c.lineWidth=0.5;'
-        'for(var la=-80;la<=80;la+=20){c.beginPath();for(var lo=0;lo<=360;lo+=5){var p=proj(la,lo);if(p){if(lo==0)c.moveTo(p[0],p[1]);else c.lineTo(p[0],p[1]);}}c.stroke();}'
-        'for(var lo=0;lo<360;lo+=30){c.beginPath();for(var la=-90;la<=90;la+=5){var p=proj(la,lo);if(p){if(la==-90)c.moveTo(p[0],p[1]);else c.lineTo(p[0],p[1]);}}c.stroke();}'
-        'var sw=t*0.5%360;c.fillStyle="rgba(0,255,200,0.04)";c.beginPath();c.moveTo(cx,cy);'
-        'for(var a=sw;a<sw+40;a+=2){var p=proj(0,a);if(p)c.lineTo(p[0],p[1]);}c.closePath();c.fill();'
-        'for(var i=0;i<arcs.length;i++){var a=arcs[i],c1=cities[a[0]],c2=cities[a[1]];var p1=proj(c1[0],c1[1]),p2=proj(c2[0],c2[1]);'
-        'if(p1&&p2){var phase=(t*0.02+i)%1;c.strokeStyle="rgba(0,200,255,"+(0.3+0.3*Math.sin(t*0.05+i))+")";c.lineWidth=1.5;c.beginPath();'
-        'var mx=(p1[0]+p2[0])/2,my=(p1[1]+p2[1])/2-30;c.moveTo(p1[0],p1[1]);c.quadraticCurveTo(mx,my,p2[0],p2[1]);c.stroke();}}'
-        'for(var i=0;i<cities.length;i++){var ci=cities[i],p=proj(ci[0],ci[1]);'
-        'if(p){c.fillStyle="rgba(0,255,200,"+(0.6+0.4*Math.sin(t*0.03+i))+")";c.beginPath();c.arc(p[0],p[1],3+Math.sin(t*0.05+i),0,6.28);c.fill();'
-        'c.fillStyle="rgba(200,255,255,0.7)";c.font="9px monospace";c.fillText(ci[2],p[0]+6,p[1]-4);}}'
-        'c.fillStyle="rgba(0,255,200,0.06)";c.beginPath();c.arc(cx,cy,R,0,6.28);c.fill();'
-        'c.strokeStyle="rgba(0,255,255,0.15)";c.lineWidth=1;c.beginPath();c.arc(cx,cy,R,0,6.28);c.stroke();'
-        'c.strokeStyle="rgba(0,255,200,0.08)";c.lineWidth=0.5;c.beginPath();c.arc(cx,cy,R+20+5*Math.sin(t*0.02),0,6.28);c.stroke();'
-        'c.fillStyle="rgba(0,255,200,0.5)";c.font="bold 11px monospace";c.fillText("NERAI GLOBAL INTELLIGENCE",cx-100,30);'
-        'c.font="9px monospace";c.fillStyle="rgba(0,200,255,0.4)";c.fillText("NODES: "+cities.length+" | LINKS: "+arcs.length+" | STATUS: ACTIVE",cx-120,H-15);'
-        't++;requestAnimationFrame(draw);}'
-        'draw();'
-        '})();'
-        '</script></div>'
-    )
-    _stc.html(_globe_html, height=510, scrolling=False)
-    st.markdown(f"""
-<canvas id="c" style="display:block;"></canvas>
+    _globe_html = """<canvas id="c" style="display:block;"></canvas>
 <script>
 var C=document.getElementById('c'),X=C.getContext('2d'),W,H,rot=0,t=0;
 function resize(){W=C.width=window.innerWidth||800;H=C.height=window.innerHeight||510;}
@@ -1572,7 +1536,7 @@ function rX(p,a){var c=Math.cos(a),s=Math.sin(a);return{x:p.x,y:p.y*c-p.z*s,z:p.
 function pj(p){var d=600,s=d/(d+p.z);return{x:W/2+p.x*s,y:H/2-p.y*s,s:s,z:p.z};}
 function frame(){
 X.clearRect(0,0,W,H);
-var i,j,p,pr,pp,R=Math.min(W,H)*0.34,tx=-0.15;
+var i,p,pr,pp,R=Math.min(W,H)*0.34,tx=-0.15;
 for(i=0;i<stars.length;i++){var fl=0.5+0.5*Math.sin(t*2+stars[i].b*50);X.fillStyle='rgba(180,210,255,'+(0.3+0.4*fl)+')';X.fillRect(stars[i].x*W,stars[i].y*H,stars[i].s,stars[i].s);}
 var grd=X.createRadialGradient(W/2,H/2,R*0.9,W/2,H/2,R*1.5);grd.addColorStop(0,'rgba(0,180,255,0.08)');grd.addColorStop(0.4,'rgba(0,180,255,0.04)');grd.addColorStop(1,'rgba(0,180,255,0)');X.fillStyle=grd;X.fillRect(0,0,W,H);
 var sg=X.createRadialGradient(W/2-R*0.15,H/2-R*0.15,R*0.05,W/2,H/2,R);sg.addColorStop(0,'rgba(15,40,70,0.9)');sg.addColorStop(0.7,'rgba(8,20,40,0.95)');sg.addColorStop(1,'rgba(0,180,255,0.15)');X.beginPath();X.arc(W/2,H/2,R,0,Math.PI*2);X.fillStyle=sg;X.fill();
@@ -1592,8 +1556,83 @@ var tw2=W/(tk.length+1);for(i=0;i<tk.length;i++){var tx2=tw2*(i+1);X.fillStyle='
 X.textAlign='left';
 rot-=0.003;t+=0.016;requestAnimationFrame(frame);}
 frame();window.addEventListener('resize',resize);
-</script>
-""", unsafe_allow_html=True)
+</script>"""
+    _stc.html(_globe_html, height=510, scrolling=False)
+    st.markdown(f"""
+    <div class="home-hero">
+      <!-- Corner HUD brackets -->
+      <div class="home-corner home-corner-tl"></div>
+      <div class="home-corner home-corner-tr"></div>
+      <div class="home-corner home-corner-bl"></div>
+      <div class="home-corner home-corner-br"></div>
+      <!-- Glowing orbs -->
+      <div class="home-orb" style="width:320px;height:320px;top:-100px;left:-80px;background:rgba(0,70,200,0.13);"></div>
+      <div class="home-orb" style="width:260px;height:260px;top:-60px;right:-60px;background:rgba(80,0,180,0.10);"></div>
+      <div class="home-orb" style="width:220px;height:220px;bottom:-70px;left:50%;transform:translateX(-50%);background:rgba(0,120,230,0.09);"></div>
+      <!-- Floating hexagons -->
+      <div class="hex-deco" style="width:70px;height:80px;top:12%;left:4%;animation-delay:0s;"></div>
+      <div class="hex-deco" style="width:55px;height:63px;top:18%;right:6%;animation-delay:3s;"></div>
+      <div class="hex-deco" style="width:45px;height:52px;bottom:18%;left:10%;animation-delay:6s;opacity:0.6;"></div>
+      <div class="hex-deco" style="width:40px;height:46px;bottom:22%;right:9%;animation-delay:1.5s;opacity:0.5;"></div>
+      <!-- Main content -->
+      <div style="position:relative;z-index:2;padding:12px 0;">
+        <!-- CSS Text Logo -->
+        <div class="nerai-logo-wrap">
+          <div class="nerai-logo-ring"></div>
+          <div class="nerai-logo-ring nerai-logo-ring-2"></div>
+          <div class="nerai-logo-brand">
+            <span class="nerai-logo-hex">◈</span>
+            <span class="nerai-logo-ner">NER</span><span class="nerai-logo-ai">AI</span>
+          </div>
+        </div>
+        <!-- Sub-brand line -->
+        <div style="font-size:0.65rem;letter-spacing:0.35em;text-transform:uppercase;
+             color:rgba(0,200,255,0.4);font-family:'Share Tech Mono',monospace;
+             margin-bottom:6px;">Intelligence Hub</div>
+        <div class="hero-tagline">Geopolitical Risk Intelligence Platform</div>
+        <!-- Separator -->
+        <div style="height:1px;background:linear-gradient(90deg,transparent,rgba(0,200,255,0.4),rgba(123,47,255,0.3),transparent);
+             width:60%;margin:0 auto 30px;"></div>
+        <!-- Stats row -->
+        <div class="home-stat-row">
+          <div class="home-stat">
+            <div class="home-stat-val">{len(all_countries)}</div>
+            <div class="home-stat-lbl">Countries</div>
+          </div>
+          <div style="width:1px;background:rgba(0,150,255,0.15);align-self:stretch;"></div>
+          <div class="home-stat">
+            <div class="home-stat-val">{len(all_topics)}</div>
+            <div class="home-stat-lbl">Risk Topics</div>
+          </div>
+          <div style="width:1px;background:rgba(0,150,255,0.15);align-self:stretch;"></div>
+          <div class="home-stat">
+            <div class="home-stat-val">{len(date_cols)}</div>
+            <div class="home-stat-lbl">Days of Data</div>
+          </div>
+          <div style="width:1px;background:rgba(0,150,255,0.15);align-self:stretch;"></div>
+          <div class="home-stat">
+            <div class="home-stat-val">{len(df):,}</div>
+            <div class="home-stat-lbl">Data Points</div>
+          </div>
+        </div>
+        <!-- Live status bar -->
+        <div style="display:inline-flex;align-items:center;gap:12px;
+             background:rgba(0,20,50,0.6);border:1px solid rgba(0,150,255,0.2);
+             border-radius:20px;padding:5px 18px;
+             font-size:0.68rem;color:rgba(0,200,255,0.6);
+             font-family:'Share Tech Mono',monospace;letter-spacing:0.1em;">
+          <span class="live-dot"></span>
+          <span>LIVE</span>
+          <span style="color:rgba(0,150,255,0.3);">|</span>
+          <span>GDELT PROJECT</span>
+          <span style="color:rgba(0,150,255,0.3);">|</span>
+          <span>LAST UPDATE: {date_cols[-1].strftime('%d %b %Y') if len(date_cols) else 'N/A'}</span>
+          <span style="color:rgba(0,150,255,0.3);">|</span>
+          <span style="color:{'#ffaa00' if is_demo else '#00d4aa'};">{'⚠ DEMO' if is_demo else '✓ ONLINE'}</span>
+        </div>
+      </div>
+    </div>
+    """, unsafe_allow_html=True)
 
     # ── Module Tiles ─────────────────────────────────────────
     st.markdown("""
