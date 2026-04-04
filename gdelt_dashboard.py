@@ -551,8 +551,21 @@ def load_data(filepath='./indices.csv'):
             threshold = row_medians * 0.05
             mask = df[date_cols].lt(threshold, axis=0) | (df[date_cols] == 0)
             df[date_cols] = df[date_cols].where(~mask, np.nan)
-            df[date_cols] = df[date_cols].interpolate(axis=1, method='linear', limit_direction='both')
+            # Small gaps (up to 7 days): linear interpolation
+            df[date_cols] = df[date_cols].interpolate(axis=1, method='linear', limit=7, limit_direction='both')
+            # Large gaps: forward/backward fill then add noise to avoid flat lines
+            still_nan = df[date_cols].isna()
             df[date_cols] = df[date_cols].ffill(axis=1).bfill(axis=1)
+            if still_nan.any().any():
+                row_std = df[date_cols].std(axis=1)
+                np.random.seed(42)
+                noise = pd.DataFrame(
+                    np.random.normal(0, 1, size=df[date_cols].shape),
+                    index=df[date_cols].index, columns=df[date_cols].columns
+                )
+                noise = noise.multiply(row_std * 0.05, axis=0)
+                df[date_cols] = df[date_cols].where(~still_nan, df[date_cols] + noise)
+                df[date_cols] = df[date_cols].clip(lower=0)
             df[date_cols] = df[date_cols].fillna(0)
         return df,False
     return _demo_data(),True
@@ -684,7 +697,7 @@ def chart_timeseries_with_peaks(df_n, countries, title, method, show_peaks=True)
     fig.update_layout(**t, height=340,
         title=dict(text=title,font=dict(size=12,color='#0077a8'),x=0.01),
         legend=dict(bgcolor='rgba(255,255,255,0.85)',bordercolor='rgba(0,119,168,0.25)',
-                    borderwidth=1,font=dict(size=10,color='#0d1f3c')),
+                    borderwidth=1,font=dict(size=10,color='#8aa0bc')),
         hovermode='x unified')
     return fig, peak_info
 
@@ -717,7 +730,7 @@ def chart_heatmap(df_n, top_n, method):
     t = {**BASE_THEME}
     t['xaxis'] = dict(showticklabels=True,tickangle=-45,
                       tickfont=dict(size=8,color='#5a6b82'),gridcolor='rgba(0,0,0,0)')
-    t['yaxis'] = dict(tickfont=dict(size=9,color='#0d1f3c'),gridcolor='rgba(0,0,0,0)')
+    t['yaxis'] = dict(tickfont=dict(size=9,color='#8aa0bc'),gridcolor='rgba(0,0,0,0)')
     fig.update_layout(**t,height=420,
         title=dict(text=f'Top {top_n} Countries — Heatmap',
                    font=dict(size=12,color='#0077a8'),x=0.01))
@@ -769,41 +782,43 @@ def risk_globe_html(df_n, date_col):
     vals = _json.dumps(row['value'].round(3).tolist())
     names = _json.dumps(row['name'].tolist())
     ttl = f"Global Risk Map \u2014 {pd.Timestamp(date_col).strftime('%d %b %Y')}"
-    return f"""<div id="rglobe" style="width:100%;height:620px;cursor:grab;"></div>
-<script src="https://cdn.plot.ly/plotly-2.27.0.min.js"><\/script>
-<script>
-var data=[{{type:'choropleth',locations:{locs},z:{vals},text:{names},
-colorscale:[[0,'#0a1628'],[0.2,'#0d3464'],[0.4,'#00b4d8'],[0.6,'#0077a8'],[0.85,'#f59e0b'],[1,'#e05060']],
-autocolorscale:false,marker:{{line:{{color:'rgba(0,184,212,0.4)',width:0.6}}}},
-colorbar:{{title:{{text:'Score',font:{{size:11,color:'#00B8D4'}}}},thickness:10,len:0.55,
-tickfont:{{size:9,color:'#5a6b82'}},outlinewidth:0,bgcolor:'rgba(0,0,0,0)'}},
-hovertemplate:'<b>%{{text}}</b><br>Risk Score: %{{z:.1f}}<extra></extra>'}}];
-var layout={{geo:{{bgcolor:'rgba(0,0,0,0)',showframe:false,showcoastlines:true,
-coastlinecolor:'rgba(0,184,212,0.25)',showland:true,landcolor:'#0a1628',
-showocean:true,oceancolor:'#060d1a',showlakes:false,
-projection:{{type:'orthographic',rotation:{{lon:30,lat:20,roll:0}}}},
-lonaxis:{{showgrid:true,gridcolor:'rgba(0,184,212,0.06)'}},
-lataxis:{{showgrid:true,gridcolor:'rgba(0,184,212,0.06)'}}}},
-paper_bgcolor:'rgba(0,0,0,0)',plot_bgcolor:'rgba(0,0,0,0)',
-margin:{{t:45,b:5,l:5,r:5}},height:620,
-title:{{text:'{ttl}',font:{{size:14,color:'#00B8D4',family:'monospace'}},x:0.02}},
-dragmode:'pan'}};
-Plotly.newPlot('rglobe',data,layout,{{displayModeBar:false,scrollZoom:false}});
-var lon=30,rotating=true,dragging=false;
-var anim=setInterval(function(){{if(rotating&&!dragging){{lon=(lon+0.3)%360;
-Plotly.relayout('rglobe',{{'geo.projection.rotation.lon':lon}})}}}},50);
-var el=document.getElementById('rglobe');
-el.addEventListener('mouseenter',function(){{rotating=false;el.style.cursor='grab';}});
-el.addEventListener('mouseleave',function(){{rotating=true;dragging=false;el.style.cursor='grab';}});
-el.addEventListener('mousedown',function(){{dragging=true;el.style.cursor='grabbing';}});
-el.addEventListener('mouseup',function(e){{dragging=false;el.style.cursor='grab';
-var g=el._fullLayout.geo.projection.rotation;lon=g.lon;}});
-el.on('plotly_click',function(d){{if(d.points&&d.points[0]){{
-var pt=d.points[0];
-window.parent.postMessage({{type:'streamlit:setComponentValue',value:pt.location}},'*');
-}}}});
-<\/script>"""
-
+    html = '<div id="rglobe" style="width:100%;height:620px;cursor:grab;background:transparent;"></div>\n'
+    html += '<script>\n'
+    html += '(function(){\n'
+    html += 'var s=document.createElement("script");\n'
+    html += 's.src="https://cdn.plot.ly/plotly-2.27.0.min.js";\n'
+    html += 's.onload=function(){\n'
+    html += 'var data=[{type:"choropleth",locations:' + locs + ',z:' + vals + ',text:' + names + ','
+    html += 'colorscale:[[0,"#0a1628"],[0.2,"#0d3464"],[0.4,"#00b4d8"],[0.6,"#0077a8"],[0.85,"#f59e0b"],[1,"#e05060"]],'
+    html += 'autocolorscale:false,marker:{line:{color:"rgba(0,184,212,0.4)",width:0.6}},'
+    html += 'colorbar:{title:{text:"Score",font:{size:11,color:"#00B8D4"}},thickness:10,len:0.55,'
+    html += 'tickfont:{size:9,color:"#5a6b82"},outlinewidth:0,bgcolor:"rgba(0,0,0,0)"},'
+    html += 'hovertemplate:"<b>%{text}</b><br>Risk Score: %{z:.1f}<extra></extra>"}];\n'
+    html += 'var layout={geo:{bgcolor:"rgba(0,0,0,0)",showframe:false,showcoastlines:true,'
+    html += 'coastlinecolor:"rgba(0,184,212,0.25)",showland:true,landcolor:"#0a1628",'
+    html += 'showocean:true,oceancolor:"#060d1a",showlakes:false,'
+    html += 'projection:{type:"orthographic",rotation:{lon:30,lat:20,roll:0}},'
+    html += 'lonaxis:{showgrid:true,gridcolor:"rgba(0,184,212,0.06)"},'
+    html += 'lataxis:{showgrid:true,gridcolor:"rgba(0,184,212,0.06)"}},'
+    html += 'paper_bgcolor:"rgba(0,0,0,0)",plot_bgcolor:"rgba(0,0,0,0)",'
+    html += 'margin:{t:45,b:5,l:5,r:5},height:620,'
+    html += 'title:{text:"' + ttl + '",font:{size:14,color:"#00B8D4",family:"monospace"},x:0.02},'
+    html += 'dragmode:"pan"};\n'
+    html += 'Plotly.newPlot("rglobe",data,layout,{displayModeBar:false,scrollZoom:false});\n'
+    html += 'var lon=30,rotating=true;\n'
+    html += 'setInterval(function(){if(rotating){lon=(lon+0.3)%360;'
+    html += 'Plotly.relayout("rglobe",{"geo.projection.rotation.lon":lon});}},50);\n'
+    html += 'var el=document.getElementById("rglobe");\n'
+    html += 'el.addEventListener("mouseenter",function(){rotating=false;el.style.cursor="grab";});\n'
+    html += 'el.addEventListener("mouseleave",function(){rotating=true;});\n'
+    html += 'el.addEventListener("mousedown",function(){el.style.cursor="grabbing";});\n'
+    html += 'el.addEventListener("mouseup",function(e){el.style.cursor="grab";'
+    html += 'var g=el._fullLayout.geo.projection.rotation;lon=g.lon;});\n'
+    html += '};\n'
+    html += 'document.head.appendChild(s);\n'
+    html += '})();\n'
+    html += '</scrip'+'t>'
+    return html
 def chart_ranking(df_n,date_col,n=12):
     try:
         row = df_n[[date_col]].reset_index()
@@ -821,7 +836,7 @@ def chart_ranking(df_n,date_col,n=12):
     ))
     t = {**BASE_THEME}
     t['xaxis'] = dict(gridcolor='rgba(0,212,255,0.06)',tickfont=dict(size=10,color='#6b7c93'))
-    t['yaxis'] = dict(tickfont=dict(size=10,color='#0d1f3c'),gridcolor='rgba(0,0,0,0)')
+    t['yaxis'] = dict(tickfont=dict(size=10,color='#8aa0bc'),gridcolor='rgba(0,0,0,0)')
     fig.update_layout(**t,height=330,
         title=dict(text='Country Ranking',font=dict(size=12,color='#0077a8'),x=0.01))
     return fig
@@ -2352,7 +2367,7 @@ def render_profile():
         title=dict(text=f'{name_a}  ↔  {name_b} — Bilateral Tension Trend',
                    font=dict(size=12,color='#6a9ab8'),x=0.01),
         legend=dict(bgcolor='rgba(255,255,255,0.85)',bordercolor='rgba(0,119,168,0.25)',
-                    borderwidth=1,font=dict(size=10,color='#0d1f3c')),hovermode='x unified')
+                    borderwidth=1,font=dict(size=10,color='#8aa0bc')),hovermode='x unified')
     st.plotly_chart(fig_bi, use_container_width=True, config={'displayModeBar':False})
     _render_footer()
 
@@ -2642,7 +2657,7 @@ def render_predictions():
 
         fig_fc.update_layout(
             paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(248,251,255,1)',
-            font=dict(family='Inter,sans-serif', color='#0d1f3c', size=11),
+            font=dict(family='Inter,sans-serif', color='#8aa0bc', size=11),
             height=420, hovermode='x unified',
             margin=dict(l=50, r=20, t=55, b=40),
             xaxis=dict(gridcolor='rgba(0,119,168,0.06)', tickfont=dict(size=10, color='#5a6b82'), showgrid=False),
@@ -2650,7 +2665,7 @@ def render_predictions():
                        gridcolor='rgba(0,212,255,0.06)', tickfont=dict(size=10, color='#5a6b82'), zeroline=False),
             legend=dict(
                 bgcolor='rgba(255,255,255,0.92)', bordercolor='rgba(0,119,168,0.2)',
-                borderwidth=1, font=dict(size=10, color='#0d1f3c'),
+                borderwidth=1, font=dict(size=10, color='#8aa0bc'),
                 orientation='h', yanchor='bottom', y=1.01, xanchor='left', x=0
             ),
         )
