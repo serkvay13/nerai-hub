@@ -57,7 +57,7 @@ def load_monthly(filepath):
     return monthly
 
 
-# Ã¢ÂÂÃ¢ÂÂ TIER 1: statsmodels (always available) Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
+# ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ TIER 1: statsmodels (always available) ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ
 
 def forecast_series_sm(y_values, h=HORIZON):
     from statsmodels.tsa.holtwinters import ExponentialSmoothing
@@ -69,74 +69,55 @@ def forecast_series_sm(y_values, h=HORIZON):
         last = y[-1] if n > 0 else 0
         return np.full(h, last), np.full(h, last*0.7), np.full(h, last*1.3)
 
-    fc = None
+    # --- Get ETS base level ---
+    ets_fc = None
     resid = None
+    try:
+        model = ExponentialSmoothing(
+            y, trend='add', damped_trend=True,
+            seasonal=None,
+            initialization_method='estimated')
+        fit = model.fit(optimized=True, use_brute=True)
+        ets_fc = np.clip(fit.forecast(h), 0, None)
+        resid = y - fit.fittedvalues
+    except Exception:
+        pass
 
-    # Try seasonal ETS first (24+ months)
-    if n >= 24:
-        try:
-            model = ExponentialSmoothing(
-                y, trend='add', damped_trend=True,
-                seasonal='add', seasonal_periods=12,
-                initialization_method='estimated')
-            fit = model.fit(optimized=True, use_brute=True)
-            fc = np.clip(fit.forecast(h), 0, None)
-            resid = y - fit.fittedvalues
-        except Exception:
-            fc = None
+    base_level = float(ets_fc[0]) if ets_fc is not None else float(y[-1])
 
-    # Fall back to non-seasonal ETS
-    if fc is None:
-        try:
-            model = ExponentialSmoothing(
-                y, trend='add', damped_trend=True,
-                seasonal=None,
-                initialization_method='estimated')
-            fit = model.fit(optimized=True, use_brute=True)
-            fc = np.clip(fit.forecast(h), 0, None)
-            resid = y - fit.fittedvalues
-        except Exception:
-            return forecast_series_numpy(y, h)
+    # --- Always compute trend from recent history ---
+    lookback = min(n, 12)
+    recent = y[-lookback:]
+    x_hist = np.arange(lookback)
+    slope, _ = np.polyfit(x_hist, recent, deg=1)
 
-    # Check if forecast lacks month-to-month variation
-    fc_mean = np.mean(fc) if np.mean(fc) > 1e-9 else 1e-9
-    fc_std = np.std(fc)
-    cv = fc_std / abs(fc_mean) if abs(fc_mean) > 1e-9 else 0
+    # --- Always extract seasonal pattern from full history ---
+    x_full = np.arange(n)
+    trend_coef = np.polyfit(x_full, y, deg=1)
+    detrended = y - np.polyval(trend_coef, x_full)
 
-    if cv < 0.03:  # Coefficient of variation < 3% = too flat
-        # 1. Compute trend from recent history
-        lookback = min(n, 12)
-        recent = y[-lookback:]
-        x_hist = np.arange(lookback)
-        slope, _ = np.polyfit(x_hist, recent, deg=1)
+    cycle_len = min(n, 12)
+    seasonal = np.zeros(cycle_len)
+    counts = np.zeros(cycle_len)
+    for i in range(n):
+        pos = i % cycle_len
+        seasonal[pos] += detrended[i]
+        counts[pos] += 1
+    seasonal = seasonal / np.maximum(counts, 1)
+    seasonal = seasonal - np.mean(seasonal)
 
-        # 2. Extract monthly seasonal pattern from historical data
-        # Detrend the full series, then compute avg deviation per month position
-        x_full = np.arange(n)
-        trend_coef = np.polyfit(x_full, y, deg=1)
-        detrended = y - np.polyval(trend_coef, x_full)
+    # --- Build forecast: base + damped trend + seasonal ---
+    fc = np.zeros(h)
+    phi = 0.95
+    cumulative = 0.0
+    for k in range(h):
+        cumulative += slope * (phi ** (k + 1))
+        season_k = seasonal[(n + k) % cycle_len]
+        fc[k] = max(base_level + cumulative + season_k, 0)
 
-        cycle_len = min(n, 12)
-        seasonal = np.zeros(cycle_len)
-        counts = np.zeros(cycle_len)
-        for i in range(n):
-            pos = i % cycle_len
-            seasonal[pos] += detrended[i]
-            counts[pos] += 1
-        seasonal = seasonal / np.maximum(counts, 1)
-        seasonal = seasonal - np.mean(seasonal)  # center
-
-        # 3. Build forecast: ETS level + damped trend + seasonal pattern
-        base = fc[0]
-        phi = 0.95
-        cumulative = 0.0
-        for k in range(h):
-            cumulative += slope * (phi ** (k + 1))
-            season_k = seasonal[(n + k) % cycle_len]
-            fc[k] = max(base + cumulative + season_k, 0)
-
-    sigma = max(np.std(resid) if resid is not None else fc_mean * 0.1,
-                fc_mean * 0.05, 0.01)
+    # --- Confidence interval ---
+    sigma = max(np.std(resid) if resid is not None else np.std(y) * 0.15,
+                np.mean(y) * 0.05, 0.01)
     steps = np.arange(1, h + 1)
     lo = np.clip(fc - 1.645 * sigma * np.sqrt(steps), 0, None)
     hi = fc + 1.645 * sigma * np.sqrt(steps)
@@ -152,11 +133,11 @@ def forecast_series_numpy(y_values, h=HORIZON):
         last = y[-1] if n > 0 else 0
         return np.full(h, last), np.full(h, last*0.7), np.full(h, last*1.3)
 
-    # Linear trend
+    # Trend
     x = np.arange(n)
     slope, intercept = np.polyfit(x, y, deg=1)
 
-    # Extract seasonal pattern from detrended data
+    # Seasonal pattern from detrended data
     detrended = y - (intercept + slope * x)
     cycle_len = min(n, 12)
     seasonal = np.zeros(cycle_len)
@@ -168,7 +149,7 @@ def forecast_series_numpy(y_values, h=HORIZON):
     seasonal = seasonal / np.maximum(counts, 1)
     seasonal = seasonal - np.mean(seasonal)
 
-    # Build forecast: damped trend + seasonal
+    # Forecast: damped trend + seasonal
     phi = 0.90
     fc = []
     for k in range(1, h + 1):
@@ -209,7 +190,7 @@ def forecast_statsmodels(monthly, horizon=HORIZON):
     return pd.DataFrame(rows)
 
 
-# Ã¢ÂÂÃ¢ÂÂ TIER 2: N-HiTS (optional deep learning) Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
+# ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ TIER 2: N-HiTS (optional deep learning) ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ
 
 def forecast_nhits(monthly, horizon=HORIZON):
     try:
@@ -265,7 +246,7 @@ def forecast_nhits(monthly, horizon=HORIZON):
         return None
 
 
-# Ã¢ÂÂÃ¢ÂÂ BLEND Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
+# ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ BLEND ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ
 
 def blend(sm_fc, nf_fc, w_sm=BLEND_SM, w_nf=BLEND_NF):
     merged = sm_fc.merge(nf_fc, on=['unique_id', 'ds'], how='left')
@@ -288,7 +269,7 @@ def blend(sm_fc, nf_fc, w_sm=BLEND_SM, w_nf=BLEND_NF):
     return merged[['unique_id', 'ds', 'yhat', 'yhat_lower', 'yhat_upper']]
 
 
-# Ã¢ÂÂÃ¢ÂÂ MAIN Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
+# ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ MAIN ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ
 
 def run():
     t0 = datetime.datetime.utcnow()
