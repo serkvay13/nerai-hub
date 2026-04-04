@@ -702,6 +702,7 @@ def gauge_chart(value,title,color,height=210):
                 {'range':[75,100],'color':'rgba(224,80,96,0.12)'},
             ],
             'threshold':{'line':{'color':color,'width':3},'thickness':0.75,'value':value},
+        }
     ))
     fig.update_layout(paper_bgcolor='rgba(0,0,0,0)',
                       font=dict(family='Inter,sans-serif',color='#8899aa'),
