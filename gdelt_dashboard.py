@@ -60,7 +60,6 @@ _VALID_CODES = {
     'NERAI-SOLO-26': 'solo',
     'NERAI-PRO-26':  'pro',
     'NERAI-2026':    'pro',
-}
 
 if 'access_tier' not in st.session_state:
     st.session_state.access_tier = None
@@ -71,19 +70,14 @@ if st.session_state.access_tier is None:
     [data-testid="stForm"] {
       border-radius: 16px !important;
       max-width: 420px !important;
-    }
     [data-testid="stForm"] input {
       border-radius: 8px !important;
-    }
     [data-testid="stForm"] input:focus {
       border-color: #00d4ff !important;
-    }
     [data-testid="stForm"] button {
       font-weight: 700 !important;
       border-radius: 8px !important;
-    }
     [data-testid="stForm"] button:hover {
-    }
     """, unsafe_allow_html=True)
 
     col_l, col_c, col_r = st.columns([1, 2, 1])
@@ -124,80 +118,47 @@ _IS_PRO = st.session_state.access_tier == 'pro'
 st.markdown("""
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=DM+Serif+Display&family=JetBrains+Mono:wght@400;500&display=swap');
 :root {
-  --bg-primary: #0a0e17;
-  --bg-secondary: #0d1220;
-  --bg-card: #111827;
-  --bg-card-hover: #151d2e;
-  --accent: #00d4ff;
   --accent2: #00ffc8;
-  --accent-dim: rgba(0,212,255,0.15);
-  --text-primary: #e0e8f0;
-  --text-secondary: #8899aa;
-  --text-dim: #5a6b82;
-  --border: rgba(0,212,255,0.12);
-  --border-glow: rgba(0,212,255,0.25);
-  --glow: 0 0 20px rgba(0,212,255,0.15);
-  --glow-strong: 0 0 30px rgba(0,212,255,0.25), 0 0 60px rgba(0,212,255,0.1);
-  --navy: #0d1220;
-  --teal: #00d4ff;
-  --sky: #00b4d8;
-  --silver: #8899aa;
-  --hot: #ff6b6b;
-  --warm: #ffd93d;
-  --cool: #00ffc8;
-  --mild: #a29bfe;
-}
 
 /* ── Global dark background ── */
 .stApp, .main, [data-testid="stAppViewContainer"] {
-}
 [data-testid="stHeader"] { background: transparent !important; }
 #MainMenu, footer, .stDeployButton { display:none !important; }
 
 /* ── Sidebar dark glass ── */
 [data-testid="stSidebar"] {
   border-right: 1px solid var(--border) !important;
-}
 [data-testid="stSidebar"] * { color: var(--text-primary) !important; }
 [data-testid="stSidebar"] .stButton > button {
   border-radius: 8px !important;
   text-align: left !important;
   font-size: 13px !important;
-}
 [data-testid="stSidebar"] .stButton > button:hover {
   border-color: var(--border-glow) !important;
-}
 [data-testid="stSidebar"] hr {
   border-color: var(--border) !important;
-}
 
 /* ── Typography ── */
 h1, h2, h3, h4, h5, h6, .stMarkdown h1, .stMarkdown h2, .stMarkdown h3 {
   font-family: 'Inter', sans-serif !important;
-}
 p, span, label, .stMarkdown p { color: var(--text-secondary) !important; }
 
 /* ── KPI Cards (futuristic glow) ── */
 .kpi-card, [data-testid="stMetric"] {
   border-radius: 12px !important;
-}
 .kpi-card:hover, [data-testid="stMetric"]:hover {
   border-color: var(--border-glow) !important;
-}
 .kpi-card::before {
   content: '';
   top: 0; left: 0; right: 0;
-}
 [data-testid="stMetricValue"] {
   font-weight: 700 !important;
   font-size: 28px !important;
   text-shadow: 0 0 20px rgba(0,212,255,0.3) !important;
-}
 [data-testid="stMetricLabel"] {
   text-transform: uppercase !important;
   letter-spacing: 1px !important;
   font-size: 11px !important;
-}
 [data-testid="stMetricDelta"] svg { fill: var(--accent2) !important; }
 [data-testid="stMetricDelta"] div { color: var(--accent2) !important; }
 
@@ -205,65 +166,50 @@ p, span, label, .stMarkdown p { color: var(--text-secondary) !important; }
 .signal-card, .news-card {
   border-radius: 10px !important;
   margin-bottom: 10px !important;
-}
 .signal-card:hover, .news-card:hover {
   border-color: var(--accent) !important;
-}
 
 /* ── Tabs ── */
 .stTabs [data-baseweb="tab-list"] {
   border-radius: 10px !important;
   gap: 4px !important;
-}
 .stTabs [data-baseweb="tab"] {
   border-radius: 8px !important;
   font-size: 13px !important;
-}
 .stTabs [aria-selected="true"] {
-}
 .stTabs [data-baseweb="tab-border"] { display: none !important; }
 .stTabs [data-baseweb="tab-highlight"] { background: var(--accent) !important; }
 
 /* ── Expander ── */
 [data-testid="stExpander"] {
   border-radius: 10px !important;
-}
 [data-testid="stExpander"] summary { color: var(--text-primary) !important; }
 [data-testid="stExpander"] summary:hover { color: var(--accent) !important; }
 
 /* ── Selectbox / Multiselect ── */
 [data-testid="stSelectbox"], [data-testid="stMultiSelect"] {
-}
 [data-baseweb="select"] > div {
   border-color: var(--border) !important;
-}
 [data-baseweb="popover"] {
-}
 [data-baseweb="popover"] li { color: var(--text-primary) !important; }
 [data-baseweb="popover"] li:hover { background: rgba(0,212,255,0.1) !important; }
 
 /* ── DataFrame / Tables ── */
 [data-testid="stDataFrame"], .stDataFrame {
   border-radius: 10px !important;
-}
 
 /* ── Slider ── */
 [data-testid="stSlider"] [data-baseweb="slider"] div {
-}
 
 /* ── Hero Section ── */
-.hero-section {
   border-radius: 16px !important;
-}
 .hero-section::before {
   content: '';
   top: -50%; left: -50%;
   animation: heroGlow 8s ease-in-out infinite;
-}
 @keyframes heroGlow {
   0%, 100% { transform: translate(0, 0); }
   50% { transform: translate(20px, -20px); }
-}
 
 /* ── Badge styling ── */
 .badge, .tier-badge {
@@ -272,14 +218,12 @@ p, span, label, .stMarkdown p { color: var(--text-secondary) !important; }
   font-weight: 600 !important;
   letter-spacing: 0.5px !important;
   text-shadow: 0 0 8px rgba(0,212,255,0.3) !important;
-}
 
 /* ── Scrollbar ── */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: var(--bg-primary); }
 ::-webkit-scrollbar-thumb {
   border-radius: 3px;
-}
 ::-webkit-scrollbar-thumb:hover { background: rgba(0,212,255,0.4); }
 
 /* ── Animations ── */
@@ -287,43 +231,32 @@ p, span, label, .stMarkdown p { color: var(--text-secondary) !important; }
 @keyframes glowPulse {
   0%, 100% { box-shadow: 0 0 5px rgba(0,212,255,0.2); }
   50% { box-shadow: 0 0 20px rgba(0,212,255,0.4), 0 0 40px rgba(0,212,255,0.1); }
-}
 @keyframes borderGlow {
   0%, 100% { border-color: rgba(0,212,255,0.12); }
   50% { border-color: rgba(0,212,255,0.35); }
-}
 .glow-animate { animation: glowPulse 3s ease-in-out infinite; }
 .border-animate { animation: borderGlow 4s ease-in-out infinite; }
 
 /* ── Profile section ── */
-.profile-header {
   border-radius: 14px !important;
-}
 
 /* ── Plotly chart container ── */
 .js-plotly-plot, .plotly {
   border-radius: 10px !important;
-}
 
 /* ── Streamlit elements ── */
 .stAlert {
   border-color: var(--border) !important;
-}
 .stProgress > div > div {
-}
 .stSpinner > div { border-color: var(--accent) transparent transparent !important; }
 
 /* ── Heatmap overrides ── */
-.heatmap-container {
   border-radius: 12px !important;
-}
 
 /* ── Column gap fix ── */
 [data-testid="column"] { padding: 0 8px !important; }
 
 /* ── Login page override ── */
-.login-container {
-}
 
 
 
@@ -336,34 +269,24 @@ p, span, label, .stMarkdown p { color: var(--text-secondary) !important; }
 section[data-testid="stSidebar"] div[data-testid="stVerticalBlock"] button,
 section[data-testid="stSidebar"] div.stButton>button{
   letter-spacing:.6px!important;text-transform:uppercase!important;
-}
 section[data-testid="stSidebar"] div.stButton>button:hover{
   border-color:rgba(0,212,255,.55)!important;color:#00d4ff!important;
-}
 section[data-testid="stSidebar"] div.stButton>button:active{
-}
 section[data-testid="stSidebar"] div.stButton>button::before{
   content:'';position:absolute;width:14px;height:14px;border-radius:50%;
-}
 section[data-testid="stSidebar"] div.stButton>button:active::before{
   animation:rippleAnim .5s ease-out forwards!important;
-}
 
 /* Metric cards */
-div[data-testid="stMetric"]{
-}
 div[data-testid="stMetric"]:hover{
   border-color:rgba(0,212,255,.28)!important;
-}
 
 /* Tab styling */
 .stTabs [data-baseweb="tab"]{
   margin-right:5px!important;transition:all .25s ease!important;
-}
 .stTabs [data-baseweb="tab"]:hover{border-color:rgba(0,212,255,.35)!important;}
 .stTabs [aria-selected="true"]{
   border-color:#00d4ff!important;
-}
 
 /* Scrollbar */
 ::-webkit-scrollbar{width:5px}
@@ -379,34 +302,24 @@ div[data-testid="stMetric"]:hover{
 section[data-testid="stSidebar"] div[data-testid="stVerticalBlock"] button,
 section[data-testid="stSidebar"] div.stButton>button{
   letter-spacing:.6px!important;text-transform:uppercase!important;
-}
 section[data-testid="stSidebar"] div.stButton>button:hover{
   border-color:rgba(0,212,255,.55)!important;color:#00d4ff!important;
-}
 section[data-testid="stSidebar"] div.stButton>button:active{
-}
 section[data-testid="stSidebar"] div.stButton>button::before{
   content:'';position:absolute;width:14px;height:14px;border-radius:50%;
-}
 section[data-testid="stSidebar"] div.stButton>button:active::before{
   animation:rippleAnim .5s ease-out forwards!important;
-}
 
 /* Metric cards */
-div[data-testid="stMetric"]{
-}
 div[data-testid="stMetric"]:hover{
   border-color:rgba(0,212,255,.28)!important;
-}
 
 /* Tab styling */
 .stTabs [data-baseweb="tab"]{
   margin-right:5px!important;transition:all .25s ease!important;
-}
 .stTabs [data-baseweb="tab"]:hover{border-color:rgba(0,212,255,.35)!important;}
 .stTabs [aria-selected="true"]{
   border-color:#00d4ff!important;
-}
 
 /* Scrollbar */
 ::-webkit-scrollbar{width:5px}
@@ -438,7 +351,6 @@ COUNTRY_NAMES = {
     'KS':'South Korea','SP':'Spain','SW':'Sweden','SZ':'Switzerland','SY':'Syria',
     'TU':'Turkey','UP':'Ukraine','AE':'United Arab Emirates','UK':'United Kingdom',
     'US':'United States','YM':'Yemen',
-}
 FIPS_TO_ISO3 = {
     'AF':'AFG','AR':'ARG','AM':'ARM','AS':'AUS','BE':'BEL','BR':'BRA',
     'CA':'CAN','CH':'CHN','CO':'COL','DA':'DNK','EG':'EGY','ET':'ETH',
@@ -450,7 +362,6 @@ FIPS_TO_ISO3 = {
     'PO':'PRT','RQ':'PRI','QA':'QAT','RS':'RUS','SA':'SAU','SO':'SOM',
     'SF':'ZAF','KS':'KOR','SP':'ESP','SW':'SWE','SZ':'CHE','SY':'SYR',
     'TU':'TUR','UP':'UKR','AE':'ARE','UK':'GBR','US':'USA','YM':'YEM',
-}
 TOPIC_LABELS = {
     'political_instability':'Political Instability','government_instability':'Government Instability',
     'military_escalation':'Military Escalation','terrorism':'Terrorism','protest':'Protest',
@@ -475,7 +386,6 @@ TOPIC_LABELS = {
     'pressure_to_political_parties':'Pressure on Parties','authoritarianism':'Authoritarianism',
     'confiscate_property':'Property Confiscation','human_rights_abuses':'Human Rights Abuses',
     'corruption':'Corruption',
-}
 GLOW_COLORS = ['#00d4ff','#00ffc8','#ff6b6b','#ffd93d','#a29bfe',
                '#00b4d8','#ff8a5c','#55efc4','#fd79a8','#74b9ff']
 
@@ -484,11 +394,9 @@ TENSION_WEIGHTS = {
     'military_clash':3.5,'military_escalation':2.5,'military_crisis':2.5,
     'political_crisis':2.0,'international_crisis':2.0,
     'threaten_in_international_relations':2.0,'instability':1.5,
-}
 COOP_WEIGHTS = {
     'increasing_bilateral_relations':3.0,'military_deescalation':2.5,
     'dispute_settlement':2.0,'international_support':1.5,'political_stability':1.0,
-}
 BILATERAL_INDICATORS = [
     ('political_crisis','Political Crisis','#f59e0b'),
     ('military_clash','War Risk','#e05060'),
@@ -806,7 +714,6 @@ def gauge_chart(value,title,color,height=210):
                 {'range':[75,100],'color':'rgba(224,80,96,0.12)'},
             ],
             'threshold':{'line':{'color':color,'width':3},'thickness':0.75,'value':value},
-        }
     ))
     fig.update_layout(paper_bgcolor='rgba(0,0,0,0)',
                       font=dict(family='Inter,sans-serif',color='#8899aa'),
@@ -1482,75 +1389,6 @@ with st.sidebar:
 # ═══════════════════════════════════════════════════════════════
 def render_home():
 
-    # === NERAI GLOBE ===
-    try:
-        import streamlit.components.v1 as _stc
-        _GLOBE_HTML = """<!DOCTYPE html><html><head><meta charset="UTF-8"><style>*{margin:0;padding:0;box-sizing:border-box;}body{background:#000;overflow:hidden;}canvas{display:block;width:100%;height:500px;}
-/* === NERAI NAV === */
-section[data-testid="stSidebar"] div.stButton>button{background:linear-gradient(135deg,#0d2137 0%,#1a3a5c 100%)!important;border:1px solid rgba(0,212,255,.5)!important;color:#fff!important;border-radius:8px!important;font-weight:600!important;letter-spacing:1px!important;transition:all .25s ease!important;box-shadow:0 0 6px rgba(0,212,255,.15)!important;width:100%!important;text-align:left!important;padding:10px 16px!important;margin-bottom:4px!important;}
-section[data-testid="stSidebar"] div.stButton>button:hover{box-shadow:0 0 20px rgba(0,212,255,.7),0 0 40px rgba(0,212,255,.25)!important;transform:translateX(5px) scale(1.02)!important;background:linear-gradient(135deg,#1a3a5c 0%,#0d4a7a 100%)!important;border-color:#00ffff!important;color:#00ffff!important;}
-section[data-testid="stSidebar"] div.stButton>button:active{transform:translateX(3px) scale(.98)!important;box-shadow:0 0 30px rgba(0,212,255,.9)!important;}
-/* === END NAV === */
-</style></head><body><canvas id="ng"></canvas><script>(function(){
-const cv=document.getElementById('ng');
-if(!cv)return;
-const ctx=cv.getContext('2d');
-function resize(){cv.width=cv.offsetWidth||900;cv.height=cv.offsetHeight||500;}
-resize();
-const W=cv.width,H=cv.height,CX=W/2,CY=H/2,R=Math.min(W,H)*0.40;
-const C=[{n:'New York',la:40.7,lo:-74.0,t:0,s:1.4},{n:'London',la:51.5,lo:-0.1,t:2,s:1.3},{n:'Paris',la:48.9,lo:2.4,t:0,s:1.0},{n:'Moscow',la:55.8,lo:37.6,t:1,s:1.3},{n:'Kiev',la:50.4,lo:30.5,t:1,s:1.5},{n:'Dubai',la:25.2,lo:55.3,t:2,s:1.1},{n:'Tehran',la:35.7,lo:51.4,t:1,s:1.2},{n:'Delhi',la:28.6,lo:77.2,t:0,s:1.0},{n:'Shanghai',la:31.2,lo:121.5,t:0,s:1.2},{n:'Tokyo',la:35.7,lo:139.7,t:2,s:1.1},{n:'Sydney',la:-33.9,lo:151.2,t:0,s:0.9},{n:'Sao Paulo',la:-23.5,lo:-46.6,t:0,s:1.0},{n:'Cairo',la:30.0,lo:31.2,t:1,s:1.1},{n:'Singapore',la:1.3,lo:103.8,t:0,s:1.1},{n:'Seoul',la:37.6,lo:126.9,t:0,s:1.0},{n:'Istanbul',la:41.0,lo:28.9,t:2,s:1.1},{n:'Lagos',la:6.5,lo:3.4,t:1,s:0.9},{n:'Riyadh',la:24.7,lo:46.7,t:1,s:1.0},{n:'Mexico',la:19.4,lo:-99.1,t:0,s:0.9}];
-const AR=[{a:0,b:1,t:0,spd:.004},{a:1,b:2,t:0,spd:.005},{a:3,b:4,t:1,spd:.003},{a:6,b:11,t:1,spd:.0035},{a:5,b:9,t:2,spd:.006},{a:7,b:13,t:0,spd:.005},{a:8,b:9,t:0,spd:.004},{a:0,b:10,t:2,spd:.003},{a:1,b:15,t:2,spd:.004},{a:2,b:3,t:0,spd:.0045},{a:11,b:15,t:1,spd:.003},{a:14,b:8,t:0,spd:.005},{a:13,b:7,t:2,spd:.004},{a:17,b:6,t:1,spd:.003},{a:0,b:15,t:0,spd:.0035},{a:18,b:0,t:2,spd:.004}];
-const ST=[];for(let i=0;i<220;i++)ST.push({x:Math.random()*W,y:Math.random()*H,r:Math.random()*1.2,a:.3+Math.random()*.7});
-const at=AR.map(()=>Math.random());
-const AC=['rgba(0,212,255,','rgba(255,60,60,','rgba(255,190,0,'];
-const CC=['#00d4ff','#ff4444','#ffd700'];
-let rot=0,sw=0,fr=0;
-function ll(la,lo,r){const ph=(90-la)*Math.PI/180,th=(lo+rot)*Math.PI/180;return{x:r*Math.sin(ph)*Math.cos(th),y:r*Math.cos(ph),z:r*Math.sin(ph)*Math.sin(th)};}
-function pj(p){const f=R*3,s=f/(f+p.z);return{px:CX+p.x*s,py:CY-p.y*s,s,v:p.z>-R*.12};}
-function ap(c1,c2,n=65){const pts=[];for(let i=0;i<=n;i++){const t=i/n,el=Math.sin(t*Math.PI)*.22;pts.push(ll(c1.la*(1-t)+c2.la*t,c1.lo*(1-t)+c2.lo*t,R*(1+el)));}return pts;}
-function draw(){
-ctx.clearRect(0,0,W,H);
-ST.forEach(s=>{ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fillStyle='rgba(180,210,255,'+(s.a*(.6+.4*Math.sin(fr*.02+s.x)))+')';ctx.fill();});
-const dg=ctx.createRadialGradient(CX,CY,0,CX,CY,R*1.6);dg.addColorStop(0,'rgba(0,40,80,.35)');dg.addColorStop(.6,'rgba(0,20,50,.15)');dg.addColorStop(1,'rgba(0,0,0,0)');ctx.beginPath();ctx.arc(CX,CY,R*1.6,0,Math.PI*2);ctx.fillStyle=dg;ctx.fill();
-const bg=ctx.createRadialGradient(CX-R*.28,CY-R*.28,R*.02,CX,CY,R);bg.addColorStop(0,'#1e3f60');bg.addColorStop(.3,'#0e2240');bg.addColorStop(.7,'#071528');bg.addColorStop(1,'#020810');ctx.beginPath();ctx.arc(CX,CY,R,0,Math.PI*2);ctx.fillStyle=bg;ctx.fill();
-ctx.save();ctx.beginPath();ctx.arc(CX,CY,R,0,Math.PI*2);ctx.clip();
-ctx.lineWidth=.4;
-for(let la=-80;la<=80;la+=15){ctx.beginPath();let f=1;for(let lo=-180;lo<=180;lo+=2){const p=pj(ll(la,lo,R));if(p.v){if(f){ctx.moveTo(p.px,p.py);f=0;}else ctx.lineTo(p.px,p.py);}else f=1;}ctx.strokeStyle=la===0?'rgba(0,212,255,.4)':'rgba(0,180,255,.1)';ctx.stroke();}
-for(let lo=-180;lo<180;lo+=15){ctx.beginPath();let f=1;for(let la=-90;la<=90;la+=2){const p=pj(ll(la,lo,R));if(p.v){if(f){ctx.moveTo(p.px,p.py);f=0;}else ctx.lineTo(p.px,p.py);}else f=1;}ctx.strokeStyle='rgba(0,180,255,.08)';ctx.stroke();}
-const sa=sw*Math.PI/180;
-for(let a=0;a<60;a++){const ag=sa-(a*Math.PI/180);ctx.beginPath();ctx.moveTo(CX,CY);ctx.arc(CX,CY,R,ag,ag+Math.PI/180);ctx.closePath();ctx.fillStyle='rgba(0,255,180,'+((.12*(1-a/60)).toFixed(3))+')';ctx.fill();}
-ctx.beginPath();ctx.moveTo(CX,CY);ctx.lineTo(CX+R*Math.cos(sa),CY+R*Math.sin(sa));ctx.strokeStyle='rgba(0,255,180,.7)';ctx.lineWidth=1.5;ctx.stroke();
-ctx.restore();
-AR.forEach((arc,i)=>{
-const c1=C[arc.a],c2=C[arc.b],pts=ap(c1,c2),col=AC[arc.t];
-ctx.beginPath();let st=0;pts.forEach(p=>{const q=pj(p);if(q.v){if(!st){ctx.moveTo(q.px,q.py);st=1;}else ctx.lineTo(q.px,q.py);}else st=0;});ctx.strokeStyle=col+'.22)';ctx.lineWidth=.8;ctx.stroke();
-const pi=Math.floor(at[i]*pts.length);
-for(let k=0;k<18;k++){const ix=pi-k;if(ix<0)continue;const q=pj(pts[ix]);if(!q.v)continue;ctx.beginPath();ctx.arc(q.px,q.py,k===0?3.5:Math.max(.5,2.2-k*.12),0,Math.PI*2);ctx.fillStyle=col+(((1-k/18)*.85).toFixed(2))+')';ctx.fill();}
-const hq=pj(pts[Math.min(pi,pts.length-1)]);
-if(hq.v){const hg=ctx.createRadialGradient(hq.px,hq.py,0,hq.px,hq.py,9);hg.addColorStop(0,col+'1)');hg.addColorStop(1,col+'0)');ctx.beginPath();ctx.arc(hq.px,hq.py,9,0,Math.PI*2);ctx.fillStyle=hg;ctx.fill();}
-at[i]=(at[i]+arc.spd)%1;});
-for(let rn=0;rn<4;rn++){ctx.beginPath();ctx.arc(CX,CY,R*(1.01+rn*.04),0,Math.PI*2);ctx.strokeStyle='rgba(0,180,255,'+((.22-rn*.05).toFixed(2))+')';ctx.lineWidth=rn===0?1.6:.6;ctx.stroke();}
-const sp=ctx.createRadialGradient(CX-R*.32,CY-R*.32,0,CX-R*.32,CY-R*.32,R*.55);sp.addColorStop(0,'rgba(180,230,255,.13)');sp.addColorStop(.4,'rgba(100,180,255,.05)');sp.addColorStop(1,'rgba(0,0,0,0)');ctx.beginPath();ctx.arc(CX,CY,R,0,Math.PI*2);ctx.fillStyle=sp;ctx.fill();
-ctx.beginPath();ctx.arc(CX,CY,R,0,Math.PI*2);const eg=ctx.createLinearGradient(CX-R,CY,CX+R,CY);eg.addColorStop(0,'rgba(0,212,255,.06)');eg.addColorStop(.5,'rgba(0,212,255,.65)');eg.addColorStop(1,'rgba(0,212,255,.06)');ctx.strokeStyle=eg;ctx.lineWidth=1.8;ctx.stroke();
-C.forEach((c,i)=>{const p=pj(ll(c.la,c.lo,R));if(!p.v)return;const col=CC[c.t],sz=c.s;
-const pr2=6+12*Math.abs(Math.sin(fr*.04+i*.7));ctx.beginPath();ctx.arc(p.px,p.py,pr2*sz,0,Math.PI*2);ctx.strokeStyle=col+'44';ctx.lineWidth=1;ctx.stroke();
-const gr=ctx.createRadialGradient(p.px,p.py,0,p.px,p.py,9*sz);gr.addColorStop(0,col+'cc');gr.addColorStop(1,col+'00');ctx.beginPath();ctx.arc(p.px,p.py,9*sz,0,Math.PI*2);ctx.fillStyle=gr;ctx.fill();
-ctx.beginPath();ctx.arc(p.px,p.py,2.5*sz,0,Math.PI*2);ctx.fillStyle=col;ctx.fill();
-if(p.s>1.03){ctx.font=Math.round(8.5*p.s*sz)+'px monospace';ctx.fillStyle=col+'cc';ctx.fillText(c.n,p.px+7,p.py-4);}});
-ctx.font='bold 11px monospace';ctx.fillStyle='rgba(0,212,255,.7)';ctx.fillText('\\u25c8 NERAI GLOBAL INTELLIGENCE NETWORK',14,22);
-for(let y=0;y<H;y+=4){ctx.fillStyle='rgba(0,0,0,.04)';ctx.fillRect(0,y,W,1);}
-ctx.font='10px monospace';ctx.fillStyle='rgba(0,212,255,.4)';
-const ts=new Date().toUTCString().replace(' GMT','');
-ctx.fillText('\\u25c9 LIVE  |  UTC '+ts+'  |  NODES: 19  |  ARCS: 16',14,H-10);
-const lx=W-145;
-[['\\u25c6','#00d4ff','INTEL HUB'],['\\u25c6','#ff4444','RISK ZONE'],['\\u25c6','#ffd700','CAPITAL']].forEach(([sym,col,lbl],i)=>{ctx.fillStyle=col;ctx.font='10px monospace';ctx.fillText(sym+' '+lbl,lx,22+i*16);});
-rot+=.15;sw=(sw+.6)%360;fr++;requestAnimationFrame(draw);}
-draw();
-})();</script></body></html>"""
-        _stc.html(_GLOBE_HTML, height=510, scrolling=False)
-    except Exception as _ge:
-        st.info(f"Globe yüklenemedi: {_ge}")
-    # === END GLOBE ===
 
     # ── Animated Hero ────────────────────────────────────────
     st.markdown(f"""
@@ -2128,7 +1966,6 @@ def render_news():
         'trade':       ('rgba(0,25,10,0.85)', '#00ff88'),
         'energy':      ('rgba(30,20,0,0.85)', '#ffaa00'),
         'politics':    ('rgba(20,10,40,0.85)','#cc88ff'),
-    }
     _sel_topic=st.session_state.get('news_topic','').lower() if hasattr(st,'session_state') else ''
     _bg_color,_accent='rgba(10,15,30,0.85)','#00d4ff'
     for _k,_v in _topic_colors.items():
@@ -2152,7 +1989,6 @@ def render_news():
         'economy':'rgba(0,255,140,0.05),rgba(0,200,255,0.03)',
         'security':'rgba(255,170,0,0.05),rgba(255,60,40,0.03)',
         'military':'rgba(255,60,40,0.06),rgba(255,40,80,0.03)',
-    }
     _nbg=_news_bg_map.get('diplomacy','rgba(0,212,255,0.04),rgba(13,18,32,0.02)')
     st.markdown(f'<div style="position:fixed;top:0;left:0;width:100vw;height:100vh;pointer-events:none;z-index:0;background:radial-gradient(ellipse at 20%% 30%%, {_nbg.split(",")[0]}, transparent 55%%),radial-gradient(ellipse at 80%% 70%%, {_nbg.split(",")[1]}, transparent 55%%)"></div>',unsafe_allow_html=True)
     # ── END News BG ───────────────────────────────────────────────
@@ -2164,7 +2000,6 @@ def render_news():
         'economy':'rgba(0,255,140,0.05),rgba(0,200,255,0.03)',
         'security':'rgba(255,170,0,0.05),rgba(255,60,40,0.03)',
         'military':'rgba(255,60,40,0.06),rgba(255,40,80,0.03)',
-    }
     _nbg=_news_bg_map.get('diplomacy','rgba(0,212,255,0.04),rgba(13,18,32,0.02)')
     st.markdown(f'<div style="position:fixed;top:0;left:0;width:100vw;height:100vh;pointer-events:none;z-index:0;background:radial-gradient(ellipse at 20%% 30%%, {_nbg.split(",")[0]}, transparent 55%%),radial-gradient(ellipse at 80%% 70%%, {_nbg.split(",")[1]}, transparent 55%%)"></div>',unsafe_allow_html=True)
     # ── END News BG ───────────────────────────────────────────────
@@ -2176,7 +2011,6 @@ def render_news():
         "economy": ("rgba(0,255,200,0.06)", "rgba(0,180,255,0.03)"),
         "security": ("rgba(255,170,0,0.06)", "rgba(255,80,50,0.03)"),
         "default": ("rgba(0,212,255,0.04)", "rgba(13,18,32,0.02)"),
-    }
     _nbg = _news_bg_colors.get("default")
     st.markdown(f"""<div style="
                   radial-gradient(ellipse at 70% 80%, {_nbg[1]}, transparent 60%);
@@ -2189,7 +2023,6 @@ def render_news():
         "economy": ("rgba(0,255,200,0.06)", "rgba(0,180,255,0.03)"),
         "security": ("rgba(255,170,0,0.06)", "rgba(255,80,50,0.03)"),
         "default": ("rgba(0,212,255,0.04)", "rgba(13,18,32,0.02)"),
-    }
     _nbg = _news_bg_colors.get("default")
     st.markdown(f"""<div style="
                   radial-gradient(ellipse at 70% 80%, {_nbg[1]}, transparent 60%);
@@ -2711,7 +2544,6 @@ _QUESTION_KEYWORDS = {
     'ikili':      ['deteriorating_bilateral_relations','increasing_bilateral_relations'],
     'mass':       ['mass_killing','mass_expulsion'],
     'killing':    ['mass_killing','domestic_violence'],
-}
 
 _COUNTRY_ALIASES = {
     'iran': 'IR', 'irak': 'IZ', 'iraq': 'IZ', 'usa': 'US', 'america': 'US',
@@ -2735,7 +2567,6 @@ _COUNTRY_ALIASES = {
     'malaysia': 'MY', 'filipin': 'RP', 'philippine': 'RP',
     'kazak': 'KZ', 'kazakhst': 'KZ', 'kyrgyz': 'KG', 'kırgız': 'KG',
     'norwa': 'NO', 'norveç': 'NO', 'sweden': 'SW', 'isveç': 'SW',
-}
 
 
 def _parse_question(question):
@@ -3034,7 +2865,6 @@ def _build_qa_context(question, article_df, commodity_df):
         'commodity': None, 'price': None, 'market': ['^GSPC','^VIX'],
         'russia': ['USDRUB=X','CL=F'], 'china': ['USDCNY=X'],
         'sanction': ['USDRUB=X','CL=F'], 'petrol': ['CL=F','BZ=F'],
-    }
 
     if commodity_df is not None and len(commodity_df) > 0:
         tickers = set()
@@ -3666,7 +3496,6 @@ SCENARIO_TEMPLATES = {
         'desc': 'Models oil supply disruption from Middle East instability'},
     'global_democratic_backsliding': {'label': '🗳️ Democratic Backsliding', 'icon': '🗳️',
         'desc': 'Simulates coordinated erosion of democratic institutions globally'},
-}
 
 
 # ── Geopolitical context per scenario ──────────────────────────────
@@ -3709,7 +3538,6 @@ SCENARIO_GEO_CONTEXT = {
         "Long-term, rule-of-law score deterioration in ESG frameworks would trigger institutional investor reallocation "
         "away from affected markets, compounding the economic damage of the political shift."
     ),
-}
 
 def scenario_narrative(result_df, sel_result):
     """Return (p1_html, p2_html) plain-English analysis of a scenario result."""
@@ -3987,25 +3815,18 @@ section[data-testid="stSidebar"] div.stButton>button {
     letter-spacing: 1px !important;
     text-align: left !important;
     margin-bottom: 4px !important;
-}
 section[data-testid="stSidebar"] div.stButton>button:hover {
     border-color: #00ffff !important;
-}
 section[data-testid="stSidebar"] div.stButton>button:active {
-}
 @keyframes navPulse {
     0%,100% { box-shadow: 0 0 6px rgba(0,212,255,0.15); }
     50%      { box-shadow: 0 0 14px rgba(0,212,255,0.5); }
-}
 /* === END NAV GLOW === */
 
 /* === NERAI METRIC GLOW === */
-div[data-testid="metric-container"] {
     border-radius: 10px !important;
-}
 div[data-testid="metric-container"]:hover {
     border-color: rgba(0,212,255,0.8) !important;
-}
 /* === END METRIC GLOW === */
 page = st.session_state.get('page', 'home')
 if   page == 'home':        render_home()
