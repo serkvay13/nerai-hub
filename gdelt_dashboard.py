@@ -737,107 +737,94 @@ def chart_heatmap(df_n, top_n, method):
     return fig
 
 def heatmap_glow_html(df_n, top_n, method, topic_label=''):
-    """Animated heatmap with hover tooltips and impressive visuals."""
-    import json as _json
+    """Animated heatmap with hover tooltips. Colors baked into cells server-side."""
+    import json as _json, math
     means = df_n.mean(axis=1).nlargest(top_n)
     sel = means.index.tolist()
     matrix = []
     for c in sel:
         try: matrix.append(df_n.loc[c].values.tolist())
-        except: matrix.append([0]*len(df_n.columns))
+        except: matrix.append([0.0]*len(df_n.columns))
     all_dates = [d.strftime('%d %b %Y') for d in df_n.columns]
-    short_dates = [d.strftime('%d %b') for d in df_n.columns]
-    step = max(1, len(short_dates)//18)
-    xlabels = [d if i%step==0 else '' for i,d in enumerate(short_dates)]
     ylabels = [COUNTRY_NAMES.get(c,c) for c in sel]
-    import numpy as _np
-    mat = _np.array(matrix)
-    vmin, vmax = float(_np.nanmin(mat)), float(_np.nanmax(mat))
-    if vmax == vmin: vmax = vmin + 1
-    mat_norm = ((mat - vmin) / (vmax - vmin)).tolist()
-    mat_vals = [[round(float(v),2) for v in row] for row in mat]
+    mat = np.array(matrix, dtype=float)
+    mat = np.nan_to_num(mat, nan=0.0)
+    vmin = float(mat.min())
+    vmax = float(mat.max())
+    if vmax <= vmin: vmax = vmin + 1.0
     rows = len(ylabels)
     cols = len(all_dates)
-    cell_h = max(26, min(36, 480 // rows))
-    cell_w = max(8, min(20, 700 // cols))
+    cH = max(24, min(34, 460 // max(rows, 1)))
+    cW = max(6, min(16, 650 // max(cols, 1)))
+    # Color mapping function (Python-side)
+    stops = [(13,52,100),(0,180,212),(0,119,168),(245,158,11),(224,80,96)]
+    pos = [0.0, 0.25, 0.5, 0.75, 1.0]
+    def val2rgb(v):
+        t = max(0.0, min(1.0, (v - vmin) / (vmax - vmin)))
+        idx = 0
+        for k in range(len(pos)-1):
+            if pos[k] <= t <= pos[k+1]: idx = k; break
+        f = (t - pos[idx]) / (pos[idx+1] - pos[idx]) if pos[idx+1] != pos[idx] else 0
+        r = int(stops[idx][0] + (stops[idx+1][0] - stops[idx][0]) * f)
+        g = int(stops[idx][1] + (stops[idx+1][1] - stops[idx][1]) * f)
+        b = int(stops[idx][2] + (stops[idx+1][2] - stops[idx][2]) * f)
+        return f'rgb({r},{g},{b})'
     ttl = f"Top {top_n} Countries \u2014 {topic_label} Heatmap" if topic_label else f"Top {top_n} Countries \u2014 Heatmap"
-    norm_txt = f"({method})" if method else ""
-    html = '<style>'
-    html += '.hm-wrap{font-family:monospace;padding:12px;position:relative;}'
-    html += '.hm-title{color:#00B8D4;font-size:14px;font-weight:bold;margin-bottom:4px;letter-spacing:1px;}'
-    html += '.hm-sub{color:#5a6b82;font-size:10px;margin-bottom:12px;}'
-    html += '.hm-row{display:flex;align-items:center;margin-bottom:2px;}'
-    html += '.hm-label{width:100px;text-align:right;padding-right:8px;color:#8aa0bc;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}'
-    html += f'.hm-cell{{width:{cell_w}px;height:{cell_h}px;margin:0 1px;border-radius:3px;cursor:crosshair;transition:filter 0.3s,box-shadow 0.3s,transform 0.2s;position:relative;}}'
-    html += '.hm-cell:hover{transform:scale(1.6);z-index:10;filter:brightness(1.4)!important;box-shadow:0 0 16px rgba(0,184,212,0.7)!important;}'
-    html += '.hm-tip{display:none;position:fixed;background:rgba(6,13,26,0.95);border:1px solid rgba(0,184,212,0.4);border-radius:6px;padding:10px 14px;color:#e0e8f0;font-size:11px;z-index:1000;pointer-events:none;min-width:160px;box-shadow:0 4px 20px rgba(0,0,0,0.5);backdrop-filter:blur(8px);}'
-    html += '.hm-tip .tt-country{color:#00B8D4;font-size:13px;font-weight:bold;margin-bottom:4px;}'
-    html += '.hm-tip .tt-topic{color:#f59e0b;font-size:10px;margin-bottom:2px;letter-spacing:0.5px;}.hm-tip .tt-date{color:#8aa0bc;font-size:10px;margin-bottom:6px;}'
-    html += '.hm-tip .tt-score{font-size:16px;font-weight:bold;}'
-    html += '.hm-tip .tt-bar{height:4px;border-radius:2px;margin-top:6px;background:linear-gradient(to right,#0d3464,#00b4d8,#0077a8,#f59e0b,#e05060);}'
-    html += '.hm-tip .tt-marker{width:3px;height:10px;background:#fff;border-radius:1px;position:relative;top:-7px;}'
-    html += '.hm-legend{display:flex;flex-direction:column;align-items:center;margin-left:14px;}'
-    html += '.hm-legend-bar{width:14px;border-radius:5px;background:linear-gradient(to bottom,#e05060,#f59e0b,#0077a8,#00b4d8,#0d3464);}'
-    html += '.hm-xlabels{display:flex;margin-left:100px;margin-top:4px;}'
-    html += '.hm-xlbl{color:#5a6b82;font-size:8px;transform:rotate(-45deg);transform-origin:top left;white-space:nowrap;}'
-    html += '.hm-glow{position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none;border-radius:8px;box-shadow:inset 0 0 30px rgba(0,184,212,0.03);}'
-    html += '</style>'
-    html += '<div class="hm-wrap">'
-    html += f'<div class="hm-title">{ttl}</div>'
-    html += f'<div class="hm-sub">Risk Score {norm_txt} \u2022 Hover for details</div>'
-    html += '<div style="display:flex;align-items:flex-start;">'
-    html += '<div style="flex:1;">'
+    h = []
+    h.append('<style>')
+    h.append('*{box-sizing:border-box;margin:0;padding:0;}')
+    h.append('body{background:transparent;overflow-x:auto;}')
+    h.append('</style>')
+    h.append(f'<div style="font-family:monospace;padding:10px 8px;">')
+    h.append(f'<div style="color:#00B8D4;font-size:14px;font-weight:bold;margin-bottom:2px;letter-spacing:1px;">{ttl}</div>')
+    h.append(f'<div style="color:#5a6b82;font-size:10px;margin-bottom:10px;">Score ({method}) \u2022 Hover for details</div>')
+    h.append('<div style="display:flex;align-items:flex-start;">')
+    # Y-axis labels + cells
+    h.append('<div>')
     for r in range(rows):
-        html += '<div class="hm-row">'
-        html += f'<div class="hm-label">{ylabels[r]}</div>'
+        h.append(f'<div style="display:flex;align-items:center;height:{cH+2}px;">')
+        h.append(f'<div style="width:95px;text-align:right;padding-right:6px;color:#8aa0bc;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{ylabels[r]}</div>')
         for c in range(cols):
-            html += f'<div class="hm-cell" data-r="{r}" data-c="{c}" data-v="{mat_vals[r][c]}" data-country="{ylabels[r]}" data-date="{all_dates[c]}"></div>'
-        html += '</div>'
-    html += '</div>'
-    html += f'<div class="hm-legend"><span style="color:#5a6b82;font-size:9px;">{round(vmax)}</span>'
-    html += f'<div class="hm-legend-bar" style="height:{cell_h * rows}px;margin:4px 0;"></div>'
-    html += f'<span style="color:#5a6b82;font-size:9px;">{round(vmin)}</span></div>'
-    html += '</div>'
-    html += '<div class="hm-tip" id="hmtip"><div class="tt-country"></div><div class="tt-topic"></div><div class="tt-date"></div><div class="tt-score"></div><div class="tt-bar"><div class="tt-marker"></div></div></div>'
-    html += '<div class="hm-glow"></div>'
-    html += '</div>'
-    html += '<script>'
-    html += '(function(){'
-    html += 'window._hmTopic="' + (topic_label or '') + '";'
-    html += 'var matN=' + _json.dumps(mat_norm) + ';'
-    html += 'var cells=document.querySelectorAll(".hm-cell");'
-    html += 'var tip=document.getElementById("hmtip");'
-    html += 'function vc(t){'
-    html += 'var s=[[13,52,100],[0,180,212],[0,119,168],[245,158,11],[224,80,96]];'
-    html += 'var p=[0,0.25,0.5,0.75,1.0];'
-    html += 'var i=0;for(var k=0;k<p.length-1;k++){if(t>=p[k]&&t<=p[k+1]){i=k;break;}}'
-    html += 'var f=(t-p[i])/(p[i+1]-p[i]);'
-    html += 'return "rgb("+Math.round(s[i][0]+(s[i+1][0]-s[i][0])*f)+","'
-    html += '+Math.round(s[i][1]+(s[i+1][1]-s[i][1])*f)+","'
-    html += '+Math.round(s[i][2]+(s[i+1][2]-s[i][2])*f)+")";}'
-    html += 'function scoreColor(v){if(v<30)return"#00B8D4";if(v<50)return"#0077a8";if(v<70)return"#f59e0b";return"#e05060";}'
-    html += 'function riskLevel(v){if(v<20)return"LOW";if(v<40)return"MEDIUM";if(v<60)return"HIGH";if(v<80)return"VERY HIGH";return"CRITICAL";}'
-    html += 'cells.forEach(function(c){var r=parseInt(c.dataset.r),col=parseInt(c.dataset.c);c.style.background=vc(matN[r][col]);});'
-    html += 'cells.forEach(function(c){c.addEventListener("mouseenter",function(e){'
-    html += 'var v=parseFloat(c.dataset.v);var n=matN[parseInt(c.dataset.r)][parseInt(c.dataset.c)];'
-    html += 'tip.querySelector(".tt-country").textContent=c.dataset.country;tip.querySelector(".tt-topic").textContent=window._hmTopic||"";'
-    html += 'tip.querySelector(".tt-date").textContent=c.dataset.date;'
-    html += 'tip.querySelector(".tt-score").innerHTML="<span style=\"color:"+scoreColor(v)+"\">"+v.toFixed(1)+"</span> <span style=\"font-size:10px;color:#5a6b82\">/ 100 "+riskLevel(v)+"</span>";'
-    html += 'tip.querySelector(".tt-marker").style.marginLeft=(n*100)+"%";'
-    html += 'tip.style.display="block";tip.style.left=(e.clientX+15)+"px";tip.style.top=(e.clientY-70)+"px";'
-    html += '});c.addEventListener("mousemove",function(e){tip.style.left=(e.clientX+15)+"px";tip.style.top=(e.clientY-70)+"px";});'
-    html += 'c.addEventListener("mouseleave",function(){tip.style.display="none";});});'
-    html += 'var total=cells.length,glowing=new Set();'
-    html += 'function randomGlow(){'
-    html += 'glowing.forEach(function(i){cells[i].style.filter="brightness(1)";cells[i].style.boxShadow="none";});'
-    html += 'glowing.clear();'
-    html += 'var count=Math.floor(Math.random()*5)+3;'
-    html += 'for(var n=0;n<count;n++){var i=Math.floor(Math.random()*total);glowing.add(i);'
-    html += 'cells[i].style.filter="brightness(1.5)";cells[i].style.boxShadow="0 0 10px rgba(0,184,212,0.4)";}}'
-    html += 'setInterval(randomGlow,500);'
-    html += '})();'
-    html += '</scr'+'ipt>'
-    return html
+            v = float(mat[r][c])
+            bg = val2rgb(v)
+            sv = round(v, 1)
+            h.append(f'<div class="hc" data-i="{r*cols+c}" data-info="{ylabels[r]}|{all_dates[c]}|{sv}|{topic_label}" style="width:{cW}px;height:{cH}px;margin:0 1px;border-radius:2px;background:{bg};display:inline-block;cursor:crosshair;transition:filter .3s,box-shadow .3s,transform .15s;"></div>')
+        h.append('</div>')
+    h.append('</div>')
+    # Color legend
+    h.append(f'<div style="display:flex;flex-direction:column;align-items:center;margin-left:12px;">')
+    h.append(f'<span style="color:#5a6b82;font-size:9px;">{round(vmax)}</span>')
+    h.append(f'<div style="width:12px;height:{cH*rows}px;margin:4px 0;border-radius:4px;background:linear-gradient(to bottom,#e05060,#f59e0b,#0077a8,#00b4d8,#0d3464);"></div>')
+    h.append(f'<span style="color:#5a6b82;font-size:9px;">{round(vmin)}</span>')
+    h.append('</div></div>')
+    # Tooltip div
+    h.append('<div id="htt" style="display:none;position:fixed;background:rgba(6,13,26,0.95);border:1px solid rgba(0,184,212,0.4);border-radius:6px;padding:10px 14px;color:#e0e8f0;font-size:11px;z-index:9999;pointer-events:none;min-width:170px;box-shadow:0 4px 20px rgba(0,0,0,0.6);"><div id="ht1" style="color:#00B8D4;font-size:13px;font-weight:bold;"></div><div id="ht2" style="color:#f59e0b;font-size:10px;margin:2px 0;"></div><div id="ht3" style="color:#8aa0bc;font-size:10px;margin-bottom:5px;"></div><div id="ht4" style="font-size:16px;font-weight:bold;"></div></div>')
+    h.append('</div>')
+    # JS: tooltip + glow animation
+    h.append('<scr' + 'ipt>')
+    h.append('(function(){')
+    h.append('var cs=document.querySelectorAll(".hc"),tip=document.getElementById("htt");')
+    h.append('function rl(v){v=parseFloat(v);if(v<20)return"LOW";if(v<40)return"MEDIUM";if(v<60)return"HIGH";if(v<80)return"VERY HIGH";return"CRITICAL";}')
+    h.append('function sc(v){v=parseFloat(v);if(v<30)return"#00B8D4";if(v<50)return"#0077a8";if(v<70)return"#f59e0b";return"#e05060";}')
+    h.append('cs.forEach(function(c){')
+    h.append('c.onmouseenter=function(e){var p=c.dataset.info.split("|");')
+    h.append('document.getElementById("ht1").textContent=p[0];')
+    h.append('document.getElementById("ht2").textContent=p[3]||"";')
+    h.append('document.getElementById("ht3").textContent=p[1];')
+    h.append('document.getElementById("ht4").innerHTML="<span style=\\"color:"+sc(p[2])+"\\">"+p[2]+"</span> <span style=\\"font-size:10px;color:#5a6b82\\">/100 "+rl(p[2])+"</span>";')
+    h.append('tip.style.display="block";tip.style.left=(e.clientX+12)+"px";tip.style.top=(e.clientY-60)+"px";};')
+    h.append('c.onmousemove=function(e){tip.style.left=(e.clientX+12)+"px";tip.style.top=(e.clientY-60)+"px";};')
+    h.append('c.onmouseleave=function(){tip.style.display="none";};')
+    h.append('c.onmouseenter2=c.onmouseenter;')
+    h.append('});')
+    # Glow animation
+    h.append('var gl=new Set(),tot=cs.length;')
+    h.append('setInterval(function(){gl.forEach(function(i){cs[i].style.filter="";cs[i].style.boxShadow="";});gl.clear();')
+    h.append('for(var n=0;n<4;n++){var i=Math.floor(Math.random()*tot);gl.add(i);')
+    h.append('cs[i].style.filter="brightness(1.6)";cs[i].style.boxShadow="0 0 10px rgba(0,184,212,0.5)";}},500);')
+    h.append('})();')
+    h.append('</scr' + 'ipt>')
+    return '\n'.join(h)
 def chart_world(df_n,date_col):
     try:
         row = df_n[[date_col]].reset_index()
