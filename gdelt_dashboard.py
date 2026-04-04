@@ -1206,10 +1206,12 @@ def load_predictions():
             if preds is not None and 'yhat' in preds.columns and len(preds) > 0:
                 for tc_cols in [['topic', 'country']]:
                     if all(c in preds.columns for c in tc_cols):
+                        grp_min = preds.groupby(tc_cols)['yhat'].transform('min')
                         grp_max = preds.groupby(tc_cols)['yhat'].transform('max')
+                        grp_range = grp_max - grp_min
                         for col in ['yhat', 'yhat_lower', 'yhat_upper']:
                             if col in preds.columns:
-                                preds[col] = np.where(grp_max > 0, preds[col] / grp_max * 100, 0)
+                                preds[col] = np.where(grp_range > 0, (preds[col] - grp_min) / grp_range * 100, 50).clip(0, 120)
                         break
         except Exception:
             preds = None
@@ -2604,7 +2606,7 @@ def _compute_country_insights(_df_raw, _trend_df):
                 r_mean = float(c_df[recent_cols].values.mean())
                 p_mean = float(c_df[past_cols].values.mean())
                 raw_means[country]   = r_mean
-                change_pcts[country] = max(-500, min(500, (r_mean - p_mean) / (abs(p_mean) + 1e-9) * 100)) if abs(p_mean) > 1e-9 else 0.0
+                change_pcts[country] = max(-500, min(500, (r_mean - p_mean) / (abs(p_mean) + 1e-9) * 100).clip(-500, 500)) if abs(p_mean) > 1e-9 else 0.0
             except Exception:
                 raw_means[country]   = 0.0
                 change_pcts[country] = 0.0
