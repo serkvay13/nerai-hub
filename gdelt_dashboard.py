@@ -371,20 +371,6 @@ p, span, label, .stMarkdown p { color: var(--text-secondary) !important; }
   border-radius: 10px !important;
 }
 
-/* Fix slider value text contrast - dark text on cyan track */
-.stSlider [data-testid="stThumbValue"] {
-    color: #0a1628 !important;
-    font-weight: 700 !important;
-}
-.stSlider [data-testid="stTickBarMin"],
-.stSlider [data-testid="stTickBarMax"] {
-    color: #8ab4d8 !important;
-}
-[data-baseweb="slider"] [role="slider"] [data-testid="stThumbValue"] {
-    color: #0a1628 !important;
-    font-weight: 700 !important;
-    text-shadow: none !important;
-}
 /* ── Slider ── */
 [data-testid="stSlider"] [data-baseweb="slider"] div {
   background: var(--accent) !important;
@@ -3853,52 +3839,50 @@ def _node_label(node):
 
 
 
-def _edge_interpretation(source, target, f_stat, p_val, lag):
-    """Generate a plain-English interpretation of a single causal edge."""
-    s_lbl, s_cc = _node_label(source)
-    t_lbl, t_cc = _node_label(target)
-    s_country = COUNTRY_NAMES.get(s_cc, s_cc)
-    t_country = COUNTRY_NAMES.get(t_cc, t_cc)
-    if f_stat > 50:
-        strength_desc = 'This is an exceptionally powerful causal signal'
-    elif f_stat > 10:
-        strength_desc = 'This represents a robust causal signal'
-    elif f_stat > 5:
-        strength_desc = 'This is a moderate but statistically meaningful signal'
-    else:
-        strength_desc = 'This is a relatively weak but still statistically significant signal'
-    if p_val < 0.001:
-        sig = 'highly significant (p < 0.001)'
-    elif p_val < 0.01:
-        sig = 'very significant (p < 0.01)'
-    elif p_val < 0.05:
-        sig = 'statistically significant (p < 0.05)'
-    else:
-        sig = 'marginally significant'
-    if s_cc == t_cc:
-        geo_mechanism = (
-            'Within {}, this suggests a domestic transmission mechanism: '
-            'changes in {} statistically precede shifts in {} by approximately '
-            '{} month{}. This intra-country link likely reflects internal policy spillovers, '
-            'institutional feedback loops, or correlated domestic dynamics.'
-        ).format(s_country, s_lbl.lower(), t_lbl.lower(), lag, 's' if lag > 1 else '')
-    else:
-        geo_mechanism = (
-            'This cross-border link ({} to {}) indicates that {} dynamics in {} '
-            'have a measurable statistical impact on {} in {} with a {}-month delay. '
-            'This does not necessarily imply direct bilateral causation; instead, it may '
-            'reflect indirect transmission through global trade networks, commodity price '
-            'channels, shared alliance structures, regional contagion effects, or common '
-            'exposure to systemic geopolitical shocks that affect both countries with different '
-            'time lags.'
-        ).format(s_country, t_country, s_lbl.lower(), s_country,
-                 t_lbl.lower(), t_country, lag)
-    return (
-        '<b>{} ({}) \u2192 {} ({})</b> '
-        '<span style="color:#607890;">[F={:.1f}, lag={}m, {}]</span><br>'
-        '{}. {}'
-    ).format(s_lbl, s_country, t_lbl, t_country, f_stat, lag, sig,
-             strength_desc, geo_mechanism)
+@st.cache_data(ttl=3600)
+def fetch_causal_news(topic, country_code, max_records=5):
+    """Fetch recent news from GDELT DOC API for a causal topic+country."""
+    import urllib.parse, json
+    try:
+        label = topic.replace("_", " ")
+        country_name = {
+            "US": "United States", "CN": "China", "RU": "Russia",
+            "IR": "Iran", "GB": "United Kingdom", "DE": "Germany",
+            "FR": "France", "JP": "Japan", "KR": "South Korea",
+            "IN": "India", "BR": "Brazil", "TR": "Turkey",
+            "SA": "Saudi Arabia", "IL": "Israel", "UA": "Ukraine",
+            "TW": "Taiwan", "AU": "Australia", "CA": "Canada",
+            "MX": "Mexico", "EG": "Egypt", "PK": "Pakistan",
+            "NG": "Nigeria", "ZA": "South Africa", "ID": "Indonesia",
+            "IT": "Italy", "ES": "Spain", "PL": "Poland",
+            "NL": "Netherlands", "SE": "Sweden", "NO": "Norway",
+            "IS": "Iceland", "FI": "Finland", "DK": "Denmark",
+            "GR": "Greece", "PT": "Portugal", "AT": "Austria",
+            "CH": "Switzerland", "BE": "Belgium", "IE": "Ireland",
+            "CZ": "Czech Republic", "RO": "Romania", "HU": "Hungary",
+        }.get(country_code, country_code)
+        query_str = f"{label} {country_name}"
+        encoded = urllib.parse.quote(query_str)
+        url = f"https://api.gdeltproject.org/api/v2/doc/doc?query={encoded}&mode=artlist&maxrecords={max_records}&format=json&sort=datedesc"
+        import urllib.request
+        req = urllib.request.Request(url, headers={"User-Agent": "NERAI/1.0"})
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+        articles = data.get("articles", [])
+        results = []
+        for art in articles[:max_records]:
+            results.append({
+                "title": art.get("title", ""),
+                "url": art.get("url", ""),
+                "source": art.get("domain", art.get("sourcecountry", "")),
+                "date": art.get("seendate", "")[:10],
+                "image": art.get("socialimage", ""),
+            })
+        return results
+    except Exception:
+        return []
+
+
 
 def build_network_figure(filtered, highlight_nodes=None, focus_node=None):
     """Build an interactive Plotly network diagram from a filtered edge DataFrame."""
@@ -4353,72 +4337,41 @@ def render_causality():
 
     st.markdown("<div style='background:rgba(10,20,50,0.4);border:1px solid rgba(0,180,255,0.15);border-radius:8px;padding:14px 18px;margin:15px 0;font-size:0.75rem;color:#8ab4d8;line-height:1.7;'><b style=\'color:#00d4ff;\'>How to Interpret?</b><br>F-Statistic: The higher the value, the stronger the causal relationship. F &gt; 10 = strong, F &gt; 50 = very strong relationship.<br>Lag (Delay): The time delay between events (months). Lag=1 means a change in one event affects another 1 month later.<br>p-value: Values below 0.05 indicate statistically significant relationships.</div>", unsafe_allow_html=True)
 
+    # -- News Evidence Section --
+    st.markdown("---")
+    st.subheader("Recent News Evidence")
+    st.caption("Real-world news articles that may explain or confirm the detected causal relationships.")
 
-    # -- Detailed Edge Breakdown for Top Influencers --
-    with st.expander('Detailed Edge Breakdown \u2014 Why Are These Top Influencers?', expanded=True):
-        st.markdown(
-            "<div style='font-size:0.82rem;color:#8ab4d8;margin-bottom:12px;'>"
-            "Each top influencer's causal connections are listed below, showing which events they "
-            "statistically predict and the potential transmission mechanism. <b>Cross-border links "
-            "do not necessarily imply direct bilateral causation</b> \u2014 they may reflect indirect "
-            "transmission through global trade, shared alliances, commodity channels, or regional "
-            "contagion effects.</div>", unsafe_allow_html=True
-        )
-        for _rank, _nd in enumerate(influence.index[:5], 1):
-            _nd_lbl, _nd_cc = _node_label(_nd)
-            _nd_country = COUNTRY_NAMES.get(_nd_cc, _nd_cc)
-            _nd_edges = filtered[filtered['source'] == _nd].sort_values('max_f_stat', ascending=False)
-            _nd_targets = filtered[filtered['target'] == _nd].sort_values('max_f_stat', ascending=False)
-            st.markdown(
-                "<div style='margin:18px 0 8px;padding:10px 14px;background:rgba(0,180,255,0.06);"
-                "border-left:3px solid #00d4ff;border-radius:4px;'>"
-                "<b style='color:#00d4ff;font-size:0.95rem;'>#{} {} ({})</b>"
-                " &mdash; <span style='color:#8ab4d8;font-size:0.82rem;'>"
-                "Cumulative F-Stat: {:.1f} | {} outgoing, {} incoming causal links</span>"
-                "</div>".format(_rank, _nd_lbl, _nd_country, float(influence[_nd]),
-                               len(_nd_edges), len(_nd_targets)),
-                unsafe_allow_html=True
-            )
-            if len(_nd_edges) > 0:
-                st.markdown("<div style='margin:2px 0 4px 10px;font-size:0.72rem;color:#00d4ff;font-weight:600;'>CAUSES (outgoing):</div>", unsafe_allow_html=True)
-                for _, _erow in _nd_edges.head(5).iterrows():
-                    _interp = _edge_interpretation(
-                        _erow['source'], _erow['target'],
-                        float(_erow['max_f_stat']), float(_erow['min_p_value']),
-                        int(_erow['best_lag'])
-                    )
+    top_sources = filtered.groupby("source")["max_f_stat"].sum().sort_values(ascending=False).head(5)
+    if len(top_sources) > 0:
+        news_cols = st.columns(1)
+        for src_node in top_sources.index:
+            label, cc = _node_label(src_node)
+            if not cc:
+                continue
+            articles = fetch_causal_news(label, cc, max_records=3)
+            if not articles:
+                continue
+            top_targets = filtered[filtered["source"] == src_node].nlargest(2, "max_f_stat")
+            target_names = []
+            for _, row in top_targets.iterrows():
+                tl, tc = _node_label(row["target"])
+                target_names.append(f"{tl} ({tc})")
+            targets_str = ", ".join(target_names) if target_names else "related factors"
+            with st.expander(f"Evidence: {label} ({cc}) → {targets_str}", expanded=False):
+                for art in articles:
+                    date_str = art["date"] if art["date"] else "Recent"
+                    source_str = art["source"] if art["source"] else "Unknown"
+                    title_str = art["title"] if art["title"] else "Untitled"
+                    url_str = art["url"]
                     st.markdown(
-                        "<div style='margin:4px 0 4px 20px;padding:8px 12px;"
-                        "background:rgba(10,20,50,0.3);border-radius:6px;"
-                        "font-size:0.78rem;color:#a0b8d0;line-height:1.6;'>"
-                        "{}</div>".format(_interp), unsafe_allow_html=True
+                        f"**[{title_str}]({url_str})**<br>"
+                        f"<small>{source_str} | {date_str}</small>",
+                        unsafe_allow_html=True
                     )
-                if len(_nd_edges) > 5:
-                    st.markdown(
-                        "<div style='margin:2px 0 0 20px;font-size:0.72rem;color:#607890;'>"
-                        "... and {} more outgoing edges. See Full Causal Edge List below.</div>".format(
-                            len(_nd_edges) - 5), unsafe_allow_html=True
-                    )
-            if len(_nd_targets) > 0:
-                st.markdown("<div style='margin:8px 0 4px 10px;font-size:0.72rem;color:#e07020;font-weight:600;'>CAUSED BY (incoming):</div>", unsafe_allow_html=True)
-                for _, _trow in _nd_targets.head(3).iterrows():
-                    _t_interp = _edge_interpretation(
-                        _trow['source'], _trow['target'],
-                        float(_trow['max_f_stat']), float(_trow['min_p_value']),
-                        int(_trow['best_lag'])
-                    )
-                    st.markdown(
-                        "<div style='margin:4px 0 4px 20px;padding:8px 12px;"
-                        "background:rgba(50,20,10,0.2);border-radius:6px;border-left:2px solid rgba(224,112,32,0.3);"
-                        "font-size:0.78rem;color:#b09880;line-height:1.6;'>"
-                        "{}</div>".format(_t_interp), unsafe_allow_html=True
-                    )
-                if len(_nd_targets) > 3:
-                    st.markdown(
-                        "<div style='margin:2px 0 0 20px;font-size:0.72rem;color:#607890;'>"
-                        "... and {} more incoming edges.</div>".format(
-                            len(_nd_targets) - 3), unsafe_allow_html=True
-                    )
+                st.caption(f"These articles provide context for why {label} ({cc}) may causally influence {targets_str}.")
+    else:
+        st.info("No causal influencers found to research news for.")
 
     # -- Edge table --
     with st.expander('Full Causal Edge List', expanded=False):
