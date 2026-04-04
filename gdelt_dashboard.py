@@ -69,33 +69,20 @@ if st.session_state.access_tier is None:
     st.markdown("""
     .stApp { background: #0a0e17 !important; }
     [data-testid="stForm"] {
-      background: linear-gradient(135deg, #0d1220 0%, #111827 100%) !important;
-      border: 1px solid rgba(0,212,255,0.2) !important;
       border-radius: 16px !important;
-      padding: 40px !important;
-      box-shadow: 0 0 60px rgba(0,212,255,0.08) !important;
       max-width: 420px !important;
-      margin: 60px auto !important;
     }
     [data-testid="stForm"] input {
-      background: #0a0e17 !important;
-      border: 1px solid rgba(0,212,255,0.2) !important;
-      color: #e0e8f0 !important;
       border-radius: 8px !important;
     }
     [data-testid="stForm"] input:focus {
       border-color: #00d4ff !important;
-      box-shadow: 0 0 12px rgba(0,212,255,0.2) !important;
     }
     [data-testid="stForm"] button {
-      background: linear-gradient(135deg, #00d4ff 0%, #00b4d8 100%) !important;
-      color: #0a0e17 !important;
       font-weight: 700 !important;
-      border: none !important;
       border-radius: 8px !important;
     }
     [data-testid="stForm"] button:hover {
-      box-shadow: 0 0 20px rgba(0,212,255,0.4) !important;
     }
     """, unsafe_allow_html=True)
 
@@ -163,79 +150,50 @@ st.markdown("""
 
 /* ── Global dark background ── */
 .stApp, .main, [data-testid="stAppViewContainer"] {
-  background: var(--bg-primary) !important;
-  color: var(--text-primary) !important;
 }
 [data-testid="stHeader"] { background: transparent !important; }
 #MainMenu, footer, .stDeployButton { display:none !important; }
 
 /* ── Sidebar dark glass ── */
 [data-testid="stSidebar"] {
-  background: linear-gradient(180deg, #0d1220 0%, #0a0e17 100%) !important;
   border-right: 1px solid var(--border) !important;
-  box-shadow: 4px 0 30px rgba(0,0,0,0.5) !important;
 }
 [data-testid="stSidebar"] * { color: var(--text-primary) !important; }
 [data-testid="stSidebar"] .stButton > button {
-  background: transparent !important;
-  color: var(--text-secondary) !important;
-  border: 1px solid transparent !important;
   border-radius: 8px !important;
-  padding: 8px 16px !important;
   text-align: left !important;
-  transition: all 0.3s ease !important;
   font-size: 13px !important;
-  width: 100% !important;
 }
 [data-testid="stSidebar"] .stButton > button:hover {
-  background: rgba(0,212,255,0.08) !important;
   border-color: var(--border-glow) !important;
-  color: var(--accent) !important;
-  box-shadow: var(--glow) !important;
 }
 [data-testid="stSidebar"] hr {
   border-color: var(--border) !important;
-  margin: 12px 0 !important;
 }
 
 /* ── Typography ── */
 h1, h2, h3, h4, h5, h6, .stMarkdown h1, .stMarkdown h2, .stMarkdown h3 {
-  color: var(--text-primary) !important;
   font-family: 'Inter', sans-serif !important;
 }
 p, span, label, .stMarkdown p { color: var(--text-secondary) !important; }
 
 /* ── KPI Cards (futuristic glow) ── */
 .kpi-card, [data-testid="stMetric"] {
-  background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-secondary) 100%) !important;
-  border: 1px solid var(--border) !important;
   border-radius: 12px !important;
-  padding: 20px !important;
-  box-shadow: var(--glow) !important;
-  transition: all 0.3s ease !important;
-  position: relative !important;
-  overflow: hidden !important;
 }
 .kpi-card:hover, [data-testid="stMetric"]:hover {
   border-color: var(--border-glow) !important;
-  box-shadow: var(--glow-strong) !important;
-  transform: translateY(-2px) !important;
 }
 .kpi-card::before {
   content: '';
-  position: absolute;
   top: 0; left: 0; right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, var(--accent), transparent);
 }
 [data-testid="stMetricValue"] {
-  color: var(--accent) !important;
   font-weight: 700 !important;
   font-size: 28px !important;
   text-shadow: 0 0 20px rgba(0,212,255,0.3) !important;
 }
 [data-testid="stMetricLabel"] {
-  color: var(--text-secondary) !important;
   text-transform: uppercase !important;
   letter-spacing: 1px !important;
   font-size: 11px !important;
@@ -245,45 +203,29 @@ p, span, label, .stMarkdown p { color: var(--text-secondary) !important; }
 
 /* ── Signal/News Cards ── */
 .signal-card, .news-card {
-  background: var(--bg-card) !important;
-  border: 1px solid var(--border) !important;
   border-radius: 10px !important;
-  padding: 16px !important;
   margin-bottom: 10px !important;
-  transition: all 0.3s ease !important;
 }
 .signal-card:hover, .news-card:hover {
   border-color: var(--accent) !important;
-  box-shadow: 0 0 15px rgba(0,212,255,0.12) !important;
 }
 
 /* ── Tabs ── */
 .stTabs [data-baseweb="tab-list"] {
-  background: var(--bg-secondary) !important;
   border-radius: 10px !important;
-  padding: 4px !important;
   gap: 4px !important;
-  border: 1px solid var(--border) !important;
 }
 .stTabs [data-baseweb="tab"] {
-  background: transparent !important;
-  color: var(--text-dim) !important;
   border-radius: 8px !important;
   font-size: 13px !important;
-  padding: 8px 16px !important;
 }
 .stTabs [aria-selected="true"] {
-  background: rgba(0,212,255,0.12) !important;
-  color: var(--accent) !important;
-  box-shadow: 0 0 10px rgba(0,212,255,0.1) !important;
 }
 .stTabs [data-baseweb="tab-border"] { display: none !important; }
 .stTabs [data-baseweb="tab-highlight"] { background: var(--accent) !important; }
 
 /* ── Expander ── */
 [data-testid="stExpander"] {
-  background: var(--bg-card) !important;
-  border: 1px solid var(--border) !important;
   border-radius: 10px !important;
 }
 [data-testid="stExpander"] summary { color: var(--text-primary) !important; }
@@ -291,47 +233,31 @@ p, span, label, .stMarkdown p { color: var(--text-secondary) !important; }
 
 /* ── Selectbox / Multiselect ── */
 [data-testid="stSelectbox"], [data-testid="stMultiSelect"] {
-  background: var(--bg-card) !important;
 }
 [data-baseweb="select"] > div {
-  background: var(--bg-secondary) !important;
   border-color: var(--border) !important;
-  color: var(--text-primary) !important;
 }
 [data-baseweb="popover"] {
-  background: var(--bg-card) !important;
-  border: 1px solid var(--border-glow) !important;
 }
 [data-baseweb="popover"] li { color: var(--text-primary) !important; }
 [data-baseweb="popover"] li:hover { background: rgba(0,212,255,0.1) !important; }
 
 /* ── DataFrame / Tables ── */
 [data-testid="stDataFrame"], .stDataFrame {
-  background: var(--bg-card) !important;
-  border: 1px solid var(--border) !important;
   border-radius: 10px !important;
 }
 
 /* ── Slider ── */
 [data-testid="stSlider"] [data-baseweb="slider"] div {
-  background: var(--accent) !important;
 }
 
 /* ── Hero Section ── */
 .hero-section {
-  background: linear-gradient(135deg, #0d1220 0%, #111827 50%, #0d1220 100%) !important;
-  border: 1px solid var(--border) !important;
   border-radius: 16px !important;
-  padding: 32px !important;
-  position: relative !important;
-  overflow: hidden !important;
 }
 .hero-section::before {
   content: '';
-  position: absolute;
   top: -50%; left: -50%;
-  width: 200%; height: 200%;
-  background: radial-gradient(circle at 30% 40%, rgba(0,212,255,0.05) 0%, transparent 50%);
   animation: heroGlow 8s ease-in-out infinite;
 }
 @keyframes heroGlow {
@@ -341,11 +267,7 @@ p, span, label, .stMarkdown p { color: var(--text-secondary) !important; }
 
 /* ── Badge styling ── */
 .badge, .tier-badge {
-  background: rgba(0,212,255,0.12) !important;
-  color: var(--accent) !important;
-  border: 1px solid var(--border-glow) !important;
   border-radius: 20px !important;
-  padding: 4px 12px !important;
   font-size: 11px !important;
   font-weight: 600 !important;
   letter-spacing: 0.5px !important;
@@ -356,7 +278,6 @@ p, span, label, .stMarkdown p { color: var(--text-secondary) !important; }
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: var(--bg-primary); }
 ::-webkit-scrollbar-thumb {
-  background: rgba(0,212,255,0.2);
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover { background: rgba(0,212,255,0.4); }
@@ -376,35 +297,25 @@ p, span, label, .stMarkdown p { color: var(--text-secondary) !important; }
 
 /* ── Profile section ── */
 .profile-header {
-  background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-secondary) 100%) !important;
-  border: 1px solid var(--border) !important;
   border-radius: 14px !important;
-  padding: 24px !important;
 }
 
 /* ── Plotly chart container ── */
 .js-plotly-plot, .plotly {
   border-radius: 10px !important;
-  overflow: hidden !important;
 }
 
 /* ── Streamlit elements ── */
 .stAlert {
-  background: var(--bg-card) !important;
   border-color: var(--border) !important;
-  color: var(--text-primary) !important;
 }
 .stProgress > div > div {
-  background: linear-gradient(90deg, var(--accent), var(--accent2)) !important;
 }
 .stSpinner > div { border-color: var(--accent) transparent transparent !important; }
 
 /* ── Heatmap overrides ── */
 .heatmap-container {
-  background: var(--bg-card) !important;
-  border: 1px solid var(--border) !important;
   border-radius: 12px !important;
-  padding: 16px !important;
 }
 
 /* ── Column gap fix ── */
@@ -412,8 +323,6 @@ p, span, label, .stMarkdown p { color: var(--text-secondary) !important; }
 
 /* ── Login page override ── */
 .login-container {
-  background: var(--bg-card) !important;
-  border: 1px solid var(--border-glow) !important;
 }
 
 
@@ -426,28 +335,15 @@ p, span, label, .stMarkdown p { color: var(--text-secondary) !important; }
 
 section[data-testid="stSidebar"] div[data-testid="stVerticalBlock"] button,
 section[data-testid="stSidebar"] div.stButton>button{
-  position:relative!important;overflow:hidden!important;
-  background:linear-gradient(135deg,rgba(13,18,32,.95),rgba(8,12,20,.98))!important;
-  border:1px solid rgba(0,212,255,.18)!important;border-radius:10px!important;
-  color:#8899bb!important;font-size:11.5px!important;font-weight:600!important;
   letter-spacing:.6px!important;text-transform:uppercase!important;
-  padding:11px 14px!important;margin-bottom:3px!important;
-  transition:all .35s cubic-bezier(.4,0,.2,1)!important;
 }
 section[data-testid="stSidebar"] div.stButton>button:hover{
   border-color:rgba(0,212,255,.55)!important;color:#00d4ff!important;
-  background:linear-gradient(135deg,rgba(0,212,255,.1),rgba(0,255,200,.04))!important;
-  transform:translateX(4px) scale(1.01)!important;
-  box-shadow:0 0 18px rgba(0,212,255,.2),inset 0 1px 0 rgba(0,212,255,.12)!important;
 }
 section[data-testid="stSidebar"] div.stButton>button:active{
-  transform:translateX(4px) scale(.97)!important;
-  box-shadow:0 0 28px rgba(0,212,255,.35)!important;
 }
 section[data-testid="stSidebar"] div.stButton>button::before{
   content:'';position:absolute;width:14px;height:14px;border-radius:50%;
-  background:rgba(0,212,255,.5);top:50%;left:50%;
-  transform:translate(-50%,-50%) scale(0);opacity:0;pointer-events:none;
 }
 section[data-testid="stSidebar"] div.stButton>button:active::before{
   animation:rippleAnim .5s ease-out forwards!important;
@@ -455,26 +351,18 @@ section[data-testid="stSidebar"] div.stButton>button:active::before{
 
 /* Metric cards */
 div[data-testid="stMetric"]{
-  border:1px solid rgba(0,212,255,.08)!important;border-radius:12px!important;
-  background:linear-gradient(135deg,rgba(13,18,32,.7),rgba(8,12,20,.8))!important;
-  transition:all .3s ease!important;padding:14px!important;
 }
 div[data-testid="stMetric"]:hover{
   border-color:rgba(0,212,255,.28)!important;
-  box-shadow:0 0 18px rgba(0,212,255,.08)!important;
-  transform:translateY(-2px)!important;
 }
 
 /* Tab styling */
 .stTabs [data-baseweb="tab"]{
-  border:1px solid rgba(0,212,255,.1)!important;border-radius:8px!important;
   margin-right:5px!important;transition:all .25s ease!important;
 }
 .stTabs [data-baseweb="tab"]:hover{border-color:rgba(0,212,255,.35)!important;}
 .stTabs [aria-selected="true"]{
   border-color:#00d4ff!important;
-  background:linear-gradient(135deg,rgba(0,212,255,.1),transparent)!important;
-  box-shadow:0 0 12px rgba(0,212,255,.18)!important;
 }
 
 /* Scrollbar */
@@ -490,28 +378,15 @@ div[data-testid="stMetric"]:hover{
 
 section[data-testid="stSidebar"] div[data-testid="stVerticalBlock"] button,
 section[data-testid="stSidebar"] div.stButton>button{
-  position:relative!important;overflow:hidden!important;
-  background:linear-gradient(135deg,rgba(13,18,32,.95),rgba(8,12,20,.98))!important;
-  border:1px solid rgba(0,212,255,.18)!important;border-radius:10px!important;
-  color:#8899bb!important;font-size:11.5px!important;font-weight:600!important;
   letter-spacing:.6px!important;text-transform:uppercase!important;
-  padding:11px 14px!important;margin-bottom:3px!important;
-  transition:all .35s cubic-bezier(.4,0,.2,1)!important;
 }
 section[data-testid="stSidebar"] div.stButton>button:hover{
   border-color:rgba(0,212,255,.55)!important;color:#00d4ff!important;
-  background:linear-gradient(135deg,rgba(0,212,255,.1),rgba(0,255,200,.04))!important;
-  transform:translateX(4px) scale(1.01)!important;
-  box-shadow:0 0 18px rgba(0,212,255,.2),inset 0 1px 0 rgba(0,212,255,.12)!important;
 }
 section[data-testid="stSidebar"] div.stButton>button:active{
-  transform:translateX(4px) scale(.97)!important;
-  box-shadow:0 0 28px rgba(0,212,255,.35)!important;
 }
 section[data-testid="stSidebar"] div.stButton>button::before{
   content:'';position:absolute;width:14px;height:14px;border-radius:50%;
-  background:rgba(0,212,255,.5);top:50%;left:50%;
-  transform:translate(-50%,-50%) scale(0);opacity:0;pointer-events:none;
 }
 section[data-testid="stSidebar"] div.stButton>button:active::before{
   animation:rippleAnim .5s ease-out forwards!important;
@@ -519,26 +394,18 @@ section[data-testid="stSidebar"] div.stButton>button:active::before{
 
 /* Metric cards */
 div[data-testid="stMetric"]{
-  border:1px solid rgba(0,212,255,.08)!important;border-radius:12px!important;
-  background:linear-gradient(135deg,rgba(13,18,32,.7),rgba(8,12,20,.8))!important;
-  transition:all .3s ease!important;padding:14px!important;
 }
 div[data-testid="stMetric"]:hover{
   border-color:rgba(0,212,255,.28)!important;
-  box-shadow:0 0 18px rgba(0,212,255,.08)!important;
-  transform:translateY(-2px)!important;
 }
 
 /* Tab styling */
 .stTabs [data-baseweb="tab"]{
-  border:1px solid rgba(0,212,255,.1)!important;border-radius:8px!important;
   margin-right:5px!important;transition:all .25s ease!important;
 }
 .stTabs [data-baseweb="tab"]:hover{border-color:rgba(0,212,255,.35)!important;}
 .stTabs [aria-selected="true"]{
   border-color:#00d4ff!important;
-  background:linear-gradient(135deg,rgba(0,212,255,.1),transparent)!important;
-  box-shadow:0 0 12px rgba(0,212,255,.18)!important;
 }
 
 /* Scrollbar */
@@ -1431,7 +1298,6 @@ with st.sidebar:
         indices_age = f"Last updated: {h}h ago" if h < 48 else f"Last updated: {delta.days}d ago"
 
     st.markdown(f"""
-         padding:6px 4px;line-height:1.8;'>
       {'✅ ' + indices_age if indices_age else '⚠ No data yet'}
 
     if st.button('🔄 Refresh Indices', use_container_width=True,
@@ -1514,7 +1380,6 @@ with st.sidebar:
         heatmap_n = st.slider("Heatmap top N", 8, 30, 15)
 
         st.markdown(f"""
-             border:1px solid rgba(0,150,255,0.1);border-radius:6px;
              font-size:0.62rem;color:rgba(0,180,255,0.4);font-family:monospace;line-height:2;'>
           📅 {len(date_cols)} days · 📊 {len(all_topics)} topics · {len(all_countries)} countries<br>
           {'⚠ DEMO MODE' if is_demo else '✓ GDELT Project'}
@@ -1546,7 +1411,6 @@ with st.sidebar:
     elif st.session_state.page == 'news':
         st.markdown('<div class="sec-hdr">Live News Feed</div>', unsafe_allow_html=True)
         st.markdown(f"""
-             border:1px solid rgba(0,150,255,0.1);border-radius:6px;
              font-size:0.62rem;color:rgba(0,180,255,0.4);font-family:monospace;'>
           Real-time global news<br>
           28 topic categories
@@ -1620,47 +1484,77 @@ def render_home():
 
     # === NERAI GLOBE ===
     try:
-        import plotly.graph_objects as _pgo
-        _lats=[35.9,51.5,40.7,-33.9,55.8,31.2,28.6,-15.8,1.3,48.9,39.9,35.7,-1.3,19.4,30.0]
-        _lons=[14.5,-0.1,-74.0,151.2,37.6,121.5,77.2,-47.9,103.8,2.4,116.4,139.7,36.8,-99.1,31.2]
-        _cities=['Malta','London','New York','Sydney','Moscow','Shanghai','Delhi','Brasilia','Singapore','Paris','Beijing','Tokyo','Nairobi','Mexico City','Cairo']
-        _gfig=_pgo.Figure()
-        _gfig.add_trace(_pgo.Scattergeo(
-            lat=_lats,lon=_lons,
-            mode='markers+text',
-            text=_cities,
-            textposition='top center',
-            textfont=dict(color='#00d4ff',size=8),
-            marker=dict(size=7,color='#00d4ff',opacity=0.85,
-                        line=dict(width=1,color='#ffffff')),
-        ))
-        _gfig.update_layout(
-            height=440,
-            margin=dict(l=0,r=0,t=0,b=0),
-            paper_bgcolor='rgba(0,0,0,0)',
-            plot_bgcolor='rgba(0,0,0,0)',
-            geo=dict(
-                showland=True,landcolor='#1a2035',
-                showocean=True,oceancolor='#0d1117',
-                showcoastlines=True,coastlinecolor='#00d4ff',
-                showcountries=True,countrycolor='#1e3a5f',
-                showframe=False,bgcolor='rgba(0,0,0,0)',
-                projection_type='orthographic',
-                projection_rotation=dict(lon=20,lat=20,roll=0),
-                lataxis=dict(showgrid=True,gridcolor='#1e3a5f'),
-                lonaxis=dict(showgrid=True,gridcolor='#1e3a5f'),
-            )
-        )
-        st.plotly_chart(_gfig,use_container_width=True,config={'displayModeBar':False,'staticPlot':False})
+        import streamlit.components.v1 as _stc
+        _GLOBE_HTML = """<!DOCTYPE html><html><head><meta charset="UTF-8"><style>*{margin:0;padding:0;box-sizing:border-box;}body{background:#000;overflow:hidden;}canvas{display:block;width:100%;height:500px;}
+/* === NERAI NAV === */
+section[data-testid="stSidebar"] div.stButton>button{background:linear-gradient(135deg,#0d2137 0%,#1a3a5c 100%)!important;border:1px solid rgba(0,212,255,.5)!important;color:#fff!important;border-radius:8px!important;font-weight:600!important;letter-spacing:1px!important;transition:all .25s ease!important;box-shadow:0 0 6px rgba(0,212,255,.15)!important;width:100%!important;text-align:left!important;padding:10px 16px!important;margin-bottom:4px!important;}
+section[data-testid="stSidebar"] div.stButton>button:hover{box-shadow:0 0 20px rgba(0,212,255,.7),0 0 40px rgba(0,212,255,.25)!important;transform:translateX(5px) scale(1.02)!important;background:linear-gradient(135deg,#1a3a5c 0%,#0d4a7a 100%)!important;border-color:#00ffff!important;color:#00ffff!important;}
+section[data-testid="stSidebar"] div.stButton>button:active{transform:translateX(3px) scale(.98)!important;box-shadow:0 0 30px rgba(0,212,255,.9)!important;}
+/* === END NAV === */
+</style></head><body><canvas id="ng"></canvas><script>(function(){
+const cv=document.getElementById('ng');
+if(!cv)return;
+const ctx=cv.getContext('2d');
+function resize(){cv.width=cv.offsetWidth||900;cv.height=cv.offsetHeight||500;}
+resize();
+const W=cv.width,H=cv.height,CX=W/2,CY=H/2,R=Math.min(W,H)*0.40;
+const C=[{n:'New York',la:40.7,lo:-74.0,t:0,s:1.4},{n:'London',la:51.5,lo:-0.1,t:2,s:1.3},{n:'Paris',la:48.9,lo:2.4,t:0,s:1.0},{n:'Moscow',la:55.8,lo:37.6,t:1,s:1.3},{n:'Kiev',la:50.4,lo:30.5,t:1,s:1.5},{n:'Dubai',la:25.2,lo:55.3,t:2,s:1.1},{n:'Tehran',la:35.7,lo:51.4,t:1,s:1.2},{n:'Delhi',la:28.6,lo:77.2,t:0,s:1.0},{n:'Shanghai',la:31.2,lo:121.5,t:0,s:1.2},{n:'Tokyo',la:35.7,lo:139.7,t:2,s:1.1},{n:'Sydney',la:-33.9,lo:151.2,t:0,s:0.9},{n:'Sao Paulo',la:-23.5,lo:-46.6,t:0,s:1.0},{n:'Cairo',la:30.0,lo:31.2,t:1,s:1.1},{n:'Singapore',la:1.3,lo:103.8,t:0,s:1.1},{n:'Seoul',la:37.6,lo:126.9,t:0,s:1.0},{n:'Istanbul',la:41.0,lo:28.9,t:2,s:1.1},{n:'Lagos',la:6.5,lo:3.4,t:1,s:0.9},{n:'Riyadh',la:24.7,lo:46.7,t:1,s:1.0},{n:'Mexico',la:19.4,lo:-99.1,t:0,s:0.9}];
+const AR=[{a:0,b:1,t:0,spd:.004},{a:1,b:2,t:0,spd:.005},{a:3,b:4,t:1,spd:.003},{a:6,b:11,t:1,spd:.0035},{a:5,b:9,t:2,spd:.006},{a:7,b:13,t:0,spd:.005},{a:8,b:9,t:0,spd:.004},{a:0,b:10,t:2,spd:.003},{a:1,b:15,t:2,spd:.004},{a:2,b:3,t:0,spd:.0045},{a:11,b:15,t:1,spd:.003},{a:14,b:8,t:0,spd:.005},{a:13,b:7,t:2,spd:.004},{a:17,b:6,t:1,spd:.003},{a:0,b:15,t:0,spd:.0035},{a:18,b:0,t:2,spd:.004}];
+const ST=[];for(let i=0;i<220;i++)ST.push({x:Math.random()*W,y:Math.random()*H,r:Math.random()*1.2,a:.3+Math.random()*.7});
+const at=AR.map(()=>Math.random());
+const AC=['rgba(0,212,255,','rgba(255,60,60,','rgba(255,190,0,'];
+const CC=['#00d4ff','#ff4444','#ffd700'];
+let rot=0,sw=0,fr=0;
+function ll(la,lo,r){const ph=(90-la)*Math.PI/180,th=(lo+rot)*Math.PI/180;return{x:r*Math.sin(ph)*Math.cos(th),y:r*Math.cos(ph),z:r*Math.sin(ph)*Math.sin(th)};}
+function pj(p){const f=R*3,s=f/(f+p.z);return{px:CX+p.x*s,py:CY-p.y*s,s,v:p.z>-R*.12};}
+function ap(c1,c2,n=65){const pts=[];for(let i=0;i<=n;i++){const t=i/n,el=Math.sin(t*Math.PI)*.22;pts.push(ll(c1.la*(1-t)+c2.la*t,c1.lo*(1-t)+c2.lo*t,R*(1+el)));}return pts;}
+function draw(){
+ctx.clearRect(0,0,W,H);
+ST.forEach(s=>{ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fillStyle='rgba(180,210,255,'+(s.a*(.6+.4*Math.sin(fr*.02+s.x)))+')';ctx.fill();});
+const dg=ctx.createRadialGradient(CX,CY,0,CX,CY,R*1.6);dg.addColorStop(0,'rgba(0,40,80,.35)');dg.addColorStop(.6,'rgba(0,20,50,.15)');dg.addColorStop(1,'rgba(0,0,0,0)');ctx.beginPath();ctx.arc(CX,CY,R*1.6,0,Math.PI*2);ctx.fillStyle=dg;ctx.fill();
+const bg=ctx.createRadialGradient(CX-R*.28,CY-R*.28,R*.02,CX,CY,R);bg.addColorStop(0,'#1e3f60');bg.addColorStop(.3,'#0e2240');bg.addColorStop(.7,'#071528');bg.addColorStop(1,'#020810');ctx.beginPath();ctx.arc(CX,CY,R,0,Math.PI*2);ctx.fillStyle=bg;ctx.fill();
+ctx.save();ctx.beginPath();ctx.arc(CX,CY,R,0,Math.PI*2);ctx.clip();
+ctx.lineWidth=.4;
+for(let la=-80;la<=80;la+=15){ctx.beginPath();let f=1;for(let lo=-180;lo<=180;lo+=2){const p=pj(ll(la,lo,R));if(p.v){if(f){ctx.moveTo(p.px,p.py);f=0;}else ctx.lineTo(p.px,p.py);}else f=1;}ctx.strokeStyle=la===0?'rgba(0,212,255,.4)':'rgba(0,180,255,.1)';ctx.stroke();}
+for(let lo=-180;lo<180;lo+=15){ctx.beginPath();let f=1;for(let la=-90;la<=90;la+=2){const p=pj(ll(la,lo,R));if(p.v){if(f){ctx.moveTo(p.px,p.py);f=0;}else ctx.lineTo(p.px,p.py);}else f=1;}ctx.strokeStyle='rgba(0,180,255,.08)';ctx.stroke();}
+const sa=sw*Math.PI/180;
+for(let a=0;a<60;a++){const ag=sa-(a*Math.PI/180);ctx.beginPath();ctx.moveTo(CX,CY);ctx.arc(CX,CY,R,ag,ag+Math.PI/180);ctx.closePath();ctx.fillStyle='rgba(0,255,180,'+((.12*(1-a/60)).toFixed(3))+')';ctx.fill();}
+ctx.beginPath();ctx.moveTo(CX,CY);ctx.lineTo(CX+R*Math.cos(sa),CY+R*Math.sin(sa));ctx.strokeStyle='rgba(0,255,180,.7)';ctx.lineWidth=1.5;ctx.stroke();
+ctx.restore();
+AR.forEach((arc,i)=>{
+const c1=C[arc.a],c2=C[arc.b],pts=ap(c1,c2),col=AC[arc.t];
+ctx.beginPath();let st=0;pts.forEach(p=>{const q=pj(p);if(q.v){if(!st){ctx.moveTo(q.px,q.py);st=1;}else ctx.lineTo(q.px,q.py);}else st=0;});ctx.strokeStyle=col+'.22)';ctx.lineWidth=.8;ctx.stroke();
+const pi=Math.floor(at[i]*pts.length);
+for(let k=0;k<18;k++){const ix=pi-k;if(ix<0)continue;const q=pj(pts[ix]);if(!q.v)continue;ctx.beginPath();ctx.arc(q.px,q.py,k===0?3.5:Math.max(.5,2.2-k*.12),0,Math.PI*2);ctx.fillStyle=col+(((1-k/18)*.85).toFixed(2))+')';ctx.fill();}
+const hq=pj(pts[Math.min(pi,pts.length-1)]);
+if(hq.v){const hg=ctx.createRadialGradient(hq.px,hq.py,0,hq.px,hq.py,9);hg.addColorStop(0,col+'1)');hg.addColorStop(1,col+'0)');ctx.beginPath();ctx.arc(hq.px,hq.py,9,0,Math.PI*2);ctx.fillStyle=hg;ctx.fill();}
+at[i]=(at[i]+arc.spd)%1;});
+for(let rn=0;rn<4;rn++){ctx.beginPath();ctx.arc(CX,CY,R*(1.01+rn*.04),0,Math.PI*2);ctx.strokeStyle='rgba(0,180,255,'+((.22-rn*.05).toFixed(2))+')';ctx.lineWidth=rn===0?1.6:.6;ctx.stroke();}
+const sp=ctx.createRadialGradient(CX-R*.32,CY-R*.32,0,CX-R*.32,CY-R*.32,R*.55);sp.addColorStop(0,'rgba(180,230,255,.13)');sp.addColorStop(.4,'rgba(100,180,255,.05)');sp.addColorStop(1,'rgba(0,0,0,0)');ctx.beginPath();ctx.arc(CX,CY,R,0,Math.PI*2);ctx.fillStyle=sp;ctx.fill();
+ctx.beginPath();ctx.arc(CX,CY,R,0,Math.PI*2);const eg=ctx.createLinearGradient(CX-R,CY,CX+R,CY);eg.addColorStop(0,'rgba(0,212,255,.06)');eg.addColorStop(.5,'rgba(0,212,255,.65)');eg.addColorStop(1,'rgba(0,212,255,.06)');ctx.strokeStyle=eg;ctx.lineWidth=1.8;ctx.stroke();
+C.forEach((c,i)=>{const p=pj(ll(c.la,c.lo,R));if(!p.v)return;const col=CC[c.t],sz=c.s;
+const pr2=6+12*Math.abs(Math.sin(fr*.04+i*.7));ctx.beginPath();ctx.arc(p.px,p.py,pr2*sz,0,Math.PI*2);ctx.strokeStyle=col+'44';ctx.lineWidth=1;ctx.stroke();
+const gr=ctx.createRadialGradient(p.px,p.py,0,p.px,p.py,9*sz);gr.addColorStop(0,col+'cc');gr.addColorStop(1,col+'00');ctx.beginPath();ctx.arc(p.px,p.py,9*sz,0,Math.PI*2);ctx.fillStyle=gr;ctx.fill();
+ctx.beginPath();ctx.arc(p.px,p.py,2.5*sz,0,Math.PI*2);ctx.fillStyle=col;ctx.fill();
+if(p.s>1.03){ctx.font=Math.round(8.5*p.s*sz)+'px monospace';ctx.fillStyle=col+'cc';ctx.fillText(c.n,p.px+7,p.py-4);}});
+ctx.font='bold 11px monospace';ctx.fillStyle='rgba(0,212,255,.7)';ctx.fillText('\\u25c8 NERAI GLOBAL INTELLIGENCE NETWORK',14,22);
+for(let y=0;y<H;y+=4){ctx.fillStyle='rgba(0,0,0,.04)';ctx.fillRect(0,y,W,1);}
+ctx.font='10px monospace';ctx.fillStyle='rgba(0,212,255,.4)';
+const ts=new Date().toUTCString().replace(' GMT','');
+ctx.fillText('\\u25c9 LIVE  |  UTC '+ts+'  |  NODES: 19  |  ARCS: 16',14,H-10);
+const lx=W-145;
+[['\\u25c6','#00d4ff','INTEL HUB'],['\\u25c6','#ff4444','RISK ZONE'],['\\u25c6','#ffd700','CAPITAL']].forEach(([sym,col,lbl],i)=>{ctx.fillStyle=col;ctx.font='10px monospace';ctx.fillText(sym+' '+lbl,lx,22+i*16);});
+rot+=.15;sw=(sw+.6)%360;fr++;requestAnimationFrame(draw);}
+draw();
+})();</script></body></html>"""
+        _stc.html(_GLOBE_HTML, height=510, scrolling=False)
     except Exception as _ge:
-        st.info(f"Globe unavailable: {_ge}")
+        st.info(f"Globe yüklenemedi: {_ge}")
     # === END GLOBE ===
+
     # ── Animated Hero ────────────────────────────────────────
     st.markdown(f"""
-             color:rgba(0,200,255,0.4);font-family:'Share Tech Mono',monospace;
              margin-bottom:6px;">Intelligence Hub</div>
-             width:60%;margin:0 auto 30px;"></div>
-             background:rgba(0,20,50,0.6);border:1px solid rgba(0,150,255,0.2);
              border-radius:20px;padding:5px 18px;
              font-size:0.68rem;color:rgba(0,200,255,0.6);
              font-family:'Share Tech Mono',monospace;letter-spacing:0.1em;">
@@ -1794,9 +1688,7 @@ def render_home():
 
     # ── Module Tiles ─────────────────────────────────────────
     st.markdown("""
-         color:rgba(0,180,255,0.45);font-family:'Share Tech Mono',monospace;
          margin-bottom:20px;text-align:center;
-         display:flex;align-items:center;justify-content:center;gap:14px;">
       SELECT A MODULE TO BEGIN
 
     m1, m2, m3, m4 = st.columns(4)
@@ -2114,8 +2006,6 @@ def render_profile():
                 else:         alm_col,alm_lbl = '#00b4d8','NORMAL'
                 sym = '▲' if pct>0 else '▼'
                 st.markdown(f"""
-                    border:1px solid {alm_col}40;border-radius:3px;
-                    color:{alm_col};padding:2px 6px;white-space:nowrap;">{alm_lbl}</span>
         else:
             st.markdown('<div style="color:rgba(100,150,180,0.4);font-size:0.72rem;">No alarms</div>', unsafe_allow_html=True)
 
@@ -2135,7 +2025,6 @@ def render_profile():
             st.markdown('<div style="color:rgba(100,150,180,0.4);font-size:0.72rem;padding:8px 0;">Insufficient data</div>', unsafe_allow_html=True)
 
         st.markdown("""<div style="font-size:0.6rem;color:#00d4aa;letter-spacing:0.15em;
-            margin:8px 0 5px;">▲ BEST 3 RELATIONS</div>""", unsafe_allow_html=True)
         if prof_best:
             for rel in prof_best:
                 t_sym = '▲' if rel['trend']>0.5 else ('▼' if rel['trend']<-0.5 else '→')
@@ -2182,7 +2071,6 @@ def render_profile():
     # Indicator mini cards
     st.markdown("""<div style="font-size:0.6rem;color:rgba(0,180,255,0.38);
          font-family:'Share Tech Mono',monospace;letter-spacing:0.18em;
-         margin:10px 0 8px;">KEY RISK INDICATORS (7-DAY AVG)</div>""", unsafe_allow_html=True)
     ind_cols = st.columns(4)
     avail_topics = set(df.index.get_level_values('topic').unique())
     for col_el, (topic, label, color) in zip(ind_cols, BILATERAL_INDICATORS):
@@ -2249,12 +2137,9 @@ def render_news():
             break
     st.markdown(f"""<style>
     .main .block-container {{
-        background: {_bg_color} !important;
-        transition: background 0.6s ease !important;
         border-left: 3px solid {_accent} !important;
         padding-left: 20px !important;
     }}
-    </style>""",unsafe_allow_html=True)
     # === END NEWS BG ===
 
 
@@ -2294,8 +2179,6 @@ def render_news():
     }
     _nbg = _news_bg_colors.get("default")
     st.markdown(f"""<div style="
-        position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;
-        background:radial-gradient(ellipse at 30% 20%, {_nbg[0]}, transparent 60%),
                   radial-gradient(ellipse at 70% 80%, {_nbg[1]}, transparent 60%);
     "></div>""", unsafe_allow_html=True)
 
@@ -2309,8 +2192,6 @@ def render_news():
     }
     _nbg = _news_bg_colors.get("default")
     st.markdown(f"""<div style="
-        position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;
-        background:radial-gradient(ellipse at 30% 20%, {_nbg[0]}, transparent 60%),
                   radial-gradient(ellipse at 70% 80%, {_nbg[1]}, transparent 60%);
     "></div>""", unsafe_allow_html=True)
 
@@ -2336,7 +2217,6 @@ def render_news():
         cat_q = cat_queries.get(sel_cat, sel_cat)
         st.markdown(f"""
             {sel_cat}
-               border:1px solid rgba(0,150,255,0.15);border-radius:4px;padding:2px 8px;">
             LIVE FEED
 
         with st.spinner(f'Fetching latest {sel_cat} news...'):
@@ -2360,7 +2240,6 @@ def render_news():
                     {'<div style="font-size:0.58rem;color:rgba(100,180,255,0.3);font-family:monospace;">LANG: '+language.upper()+'</div>' if language else ''}
         else:
             st.markdown(f"""
-                 color:rgba(100,150,200,0.4);font-family:monospace;font-size:0.8rem;">
               No articles found for "{sel_cat}".<br>
 
         # Globe Map showing topic hotspots
@@ -2400,17 +2279,13 @@ def render_predictions():
     if not has_predictions:
         import subprocess, sys
         st.markdown("""
-             background:rgba(0,12,32,0.6);border:1px solid rgba(0,150,255,0.12);
              border-radius:12px;margin:20px 0;'>
                letter-spacing:0.08em;margin-bottom:10px;'>
             Predictions Not Yet Generated
                max-width:480px;margin:0 auto;line-height:1.7;'>
             Run the fast Holt-Winters forecast engine (no ML libraries needed)
             or the full N-HiTS deep learning pipeline:
-               background:rgba(0,0,0,0.4);border-radius:8px;
                font-family:monospace;font-size:0.78rem;
-               color:rgba(0,230,255,0.7);text-align:left;
-               display:inline-block;'>
             # Fast option — pure NumPy, runs in ~30 sec<br>
             python gdelt_forecast_numpy.py<br><br>
             # Full option — N-HiTS deep learning (~2 hrs history download)<br>
@@ -2591,10 +2466,7 @@ def render_predictions():
                          else '#00d4aa' if dirn == 'falling' else '#7a9ab8')
                 bar_w = min(abs(pct) / 3, 100)
                 st.markdown(f"""
-                     padding:5px 0;border-bottom:1px solid rgba(0,100,180,0.06);'>
                        text-align:center;flex-shrink:0;'>{arrow}</div>
-                         overflow:hidden;text-overflow:ellipsis;'>{row["label"]}</div>
-                         height:2px;width:100%;margin-top:3px;'>
                            border-radius:2px;'></div>
                        font-family:monospace;flex-shrink:0;width:44px;
                        text-align:right;'>{pct:+.1f}%</div>
@@ -2618,11 +2490,7 @@ def render_predictions():
                 lbl = TOPIC_LABELS.get(_t, str(_t).replace('_', ' ').title() if _t else 'Unknown')
                 cnt = COUNTRY_NAMES.get(r['country'], r['country'])
                 st.markdown(f"""
-                     padding:5px 8px;margin-bottom:3px;
-                     background:rgba(255,75,110,0.05);
-                     border:1px solid rgba(255,75,110,0.12);border-radius:5px;'>
                          font-family:monospace;'>{cnt}</div>
-                       color:#e05060;font-family:monospace;'>
                     +{r['trend_pct']:.1f}%
 
         with col_fall:
@@ -2636,11 +2504,7 @@ def render_predictions():
                 lbl = TOPIC_LABELS.get(_t, str(_t).replace('_', ' ').title() if _t else 'Unknown')
                 cnt = COUNTRY_NAMES.get(r['country'], r['country'])
                 st.markdown(f"""
-                     padding:5px 8px;margin-bottom:3px;
-                     background:rgba(0,255,157,0.04);
-                     border:1px solid rgba(0,255,157,0.10);border-radius:5px;'>
                          font-family:monospace;'>{cnt}</div>
-                       color:#00d4aa;font-family:monospace;'>
                     {r['trend_pct']:.1f}%
 
     _render_footer()
@@ -2790,14 +2654,12 @@ def _render_country_card(col, row):
 
     col.markdown(f"""
      border-radius:9px;padding:14px 16px;margin-bottom:12px;
-     box-shadow:0 2px 12px rgba(0,0,0,0.3);'>
 
        margin-bottom:10px;padding-bottom:8px;
        border-bottom:1px solid rgba(0,100,180,0.10);'>
            letter-spacing:0.03em;'>{cname}</div>
            font-family:monospace;letter-spacing:0.12em;'>{country} · GDELT INDEX</div>
            line-height:1.1;'>{risk:.0f}<span style='font-size:0.58rem;
-           color:rgba(200,220,240,0.35);'>/100</span></div>
         {chg_arrow} {change:+.1f}% <span style='color:rgba(140,165,195,0.4);
         font-size:0.56rem;'>(7d chg)</span></div>
 
@@ -3685,7 +3547,6 @@ def render_causality():
 
     if cdf is None or cdf.empty:
         st.markdown("""
-             background:rgba(232,240,252,0.7);border:1px solid rgba(0,119,168,0.15);
              border-radius:12px;margin:20px 0;'>
                letter-spacing:0.06em;margin-bottom:10px;'>Causal Network Not Yet Computed</div>
             Click <b>Run Causal Analysis</b> in the sidebar to compute Granger causality relationships
@@ -4049,7 +3910,6 @@ def render_scenarios():
                 )
                 st.plotly_chart(fig, use_container_width=True)
                 st.markdown("""<div style='font-size:0.72rem;color:#4a6a8a;line-height:1.6;padding:8px 12px;
-                     background:rgba(0,80,160,0.04);border-radius:6px;margin-bottom:8px;'>
                   Only the 40 most impacted series are shown, sorted by impact magnitude.
 
             # ── Plain-English Analysis ──────────────────────────
@@ -4110,7 +3970,6 @@ def render_api():
             File: <code>forecast_predictions.csv</code>
 
     st.markdown("""
-         padding:14px 18px;margin-top:16px;font-size:0.82rem;color:#5a6b82;line-height:1.8;'>
       Contact <a href='mailto:info@neraicorp.com' style='color:#0077a8;'>info@neraicorp.com</a>
       for enterprise API access.
     _render_footer()
@@ -4123,29 +3982,16 @@ def render_api():
 st.markdown("""<style>
 /* === NERAI NAV GLOW === */
 section[data-testid="stSidebar"] div.stButton>button {
-    background: linear-gradient(135deg,#0d2137 0%,#1a3a5c 100%) !important;
-    border: 1px solid rgba(0,212,255,0.5) !important;
-    color: #ffffff !important;
     border-radius: 8px !important;
     font-weight: 600 !important;
     letter-spacing: 1px !important;
-    transition: all 0.25s ease !important;
-    box-shadow: 0 0 6px rgba(0,212,255,0.15) !important;
-    width: 100% !important;
     text-align: left !important;
-    padding: 10px 16px !important;
     margin-bottom: 4px !important;
 }
 section[data-testid="stSidebar"] div.stButton>button:hover {
-    box-shadow: 0 0 18px rgba(0,212,255,0.65), 0 0 36px rgba(0,212,255,0.25) !important;
-    transform: translateX(5px) scale(1.02) !important;
-    background: linear-gradient(135deg,#1a3a5c 0%,#0d4a7a 100%) !important;
     border-color: #00ffff !important;
-    color: #00ffff !important;
 }
 section[data-testid="stSidebar"] div.stButton>button:active {
-    transform: translateX(3px) scale(0.98) !important;
-    box-shadow: 0 0 30px rgba(0,212,255,0.9) !important;
 }
 @keyframes navPulse {
     0%,100% { box-shadow: 0 0 6px rgba(0,212,255,0.15); }
@@ -4155,19 +4001,12 @@ section[data-testid="stSidebar"] div.stButton>button:active {
 
 /* === NERAI METRIC GLOW === */
 div[data-testid="metric-container"] {
-    background: linear-gradient(135deg,#0d1e2e,#1a2f45) !important;
-    border: 1px solid rgba(0,212,255,0.25) !important;
     border-radius: 10px !important;
-    padding: 16px !important;
-    transition: all 0.3s ease !important;
 }
 div[data-testid="metric-container"]:hover {
     border-color: rgba(0,212,255,0.8) !important;
-    box-shadow: 0 0 20px rgba(0,212,255,0.35) !important;
-    transform: translateY(-2px) !important;
 }
 /* === END METRIC GLOW === */
-</style>""",unsafe_allow_html=True)
 page = st.session_state.get('page', 'home')
 if   page == 'home':        render_home()
 elif page == 'indices':     render_indices()
