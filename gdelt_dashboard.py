@@ -2486,7 +2486,7 @@ def render_news():
     _topic_colors = {"conflict": "rgba(255,60,60,0.05)", "diplomacy": "rgba(0,200,255,0.05)", "economy": "rgba(0,255,150,0.05)", "politics": "rgba(180,100,255,0.05)", "environment": "rgba(100,255,100,0.05)", "health": "rgba(255,200,0,0.05)", "technology": "rgba(0,150,255,0.05)"}
     _cur_topic = st.session_state.get("news_topic", "").lower()
     _bg_col = _topic_colors.get(_cur_topic, "rgba(0,255,200,0.03)")
-    st.markdown(f"""<style>.main .block-container{{background:linear-gradient(180deg,{_bg_col},transparent)!important;}}</style>", unsafe_allow_html=True)
+    st.markdown(f"<style>.main .block-container{{background:linear-gradient(180deg,{_bg_col},transparent)!important;}}</style>", unsafe_allow_html=True)
     st.markdown("""
     <div style='padding:6px 0 10px;'>
       <div class='hero-title'>Global News Intelligence</div>
