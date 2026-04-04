@@ -6,6 +6,16 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import plotly.graph_objects as go
+import io
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.units import mm
+from reportlab.lib.colors import HexColor, white, black
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.enums import TA_LEFT, TA_CENTER, TA_JUSTIFY
+from reportlab.platypus import (
+    SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle,
+    HRFlowable
+)
 import datetime, os, json
 import re
 import streamlit.components.v1 as _stc
@@ -3971,6 +3981,166 @@ def render_causality():
 
 
 
+# ── PDF GENERATION HELPERS ────────────────────────────────────────────
+_PDF_NAVY  = HexColor('#0a1428')
+_PDF_CYAN  = HexColor('#00b4ff')
+_PDF_RED   = HexColor('#ff4b6e')
+_PDF_GOLD  = HexColor('#ffd700')
+_PDF_ORANGE = HexColor('#ff9800')
+_PDF_MID   = HexColor('#8aa8c8')
+_PDF_LIGHT = HexColor('#f0f6fc')
+
+
+def _pdf_styles():
+    s = getSampleStyleSheet()
+    s.add(ParagraphStyle('NT', parent=s['Title'], fontSize=22, leading=26, textColor=_PDF_CYAN, spaceAfter=4, alignment=TA_LEFT, fontName='Helvetica-Bold'))
+    s.add(ParagraphStyle('NSub', parent=s['Normal'], fontSize=10, leading=13, textColor=_PDF_MID, spaceAfter=14, fontName='Helvetica'))
+    s.add(ParagraphStyle('NH', parent=s['Heading2'], fontSize=13, leading=16, textColor=_PDF_CYAN, spaceBefore=16, spaceAfter=6, fontName='Helvetica-Bold'))
+    s.add(ParagraphStyle('NHR', parent=s['Heading2'], fontSize=13, leading=16, textColor=_PDF_RED, spaceBefore=16, spaceAfter=6, fontName='Helvetica-Bold'))
+    s.add(ParagraphStyle('NHG', parent=s['Heading2'], fontSize=13, leading=16, textColor=_PDF_GOLD, spaceBefore=16, spaceAfter=6, fontName='Helvetica-Bold'))
+    s.add(ParagraphStyle('NHO', parent=s['Heading2'], fontSize=13, leading=16, textColor=_PDF_ORANGE, spaceBefore=16, spaceAfter=6, fontName='Helvetica-Bold'))
+    s.add(ParagraphStyle('NB', parent=s['Normal'], fontSize=9.5, leading=14, textColor=black, alignment=TA_JUSTIFY, spaceAfter=8, fontName='Helvetica'))
+    s.add(ParagraphStyle('ND', parent=s['Normal'], fontSize=9, leading=13, textColor=HexColor('#1a2a3a'), alignment=TA_LEFT, spaceAfter=4, fontName='Helvetica', leftIndent=8, borderPadding=6))
+    s.add(ParagraphStyle('NF', parent=s['Normal'], fontSize=8, leading=10, textColor=_PDF_MID, alignment=TA_CENTER, spaceBefore=20, fontName='Helvetica'))
+    return s
+
+
+def _pdf_header_footer(cv, doc, title, cls_color, cls_text):
+    cv.saveState()
+    w, h = A4
+    cv.setFillColor(_PDF_NAVY)
+    cv.rect(0, h - 28*mm, w, 28*mm, fill=1, stroke=0)
+    cv.setFillColor(_PDF_CYAN)
+    cv.setFont('Helvetica-Bold', 14)
+    cv.drawString(20*mm, h - 14*mm, 'NERAI INTELLIGENCE')
+    cv.setFillColor(cls_color)
+    cv.roundRect(w - 60*mm, h - 17*mm, 42*mm, 7*mm, 2, fill=1, stroke=0)
+    cv.setFillColor(white if cls_color != _PDF_GOLD else black)
+    cv.setFont('Helvetica-Bold', 7)
+    cv.drawCentredString(w - 39*mm, h - 15.5*mm, cls_text)
+    cv.setFillColor(_PDF_MID)
+    cv.setFont('Helvetica', 8)
+    cv.drawString(20*mm, h - 22*mm, title)
+    cv.setStrokeColor(_PDF_CYAN)
+    cv.setLineWidth(0.5)
+    cv.line(15*mm, h - 28*mm, w - 15*mm, h - 28*mm)
+    cv.setFillColor(_PDF_MID)
+    cv.setFont('Helvetica', 7)
+    cv.drawString(20*mm, 12*mm, 'Published by NERAI Intelligence | Confidential')
+    cv.drawRightString(w - 20*mm, 12*mm, 'Page {}'.format(doc.page))
+    cv.setStrokeColor(_PDF_CYAN)
+    cv.setLineWidth(0.3)
+    cv.line(15*mm, 17*mm, w - 15*mm, 17*mm)
+    cv.restoreState()
+
+
+def _pdf_data_box(text, styles, border_color=None):
+    if border_color is None:
+        border_color = _PDF_CYAN
+    tbl = Table([[Paragraph(text, styles['ND'])]], colWidths=[160*mm])
+    tbl.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, -1), _PDF_LIGHT),
+        ('LEFTPADDING', (0, 0), (-1, -1), 10),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 10),
+        ('TOPPADDING', (0, 0), (-1, -1), 8),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+        ('LINEBEFORE', (0, 0), (0, -1), 3, border_color),
+    ]))
+    return tbl
+
+
+def _generate_weekly_pdf():
+    buf = io.BytesIO()
+    s = _pdf_styles()
+    doc = SimpleDocTemplate(buf, pagesize=A4, topMargin=32*mm, bottomMargin=22*mm, leftMargin=20*mm, rightMargin=20*mm)
+    def on_page(cv, d):
+        _pdf_header_footer(cv, d, 'Weekly Intelligence Bulletin | Week 14 | March 28 - April 4, 2026', _PDF_GOLD, 'UNCLASSIFIED')
+    story = []
+    story.append(Paragraph('NERAI WEEKLY INTELLIGENCE BULLETIN', s['NT']))
+    story.append(Paragraph('Week 14 | March 28 - April 4, 2026', s['NSub']))
+    story.append(HRFlowable(width='100%', thickness=1, color=_PDF_CYAN, spaceAfter=12))
+    story.append(Paragraph('EXECUTIVE SUMMARY', s['NH']))
+    story.append(Paragraph('Week 14 marked a significant escalation in Middle East regional tensions with the re-activation of Houthi military operations against Israel, Iranian drone strikes targeting Gulf infrastructure, and an accelerating humanitarian crisis across the Levant. NERAI\'s Military Escalation indices across the region have reached their highest levels since October 2025, with 12-month forecasts indicating sustained and potentially intensifying conflict dynamics. Energy markets responded sharply, with Brent crude surging past $109 per barrel driven by Strait of Hormuz supply-disruption concerns and gold climbing above $4,670 per ounce on safe-haven demand.', s['NB']))
+    story.append(Paragraph('<font color="#ff4b6e">&#9650;</font> 1. HOUTHI MISSILE STRIKES ON ISRAEL - NEW FRONT IN REGIONAL WAR', s['NHR']))
+    story.append(Paragraph('On March 28, 2026, Yemen\'s Houthi forces launched coordinated ballistic-missile attacks targeting Israeli military installations, marking a dramatic re-entry into active combat following months of relative quiet after the October 2025 Gaza ceasefire. Houthi military spokesman Brig. Gen. Yahya Saree confirmed two separate salvos within hours. Israeli air defences intercepted the majority of incoming projectiles, although several reached their intended targets in the Negev region. The attacks signal Iran\'s demonstrated ability to activate multiple proxy fronts simultaneously, raising the spectre of a broader regional conflagration.', s['NB']))
+    story.append(_pdf_data_box('<b>NERAI DATA INSIGHTS:</b> The Military Escalation index for Israel currently stands at <b>0.27</b> with a 12-month forecast showing a <b>+10.1% rising</b> trajectory. Yemen\'s Terrorism index is elevated at <b>0.25</b> with a particularly concerning <b>+37.3% rising</b> trend - the steepest increase of any country-topic pair in the current dataset. Israel\'s Military Clash index at <b>0.23</b> continues upward at <b>+10.7%</b>. NERAI\'s Causal Network analysis identifies strong Granger-causal links between Iranian military-escalation decisions and subsequent Houthi activity.', s, _PDF_CYAN))
+    story.append(Spacer(1, 6))
+    story.append(_pdf_data_box('<b>12-MONTH FORECAST:</b> NERAI\'s predictive models indicate continued escalation across the Middle East theatre through Q4 2026. Lebanon shows the highest projected Military Escalation increase at <b>+12.1%</b>, followed by Israel at <b>+10.1%</b> and Yemen at <b>+8.4%</b>.', s, _PDF_GOLD))
+    story.append(Paragraph('<font color="#ff4b6e">&#9650;</font> 2. IRANIAN DRONE STRIKE ON KUWAIT INTERNATIONAL AIRPORT', s['NHR']))
+    story.append(Paragraph('On April 1, 2026, Iranian drones executed a precision strike on fuel-storage facilities at Kuwait International Airport, igniting a fire that burned for over 18 hours and forced extended runway closures. The strike demonstrates Iran\'s expanding long-range drone capabilities and willingness to target strategic civilian infrastructure in US-allied Gulf states.', s['NB']))
+    story.append(_pdf_data_box('<b>NERAI DATA ANALYSIS:</b> Iran\'s Military Escalation index stands at <b>0.16</b> with a <b>+6.1% rising</b> trend. Kuwait\'s Government Instability index remains low at 0.01, but NERAI\'s Country Profile flags potential for rapid escalation if critical infrastructure targeting continues.', s, _PDF_CYAN))
+    story.append(Spacer(1, 6))
+    story.append(Paragraph('<b>Broader implications:</b> The attacks create immediate concerns for Gulf energy security and the Strait of Hormuz, which handles approximately 20% of global maritime oil transport. Shipping insurance premiums have spiked, with an estimated $3-5 per barrel in freight surcharges.', s['NB']))
+    story.append(Paragraph('<font color="#ff4b6e">&#9650;</font> 3. LEBANON-SYRIA MASS DISPLACEMENT CRISIS', s['NHR']))
+    story.append(Paragraph('Israeli military operations in Lebanon have displaced nearly one million people - roughly 20% of the country\'s population. Between March 2 and 27, over 200,000 individuals crossed into Syria, creating the largest cross-border refugee movement in the region since 2015.', s['NB']))
+    story.append(_pdf_data_box('<b>NERAI RISK ASSESSMENT:</b> Lebanon\'s Military Escalation index is the <b>highest in the current dataset at 0.35</b>, with a projected 12-month increase of <b>+12.1%</b>. Syria\'s Political Instability index stands at <b>0.08</b> and is rising. Lebanon\'s Protest index at <b>0.10</b> shows a <b>+34.2% rising</b> trend.', s, _PDF_CYAN))
+    story.append(Paragraph('MARKET IMPACT', s['NH']))
+    mkt = [['Indicator', 'Value', 'Change'], ['Brent Crude', '$109.03/barrel', '+4.0% weekly'], ['WTI Crude', '$111.54/barrel', '+4.3% weekly'], ['Gold', '$4,673/oz', '+2.3% weekly'], ['USD Index', '104.7', 'Strengthening']]
+    tbl = Table(mkt, colWidths=[55*mm, 50*mm, 50*mm])
+    tbl.setStyle(TableStyle([('BACKGROUND', (0,0), (-1,0), _PDF_CYAN), ('TEXTCOLOR', (0,0), (-1,0), white), ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'), ('FONTSIZE', (0,0), (-1,-1), 9), ('BACKGROUND', (0,1), (-1,-1), _PDF_LIGHT), ('GRID', (0,0), (-1,-1), 0.5, HexColor('#d0dae8')), ('TOPPADDING', (0,0), (-1,-1), 6), ('BOTTOMPADDING', (0,0), (-1,-1), 6), ('LEFTPADDING', (0,0), (-1,-1), 8), ('ALIGN', (1,0), (-1,-1), 'CENTER')]))
+    story.append(tbl)
+    story.append(Spacer(1, 8))
+    story.append(Paragraph('NERAI 12-MONTH OUTLOOK', s['NH']))
+    story.append(_pdf_data_box('NERAI\'s integrated models predict sustained military escalation across the Middle East through Q4 2026, with escalating probability of direct Israeli-Iranian military engagement by Q3 2026. Energy markets should anticipate continued volatility with potential spike events if Strait of Hormuz operations are further restricted.', s, _PDF_RED))
+    story.append(Spacer(1, 16))
+    story.append(Paragraph('Published by NERAI Intelligence | April 4, 2026', s['NF']))
+    doc.build(story, onFirstPage=on_page, onLaterPages=on_page)
+    buf.seek(0)
+    return buf.getvalue()
+
+
+def _generate_risk_pdf():
+    buf = io.BytesIO()
+    s = _pdf_styles()
+    doc = SimpleDocTemplate(buf, pagesize=A4, topMargin=32*mm, bottomMargin=22*mm, leftMargin=20*mm, rightMargin=20*mm)
+    def on_page(cv, d):
+        _pdf_header_footer(cv, d, 'Risk Alert | Critical Threat Assessment | April 2026', _PDF_RED, 'SEVERITY: CRITICAL')
+    story = []
+    story.append(Paragraph('<font color="#ff4b6e">NERAI RISK ALERT</font>', s['NT']))
+    story.append(Paragraph('Critical Threat Assessment | April 2026', s['NSub']))
+    story.append(HRFlowable(width='100%', thickness=1, color=_PDF_RED, spaceAfter=12))
+    story.append(Paragraph('<font color="#ff4b6e">&#9888;</font> ALERT 1: STRAIT OF HORMUZ - ENERGY SUPPLY DISRUPTION', s['NHR']))
+    sev1 = Table([['SEVERITY: CRITICAL']], colWidths=[40*mm])
+    sev1.setStyle(TableStyle([('BACKGROUND',(0,0),(-1,-1),_PDF_RED),('TEXTCOLOR',(0,0),(-1,-1),white),('FONTNAME',(0,0),(-1,-1),'Helvetica-Bold'),('FONTSIZE',(0,0),(-1,-1),7),('ALIGN',(0,0),(-1,-1),'CENTER'),('TOPPADDING',(0,0),(-1,-1),3),('BOTTOMPADDING',(0,0),(-1,-1),3)]))
+    story.append(sev1)
+    story.append(Spacer(1, 6))
+    story.append(Paragraph('The effective closure of the Strait of Hormuz to Western-flagged commercial shipping represents the single largest near-term risk to global economic stability. The Strait handles approximately 20% of global maritime petroleum transport. Iranian military escalation has created an environment of spiking insurance costs, operational delays and significant rerouting expenses.', s['NB']))
+    story.append(_pdf_data_box('<b>TRIGGER EVENTS:</b> Iranian drone strike on Kuwait International Airport (Apr 1); Houthi missile attacks on Israel (Mar 28); Escalated Iranian military posture across the Gulf; Western naval deployments including USS Eisenhower carrier strike group; Shipping insurance providers expanding hazard-zone designations.', s, _PDF_CYAN))
+    story.append(Spacer(1, 4))
+    story.append(_pdf_data_box('<b>NERAI ANALYSIS:</b> Iran\'s Military Escalation index at <b>0.16</b> (+6.1% rising). Gulf-state vulnerability indices elevated - Kuwait 0.18, Saudi Arabia 0.12, UAE 0.08. Causal-network analysis shows strong linkages between Iranian military actions and restrictions on commercial shipping lanes.', s, _PDF_CYAN))
+    story.append(Spacer(1, 4))
+    story.append(_pdf_data_box('<b>FORECAST:</b> Under moderate escalation, oil rises to $120-130/barrel with 2-4 week disruption. Under severe scenario, prices spike to $150+/barrel with 6-8 week disruptions. Sustained military escalation probability assessed at 78% through Q3 2026.', s, _PDF_GOLD))
+    story.append(Spacer(1, 4))
+    story.append(Paragraph('<b>WATCH:</b> IRGC vessel positioning; shipping insurance premiums; US 5th Fleet status; Saudi Aramco production announcements; tanker AIS routing data.', s['NB']))
+    story.append(Paragraph('<font color="#ffd700">&#9888;</font> ALERT 2: INDIA-PAKISTAN NUCLEAR THRESHOLD', s['NHG']))
+    sev2 = Table([['SEVERITY: HIGH']], colWidths=[40*mm])
+    sev2.setStyle(TableStyle([('BACKGROUND',(0,0),(-1,-1),_PDF_GOLD),('TEXTCOLOR',(0,0),(-1,-1),black),('FONTNAME',(0,0),(-1,-1),'Helvetica-Bold'),('FONTSIZE',(0,0),(-1,-1),7),('ALIGN',(0,0),(-1,-1),'CENTER'),('TOPPADDING',(0,0),(-1,-1),3),('BOTTOMPADDING',(0,0),(-1,-1),3)]))
+    story.append(sev2)
+    story.append(Spacer(1, 6))
+    story.append(Paragraph('Following the May 2025 Operation Sindoor crisis, structural tensions between India and Pakistan remain elevated. Pakistan\'s fragile economy creates incentives for strategic risk-taking by political leadership to generate nationalist sentiment.', s['NB']))
+    story.append(_pdf_data_box('<b>NERAI DATA:</b> India Military Escalation <b>0.09</b>, Political Instability <b>0.02</b> (stable). Pakistan more volatile - Military Escalation <b>0.14</b>, Political Instability <b>0.11</b> (+8.3% rising), Terrorism <b>0.18</b> (+5.2%). Cross-border infiltration averaging 1.3 incidents/week.', s, _PDF_CYAN))
+    story.append(Spacer(1, 4))
+    story.append(_pdf_data_box('<b>FORECAST:</b> NERAI assesses 42% probability of renewed major escalation event within 12 months, with 8% conditional probability of nuclear-capable crisis comparable to May 2025.', s, _PDF_GOLD))
+    story.append(Spacer(1, 4))
+    story.append(Paragraph('<b>WATCH:</b> Pakistan military exercises; militancy attack frequency; cross-border infiltration; Pakistani political instability signals; Indian military posture near LoC.', s['NB']))
+    story.append(Paragraph('<font color="#ff9800">&#9888;</font> ALERT 3: TAIWAN STRAIT - GREAT-POWER CONFRONTATION', s['NHO']))
+    sev3 = Table([['SEVERITY: ELEVATED']], colWidths=[40*mm])
+    sev3.setStyle(TableStyle([('BACKGROUND',(0,0),(-1,-1),_PDF_ORANGE),('TEXTCOLOR',(0,0),(-1,-1),white),('FONTNAME',(0,0),(-1,-1),'Helvetica-Bold'),('FONTSIZE',(0,0),(-1,-1),7),('ALIGN',(0,0),(-1,-1),'CENTER'),('TOPPADDING',(0,0),(-1,-1),3),('BOTTOMPADDING',(0,0),(-1,-1),3)]))
+    story.append(sev3)
+    story.append(Spacer(1, 6))
+    story.append(Paragraph('China\'s December 2025 exercises involving 100+ aircraft (90 crossing the Taiwan median line) and 27 rocket launches represent unprecedented peacetime provocation. The 2026 defence budget increased 7% to $278 billion.', s['NB']))
+    story.append(_pdf_data_box('<b>NERAI ASSESSMENT:</b> China Military Escalation at <b>0.04</b> with acceleration trend (+2.8%). International Crisis index for East Asia rising +4.1% monthly. NERAI\'s Taiwan Strait crisis-probability composite has increased 33% from baseline (0.18 to 0.24).', s, _PDF_CYAN))
+    story.append(Spacer(1, 4))
+    story.append(_pdf_data_box('<b>FORECAST:</b> 31% probability of significant military incident in Taiwan Strait within 12 months. Escalation from incident to major conflict assessed at 18% conditional probability.', s, _PDF_GOLD))
+    story.append(Spacer(1, 4))
+    story.append(Paragraph('<b>WATCH:</b> Chinese exercise announcements; median-line crossings; US carrier deployments; Taiwan defence procurement; Chinese political messaging on unification timeline.', s['NB']))
+    story.append(Spacer(1, 16))
+    story.append(Paragraph('Published by NERAI Intelligence | April 4, 2026', s['NF']))
+    doc.build(story, onFirstPage=on_page, onLaterPages=on_page)
+    buf.seek(0)
+    return buf.getvalue()
+
+
 # ── BRIEFING ROOM ─────────────────────────────────────────────────────
 def render_briefing_room():
     st.markdown(
@@ -4000,6 +4170,13 @@ def render_briefing_room():
         with st.expander("Read Full Bulletin", expanded=False):
             st.markdown(_weekly_bulletin_html(), unsafe_allow_html=True)
 
+        st.download_button(
+            label="\u2B07 Download PDF",
+            data=_generate_weekly_pdf(),
+            file_name="NERAI_Weekly_Bulletin_W14.pdf",
+            mime="application/pdf",
+            use_container_width=True)
+
     with col2:
         st.markdown(
             "<div style='background:rgba(10,20,40,0.6);border:1px solid rgba(255,75,110,0.3);"
@@ -4015,6 +4192,13 @@ def render_briefing_room():
 
         with st.expander("Read Full Alert", expanded=False):
             st.markdown(_risk_alert_html(), unsafe_allow_html=True)
+
+        st.download_button(
+            label="\u2B07 Download PDF",
+            data=_generate_risk_pdf(),
+            file_name="NERAI_Risk_Alert_Apr2026.pdf",
+            mime="application/pdf",
+            use_container_width=True)
 
     st.markdown(
         "<div style='margin-top:30px;padding:14px 20px;background:rgba(10,20,40,0.4);"
