@@ -2624,7 +2624,7 @@ def _compute_country_insights(_df_raw, _trend_df):
             if _trend_df is not None:
                 ct = _trend_df[_trend_df['country'] == country].dropna(subset=['trend_pct'])
             ct = ct.copy(); ct['trend_pct'] = ct['trend_pct'].clip(-500, 500)
-                top_rising  = ct.nlargest(3, 'trend_pct')[['topic','trend_pct']].values.tolist() if len(ct) else []
+            top_rising  = ct.nlargest(3, 'trend_pct')[['topic','trend_pct']].values.tolist() if len(ct) else []
                 top_falling = ct.nsmallest(3, 'trend_pct')[['topic','trend_pct']].values.tolist() if len(ct) else []
                 avg_fc      = float(ct['trend_pct'].mean()) if len(ct) else 0.0
             else:
