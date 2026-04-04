@@ -83,19 +83,49 @@ if st.session_state.access_tier is None:
     
 /* NERAI diagonal watermark */
 .stApp::before {
-    content: "NERAI";
+    content: "NERAI  NERAI  NERAI  NERAI  NERAI  NERAI  NERAI";
     position: fixed;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%) rotate(-35deg);
-    font-size: 180px;
+    font-size: 120px;
     font-weight: 900;
-    color: rgba(0, 180, 255, 0.06);
+    color: rgba(0, 180, 255, 0.04);
     letter-spacing: 40px;
     pointer-events: none;
-    z-index: 0;
+    z-index: 1;
     white-space: nowrap;
     font-family: 'Orbitron', monospace;
+}
+
+/* Fix sidebar action buttons - better contrast */
+[data-testid="stSidebar"] .stButton > button[kind="primary"],
+[data-testid="stSidebar"] .stButton > button[data-testid="baseButton-primary"] {
+    background: linear-gradient(135deg, #003d5c 0%, #00526e 100%) !important;
+    color: #00d4ff !important;
+    border: 1px solid rgba(0,212,255,0.3) !important;
+    font-weight: 600 !important;
+}
+[data-testid="stSidebar"] .stButton > button[kind="primary"]:hover,
+[data-testid="stSidebar"] .stButton > button[data-testid="baseButton-primary"]:hover {
+    background: linear-gradient(135deg, #00526e 0%, #006880 100%) !important;
+    border-color: #00d4ff !important;
+}
+/* Fix sidebar slider labels and values */
+[data-testid="stSidebar"] .stSlider label,
+[data-testid="stSidebar"] .stSlider [data-testid="stTickBarMin"],
+[data-testid="stSidebar"] .stSlider [data-testid="stTickBarMax"],
+[data-testid="stSidebar"] .stNumberInput label {
+    color: #8aa0bc !important;
+}
+[data-testid="stSidebar"] .stSlider [data-testid="stThumbValue"] {
+    color: #00d4ff !important;
+}
+/* Fix number input in sidebar */
+[data-testid="stSidebar"] .stNumberInput input {
+    background: #111827 !important;
+    color: #e0e8f0 !important;
+    border: 1px solid rgba(0,212,255,0.2) !important;
 }
 </style>
     """, unsafe_allow_html=True)
