@@ -2476,6 +2476,15 @@ def render_predictions():
             yhat = fc['yhat']
             y_lo = fc['yhat_lower']
             y_hi = fc['yhat_upper']
+            # Scale predictions to align with historical data at transition point
+            if hist_series is not None and len(hist_series) > 0 and len(yhat) > 0:
+                last_hist_val = float(hist_series.iloc[-1])
+                first_pred_val = float(yhat.iloc[0])
+                if first_pred_val > 0:
+                    pscale = last_hist_val / first_pred_val
+                    yhat = yhat * pscale
+                    y_lo = y_lo * pscale
+                    y_hi = y_hi * pscale
             fc_end_val = round(float(yhat.iloc[-1]), 1)
 
             # Outer CI (95%)
