@@ -4153,6 +4153,29 @@ def render_causality():
 
     st.markdown('<div style="margin:20px 0;"></div>', unsafe_allow_html=True)
 
+
+    # -- Dynamic Geostrategic Analysis --
+    if len(filtered) > 0:
+        _top_source = filtered.groupby('source')['max_f_stat'].sum().idxmax() if len(filtered) > 0 else None
+        _top_target = filtered.groupby('target')['max_f_stat'].sum().idxmax() if len(filtered) > 0 else None
+        _top_src_lbl = '{} ({})'.format(_node_label(_top_source)[0], COUNTRY_NAMES.get(_node_label(_top_source)[1], _node_label(_top_source)[1])) if _top_source else 'N/A'
+        _top_tgt_lbl = '{} ({})'.format(_node_label(_top_target)[0], COUNTRY_NAMES.get(_node_label(_top_target)[1], _node_label(_top_target)[1])) if _top_target else 'N/A'
+        _avg_lag = filtered['best_lag'].mean() if len(filtered) > 0 else 0
+        _strong_links = len(filtered[filtered['max_f_stat'] > 10]) if len(filtered) > 0 else 0
+        if sel_topic != 'All' and sel_country != 'All':
+            _geo_tech = f"<b>Technical:</b> With the current filters, <b>{len(filtered)}</b> statistically significant causal links were detected involving <b>{sel_topic_label}</b> events in <b>{sel_country_label}</b>. The strongest causal driver is <b>{_top_src_lbl}</b> (highest cumulative F-stat), while the most influenced target is <b>{_top_tgt_lbl}</b>. Average propagation delay is <b>{_avg_lag:.1f}</b> months, with <b>{_strong_links}</b> strong links (F>10)."
+            _geo_strat = f"<b>Geostrategic Implication:</b> {sel_topic_label} dynamics in {sel_country_label.split(' - ')[-1] if ' - ' in sel_country_label else sel_country_label} act as both a signal transmitter and receiver in the global risk network. A high number of outgoing causal links suggests this country is a regional destabilizer for this event type; a high number of incoming links suggests vulnerability to external shocks. Policy makers should monitor {_top_src_lbl} as the primary trigger point."
+        elif sel_topic != 'All':
+            _geo_tech = f"<b>Technical:</b> Across all countries, <b>{len(filtered)}</b> causal links were detected for <b>{sel_topic_label}</b> events. The dominant causal origin is <b>{_top_src_lbl}</b>, and the most affected node is <b>{_top_tgt_lbl}</b>. There are <b>{_strong_links}</b> strong causal relationships (F>10) with an average lag of <b>{_avg_lag:.1f}</b> months."
+            _geo_strat = f"<b>Geostrategic Implication:</b> {sel_topic_label} events show cross-border causal propagation patterns. Countries originating the strongest causal signals are potential flashpoints that can trigger cascade effects across multiple regions. The average {_avg_lag:.1f}-month delay window provides an actionable early-warning period for risk mitigation."
+        elif sel_country != 'All':
+            _geo_tech = f"<b>Technical:</b> For <b>{sel_country_label}</b>, <b>{len(filtered)}</b> causal links span across all event types. The strongest outgoing influence originates from <b>{_top_src_lbl}</b>, while <b>{_top_tgt_lbl}</b> is most affected. <b>{_strong_links}</b> links exceed F>10 threshold with average propagation lag of <b>{_avg_lag:.1f}</b> months."
+            _geo_strat = f"<b>Geostrategic Implication:</b> {sel_country_label.split(' - ')[-1] if ' - ' in sel_country_label else sel_country_label}'s risk profile shows interconnected event dynamics. High outgoing causal influence indicates the country can export instability to neighbors; high incoming influence signals dependency on external stability conditions. This intelligence is critical for bilateral risk assessment and alliance strategy."
+        else:
+            _geo_tech = f"<b>Technical:</b> The full network contains <b>{len(filtered)}</b> causal links across <b>{n_series}</b> event-country series. The most influential node is <b>{_top_src_lbl}</b> and the most impacted is <b>{_top_tgt_lbl}</b>. <b>{_strong_links}</b> strong links (F>10) suggest robust causal channels with an average propagation delay of <b>{_avg_lag:.1f}</b> months."
+            _geo_strat = "<b>Geostrategic Implication:</b> The global causal network reveals hidden interdependencies between geopolitical events across nations. High-centrality nodes represent systemic risk points where a single event escalation can cascade into multiple regions. Use the Topic and Country filters to isolate specific threat corridors and identify early-warning signals for strategic planning."
+        st.markdown(f"<div style='background:rgba(0,30,60,0.5);border-left:3px solid #00d4ff;border-radius:0 8px 8px 0;padding:16px 20px;margin:10px 0 20px;line-height:1.7;font-size:0.8rem;color:#b0c8e0;'><div style='font-size:0.7rem;font-weight:700;color:#00d4ff;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:10px;'>Analysis Summary</div><p style='margin:0 0 10px;'>{_geo_tech}</p><p style='margin:0;'>{_geo_strat}</p></div>", unsafe_allow_html=True)
+
     # -- Narrative --
     narr = causal_network_narrative(filtered, highlight_nodes=scenario_nodes)
     if narr:
@@ -4266,7 +4289,7 @@ def render_causality():
         )
         st.plotly_chart(fig_bar, use_container_width=True)
 
-    st.markdown("<div style='background:rgba(10,20,50,0.4);border:1px solid rgba(0,180,255,0.15);border-radius:8px;padding:14px 18px;margin:15px 0;font-size:0.75rem;color:#8ab4d8;line-height:1.7;'><b style=\'color:#00d4ff;\'>How to Interpret?</b><br>F-Statistic: The higher the value, the stronger the causal relationship. F &gt; 10 = strong, F &gt; 50 = very strong relationship.<br>Lag (Delay): Olaylar arasindaki gecikme suresi (ay). Lag=1 ise bir olaydaki degisim 1 months sonra digerini etkiler.<br>p-value: Values below 0.05 indicate statistically significant relationships.</div>", unsafe_allow_html=True)
+    st.markdown("<div style='background:rgba(10,20,50,0.4);border:1px solid rgba(0,180,255,0.15);border-radius:8px;padding:14px 18px;margin:15px 0;font-size:0.75rem;color:#8ab4d8;line-height:1.7;'><b style=\'color:#00d4ff;\'>How to Interpret?</b><br>F-Statistic: The higher the value, the stronger the causal relationship. F &gt; 10 = strong, F &gt; 50 = very strong relationship.<br>Lag (Delay): The time delay between events (months). Lag=1 means a change in one event affects another 1 month later.<br>p-value: Values below 0.05 indicate statistically significant relationships.</div>", unsafe_allow_html=True)
 
     # -- Edge table --
     with st.expander('Full Causal Edge List', expanded=False):
