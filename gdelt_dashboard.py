@@ -551,8 +551,21 @@ def load_data(filepath='./indices.csv'):
             threshold = row_medians * 0.05
             mask = df[date_cols].lt(threshold, axis=0) | (df[date_cols] == 0)
             df[date_cols] = df[date_cols].where(~mask, np.nan)
-            df[date_cols] = df[date_cols].interpolate(axis=1, method='linear', limit_direction='both')
+            # Small gaps (up to 7 days): linear interpolation
+            df[date_cols] = df[date_cols].interpolate(axis=1, method='linear', limit=7, limit_direction='both')
+            # Large gaps: forward/backward fill then add noise to avoid flat lines
+            still_nan = df[date_cols].isna()
             df[date_cols] = df[date_cols].ffill(axis=1).bfill(axis=1)
+            if still_nan.any().any():
+                row_std = df[date_cols].std(axis=1)
+                np.random.seed(42)
+                noise = pd.DataFrame(
+                    np.random.normal(0, 1, size=df[date_cols].shape),
+                    index=df[date_cols].index, columns=df[date_cols].columns
+                )
+                noise = noise.multiply(row_std * 0.05, axis=0)
+                df[date_cols] = df[date_cols].where(~still_nan, df[date_cols] + noise)
+                df[date_cols] = df[date_cols].clip(lower=0)
             df[date_cols] = df[date_cols].fillna(0)
         return df,False
     return _demo_data(),True
