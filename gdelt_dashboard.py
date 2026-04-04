@@ -533,10 +533,17 @@ def load_data(filepath='./indices.csv'):
     if os.path.exists(filepath):
         df = pd.read_csv(filepath,sep=',',header=0,index_col=[0,1])
         df.columns = pd.to_datetime(df.columns,format='%Y%m%d')
-        # Interpolate zero gaps in date columns (missing GDELT data)
+        # Interpolate gap periods: values below 5% of row median are treated as missing GDELT data
         date_cols = [c for c in df.columns if c not in ['topic', 'country']]
         if date_cols:
-            df[date_cols] = df[date_cols].replace(0, np.nan)
+            for idx in df.index:
+                row = df.loc[idx, date_cols]
+                nonzero = row[row > 0]
+                if len(nonzero) > 0:
+                    thr = nonzero.median() * 0.05
+                    df.loc[idx, date_cols] = row.where(row > thr, np.nan)
+                else:
+                    df.loc[idx, date_cols] = row.replace(0, np.nan)
             df[date_cols] = df[date_cols].interpolate(axis=1, method='linear', limit_direction='both')
             df[date_cols] = df[date_cols].ffill(axis=1).bfill(axis=1)
             df[date_cols] = df[date_cols].fillna(0)
@@ -559,11 +566,16 @@ def apply_norm(df_topic,method):
     out = df_topic.copy().astype(float)
     for c in out.index:
         row = out.loc[c]
-        # Replace zeros with NaN for interpolation, then forward-fill
-        row_clean = row.replace(0, np.nan)
+        # Replace near-zero gap values with NaN and interpolate
+        nonzero = row[row > 0]
+        if len(nonzero) > 2:
+            thr = nonzero.median() * 0.05
+            row_clean = row.where(row > thr, np.nan)
+        else:
+            row_clean = row.replace(0, np.nan)
         if row_clean.notna().sum() >= 2:
             row_clean = row_clean.interpolate(method='linear', limit_direction='both')
-            row = row_clean.fillna(0)
+        row = row_clean.ffill().bfill().fillna(0)
         if method=='Score (0–100)':
             # Use 2nd-98th percentile for robust normalization
             vals = row[row > 0]
@@ -1744,9 +1756,19 @@ def render_indices():
     df_recent_raw = df_topic_raw[date_cols[-n_days:]]
     df_norm       = apply_norm(df_topic_raw, norm_method)
     # Fill remaining zero-gaps after normalization
-    df_norm = df_norm.T.replace(0, np.nan).interpolate(method="linear", limit_direction="both").ffill().bfill().fillna(0).T
+    for _idx in df_norm.index:
+        _r = df_norm.loc[_idx]
+        _nz = _r[_r > 0]
+        if len(_nz) > 2:
+            _t = _nz.median() * 0.05
+            df_norm.loc[_idx] = _r.where(_r > _t, np.nan).interpolate(method='linear', limit_direction='both').ffill().bfill().fillna(0)
     df_recent     = apply_norm(df_recent_raw, norm_method)
-    df_recent = df_recent.T.replace(0, np.nan).interpolate(method="linear", limit_direction="both").ffill().bfill().fillna(0).T
+    for _idx in df_recent.index:
+        _r = df_recent.loc[_idx]
+        _nz = _r[_r > 0]
+        if len(_nz) > 2:
+            _t = _nz.median() * 0.05
+            df_recent.loc[_idx] = _r.where(_r > _t, np.nan).interpolate(method='linear', limit_direction='both').ffill().bfill().fillna(0)
     norm_suffix   = {'Raw':'','Score (0–100)':' · Score 0–100','Z-Score':' · Z-Score'}[norm_method]
     sel_label     = TOPIC_LABELS.get(sel_topic, sel_topic.replace('_',' ').title())
 
@@ -1810,7 +1832,7 @@ def render_indices():
         if len(df_norm.columns)>7:
             last    = df_norm.iloc[:,-1]
             prev    = df_norm.iloc[:,-8]
-            changes = ((last-prev)/(prev.abs().clip(lower=1.0))*100).clip(-999,999).dropna()
+            changes = ((last-prev)/(prev.abs().clip(lower=1.0))*100).clip(-200,200).dropna()
             top_up  = changes.nlargest(5)
             top_dn  = changes.nsmallest(3)
             sig_c1, sig_c2 = st.columns(2)
