@@ -2464,24 +2464,24 @@ def render_predictions():
             ))
 
         if len(fc) > 0:
-        if hist_series is not None and len(hist_series) > 0:
-            raw_hist_max = float(df.xs(sel_pred_topic, level='topic')
-                .loc[sel_pred_country].max()) \
-                if (sel_pred_topic in df.index.get_level_values('topic') and
-                    sel_pred_country in df.index.get_level_values('country')) \
-                else 1.0
-            if raw_hist_max > 0:
-                yhat = fc['yhat'] / raw_hist_max * 100
-                y_lo = fc['yhat_lower'] / raw_hist_max * 100
-                y_hi = fc['yhat_upper'] / raw_hist_max * 100
+            if hist_series is not None and len(hist_series) > 0:
+                raw_hist_max = float(df.xs(sel_pred_topic, level='topic')
+                    .loc[sel_pred_country].max()) \
+                    if (sel_pred_topic in df.index.get_level_values('topic') and
+                        sel_pred_country in df.index.get_level_values('country')) \
+                    else 1.0
+                if raw_hist_max > 0:
+                    yhat = fc['yhat'] / raw_hist_max * 100
+                    y_lo = fc['yhat_lower'] / raw_hist_max * 100
+                    y_hi = fc['yhat_upper'] / raw_hist_max * 100
+                else:
+                    yhat = fc['yhat']
+                    y_lo = fc['yhat_lower']
+                    y_hi = fc['yhat_upper']
             else:
                 yhat = fc['yhat']
                 y_lo = fc['yhat_lower']
                 y_hi = fc['yhat_upper']
-        else:
-            yhat = fc['yhat']
-            y_lo = fc['yhat_lower']
-            y_hi = fc['yhat_upper']
             fc_end_val = round(float(yhat.iloc[-1]), 1)
 
             # Outer CI (95%)
