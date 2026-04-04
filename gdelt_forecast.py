@@ -57,31 +57,72 @@ def load_monthly(filepath):
     return monthly
 
 
-# ── TIER 1: statsmodels (always available) ─────────────────────
+# ââ TIER 1: statsmodels (always available) âââââââââââââââââââââ
 
 def forecast_series_sm(y_values, h=HORIZON):
     from statsmodels.tsa.holtwinters import ExponentialSmoothing
     y = np.array(y_values, dtype=float)
     y = np.clip(y, 0, None)
     n = len(y)
+
     if n < 3:
         last = y[-1] if n > 0 else 0
         return np.full(h, last), np.full(h, last*0.7), np.full(h, last*1.3)
-    try:
-        model = ExponentialSmoothing(
-            y, trend='add', damped_trend=True,
-            seasonal=None, initialization_method='estimated')
-        fit = model.fit(optimized=True, use_brute=True)
-        fc = np.clip(fit.forecast(h), 0, None)
-        resid = y - fit.fittedvalues
-        sigma = max(np.std(resid), np.mean(y) * 0.05, 0.01)
-        steps = np.arange(1, h + 1)
-        lo = np.clip(fc - 1.645 * sigma * np.sqrt(steps), 0, None)
-        hi = fc + 1.645 * sigma * np.sqrt(steps)
-        return fc, lo, hi
-    except Exception:
-        return forecast_series_numpy(y, h)
 
+    fc = None
+    resid = None
+
+    # Try seasonal ETS first if enough data (24+ months)
+    if n >= 24:
+        try:
+            model = ExponentialSmoothing(
+                y, trend='add', damped_trend=True,
+                seasonal='add', seasonal_periods=12,
+                initialization_method='estimated')
+            fit = model.fit(optimized=True, use_brute=True)
+            fc = np.clip(fit.forecast(h), 0, None)
+            resid = y - fit.fittedvalues
+        except Exception:
+            fc = None
+
+    # Fall back to non-seasonal ETS
+    if fc is None:
+        try:
+            model = ExponentialSmoothing(
+                y, trend='add', damped_trend=True,
+                seasonal=None,
+                initialization_method='estimated')
+            fit = model.fit(optimized=True, use_brute=True)
+            fc = np.clip(fit.forecast(h), 0, None)
+            resid = y - fit.fittedvalues
+        except Exception:
+            return forecast_series_numpy(y, h)
+
+    # Detect flat forecast: if range < 2% of mean, inject historical trend
+    fc_mean = np.mean(fc) if np.mean(fc) > 1e-9 else 1e-9
+    fc_range = (np.max(fc) - np.min(fc)) / abs(fc_mean) if abs(fc_mean) > 1e-9 else 0
+
+    if fc_range < 0.02:
+        lookback = min(n, 12)
+        recent = y[-lookback:]
+        x_hist = np.arange(lookback)
+        slope, intercept = np.polyfit(x_hist, recent, deg=1)
+
+        # Apply gently-damped historical trend on top of ETS level
+        base = fc[0]
+        phi = 0.95  # gentle damping - trend persists but slowly decays
+        cumulative = 0.0
+        for k in range(h):
+            cumulative += slope * (phi ** (k + 1))
+            fc[k] = max(base + cumulative, 0)
+
+    sigma = max(np.std(resid) if resid is not None else fc_mean * 0.1,
+                fc_mean * 0.05, 0.01)
+    steps = np.arange(1, h + 1)
+    lo = np.clip(fc - 1.645 * sigma * np.sqrt(steps), 0, None)
+    hi = fc + 1.645 * sigma * np.sqrt(steps)
+
+    return fc, lo, hi
 
 def forecast_series_numpy(y_values, h=HORIZON):
     y = np.array(y_values, dtype=float)
@@ -130,7 +171,7 @@ def forecast_statsmodels(monthly, horizon=HORIZON):
     return pd.DataFrame(rows)
 
 
-# ── TIER 2: N-HiTS (optional deep learning) ───────────────────
+# ââ TIER 2: N-HiTS (optional deep learning) âââââââââââââââââââ
 
 def forecast_nhits(monthly, horizon=HORIZON):
     try:
@@ -186,7 +227,7 @@ def forecast_nhits(monthly, horizon=HORIZON):
         return None
 
 
-# ── BLEND ──────────────────────────────────────────────────────
+# ââ BLEND ââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 
 def blend(sm_fc, nf_fc, w_sm=BLEND_SM, w_nf=BLEND_NF):
     merged = sm_fc.merge(nf_fc, on=['unique_id', 'ds'], how='left')
@@ -209,7 +250,7 @@ def blend(sm_fc, nf_fc, w_sm=BLEND_SM, w_nf=BLEND_NF):
     return merged[['unique_id', 'ds', 'yhat', 'yhat_lower', 'yhat_upper']]
 
 
-# ── MAIN ───────────────────────────────────────────────────────
+# ââ MAIN âââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 
 def run():
     t0 = datetime.datetime.utcnow()
