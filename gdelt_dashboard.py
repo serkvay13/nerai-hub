@@ -81,22 +81,6 @@ if st.session_state.access_tier is None:
       box-shadow: 0 0 20px rgba(0,212,255,0.4) !important;
     }
     
-/* NERAI diagonal watermark */
-.stApp::before {
-    content: "NERAI  NERAI  NERAI  NERAI  NERAI  NERAI  NERAI";
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%) rotate(-35deg);
-    font-size: 120px;
-    font-weight: 900;
-    color: rgba(0, 180, 255, 0.04);
-    letter-spacing: 40px;
-    pointer-events: none;
-    z-index: 1;
-    white-space: nowrap;
-    font-family: 'Orbitron', monospace;
-}
 
 /* Fix sidebar action buttons - better contrast */
 [data-testid="stSidebar"] .stButton > button[kind="primary"],
@@ -127,6 +111,44 @@ if st.session_state.access_tier is None:
     color: #e0e8f0 !important;
     border: 1px solid rgba(0,212,255,0.2) !important;
 }
+
+/* ── Fix sidebar slider contrast ── */
+[data-testid="stSidebar"] .stSlider [data-baseweb="slider"] [role="slider"] {
+    background: #00526e !important;
+    border: 2px solid #00d4ff !important;
+}
+[data-testid="stSidebar"] .stSlider [data-testid="stTickBar"] > div {
+    background: rgba(0,212,255,0.15) !important;
+}
+[data-testid="stSidebar"] [data-baseweb="slider"] > div > div:first-child {
+    background: rgba(0,100,140,0.5) !important;
+}
+[data-testid="stSidebar"] [data-baseweb="slider"] > div > div > div[role="slider"] ~ div {
+    background: rgba(0,60,90,0.6) !important;
+}
+[data-testid="stSidebar"] .stSlider [data-testid="stThumbValue"],
+[data-testid="stSidebar"] .stSlider div[data-testid="stTickBarMax"],
+[data-testid="stSidebar"] .stSlider div[data-testid="stTickBarMin"] {
+    color: #e0e8f0 !important;
+    font-weight: 600 !important;
+}
+[data-testid="stSidebar"] .stSlider label p,
+[data-testid="stSidebar"] .stSlider label span {
+    color: #8aa0bc !important;
+}
+/* Override Streamlit default bright slider track */
+[data-testid="stSidebar"] [data-baseweb="slider"] div[style*="background"] {
+    background: rgba(0,100,140,0.4) !important;
+}
+[data-testid="stSidebar"] .stNumberInput label p {
+    color: #8aa0bc !important;
+}
+[data-testid="stSidebar"] .stNumberInput input {
+    background: #0d1220 !important;
+    color: #e0e8f0 !important;
+    border-color: rgba(0,212,255,0.25) !important;
+}
+
 </style>
     """, unsafe_allow_html=True)
 
@@ -1703,6 +1725,13 @@ with st.sidebar:
     if st.session_state.page not in ('profile',):
         profile_country = 'US'
         bi_a = 'US'; bi_b = 'RS'; bi_days = 60
+    # ── NERAI watermark overlay ──
+    st.markdown("""<div style="position:fixed;top:0;left:0;width:100vw;height:100vh;pointer-events:none;z-index:1;overflow:hidden;opacity:0.04;">
+    <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-35deg);font-size:110px;font-weight:900;letter-spacing:30px;white-space:nowrap;color:#00d4ff;font-family:monospace;text-shadow:0 0 40px rgba(0,212,255,0.3);">NERAI &nbsp; NERAI &nbsp; NERAI &nbsp; NERAI</div>
+    <div style="position:absolute;top:25%;left:50%;transform:translate(-50%,-50%) rotate(-35deg);font-size:110px;font-weight:900;letter-spacing:30px;white-space:nowrap;color:#00d4ff;font-family:monospace;text-shadow:0 0 40px rgba(0,212,255,0.3);">NERAI &nbsp; NERAI &nbsp; NERAI &nbsp; NERAI</div>
+    <div style="position:absolute;top:75%;left:50%;transform:translate(-50%,-50%) rotate(-35deg);font-size:110px;font-weight:900;letter-spacing:30px;white-space:nowrap;color:#00d4ff;font-family:monospace;text-shadow:0 0 40px rgba(0,212,255,0.3);">NERAI &nbsp; NERAI &nbsp; NERAI &nbsp; NERAI</div>
+    </div>""", unsafe_allow_html=True)
+
     if st.session_state.page not in ('predictions',):
         sel_pred_topic   = all_topics[0] if all_topics else ''
         sel_pred_country = 'US'
