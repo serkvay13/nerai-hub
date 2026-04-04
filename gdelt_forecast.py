@@ -57,63 +57,64 @@ def load_monthly(filepath):
     return monthly
 
 
-# ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ TIER 1: statsmodels (always available) ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ
+# ÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂ TIER 1: statsmodels (always available) ÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂ
 
 def forecast_series_sm(y_values, h=HORIZON):
     from statsmodels.tsa.holtwinters import ExponentialSmoothing
     y = np.array(y_values, dtype=float)
     y = np.clip(y, 0, None)
     n = len(y)
-
     if n < 3:
         last = y[-1] if n > 0 else 0
         return np.full(h, last), np.full(h, last*0.7), np.full(h, last*1.3)
 
-    # --- Get ETS base level ---
-    ets_fc = None
-    resid = None
+    # --- ETS base level (non-seasonal, just trend) ---
     try:
         model = ExponentialSmoothing(
             y, trend='add', damped_trend=True,
-            seasonal=None,
-            initialization_method='estimated')
+            seasonal=None, initialization_method='estimated')
         fit = model.fit(optimized=True, use_brute=True)
-        ets_fc = np.clip(fit.forecast(h), 0, None)
+        base_level = float(np.clip(fit.forecast(1), 0, None)[0])
         resid = y - fit.fittedvalues
     except Exception:
-        pass
+        base_level = float(y[-1])
+        resid = None
 
-    base_level = float(ets_fc[0]) if ets_fc is not None else float(y[-1])
-
-    # --- Always compute trend from recent history ---
+    # --- Trend from recent history ---
     lookback = min(n, 12)
     recent = y[-lookback:]
     x_hist = np.arange(lookback)
     slope, _ = np.polyfit(x_hist, recent, deg=1)
 
-    # --- Always extract seasonal pattern from full history ---
+    # --- MULTIPLICATIVE seasonal pattern ---
     x_full = np.arange(n)
     trend_coef = np.polyfit(x_full, y, deg=1)
-    detrended = y - np.polyval(trend_coef, x_full)
+    trend_line = np.polyval(trend_coef, x_full)
+    trend_line = np.maximum(trend_line, 1e-12)
 
     cycle_len = min(n, 12)
-    seasonal = np.zeros(cycle_len)
+    seasonal_ratio = np.zeros(cycle_len)
     counts = np.zeros(cycle_len)
     for i in range(n):
-        pos = i % cycle_len
-        seasonal[pos] += detrended[i]
-        counts[pos] += 1
-    seasonal = seasonal / np.maximum(counts, 1)
-    seasonal = seasonal - np.mean(seasonal)
+        if trend_line[i] > 1e-12 and y[i] >= 0:
+            pos = i % cycle_len
+            seasonal_ratio[pos] += y[i] / trend_line[i]
+            counts[pos] += 1
+    seasonal_ratio = seasonal_ratio / np.maximum(counts, 1)
+    sr_mean = np.mean(seasonal_ratio)
+    if sr_mean > 0:
+        seasonal_ratio = seasonal_ratio / sr_mean
+    else:
+        seasonal_ratio = np.ones(cycle_len)
 
-    # --- Build forecast: base + damped trend + seasonal ---
+    # --- Build forecast: (base + damped_trend) * seasonal_ratio ---
     fc = np.zeros(h)
     phi = 0.95
     cumulative = 0.0
     for k in range(h):
         cumulative += slope * (phi ** (k + 1))
-        season_k = seasonal[(n + k) % cycle_len]
-        fc[k] = max(base_level + cumulative + season_k, 0)
+        ratio_k = seasonal_ratio[(n + k) % cycle_len]
+        fc[k] = max((base_level + cumulative) * ratio_k, 0)
 
     # --- Confidence interval ---
     sigma = max(np.std(resid) if resid is not None else np.std(y) * 0.15,
@@ -121,41 +122,43 @@ def forecast_series_sm(y_values, h=HORIZON):
     steps = np.arange(1, h + 1)
     lo = np.clip(fc - 1.645 * sigma * np.sqrt(steps), 0, None)
     hi = fc + 1.645 * sigma * np.sqrt(steps)
-
     return fc, lo, hi
-
 def forecast_series_numpy(y_values, h=HORIZON):
     y = np.array(y_values, dtype=float)
     y = np.clip(y, 0, None)
     n = len(y)
-
     if n < 2:
         last = y[-1] if n > 0 else 0
         return np.full(h, last), np.full(h, last*0.7), np.full(h, last*1.3)
 
-    # Trend
     x = np.arange(n)
     slope, intercept = np.polyfit(x, y, deg=1)
+    trend_line = intercept + slope * x
+    trend_line = np.maximum(trend_line, 1e-12)
 
-    # Seasonal pattern from detrended data
-    detrended = y - (intercept + slope * x)
     cycle_len = min(n, 12)
-    seasonal = np.zeros(cycle_len)
+    seasonal_ratio = np.zeros(cycle_len)
     counts = np.zeros(cycle_len)
     for i in range(n):
-        pos = i % cycle_len
-        seasonal[pos] += detrended[i]
-        counts[pos] += 1
-    seasonal = seasonal / np.maximum(counts, 1)
-    seasonal = seasonal - np.mean(seasonal)
+        if trend_line[i] > 1e-12:
+            pos = i % cycle_len
+            seasonal_ratio[pos] += y[i] / trend_line[i]
+            counts[pos] += 1
+    seasonal_ratio = seasonal_ratio / np.maximum(counts, 1)
+    sr_mean = np.mean(seasonal_ratio)
+    if sr_mean > 0:
+        seasonal_ratio = seasonal_ratio / sr_mean
+    else:
+        seasonal_ratio = np.ones(cycle_len)
 
-    # Forecast: damped trend + seasonal
     phi = 0.90
     fc = []
+    base = intercept + slope * (n - 1)
+    cumulative = 0.0
     for k in range(1, h + 1):
-        damped = slope * phi * (1 - phi**k) / (1 - phi)
-        season_k = seasonal[(n + k - 1) % cycle_len]
-        fc.append(max(intercept + slope * (n - 1) + damped + season_k, 0))
+        cumulative += slope * (phi ** k)
+        ratio_k = seasonal_ratio[(n + k - 1) % cycle_len]
+        fc.append(max((base + cumulative) * ratio_k, 0))
     fc = np.array(fc)
 
     resid = y - (intercept + slope * x)
@@ -163,9 +166,7 @@ def forecast_series_numpy(y_values, h=HORIZON):
     steps = np.arange(1, h + 1)
     lo = np.clip(fc - 1.645 * sigma * np.sqrt(steps), 0, None)
     hi = fc + 1.645 * sigma * np.sqrt(steps)
-
     return fc, lo, hi
-
 def forecast_statsmodels(monthly, horizon=HORIZON):
     print(f"[SM] Forecasting {monthly['unique_id'].nunique():,} series with ExponentialSmoothing ...")
     rows = []
@@ -190,7 +191,7 @@ def forecast_statsmodels(monthly, horizon=HORIZON):
     return pd.DataFrame(rows)
 
 
-# ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ TIER 2: N-HiTS (optional deep learning) ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ
+# ÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂ TIER 2: N-HiTS (optional deep learning) ÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂ
 
 def forecast_nhits(monthly, horizon=HORIZON):
     try:
@@ -246,7 +247,7 @@ def forecast_nhits(monthly, horizon=HORIZON):
         return None
 
 
-# ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ BLEND ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ
+# ÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂ BLEND ÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂ
 
 def blend(sm_fc, nf_fc, w_sm=BLEND_SM, w_nf=BLEND_NF):
     merged = sm_fc.merge(nf_fc, on=['unique_id', 'ds'], how='left')
@@ -269,7 +270,7 @@ def blend(sm_fc, nf_fc, w_sm=BLEND_SM, w_nf=BLEND_NF):
     return merged[['unique_id', 'ds', 'yhat', 'yhat_lower', 'yhat_upper']]
 
 
-# ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ MAIN ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ
+# ÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂ MAIN ÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂ
 
 def run():
     t0 = datetime.datetime.utcnow()
