@@ -371,6 +371,20 @@ p, span, label, .stMarkdown p { color: var(--text-secondary) !important; }
   border-radius: 10px !important;
 }
 
+/* Fix slider value text contrast - dark text on cyan track */
+.stSlider [data-testid="stThumbValue"] {
+    color: #0a1628 !important;
+    font-weight: 700 !important;
+}
+.stSlider [data-testid="stTickBarMin"],
+.stSlider [data-testid="stTickBarMax"] {
+    color: #8ab4d8 !important;
+}
+[data-baseweb="slider"] [role="slider"] [data-testid="stThumbValue"] {
+    color: #0a1628 !important;
+    font-weight: 700 !important;
+    text-shadow: none !important;
+}
 /* ── Slider ── */
 [data-testid="stSlider"] [data-baseweb="slider"] div {
   background: var(--accent) !important;
