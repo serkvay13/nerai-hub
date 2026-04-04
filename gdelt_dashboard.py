@@ -9,6 +9,197 @@ import plotly.graph_objects as go
 import datetime, os, json
 import re
 
+
+# ---- 3D Globe HTML for Home Page ----
+GLOBE_HTML = """
+<div id="globe-container" style="width:100%;height:480px;position:relative;overflow:hidden;border-radius:16px;background:radial-gradient(ellipse at center,#0d1a2d 0%,#060a12 70%);">
+<canvas id="globeCanvas" style="width:100%;height:100%;display:block;"></canvas>
+<div style="position:absolute;top:20px;left:24px;z-index:10;">
+  <div style="font-family:'Inter',system-ui,sans-serif;font-size:11px;color:rgba(0,212,255,0.6);text-transform:uppercase;letter-spacing:2px;">NERAI GLOBAL MONITOR</div>
+  <div style="font-family:'Inter',system-ui,sans-serif;font-size:20px;color:#00d4ff;font-weight:700;margin-top:4px;">Real-Time Geopolitical Risk</div>
+</div>
+<div id="globe-stats" style="position:absolute;bottom:16px;right:20px;z-index:10;font-family:monospace;font-size:11px;color:rgba(0,212,255,0.5);text-align:right;"></div>
+<script>
+(function(){
+  const canvas = document.getElementById('globeCanvas');
+  const ctx = canvas.getContext('2d');
+  let W, H, cx, cy, R, angle=0;
+
+  function resize(){
+    const rect = canvas.parentElement.getBoundingClientRect();
+    W = canvas.width = rect.width * (window.devicePixelRatio||1);
+    H = canvas.height = rect.height * (window.devicePixelRatio||1);
+    canvas.style.width = rect.width+'px';
+    canvas.style.height = rect.height+'px';
+    cx = W/2; cy = H/2; R = Math.min(W,H)*0.32;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  // Hotspot data - major geopolitical risk zones
+  const hotspots = [
+    {lat:48.8,lon:2.3,label:'EU',risk:0.7,color:'#00d4ff'},
+    {lat:38.9,lon:-77,label:'US',risk:0.5,color:'#00ffc8'},
+    {lat:55.7,lon:37.6,label:'RU',risk:0.9,color:'#ff4466'},
+    {lat:39.9,lon:116.4,label:'CN',risk:0.8,color:'#ff8844'},
+    {lat:35.7,lon:51.4,label:'IR',risk:0.85,color:'#ff4466'},
+    {lat:31.5,lon:34.8,label:'IL',risk:0.9,color:'#ff4466'},
+    {lat:33.3,lon:44.4,label:'IQ',risk:0.75,color:'#ff6644'},
+    {lat:9,lon:7.5,label:'NG',risk:0.6,color:'#ffaa00'},
+    {lat:28.6,lon:77.2,label:'IN',risk:0.5,color:'#00d4ff'},
+    {lat:35.6,lon:139.7,label:'JP',risk:0.3,color:'#00ffc8'},
+    {lat:-23.5,lon:-46.6,label:'BR',risk:0.45,color:'#00ffc8'},
+    {lat:37.5,lon:127,label:'KR',risk:0.55,color:'#00d4ff'},
+    {lat:39,lon:125.7,label:'KP',risk:0.95,color:'#ff2244'},
+    {lat:24.7,lon:46.7,label:'SA',risk:0.6,color:'#ffaa00'},
+    {lat:50.4,lon:30.5,label:'UA',risk:0.95,color:'#ff2244'},
+    {lat:-33.9,lon:18.4,label:'ZA',risk:0.4,color:'#00d4ff'},
+    {lat:41,lon:29,label:'TR',risk:0.6,color:'#ffaa00'},
+    {lat:13.7,lon:100.5,label:'TH',risk:0.35,color:'#00ffc8'},
+  ];
+
+  // Connection arcs between hotspots
+  const arcs = [
+    [0,2],[0,3],[1,2],[1,3],[2,14],[4,5],[3,11],[1,9],[6,4],[7,1]
+  ];
+
+  function project(lat, lon, r){
+    const phi = (90-lat)*Math.PI/180;
+    const theta = (lon+angle)*Math.PI/180;
+    const x = r * Math.sin(phi) * Math.cos(theta);
+    const y = r * Math.cos(phi);
+    const z = r * Math.sin(phi) * Math.sin(theta);
+    return {x: cx+x, y: cy-y, z: z, visible: z > -r*0.1};
+  }
+
+  function drawGlobe(t){
+    ctx.clearRect(0,0,W,H);
+
+    // Atmosphere glow
+    const atm = ctx.createRadialGradient(cx,cy,R*0.9,cx,cy,R*1.4);
+    atm.addColorStop(0,'rgba(0,212,255,0.08)');
+    atm.addColorStop(0.5,'rgba(0,212,255,0.03)');
+    atm.addColorStop(1,'transparent');
+    ctx.fillStyle=atm;
+    ctx.fillRect(0,0,W,H);
+
+    // Globe body
+    ctx.beginPath();
+    ctx.arc(cx,cy,R,0,Math.PI*2);
+    const grd = ctx.createRadialGradient(cx-R*0.3,cy-R*0.3,R*0.1,cx,cy,R);
+    grd.addColorStop(0,'#0f1e3a');
+    grd.addColorStop(0.7,'#0a1225');
+    grd.addColorStop(1,'#060a12');
+    ctx.fillStyle=grd;
+    ctx.fill();
+
+    // Grid lines (latitude)
+    ctx.strokeStyle='rgba(0,212,255,0.06)';
+    ctx.lineWidth=0.8;
+    for(let lat=-60;lat<=60;lat+=30){
+      ctx.beginPath();
+      for(let lon=0;lon<=360;lon+=3){
+        const p=project(lat,lon,R);
+        if(lon===0)ctx.moveTo(p.x,p.y);
+        else ctx.lineTo(p.x,p.y);
+      }
+      ctx.stroke();
+    }
+    // Longitude
+    for(let lon=0;lon<360;lon+=30){
+      ctx.beginPath();
+      for(let lat=-90;lat<=90;lat+=3){
+        const p=project(lat,lon,R);
+        if(lat===-90)ctx.moveTo(p.x,p.y);
+        else ctx.lineTo(p.x,p.y);
+      }
+      ctx.stroke();
+    }
+
+    // Draw arcs
+    for(const [a,b] of arcs){
+      const p1=project(hotspots[a].lat,hotspots[a].lon,R);
+      const p2=project(hotspots[b].lat,hotspots[b].lon,R);
+      if(!p1.visible && !p2.visible) continue;
+      const alpha = Math.max(0, Math.min(1, (p1.z+p2.z)/(2*R)+0.5)) * 0.3;
+      ctx.beginPath();
+      const mx=(p1.x+p2.x)/2, my=(p1.y+p2.y)/2 - 30 - Math.abs(p1.x-p2.x)*0.15;
+      ctx.moveTo(p1.x,p1.y);
+      ctx.quadraticCurveTo(mx,my,p2.x,p2.y);
+      ctx.strokeStyle='rgba(0,212,255,'+alpha+')';
+      ctx.lineWidth=1;
+      ctx.stroke();
+    }
+
+    // Draw hotspots
+    for(const h of hotspots){
+      const p=project(h.lat,h.lon,R);
+      if(!p.visible) continue;
+      const alpha = (p.z/R+1)/2;
+      const pulse = 1 + 0.3*Math.sin(t*0.003 + h.lat);
+      const sz = (3 + h.risk*5) * pulse * alpha;
+
+      // Outer glow
+      const gl=ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,sz*3);
+      gl.addColorStop(0,h.color.replace(')',','+alpha*0.4+')').replace('rgb','rgba').replace('#',''));
+      // Simplified glow
+      ctx.beginPath();
+      ctx.arc(p.x,p.y,sz*2.5,0,Math.PI*2);
+      ctx.fillStyle='rgba('+(h.risk>0.7?'255,60,80':'0,212,255')+','+(alpha*0.15)+')';
+      ctx.fill();
+
+      // Core dot
+      ctx.beginPath();
+      ctx.arc(p.x,p.y,sz,0,Math.PI*2);
+      ctx.fillStyle=h.color;
+      ctx.globalAlpha=alpha*0.9;
+      ctx.fill();
+      ctx.globalAlpha=1;
+
+      // Label
+      if(alpha > 0.5 && sz > 3){
+        ctx.font=(9*alpha)+'px monospace';
+        ctx.fillStyle='rgba(224,232,240,'+alpha*0.7+')';
+        ctx.fillText(h.label,p.x+sz+4,p.y+3);
+      }
+    }
+
+    // Rim highlight
+    ctx.beginPath();
+    ctx.arc(cx,cy,R,0,Math.PI*2);
+    ctx.strokeStyle='rgba(0,212,255,0.12)';
+    ctx.lineWidth=1.5;
+    ctx.stroke();
+
+    // Scanline effect
+    const scanY = cy + R * Math.sin(t*0.001);
+    ctx.beginPath();
+    ctx.moveTo(cx-R,scanY);
+    ctx.lineTo(cx+R,scanY);
+    ctx.strokeStyle='rgba(0,212,255,0.08)';
+    ctx.lineWidth=1;
+    ctx.stroke();
+
+    angle += 0.15;
+  }
+
+  function animate(t){
+    drawGlobe(t);
+    requestAnimationFrame(animate);
+  }
+  requestAnimationFrame(animate);
+
+  // Stats display
+  const statsEl = document.getElementById('globe-stats');
+  setInterval(()=>{
+    const d=new Date();
+    statsEl.innerHTML = 'UTC '+d.toISOString().substr(11,8)+'<br>NODES: '+hotspots.length+'<br>LINKS: '+arcs.length;
+  },1000);
+})();
+<\/script>
+</div>
+"""
+
 def _safe_pct(val, maxabs=500):
     """Cap percentage to +/-maxabs to prevent display of astronomical values."""
     if val is None or (isinstance(val, float) and (val != val)): return 0.0
@@ -394,6 +585,141 @@ p, span, label, .stMarkdown p { color: var(--text-secondary) !important; }
   background: var(--bg-card) !important;
   border: 1px solid var(--border-glow) !important;
 }
+
+/* ═══ NAVIGATION BUTTON ENHANCEMENTS ═══ */
+@keyframes navGlow {
+  0%, 100% { box-shadow: 0 0 5px rgba(0,212,255,0.1), inset 0 0 5px rgba(0,212,255,0.05); }
+  50% { box-shadow: 0 0 15px rgba(0,212,255,0.3), inset 0 0 10px rgba(0,212,255,0.1); }
+}
+@keyframes navPulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.02); }
+  100% { transform: scale(1); }
+}
+@keyframes ripple {
+  0% { transform: scale(0); opacity: 0.6; }
+  100% { transform: scale(4); opacity: 0; }
+}
+@keyframes borderSweep {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Sidebar nav buttons */
+section[data-testid="stSidebar"] button[kind="secondary"],
+section[data-testid="stSidebar"] .stButton > button {
+  position: relative !important;
+  overflow: hidden !important;
+  border: 1px solid rgba(0,212,255,0.15) !important;
+  border-radius: 10px !important;
+  background: linear-gradient(135deg, rgba(13,18,32,0.9), rgba(10,14,23,0.95)) !important;
+  color: #b0c4d8 !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.5px !important;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  text-transform: uppercase !important;
+  font-size: 12px !important;
+  padding: 12px 16px !important;
+  margin-bottom: 4px !important;
+}
+section[data-testid="stSidebar"] .stButton > button:hover {
+  border-color: rgba(0,212,255,0.5) !important;
+  background: linear-gradient(135deg, rgba(0,212,255,0.12), rgba(0,255,200,0.06)) !important;
+  color: #00d4ff !important;
+  animation: navPulse 0.6s ease-in-out !important;
+  box-shadow: 0 0 20px rgba(0,212,255,0.2), 0 0 40px rgba(0,212,255,0.05), inset 0 1px 0 rgba(0,212,255,0.15) !important;
+  transform: translateX(3px) !important;
+}
+section[data-testid="stSidebar"] .stButton > button:active {
+  transform: scale(0.97) translateX(3px) !important;
+  box-shadow: 0 0 30px rgba(0,212,255,0.4), inset 0 0 15px rgba(0,212,255,0.1) !important;
+}
+/* Active page indicator */
+section[data-testid="stSidebar"] .stButton > button[style*="border-color"] {
+  border-color: #00d4ff !important;
+  background: linear-gradient(135deg, rgba(0,212,255,0.15), rgba(0,255,200,0.05)) !important;
+  color: #00d4ff !important;
+  animation: navGlow 3s ease-in-out infinite !important;
+  box-shadow: 0 0 15px rgba(0,212,255,0.2) !important;
+}
+/* Ripple effect on click */
+section[data-testid="stSidebar"] .stButton > button::after {
+  content: '';
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: rgba(0,212,255,0.4);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  opacity: 0;
+}
+section[data-testid="stSidebar"] .stButton > button:active::after {
+  animation: ripple 0.6s ease-out !important;
+}
+
+/* ═══ METRIC CARD GLOW ═══ */
+div[data-testid="stMetric"] {
+  border: 1px solid rgba(0,212,255,0.1) !important;
+  border-radius: 12px !important;
+  padding: 16px !important;
+  background: linear-gradient(135deg, rgba(13,18,32,0.8), rgba(10,14,23,0.9)) !important;
+  transition: all 0.3s ease !important;
+}
+div[data-testid="stMetric"]:hover {
+  border-color: rgba(0,212,255,0.3) !important;
+  box-shadow: 0 0 20px rgba(0,212,255,0.1) !important;
+  transform: translateY(-2px) !important;
+}
+
+/* ═══ PARTICLE BACKGROUND ANIMATION ═══ */
+@keyframes float {
+  0%, 100% { transform: translateY(0) rotate(0deg); opacity: 0.3; }
+  25% { transform: translateY(-20px) rotate(90deg); opacity: 0.6; }
+  50% { transform: translateY(-40px) rotate(180deg); opacity: 0.3; }
+  75% { transform: translateY(-20px) rotate(270deg); opacity: 0.6; }
+}
+
+/* ═══ TAB STYLING ═══ */
+.stTabs [data-baseweb="tab"] {
+  border: 1px solid rgba(0,212,255,0.1) !important;
+  border-radius: 8px !important;
+  margin-right: 6px !important;
+  transition: all 0.3s ease !important;
+  background: transparent !important;
+}
+.stTabs [data-baseweb="tab"]:hover {
+  border-color: rgba(0,212,255,0.4) !important;
+  box-shadow: 0 0 10px rgba(0,212,255,0.15) !important;
+}
+.stTabs [aria-selected="true"] {
+  border-color: #00d4ff !important;
+  background: linear-gradient(135deg, rgba(0,212,255,0.12), transparent) !important;
+  box-shadow: 0 0 15px rgba(0,212,255,0.2) !important;
+}
+
+/* ═══ EXPANDER GLOW ═══ */
+details[data-testid="stExpander"] {
+  border: 1px solid rgba(0,212,255,0.1) !important;
+  border-radius: 10px !important;
+  transition: all 0.3s ease !important;
+}
+details[data-testid="stExpander"]:hover {
+  border-color: rgba(0,212,255,0.25) !important;
+}
+details[data-testid="stExpander"][open] {
+  border-color: rgba(0,212,255,0.3) !important;
+  box-shadow: 0 0 15px rgba(0,212,255,0.08) !important;
+}
+
+/* ═══ SCROLLBAR STYLING ═══ */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #0a0e17; }
+::-webkit-scrollbar-thumb { background: rgba(0,212,255,0.2); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(0,212,255,0.4); }
+
 </style>
 """, unsafe_allow_html=True)
 
@@ -1566,6 +1892,11 @@ def render_home():
     </div>
     """, unsafe_allow_html=True)
 
+    # ── 3D Interactive Globe ──
+    import streamlit.components.v1 as stc
+    stc.html(GLOBE_HTML, height=500, scrolling=False)
+
+
     # ── Module Tiles ─────────────────────────────────────────
     st.markdown("""
     <div style="font-size:0.62rem;letter-spacing:0.35em;text-transform:uppercase;
@@ -2182,6 +2513,22 @@ def render_profile():
 # PAGE: NEWS
 # ═══════════════════════════════════════════════════════════════
 def render_news():
+
+    # ── Dynamic News Background ──
+    _news_bg_colors = {
+        "conflict": ("rgba(255,40,60,0.06)", "rgba(255,100,50,0.03)"),
+        "diplomacy": ("rgba(0,212,255,0.06)", "rgba(0,255,200,0.03)"),
+        "economy": ("rgba(0,255,200,0.06)", "rgba(0,180,255,0.03)"),
+        "security": ("rgba(255,170,0,0.06)", "rgba(255,80,50,0.03)"),
+        "default": ("rgba(0,212,255,0.04)", "rgba(13,18,32,0.02)"),
+    }
+    _nbg = _news_bg_colors.get("default")
+    st.markdown(f"""<div style="
+        position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;
+        background:radial-gradient(ellipse at 30% 20%, {_nbg[0]}, transparent 60%),
+                  radial-gradient(ellipse at 70% 80%, {_nbg[1]}, transparent 60%);
+    "></div>""", unsafe_allow_html=True)
+
     st.markdown(f"""
     <div style='padding:6px 0 10px;'>
       <div class='hero-title'>Global News Intelligence</div>
