@@ -80,7 +80,24 @@ if st.session_state.access_tier is None:
     [data-testid="stForm"] button:hover {
       box-shadow: 0 0 20px rgba(0,212,255,0.4) !important;
     }
-    </style>
+    
+/* NERAI diagonal watermark */
+.stApp::before {
+    content: "NERAI";
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(-35deg);
+    font-size: 180px;
+    font-weight: 900;
+    color: rgba(0, 180, 255, 0.03);
+    letter-spacing: 40px;
+    pointer-events: none;
+    z-index: 0;
+    white-space: nowrap;
+    font-family: 'Orbitron', monospace;
+}
+</style>
     """, unsafe_allow_html=True)
 
     col_l, col_c, col_r = st.columns([1, 2, 1])
@@ -1440,15 +1457,15 @@ with st.sidebar:
     st.markdown('<div class="sec-hdr">Navigation</div>', unsafe_allow_html=True)
 
     nav_pages = [
-        ('home',        'ð   HOME'),
-        ('indices',     'ð  INDICES'),
-        ('profile',     'ð¯  COUNTRY PROFILE'),
-        ('news',        'ð°  NEWS'),
-        ('predictions', 'ð®  PREDICTIONS'),
-        ('causality',   'ð¸  CAUSAL NETWORK'),
-        ('scenarios',   'â¡  WHAT-IF SCENARIOS'),
-        ('insights',    'ð  INSIGHTS'),
-        ('briefing',    'ð  BRIEFING ROOM'),
+        ('home', '🏠 HOME'),
+        ('indices', '📊 INDICES'),
+        ('profile', '🌏 COUNTRY PROFILE'),
+        ('news', '📰 NEWS'),
+        ('predictions', '🔮 PREDICTIONS'),
+        ('causality', '🕸️ CAUSAL NETWORK'),
+        ('scenarios', '⚡ WHAT-IF SCENARIOS'),
+        ('insights', '🔍 INSIGHTS'),
+        ('briefing', '📋 BRIEFING ROOM'),
     ]
     for page_key, page_label in nav_pages:
         active_style = 'border-color:rgba(0,180,255,0.5) !important;color:#007a99 !important;background:rgba(0,50,110,0.4) !important;' if st.session_state.page == page_key else ''
@@ -1560,7 +1577,7 @@ with st.sidebar:
              border:1px solid rgba(0,150,255,0.1);border-radius:6px;
              font-size:0.62rem;color:rgba(0,180,255,0.4);font-family:monospace;line-height:2;'>
           <span class='live-dot'></span>LIVE DATA<br>
-          ð {len(date_cols)} days Â· ð {len(all_topics)} topics Â· {len(all_countries)} countries<br>
+          ð {len(date_cols)} days · ð {len(all_topics)} topics · {len(all_countries)} countries<br>
           {'â  DEMO MODE' if is_demo else 'â GDELT Project'}
         </div>""", unsafe_allow_html=True)
 
@@ -1990,7 +2007,7 @@ def render_indices():
     _th2 = _rm2 * 0.05
     _mk2 = df_recent.lt(_th2, axis=0) | (df_recent == 0)
     df_recent = df_recent.where(~_mk2, np.nan).interpolate(axis=1, method='linear', limit_direction='both').ffill(axis=1).bfill(axis=1).fillna(0)
-    norm_suffix   = {'Raw':'','Score (0â100)':' Â· Score 0â100','Z-Score':' Â· Z-Score'}[norm_method]
+    norm_suffix   = {'Raw':'','Score (0â100)':' · Score 0â100','Z-Score':' · Z-Score'}[norm_method]
     sel_label     = TOPIC_LABELS.get(sel_topic, sel_topic.replace('_',' ').title())
 
     # Header
@@ -2000,7 +2017,7 @@ def render_indices():
         <div style='padding:6px 0 2px;'>
           <div class='hero-title'>NERAI Intelligence Hub</div>
           <div class='hero-sub'><span class='live-dot'></span>
-            Geopolitical Risk Intelligence &nbsp;Â·&nbsp; Data: GDELT Project
+            Geopolitical Risk Intelligence &nbsp;·&nbsp; Data: GDELT Project
           </div>
         </div>""", unsafe_allow_html=True)
     with c2h:
@@ -2089,7 +2106,7 @@ def render_indices():
         if sel_countries:
             fig_ts, peak_info = chart_timeseries_with_peaks(
                 df_recent, sel_countries,
-                f'{sel_label}{norm_suffix} Â· Last {n_days} Days',
+                f'{sel_label}{norm_suffix} · Last {n_days} Days',
                 norm_method, show_peaks=True
             )
             st.plotly_chart(fig_ts, use_container_width=True, config={'displayModeBar':False})
@@ -2124,7 +2141,7 @@ def render_indices():
                                           {title[:120]}{'...' if len(title)>120 else ''}
                                         </a>
                                       </div>
-                                      <div class="peak-news-src">{source} Â· {date_disp}</div>
+                                      <div class="peak-news-src">{source} · {date_disp}</div>
                                     </div>""", unsafe_allow_html=True)
                             else:
                                 st.markdown('<div style="color:rgba(100,150,180,0.4);font-size:0.72rem;padding:8px 0;">No news found for this peak period.</div>', unsafe_allow_html=True)
@@ -2152,7 +2169,7 @@ def render_indices():
     # Top Bilateral Alerts
     st.markdown('<div class="h-div"></div>', unsafe_allow_html=True)
     with st.expander("ð¨  Top 5 Bilateral Tension Alerts â Auto-Detected", expanded=True):
-        st.markdown('<div class="sec-hdr">Highest Risk Country Pairs Â· Last 7 Days</div>', unsafe_allow_html=True)
+        st.markdown('<div class="sec-hdr">Highest Risk Country Pairs · Last 7 Days</div>', unsafe_allow_html=True)
         top_pairs = compute_top_tensions(tension_norm, coop_norm, deteri_norm)
         for rank, pair in enumerate(top_pairs, 1):
             n1  = COUNTRY_NAMES.get(pair['c1'],pair['c1'])
@@ -2238,7 +2255,7 @@ def render_profile():
     <div style='padding:6px 0 2px;'>
       <div class='hero-title'>Country Intelligence Profile</div>
       <div class='hero-sub'><span class='live-dot'></span>
-        Deep-dive analysis &nbsp;Â·&nbsp; GDELT Data
+        Deep-dive analysis &nbsp;·&nbsp; GDELT Data
       </div>
     </div>""", unsafe_allow_html=True)
     st.markdown('<div class="h-div"></div>', unsafe_allow_html=True)
@@ -2249,7 +2266,7 @@ def render_profile():
     <div class="prof-header">
       <div>
         <div class="prof-country">{prof_name}</div>
-        <div class="prof-sub">COUNTRY INTELLIGENCE PROFILE &nbsp;Â·&nbsp; LAST 7-DAY AVERAGE</div>
+        <div class="prof-sub">COUNTRY INTELLIGENCE PROFILE &nbsp;·&nbsp; LAST 7-DAY AVERAGE</div>
       </div>
       <div style="text-align:right;">
         <div style="font-size:1.6rem;font-weight:700;color:{_pc};
@@ -2297,7 +2314,7 @@ def render_profile():
                 <div class="alarm-row" style="border-color:{alm_col}28;">
                   <div>
                     <div class="alarm-label">{alm['label']}</div>
-                    <div class="alarm-meta">z={z:+.2f}Ï &nbsp;Â·&nbsp;
+                    <div class="alarm-meta">z={z:+.2f}Ï &nbsp;·&nbsp;
                       <span style="color:{alm_col};">{sym}{abs(pct):.0f}%</span> vs 7d
                     </div>
                   </div>
@@ -2396,7 +2413,7 @@ def render_profile():
           <div style="height:1px;background:linear-gradient(90deg,transparent,{st_col}40,transparent);margin:8px 0;"></div>
           <div style="font-size:0.78rem;font-weight:600;color:{tr_col};font-family:'Share Tech Mono',monospace;">{tr_txt}</div>
           <div style="font-size:0.6rem;color:rgba(100,150,200,0.45);margin-top:5px;font-family:monospace;">
-            Net Tension: {cur_net:.1f} / 100 &nbsp;Â·&nbsp; Î7d: {trend_bi:+.1f}
+            Net Tension: {cur_net:.1f} / 100 &nbsp;·&nbsp; Î7d: {trend_bi:+.1f}
           </div>
           <div style="font-size:0.62rem;color:rgba(0,180,255,0.3);margin-top:3px;font-family:monospace;">
             {name_a} &nbsp;â&nbsp; {name_b}
@@ -2432,7 +2449,7 @@ def render_profile():
               <div style="background:rgba(0,0,0,0.3);border-radius:3px;height:3px;margin:6px 0 5px;">
                 <div style="background:{color};width:{_safe_pct(avg_v):.0f}%;height:3px;border-radius:3px;box-shadow:0 0 6px {color}70;"></div>
               </div>
-              <div style="font-size:0.56rem;color:rgba(150,180,200,0.4);font-family:monospace;">{name_a} Â· {name_b}</div>
+              <div style="font-size:0.56rem;color:rgba(150,180,200,0.4);font-family:monospace;">{name_a} · {name_b}</div>
             </div>""", unsafe_allow_html=True)
 
     # Bilateral trend chart
@@ -2470,10 +2487,11 @@ def render_news():
     _cur_topic = st.session_state.get("news_topic", "").lower()
     _bg_col = _topic_colors.get(_cur_topic, "rgba(0,255,200,0.03)")
     st.markdown(f"""<style>.main .block-container{{background:linear-gradient(180deg,{_bg_col},transparent)!important;}}</style>", unsafe_allow_html=True)
+    st.markdown("""
     <div style='padding:6px 0 10px;'>
       <div class='hero-title'>Global News Intelligence</div>
       <div class='hero-sub'><span class='live-dot'></span>
-        Live GDELT Headlines &nbsp;Â·&nbsp; 28 Topic Categories
+        Live GDELT Headlines &nbsp;·&nbsp; 28 Topic Categories
       </div>
     </div>""", unsafe_allow_html=True)
     st.markdown('<div class="h-div"></div>', unsafe_allow_html=True)
@@ -2578,7 +2596,7 @@ def render_predictions():
       <div class='hero-title'>12-Month Risk Forecasts</div>
       <div class='hero-sub'>
         <span class='live-dot'></span>
-        N-HiTS Deep Learning Model &nbsp;Â·&nbsp; 2,400 Topic Ã Country Series
+        N-HiTS Deep Learning Model &nbsp;·&nbsp; 2,400 Topic Ã Country Series
       </div>
     </div>""", unsafe_allow_html=True)
     st.markdown('<div class="h-div"></div>', unsafe_allow_html=True)
@@ -2649,7 +2667,7 @@ def render_predictions():
         topic_lbl = TOPIC_LABELS.get(sel_pred_topic,
                                       sel_pred_topic.replace('_',' ').title())
         cname     = COUNTRY_NAMES.get(sel_pred_country, sel_pred_country)
-        st.markdown(f'<div class="sec-hdr">{topic_lbl} â {cname} Â· 12-Month Forecast</div>',
+        st.markdown(f'<div class="sec-hdr">{topic_lbl} â {cname} · 12-Month Forecast</div>',
                     unsafe_allow_html=True)
 
         # Historical monthly series from indices.csv
@@ -3022,7 +3040,7 @@ def _render_country_card(col, row):
       <div style='font-size:0.98rem;font-weight:700;color:#0d3464;
            letter-spacing:0.03em;'>{cname}</div>
       <div style='font-size:0.57rem;color:rgba(0,180,255,0.35);
-           font-family:monospace;letter-spacing:0.12em;'>{country} Â· GDELT INDEX</div>
+           font-family:monospace;letter-spacing:0.12em;'>{country} · GDELT INDEX</div>
     </div>
     <div style='text-align:right;'>
       <div style='font-size:1.15rem;font-weight:800;color:{risk_col};
@@ -3052,7 +3070,7 @@ def _render_country_card(col, row):
     <div style='font-size:0.56rem;color:rgba(140,175,215,0.45);
          font-family:monospace;letter-spacing:0.1em;margin-bottom:2px;'>12-MONTH FORECAST</div>
     <div style='font-size:0.69rem;color:{fc_col};font-weight:600;'>
-      {fc_arrow} {fc_dir.title()} &nbsp;Â·&nbsp; {avg_fc:+.1f}% avg predicted change
+      {fc_arrow} {fc_dir.title()} &nbsp;·&nbsp; {avg_fc:+.1f}% avg predicted change
     </div>
   </div>
 
@@ -3368,7 +3386,7 @@ def _answer_question(question, df_raw, trend_df, pred_df, insights_df):
   {''.join(country_blocks)}
   <div style='font-size:0.58rem;color:rgba(100,140,180,0.35);font-family:monospace;
        margin-top:6px;border-top:1px solid rgba(0,80,160,0.1);padding-top:6px;'>
-    SOURCE: GDELT PROJECT Â· INDICES WINDOW TO {last_date.upper()} Â· PROPHET 12-MONTH FORECAST
+    SOURCE: GDELT PROJECT · INDICES WINDOW TO {last_date.upper()} · PROPHET 12-MONTH FORECAST
   </div>
 </div>"""
 
@@ -3605,7 +3623,7 @@ def _call_claude_for_qa(question, df_raw, trend_df, pred_df, insights_df):
             + narrative +
             '</div>'
             '<div style="color:#3a5a7a;font-size:10px;margin-top:14px;border-top:1px solid #1a3a5a;'
-            'padding-top:8px;">GDELT realtime Â· claude-haiku-4-5 Â· ' + today_str + '</div>'
+            'padding-top:8px;">GDELT realtime · claude-haiku-4-5 · ' + today_str + '</div>'
             '</div>'
         )
     except Exception as _e:
@@ -3625,7 +3643,7 @@ def render_insights():
   </div>
   <div style='font-size:0.65rem;color:rgba(0,180,255,0.45);font-family:monospace;
        letter-spacing:0.12em;margin-top:3px;'>
-    DATA-DRIVEN COUNTRY RISK ANALYSIS &nbsp;Â·&nbsp; 7-DAY WINDOW + 12-MONTH FORECAST
+    DATA-DRIVEN COUNTRY RISK ANALYSIS &nbsp;·&nbsp; 7-DAY WINDOW + 12-MONTH FORECAST
   </div>
 </div>""", unsafe_allow_html=True)
 
@@ -3711,7 +3729,7 @@ def render_insights():
         st.markdown("""
 <div style='font-size:0.6rem;color:rgba(0,180,255,0.4);font-family:monospace;
      letter-spacing:0.15em;margin-bottom:14px;'>
-  TOP 20 MOST CRITICAL COUNTRIES &nbsp;Â·&nbsp; RANKED BY RISK LEVEL + RATE OF CHANGE
+  TOP 20 MOST CRITICAL COUNTRIES &nbsp;·&nbsp; RANKED BY RISK LEVEL + RATE OF CHANGE
 </div>""", unsafe_allow_html=True)
         top20 = insights_df.head(20).to_dict('records')
         for i in range(0, len(top20), 2):
@@ -3724,7 +3742,7 @@ def render_insights():
         st.markdown("""
 <div style='font-size:0.6rem;color:rgba(0,180,255,0.4);font-family:monospace;
      letter-spacing:0.15em;margin-bottom:14px;'>
-  TOP RISK MOVEMENTS &nbsp;Â·&nbsp; 12-MONTH FORECAST TREND
+  TOP RISK MOVEMENTS &nbsp;·&nbsp; 12-MONTH FORECAST TREND
 </div>""", unsafe_allow_html=True)
         cf1, cf2 = st.columns(2)
         with cf1:
@@ -3752,7 +3770,7 @@ def _render_footer():
     <div style='margin-top:40px;padding:16px;text-align:center;
          border-top:1px solid rgba(0,150,255,0.08);
          font-size:0.6rem;color:rgba(0,150,255,0.2);font-family:monospace;letter-spacing:0.1em;'>
-      NERAI INTELLIGENCE HUB &nbsp;Â·&nbsp; DATA: GDELT PROJECT &nbsp;Â·&nbsp; v3.0
+      NERAI INTELLIGENCE HUB &nbsp;·&nbsp; DATA: GDELT PROJECT &nbsp;·&nbsp; v3.0
     </div>""", unsafe_allow_html=True)
 
 
@@ -4748,7 +4766,7 @@ def render_scenarios():
       <div class='hero-title'>What-If Scenario Engine</div>
       <div class='hero-sub'>
         <span class='live-dot'></span>
-        Shock Simulation &nbsp;Â·&nbsp; ARIMA Re-Forecast &nbsp;Â·&nbsp; Spillover Propagation
+        Shock Simulation &nbsp;·&nbsp; ARIMA Re-Forecast &nbsp;·&nbsp; Spillover Propagation
       </div>
     </div>""", unsafe_allow_html=True)
     st.markdown('<div class="h-div"></div>', unsafe_allow_html=True)
@@ -4893,7 +4911,7 @@ def render_scenarios():
                     paper_bgcolor='rgba(0,0,0,0)',
                     plot_bgcolor='rgba(232,240,252,0.45)',
                     xaxis=dict(tickangle=-40, color='#3a5a7a', tickfont=dict(size=8),
-                               title=dict(text='Risk Series (Topic Â· Country)', font=dict(size=10, color='#5a7a9a'))),
+                               title=dict(text='Risk Series (Topic · Country)', font=dict(size=10, color='#5a7a9a'))),
                     yaxis=dict(title=y_title, color='#3a5a7a',
                                gridcolor='rgba(0,80,160,0.1)', zeroline=True,
                                zerolinecolor='rgba(0,80,160,0.3)', zerolinewidth=1.5),
@@ -4971,10 +4989,10 @@ def render_api():
         <code style='background:rgba(0,0,0,0.06);padding:2px 6px;border-radius:4px;'>
           https://nerai-intelligence.streamlit.app
         </code><br>
-        <b>Datasets:</b> indices.csv Â· forecast_predictions.csv Â· causality_network.csv<br>
+        <b>Datasets:</b> indices.csv · forecast_predictions.csv · causality_network.csv<br>
         <b>Format:</b> CSV â downloadable from Indices &amp; Predictions pages<br>
         <b>Update cadence:</b> Daily automated pipeline<br>
-        <b>Coverage:</b> 18 risk dimensions Ã 195 countries Â· 2,400+ series
+        <b>Coverage:</b> 18 risk dimensions Ã 195 countries · 2,400+ series
       </div>
     </div>""", unsafe_allow_html=True)
 
