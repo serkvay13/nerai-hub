@@ -1726,7 +1726,7 @@ with st.sidebar:
         profile_country = 'US'
         bi_a = 'US'; bi_b = 'RS'; bi_days = 60
     # ── NERAI watermark overlay ──
-    st.markdown('<div style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-35deg);pointer-events:none;z-index:1;opacity:0.03;display:flex;align-items:center;gap:20px;"><div style="width:90px;height:90px;background:radial-gradient(circle,rgba(0,212,255,0.9) 28%,transparent 30%);background-size:18px 18px;"></div><span style="font-size:120px;font-weight:900;letter-spacing:5px;white-space:nowrap;font-family:Arial Black,Impact,sans-serif;color:rgba(0,212,255,0.9);">NERAI</span></div>', unsafe_allow_html=True)
+    st.markdown("""<div style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-35deg);pointer-events:none;z-index:1;display:flex;align-items:center;gap:15px;opacity:0.03;"><div style="width:80px;height:80px;background:radial-gradient(circle,rgba(0,212,255,1) 28%,transparent 30%);background-size:16px 16px;"></div><span style="font-size:110px;font-weight:900;letter-spacing:5px;white-space:nowrap;font-family:Arial Black,Impact,sans-serif;color:#00d4ff;">NERAI</span></div>""", unsafe_allow_html=True)
 
     if st.session_state.page not in ('predictions',):
         sel_pred_topic   = all_topics[0] if all_topics else ''
@@ -4113,6 +4113,30 @@ def render_causality():
         filtered = filtered[filtered['source'].str.endswith('_' + sel_country) | filtered['target'].str.endswith('_' + sel_country)]
     filtered = filtered[filtered['best_lag'] <= max_lag]
 
+
+    # -- Active Selection Context --
+    _ctx_parts = []
+    if sel_topic != 'All':
+        _ctx_parts.append(f"Konu: <b>{sel_topic_label}</b>")
+    else:
+        _ctx_parts.append("Konu: <b>Tumu</b>")
+    if sel_country != 'All':
+        _ctx_parts.append(f"Ulke: <b>{sel_country_label}</b>")
+    else:
+        _ctx_parts.append("Ulke: <b>Tumu</b>")
+    _ctx_parts.append(f"Min F-Stat: <b>{min_f:.1f}</b>")
+    _ctx_parts.append(f"Max Gecikme: <b>{max_lag} ay</b>")
+    _ctx_summary = " &middot; ".join(_ctx_parts)
+    if sel_topic != 'All' and sel_country != 'All':
+        _strat_text = f"Bu analiz, <b>{sel_country_label}</b> ulkesindeki <b>{sel_topic_label}</b> olaylarinin diger ulke ve olay turleri ile nedensellik iliskisini gostermektedir. Yuksek F-Istatistik degeri, guclu bir ongorucu iliskiye isaret eder."
+    elif sel_topic != 'All':
+        _strat_text = f"<b>{sel_topic_label}</b> konusundaki olaylarin tum ulkelerdeki nedensellik agi goruntulenmektedir. Bu analiz, hangi ulkelerdeki olaylarin diger ulkeleri etkiledigini ortaya koyar."
+    elif sel_country != 'All':
+        _strat_text = f"<b>{sel_country_label}</b> ile ilgili tum olay turlerinin nedensellik agi goruntulenmektedir. Bu, secilen ulkedeki olaylarin hangi diger ulke ve olay turlerini tetikledigini gosterir."
+    else:
+        _strat_text = "Tum ulke ve olay turleri arasindaki nedensellik agi goruntulenmektedir. Filtreleri kullanarak belirli bir ulke veya olay turune odaklanabilirsiniz."
+    st.markdown(f"<div style='background:linear-gradient(135deg,rgba(0,40,80,0.6),rgba(0,20,50,0.4));border:1px solid rgba(0,180,255,0.25);border-radius:10px;padding:16px 20px;margin:10px 0 20px;'><div style='display:flex;align-items:center;gap:10px;margin-bottom:8px;'><span style='font-size:0.75rem;font-weight:700;color:#00d4ff;letter-spacing:0.08em;text-transform:uppercase;'>Aktif Analiz Filtreleri</span></div><div style='font-size:0.82rem;color:#e0e8f0;margin-bottom:8px;'>{_ctx_summary}</div><div style='font-size:0.78rem;color:#8ab4d8;line-height:1.6;'>{_strat_text}</div><div style='font-size:0.7rem;color:#5a7a9a;margin-top:8px;font-style:italic;'>Yukaridaki filtreler tum bolumleri etkiler: KPI metrikleri, ag diyagrami, top influencers ve edge listesi.</div></div>", unsafe_allow_html=True)
+
     # -- KPI row --
     kc1, kc2, kc3 = st.columns(3)
     with kc1:
@@ -4144,7 +4168,15 @@ def render_causality():
             "{}</div>".format(p1, p2, hl_note), unsafe_allow_html=True)
 
     # -- Focus Node + Network Diagram --
-    st.subheader('Interactive Network Diagram')
+    _net_title = 'Interactive Network Diagram'
+    if sel_topic != 'All' and sel_country != 'All':
+        _net_title = f'Nedensellik Agi: {sel_topic_label} - {sel_country_label}'
+    elif sel_topic != 'All':
+        _net_title = f'Nedensellik Agi: {sel_topic_label} - Tum Ulkeler'
+    elif sel_country != 'All':
+        _net_title = f'Nedensellik Agi: {sel_country_label} - Tum Konular'
+    st.subheader(_net_title)
+    st.caption('Granger nedensellik iliskilerini gosteren ag diyagrami. Oklar nedensellik yonunu gosterir (A\u2192B: A olayindaki degisimler B olayini ongorur). Dugum buyuklugu baglanti sayisina baglidir.')
     if scenario_nodes:
         st.caption('Orange nodes/edges = series touched by the most recent scenario run')
 
@@ -4173,7 +4205,16 @@ def render_causality():
         st.info('No edges to display with the current filters.')
 
     # -- Top Influencers bar chart --
-    st.subheader('Top Causal Influencers')
+    if sel_topic != 'All' and sel_country != 'All':
+        _inf_title = f'En Etkili Nedensel Faktörler — {sel_topic_label} · {sel_country_label}'
+    elif sel_topic != 'All':
+        _inf_title = f'En Etkili Nedensel Faktörler — {sel_topic_label}'
+    elif sel_country != 'All':
+        _inf_title = f'En Etkili Nedensel Faktörler — {sel_country_label}'
+    else:
+        _inf_title = 'En Etkili Nedensel Faktörler — Tum Konular & Ulkeler'
+    st.subheader(_inf_title)
+    st.caption('En yuksek kumulatif F-Istatistik degerine sahip olay-ulke ciftleri. Bu ciftler, diger olaylar uzerinde en guclu ongorucu (nedensel) etkiye sahip olan olaylardir.')
     influence = filtered.groupby('source')['max_f_stat'].sum().sort_values(ascending=False).head(15)
     if len(influence) > 0:
         n_bars = len(influence)
@@ -4224,6 +4265,8 @@ def render_causality():
             margin=dict(l=20, r=80, t=10, b=50)
         )
         st.plotly_chart(fig_bar, use_container_width=True)
+
+    st.markdown("<div style='background:rgba(10,20,50,0.4);border:1px solid rgba(0,180,255,0.15);border-radius:8px;padding:14px 18px;margin:15px 0;font-size:0.75rem;color:#8ab4d8;line-height:1.7;'><b style=\'color:#00d4ff;\'>Nasil Yorumlanir?</b><br>F-Istatistik: Deger ne kadar yuksekse, nedensellik iliskisi o kadar gucludur. F &gt; 10 guclu, F &gt; 50 cok guclu iliski demektir.<br>Lag (Gecikme): Olaylar arasindaki gecikme suresi (ay). Lag=1 ise bir olaydaki degisim 1 ay sonra digerini etkiler.<br>p-degeri: 0.05 altindaki degerler istatistiksel olarak anlamli iliskileri gosterir.</div>", unsafe_allow_html=True)
 
     # -- Edge table --
     with st.expander('Full Causal Edge List', expanded=False):
