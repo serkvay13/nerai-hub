@@ -1497,11 +1497,11 @@ with st.sidebar:
           <circle cx='8' cy='37' r='3' fill='#e0e8f0'/><circle cx='18' cy='37' r='3' fill='#00d4ff'/><circle cx='28' cy='37' r='3' fill='#e0e8f0'/><circle cx='38' cy='37' r='3' fill='#00d4ff'/>
         </g>
         <!-- NER text (white) -->
-        <text x='50' y='36' font-family='Inter,sans-serif' font-weight='800' font-size='30' fill='#e0e8f0' letter-spacing='-1'>NER</text>
+            <text x="50" y="36" font-family="Inter,sans-serif" font-weight="800" font-size="30"><tspan fill="#e0e8f0">NER</tspan><tspan fill="#00d4ff">AI</tspan></text>
         <!-- AI text (cyan) -->
-        <text x='118' y='36' font-family='Inter,sans-serif' font-weight='800' font-size='30' fill='#00d4ff' letter-spacing='-1'>AI</text>
+
       </svg>
-      <div style='color:#5a6b82;font-size:10px;letter-spacing:2px;margin-top:4px;text-transform:uppercase;'>Intelligence Hub</div>
+      <div style='color:#5a6b82;font-size:10px;letter-spacing:2px;margin-top:4px;text-transform:uppercase;'>Strategic Insights Hub</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -1781,7 +1781,7 @@ body{background:#0e1117;overflow:hidden;font-family:'Rajdhani',sans-serif;}
 <div class="nc">
 <div class="hc tl"></div><div class="hc tr"></div><div class="hc bl"></div><div class="hc br"></div>
 <div class="scl"></div>
-<div class="nt"><h1>NERAI</h1><div class="sub">AI-Powered Geopolitical Intelligence Platform</div></div>
+<div class="nt"></div>
 <div class="fl">
 <div class="fi"><div class="lb">Real-Time Analysis</div><div class="ds">Processing millions of global events through advanced NLP pipelines</div></div>
 <div class="fi"><div class="lb">Predictive Models</div><div class="ds">Neural network forecasting with multi-dimensional risk vectors</div></div>
