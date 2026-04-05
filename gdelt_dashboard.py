@@ -3897,30 +3897,30 @@ def build_network_figure(filtered, highlight_nodes=None, focus_node=None):
     if len(nodes_set) == 0:
         return None
 
+    # NERAI brand palette - cyan/teal tones
     TOPIC_COLORS = {
-        "political_instability": "#e74c3c",
-        "military_escalation": "#e67e22",
-        "military_clash": "#d35400",
-        "government_instability": "#c0392b",
-        "coup": "#8e44ad",
-        "international_support": "#2980b9",
-        "international_crisis": "#1abc9c",
-        "increasing_bilateral_relations": "#27ae60",
-        "deteriorating_bilateral_relations": "#f39c12",
-        "political_repression": "#9b59b6",
-        "ethnic_religious_violence": "#e91e63",
-        "domestic_violence": "#795548",
-        "property_confiscation": "#607d8b",
-        "dispute_settlement": "#00bcd4",
-        "corruption": "#ff5722",
-        "terrorism": "#f44336",
-        "protest_activity": "#ff9800",
-        "democratization": "#4caf50",
-        "appeal_of_leadership_change": "#3f51b5",
-        "authoritarianism": "#880e4f",
+        "political_instability": "#00e5ff",
+        "military_escalation": "#00bcd4",
+        "military_clash": "#0097a7",
+        "government_instability": "#26c6da",
+        "coup": "#7c4dff",
+        "international_support": "#448aff",
+        "international_crisis": "#18ffff",
+        "increasing_bilateral_relations": "#00e676",
+        "deteriorating_bilateral_relations": "#ff6e40",
+        "political_repression": "#b388ff",
+        "ethnic_religious_violence": "#ff5252",
+        "domestic_violence": "#8d6e63",
+        "property_confiscation": "#78909c",
+        "dispute_settlement": "#84ffff",
+        "corruption": "#ff9100",
+        "terrorism": "#ff1744",
+        "protest_activity": "#ffab40",
+        "democratization": "#69f0ae",
+        "appeal_of_leadership_change": "#536dfe",
+        "authoritarianism": "#e040fb",
     }
 
-    # Build node and edge data for D3
     degree = {}
     for _, row in filtered.iterrows():
         degree[row["source"]] = degree.get(row["source"], 0) + row["max_f_stat"]
@@ -3936,7 +3936,7 @@ def build_network_figure(filtered, highlight_nodes=None, focus_node=None):
             label = nd
             cc = ""
         topic_key = parts[0] if len(parts) == 2 else nd
-        color = TOPIC_COLORS.get(topic_key, "#5dade2")
+        color = TOPIC_COLORS.get(topic_key, "#00e5ff")
         is_hl = nd in highlight_nodes
         node_list.append({"id": nd, "label": label, "cc": cc, "color": color, "degree": degree.get(nd, 1), "hl": is_hl})
 
@@ -3953,10 +3953,11 @@ def build_network_figure(filtered, highlight_nodes=None, focus_node=None):
     edges_json = _json.dumps(edge_list)
 
     html = f"""
-    <div id="nerai-graph" style="width:100%;height:750px;background:#070b14;border-radius:12px;position:relative;overflow:hidden;border:1px solid rgba(0,255,255,0.15);">
+    <div id="nerai-graph" style="width:100%;height:750px;background:linear-gradient(135deg,#040810 0%,#0a1628 50%,#060d18 100%);border-radius:12px;position:relative;overflow:hidden;border:1px solid rgba(0,230,255,0.2);">
       <canvas id="bgCanvas" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;"></canvas>
       <svg id="netSvg" style="width:100%;height:100%;"></svg>
-      <div id="tooltip" style="position:absolute;display:none;padding:10px 14px;background:rgba(8,14,28,0.95);border:1px solid rgba(0,255,255,0.4);border-radius:8px;color:#e0e0e0;font:12px monospace;pointer-events:none;z-index:10;box-shadow:0 0 20px rgba(0,255,255,0.15);"></div>
+      <div id="tooltip" style="position:absolute;display:none;padding:12px 16px;background:rgba(4,8,16,0.95);border:1px solid rgba(0,230,255,0.5);border-radius:10px;color:#e0f7fa;font:12px Inter,system-ui,sans-serif;pointer-events:none;z-index:10;box-shadow:0 0 25px rgba(0,230,255,0.2);backdrop-filter:blur(8px);"></div>
+      <div id="resetBtn" style="position:absolute;top:12px;right:12px;padding:6px 14px;background:rgba(0,230,255,0.15);border:1px solid rgba(0,230,255,0.4);border-radius:6px;color:#00e6ff;font:11px Inter,system-ui,sans-serif;cursor:pointer;display:none;z-index:10;" onclick="window._resetFocus()">Reset View</div>
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
     <script>
@@ -3967,158 +3968,208 @@ def build_network_figure(filtered, highlight_nodes=None, focus_node=None):
       const container = document.getElementById("nerai-graph");
       const W = container.offsetWidth;
       const H = container.offsetHeight;
+      let focusedNode = null;
 
       // Background grid
       const bgC = document.getElementById("bgCanvas");
       bgC.width = W; bgC.height = H;
       const ctx = bgC.getContext("2d");
-      ctx.strokeStyle = "rgba(0,255,255,0.04)";
-      ctx.lineWidth = 1;
-      for(let x=0;x<W;x+=40){{ ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke(); }}
-      for(let y=0;y<H;y+=40){{ ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke(); }}
+      ctx.strokeStyle = "rgba(0,230,255,0.03)";
+      for(let x=0;x<W;x+=50){{ ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke(); }}
+      for(let y=0;y<H;y+=50){{ ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke(); }}
+      // Corner accents
+      ctx.strokeStyle = "rgba(0,230,255,0.12)";ctx.lineWidth=2;
+      ctx.beginPath();ctx.moveTo(0,30);ctx.lineTo(0,0);ctx.lineTo(30,0);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(W-30,0);ctx.lineTo(W,0);ctx.lineTo(W,30);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(0,H-30);ctx.lineTo(0,H);ctx.lineTo(30,H);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(W-30,H);ctx.lineTo(W,H);ctx.lineTo(W,H-30);ctx.stroke();
 
       const svg = d3.select("#netSvg");
       const g = svg.append("g");
+      svg.call(d3.zoom().scaleExtent([0.2, 5]).on("zoom", (e) => g.attr("transform", e.transform)));
 
-      // Zoom behavior
-      const zoom = d3.zoom()
-        .scaleExtent([0.3, 4])
-        .on("zoom", (e) => g.attr("transform", e.transform));
-      svg.call(zoom);
-
-      // Glow filter
+      // Filters
       const defs = svg.append("defs");
-      const flt = defs.append("filter").attr("id","glow");
-      flt.append("feGaussianBlur").attr("stdDeviation","3").attr("result","blur");
-      flt.append("feMerge").selectAll("feMergeNode").data(["blur","SourceGraphic"]).join("feMergeNode").attr("in",d=>d);
+      const gl = defs.append("filter").attr("id","glow").attr("x","-50%").attr("y","-50%").attr("width","200%").attr("height","200%");
+      gl.append("feGaussianBlur").attr("stdDeviation","4").attr("result","b");
+      gl.append("feMerge").selectAll("feMergeNode").data(["b","SourceGraphic"]).join("feMergeNode").attr("in",d=>d);
+      const eg = defs.append("filter").attr("id","edgeGlow").attr("x","-50%").attr("y","-50%").attr("width","200%").attr("height","200%");
+      eg.append("feGaussianBlur").attr("stdDeviation","2.5").attr("result","b");
+      eg.append("feMerge").selectAll("feMergeNode").data(["b","SourceGraphic"]).join("feMergeNode").attr("in",d=>d);
 
-      // Arrow filter
-      const fltA = defs.append("filter").attr("id","edgeGlow");
-      fltA.append("feGaussianBlur").attr("stdDeviation","2").attr("result","blur");
-      fltA.append("feMerge").selectAll("feMergeNode").data(["blur","SourceGraphic"]).join("feMergeNode").attr("in",d=>d);
+      // Gradient defs for nodes
+      nodes.forEach((n,i) => {{
+        const grad = defs.append("linearGradient").attr("id","ng"+i).attr("x1","0%").attr("y1","0%").attr("x2","0%").attr("y2","100%");
+        grad.append("stop").attr("offset","0%").attr("stop-color",n.color).attr("stop-opacity",0.35);
+        grad.append("stop").attr("offset","100%").attr("stop-color","#080e1a").attr("stop-opacity",0.95);
+      }});
 
-      // Marker arrow
+      // Arrow marker
       defs.append("marker").attr("id","arrow").attr("viewBox","0 0 10 6").attr("refX",10).attr("refY",3)
-        .attr("markerWidth",8).attr("markerHeight",6).attr("orient","auto")
-        .append("path").attr("d","M0,0L10,3L0,6").attr("fill","rgba(0,255,255,0.5)");
+        .attr("markerWidth",7).attr("markerHeight",5).attr("orient","auto")
+        .append("path").attr("d","M0,0L10,3L0,6").attr("fill","rgba(0,230,255,0.4)");
 
       // Force simulation
       const sim = d3.forceSimulation(nodes)
-        .force("link", d3.forceLink(edges).id(d=>d.id).distance(140))
-        .force("charge", d3.forceManyBody().strength(-350))
+        .force("link", d3.forceLink(edges).id(d=>d.id).distance(160))
+        .force("charge", d3.forceManyBody().strength(-400))
         .force("center", d3.forceCenter(W/2, H/2))
-        .force("collision", d3.forceCollide().radius(d=>d.size+15))
-        .alphaDecay(0.015);
+        .force("collision", d3.forceCollide().radius(d=>d.size+20))
+        .alphaDecay(0.018);
 
-      // Draw edges as bezier curves
+      // Draw edges
       const linkG = g.append("g");
       const link = linkG.selectAll("path").data(edges).join("path")
         .attr("fill","none")
-        .attr("stroke", d => {{
-          const sc = nodes.find(n=>n.id===d.source.id||n.id===d.source);
-          return sc ? sc.color : "#5dade2";
-        }})
-        .attr("stroke-opacity", d => 0.15 + 0.45*(d.weight/maxW))
-        .attr("stroke-width", d => 1 + 2.5*(d.weight/maxW))
+        .attr("stroke", d => {{ const sc=nodes.find(n=>n.id===(d.source.id||d.source)); return sc?sc.color:"#00e5ff"; }})
+        .attr("stroke-opacity", d => 0.12 + 0.35*(d.weight/maxW))
+        .attr("stroke-width", d => 0.8 + 2*(d.weight/maxW))
         .attr("filter","url(#edgeGlow)")
-        .attr("marker-end","url(#arrow)");
+        .attr("marker-end","url(#arrow)")
+        .classed("edge", true);
 
-      // Animated particles on edges
+      // Animated particles
       const particleG = g.append("g");
       const particles = particleG.selectAll("circle").data(edges).join("circle")
-        .attr("r", 2)
-        .attr("fill", d => {{
-          const sc = nodes.find(n=>n.id===d.source.id||n.id===d.source);
-          return sc ? sc.color : "#0ff";
-        }})
-        .attr("opacity", 0.8)
-        .attr("filter","url(#glow)");
+        .attr("r", 1.8)
+        .attr("fill", d => {{ const sc=nodes.find(n=>n.id===(d.source.id||d.source)); return sc?sc.color:"#0ff"; }})
+        .attr("opacity", 0.7).attr("filter","url(#glow)")
+        .classed("particle", true);
       let particleT = 0;
 
-      // Draw nodes as rounded rectangles with header
+      // Draw node groups
       const nodeG = g.append("g");
       const nodeGroups = nodeG.selectAll("g").data(nodes).join("g")
+        .classed("node", true)
         .call(d3.drag()
-          .on("start", (e,d) => {{ if(!e.active) sim.alphaTarget(0.3).restart(); d.fx=d.x; d.fy=d.y; }})
-          .on("drag", (e,d) => {{ d.fx=e.x; d.fy=e.y; }})
-          .on("end", (e,d) => {{ if(!e.active) sim.alphaTarget(0); d.fx=null; d.fy=null; }})
+          .on("start",(e,d)=>{{ if(!e.active) sim.alphaTarget(0.3).restart(); d.fx=d.x; d.fy=d.y; }})
+          .on("drag",(e,d)=>{{ d.fx=e.x; d.fy=e.y; }})
+          .on("end",(e,d)=>{{ if(!e.active) sim.alphaTarget(0); d.fx=null; d.fy=null; }})
         );
 
-      // Node body (rounded rect)
+      // Node outer glow ring
       nodeGroups.append("rect")
-        .attr("rx", 8).attr("ry", 8)
-        .attr("width", d => Math.max(d.label.length*7.5+20, 90))
-        .attr("height", 44)
-        .attr("x", d => -Math.max(d.label.length*7.5+20, 90)/2)
-        .attr("y", -22)
-        .attr("fill", "rgba(10,18,35,0.9)")
+        .attr("rx",10).attr("ry",10)
+        .attr("width", d => Math.max(d.label.length*7+28,100)+4)
+        .attr("height",52)
+        .attr("x", d => -(Math.max(d.label.length*7+28,100)+4)/2)
+        .attr("y",-26)
+        .attr("fill","none")
         .attr("stroke", d => d.color)
-        .attr("stroke-width", d => d.hl ? 2.5 : 1.2)
+        .attr("stroke-width",0.6)
+        .attr("stroke-opacity",0.3)
         .attr("filter","url(#glow)");
 
-      // Node header bar
+      // Node body with gradient
       nodeGroups.append("rect")
-        .attr("rx", 8).attr("ry", 8)
-        .attr("width", d => Math.max(d.label.length*7.5+20, 90))
-        .attr("height", 16)
-        .attr("x", d => -Math.max(d.label.length*7.5+20, 90)/2)
-        .attr("y", -22)
-        .attr("fill", d => d.color)
-        .attr("opacity", 0.85);
+        .attr("rx",8).attr("ry",8)
+        .attr("width", d => Math.max(d.label.length*7+28,100))
+        .attr("height",48)
+        .attr("x", d => -Math.max(d.label.length*7+28,100)/2)
+        .attr("y",-24)
+        .attr("fill", (d,i) => "url(#ng"+i+")")
+        .attr("stroke", d => d.color)
+        .attr("stroke-width", d => d.hl?2.5:1)
+        .attr("stroke-opacity",0.7);
 
-      // Country code in header
+      // Header accent line
+      nodeGroups.append("line")
+        .attr("x1", d => -Math.max(d.label.length*7+28,100)/2+8)
+        .attr("x2", d => Math.max(d.label.length*7+28,100)/2-8)
+        .attr("y1",-6).attr("y2",-6)
+        .attr("stroke", d => d.color)
+        .attr("stroke-width",1.5).attr("stroke-opacity",0.6)
+        .attr("stroke-linecap","round");
+
+      // Country code label (top)
       nodeGroups.append("text")
-        .attr("y", -10)
-        .attr("text-anchor","middle")
-        .attr("fill","#fff")
-        .attr("font-size","9px")
-        .attr("font-family","monospace")
-        .attr("font-weight","bold")
+        .attr("y",-12).attr("text-anchor","middle")
+        .attr("fill", d => d.color).attr("font-size","10px")
+        .attr("font-family","Inter,system-ui,sans-serif")
+        .attr("font-weight","700").attr("letter-spacing","1px")
         .text(d => d.cc);
 
-      // Label text
+      // Topic label (bottom)
       nodeGroups.append("text")
-        .attr("y", 6)
-        .attr("text-anchor","middle")
-        .attr("fill","#d0d8e8")
-        .attr("font-size","10px")
-        .attr("font-family","monospace")
-        .text(d => d.label.length>16 ? d.label.slice(0,15)+"..." : d.label);
+        .attr("y",8).attr("text-anchor","middle")
+        .attr("fill","#c8e6f0").attr("font-size","10px")
+        .attr("font-family","Inter,system-ui,sans-serif")
+        .text(d => d.label.length>18 ? d.label.slice(0,17)+"..." : d.label);
+
+      // --- CLICK TO FOCUS ---
+      function focusOn(d) {{
+        focusedNode = d;
+        document.getElementById("resetBtn").style.display = "block";
+        const connected = new Set();
+        connected.add(d.id);
+        edges.forEach(e => {{
+          const sid = e.source.id || e.source;
+          const tid = e.target.id || e.target;
+          if(sid===d.id) connected.add(tid);
+          if(tid===d.id) connected.add(sid);
+        }});
+        nodeGroups.transition().duration(400)
+          .attr("opacity", n => connected.has(n.id) ? 1 : 0.08);
+        link.transition().duration(400)
+          .attr("stroke-opacity", e => {{
+            const sid = e.source.id || e.source;
+            const tid = e.target.id || e.target;
+            return (sid===d.id||tid===d.id) ? 0.5+0.4*(e.weight/maxW) : 0.02;
+          }});
+        particles.transition().duration(400)
+          .attr("opacity", e => {{
+            const sid = e.source.id || e.source;
+            const tid = e.target.id || e.target;
+            return (sid===d.id||tid===d.id) ? 0.9 : 0.02;
+          }});
+      }}
+
+      function resetFocus() {{
+        focusedNode = null;
+        document.getElementById("resetBtn").style.display = "none";
+        nodeGroups.transition().duration(400).attr("opacity", 1);
+        link.transition().duration(400)
+          .attr("stroke-opacity", d => 0.12 + 0.35*(d.weight/maxW));
+        particles.transition().duration(400).attr("opacity", 0.7);
+      }}
+      window._resetFocus = resetFocus;
+
+      nodeGroups.on("click", (e, d) => {{
+        e.stopPropagation();
+        if(focusedNode && focusedNode.id === d.id) {{ resetFocus(); }}
+        else {{ focusOn(d); }}
+      }});
+      svg.on("click", () => {{ if(focusedNode) resetFocus(); }});
 
       // Tooltip
       const tip = document.getElementById("tooltip");
       nodeGroups.on("mouseover", (e,d) => {{
         tip.style.display = "block";
-        tip.innerHTML = "<b>"+d.label+" ("+d.cc+")</b><br>Influence: "+d.degree.toFixed(1);
+        tip.innerHTML = "<b style=color:"+d.color+">"+d.label+" ("+d.cc+")</b><br><span style=color:#80deea>Influence Score: "+d.degree.toFixed(1)+"</span>";
       }}).on("mousemove", (e) => {{
         const r = container.getBoundingClientRect();
-        tip.style.left = (e.clientX - r.left + 15) + "px";
-        tip.style.top = (e.clientY - r.top - 10) + "px";
-      }}).on("mouseout", () => {{ tip.style.display = "none"; }});
+        tip.style.left = (e.clientX-r.left+15)+"px";
+        tip.style.top = (e.clientY-r.top-10)+"px";
+      }}).on("mouseout", () => {{ tip.style.display="none"; }});
 
-      // Tick update
+      // Tick
       sim.on("tick", () => {{
         link.attr("d", d => {{
-          const dx = d.target.x - d.source.x;
-          const dy = d.target.y - d.source.y;
-          const dr = Math.sqrt(dx*dx+dy*dy)*0.8;
+          const dx=d.target.x-d.source.x, dy=d.target.y-d.source.y;
+          const dr=Math.sqrt(dx*dx+dy*dy)*0.7;
           return "M"+d.source.x+","+d.source.y+"A"+dr+","+dr+" 0 0,1 "+d.target.x+","+d.target.y;
         }});
         nodeGroups.attr("transform", d => "translate("+d.x+","+d.y+")");
-
-        // Animate particles along paths
-        particleT = (particleT + 0.004) % 1;
-        particles.each(function(d, i) {{
-          const t = (particleT + i*0.037) % 1;
-          const x = d.source.x + (d.target.x - d.source.x)*t;
-          const y = d.source.y + (d.target.y - d.source.y)*t;
-          d3.select(this).attr("cx", x).attr("cy", y);
+        particleT = (particleT+0.005)%1;
+        particles.each(function(d,i) {{
+          const t=(particleT+i*0.031)%1;
+          const x=d.source.x+(d.target.x-d.source.x)*t;
+          const y=d.source.y+(d.target.y-d.source.y)*t;
+          d3.select(this).attr("cx",x).attr("cy",y);
         }});
       }});
 
-      // Keep simulation warm for particle animation
       setInterval(() => {{ if(sim.alpha()<0.05) sim.alpha(0.05).restart(); }}, 3000);
-
     }})();
     </script>
     """
