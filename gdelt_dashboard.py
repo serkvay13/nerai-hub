@@ -226,7 +226,7 @@ st.markdown("""
   color: var(--text-primary) !important;
 }
 [data-testid="stHeader"] { background: transparent !important; }
-        #MainMenu {visibility: hidden !important;} footer {visibility: hidden !important;} [data-testid="stDeployButton"] {display: none !important;} [data-testid="stToolbar"] {display: none !important;} header[data-testid="stHeader"] {display: none !important;} [data-testid="manage-app-button"] {display: none !important;}
+        #MainMenu {visibility: hidden !important;} footer {visibility: hidden !important;} [data-testid="stDeployButton"] {display: none !important;} [data-testid="stToolbar"] {display: none !important;} header[data-testid="stHeader"] {display: none !important;} [data-testid="manage-app-button"] {display: none !important;} [data-testid="stStatusWidget"] {display: none !important;} [data-testid="stAppViewBlockContainer"] > div:last-child {visibility: visible;} .reportview-container .main footer {display: none !important;} div[data-testid="stBottomBlockContainer"] {display: none !important;} #stStreamlitDialog {display: none !important;} .stApp > footer {display: none !important;} div.viewerBadge_container__r5tak {display: none !important;} div.viewerBadge_link__qRIco {display: none !important;} a[href*="streamlit.io"] {display: none !important;} div[class*="StatusWidget"] {display: none !important;} button[kind="header"] {display: none !important;} div[class*="stToolbar"] {display: none !important;} .styles_viewerBadge {display: none !important;} ._container_gzau3 {display: none !important;} ._profileContainer {display: none !important;}
 
 /* ── Sidebar dark glass ── */
 [data-testid="stSidebar"] {
