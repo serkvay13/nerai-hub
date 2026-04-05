@@ -226,7 +226,7 @@ st.markdown("""
   color: var(--text-primary) !important;
 }
 [data-testid="stHeader"] { background: transparent !important; }
-#MainMenu, footer, .stDeployButton { display:none !important; }
+        #MainMenu {visibility: hidden !important;} footer {visibility: hidden !important;} [data-testid="stDeployButton"] {display: none !important;} [data-testid="stToolbar"] {display: none !important;} header[data-testid="stHeader"] {display: none !important;} [data-testid="manage-app-button"] {display: none !important;}
 
 /* ── Sidebar dark glass ── */
 [data-testid="stSidebar"] {
