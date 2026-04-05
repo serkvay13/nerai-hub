@@ -39,7 +39,7 @@ st.set_page_config(
 # ACCESS GATE - Solo / Pro tier authentication
 # ===============================================================
 _VALID_CODES = {
-    'NERAI-SOLO-26': 'pro',
+    'NERAI-TRIAL-26': 'solo',
     'NERAI-PRO-26':  'pro',
     'NERAI-2026':    'pro',
 }
@@ -184,7 +184,7 @@ if st.session_state.access_tier is None:
 
 # Tier shortcut
 _IS_PRO = st.session_state.access_tier == 'pro'
-
+_IS_SOLO = st.session_state.access_tier == 'solo'
 
 
 
@@ -1430,6 +1430,13 @@ def fetch_peak_news(country, topic, peak_date_str, days_window=3):
 # ═══════════════════════════════════════════════════════════════
 df, is_demo = load_data()
 date_cols   = df.columns
+
+# Solo tier: limit to last 3 months of data
+if _IS_SOLO:
+    _cutoff = pd.Timestamp.now() - pd.DateOffset(months=3)
+    _keep = [c for c in df.columns if c >= _cutoff]
+    if _keep:
+        df = df[_keep]
 all_topics  = sorted(df.index.get_level_values('topic').unique().tolist())
 all_countries = sorted(df.index.get_level_values('country').unique().tolist())
 
@@ -1519,6 +1526,10 @@ with st.sidebar:
         ('insights', '🔍 INSIGHTS'),
         ('briefing', '📋 BRIEFING ROOM'),
     ]
+    # Solo tier: restrict to basic pages only
+    _SOLO_PAGES = {'home', 'indices', 'profile', 'news', 'scenarios'}
+    if _IS_SOLO:
+        nav_pages = [(k, l) for k, l in nav_pages if k in _SOLO_PAGES]
     for page_key, page_label in nav_pages:
         active_style = 'border-color:rgba(0,180,255,0.5) !important;color:#007a99 !important;background:rgba(0,50,110,0.4) !important;' if st.session_state.page == page_key else ''
         if st.button(page_label, key=f'nav_{page_key}'):
@@ -5374,6 +5385,12 @@ div[data-testid="stMetric"]:hover{box-shadow:0 0 20px rgba(0,255,200,0.2),0 0 40
 """, unsafe_allow_html=True)
 
 page = st.session_state.get('page', 'home')
+
+# Solo tier: block access to pro-only pages
+if _IS_SOLO and page not in ('home', 'indices', 'profile', 'news', 'scenarios'):
+    st.session_state.page = 'home'
+    page = 'home'
+    st.warning('\u26a0\ufe0f This feature is available on the Pro plan. Upgrade at neraicorp.com/pricing')
 if   page == 'home':        render_home()
 elif page == 'indices':     render_indices()
 elif page == 'profile':     render_profile()
