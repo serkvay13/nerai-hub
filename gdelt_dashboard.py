@@ -39,7 +39,7 @@ st.set_page_config(
 # ACCESS GATE - Solo / Pro tier authentication
 # ===============================================================
 _VALID_CODES = {
-    'NERAI-SOLO-26': 'solo',
+    'NERAI-SOLO-26': 'pro',
     'NERAI-PRO-26':  'pro',
     'NERAI-2026':    'pro',
 }
