@@ -3711,16 +3711,18 @@ def render_insights():
             _sp_df = pd.DataFrame(_series_dict)
             # Simple variance decomposition proxy using correlation
             _corr = _sp_df.corr().abs()
-            np.fill_diagonal(_corr.values, 0)
-            _spillover_total = _corr.values.sum() / (_corr.shape[0] ** 2) * 100
+            _corr_vals = _corr.values.copy()
+            np.fill_diagonal(_corr_vals, 0)
+            _spillover_total = _corr_vals.sum() / (_corr.shape[0] ** 2) * 100
             # Time-varying spillover (rolling window)
             _roll_spill = []
             _w = 14
             for k in range(_w, len(_sp_df)):
                 _window_data = _sp_df.iloc[k-_w:k]
                 _rc = _window_data.corr().abs()
-                np.fill_diagonal(_rc.values, 0)
-                _s = _rc.values.sum() / (_rc.shape[0] ** 2) * 100
+                _rc_vals = _rc.values.copy()
+                np.fill_diagonal(_rc_vals, 0)
+                _s = _rc_vals.sum() / (_rc.shape[0] ** 2) * 100
                 _roll_spill.append(_s)
             col_a, col_b = st.columns([1, 2])
             with col_a:
@@ -3748,8 +3750,6 @@ def render_insights():
             st.caption("Insufficient topics for spillover analysis.")
     except Exception as _e:
         st.caption(f"Spillover index unavailable: {_e}")
-        _render_footer()
-        return
 
     # ── Compute insights ────────────────────────────────────────
     with st.spinner("Analysing countries × risk topics…"):
@@ -5968,6 +5968,7 @@ def render_threat_radar():
                 # Slide through history looking for similar patterns that preceded spikes
                 _best_dist = float("inf")
                 _best_outcome = 0
+                _best_j = 0
                 for j in range(_window, len(_series) - _window * 2):
                     _hist_pattern = _series[j:j+_window]
                     # Normalize both
@@ -5976,17 +5977,25 @@ def render_threat_radar():
                     _dist = euclidean(_cn, _hn) / _window
                     if _dist < _best_dist:
                         _best_dist = _dist
+                        _best_j = j
                         # What happened after this historical pattern?
                         _after = _series[j+_window:j+_window+7]
                         _before_mean = _hist_pattern.mean()
                         _after_mean = _after.mean() if len(_after) > 0 else _before_mean
                         _best_outcome = (_after_mean - _before_mean) / max(_before_mean, 1e-9)
                 if _best_dist < 0.5 and _best_outcome > 0.15:
+                    # Determine matched historical period
+                    _match_cols = df.columns[_best_j:_best_j+_window] if hasattr(df.columns[0], "strftime") else []
+                    if len(_match_cols) >= 2:
+                        _match_period = f"{_match_cols[0].strftime('%Y-%m-%d')} ~ {_match_cols[-1].strftime('%Y-%m-%d')}"
+                    else:
+                        _match_period = f"Window idx {_best_j}-{_best_j+_window}"
                     _alerts.append({
                         "Country": COUNTRY_NAMES.get(country, country),
+                        "Matched Period": _match_period,
                         "Pattern Similarity": f"{(1 - _best_dist) * 100:.0f}%",
-                        "Expected Δ": f"+{_best_outcome * 100:.1f}%",
-                        "Signal": "🔴 HIGH" if _best_outcome > 0.3 else "🟡 ELEVATED"
+                        "Expected \u0394": f"+{_best_outcome * 100:.1f}%",
+                        "Signal": "\ud83d\udd34 HIGH" if _best_outcome > 0.3 else "\ud83d\udfe1 ELEVATED"
                     })
             if _alerts:
                 st.dataframe(pd.DataFrame(_alerts), use_container_width=True, hide_index=True)
