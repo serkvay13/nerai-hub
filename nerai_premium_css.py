@@ -1139,7 +1139,7 @@ def inject_sidebar_fix():
             // Fallback: force sidebar visible via style
             const sb = doc.querySelector(SIDEBAR_SEL);
             if (sb) {
-                // 1. Instantly show sidebar
+                // 1. Force sidebar visible (keep styles until user collapses)
                 sb.style.transition = 'transform 0.3s ease';
                 sb.style.transform = 'none';
                 sb.style.width = '300px';
@@ -1157,14 +1157,25 @@ def inject_sidebar_fix():
                     }
                 } catch(e) {}
 
-                // 3. Clear forced styles so Streamlit CSS regains control
-                setTimeout(function() {
-                    sb.style.transform = '';
-                    sb.style.width = '';
-                    sb.style.minWidth = '';
-                    sb.style.left = '';
-                    sb.style.transition = '';
-                }, 600);
+                // 3. Watch for collapse button and intercept click
+                //    to clear forced styles before Streamlit collapses
+                function hookCollapseBtn() {
+                    var cb = doc.querySelector('[data-testid="stSidebarCollapseButton"] button');
+                    if (cb && !cb._neraiHooked) {
+                        cb._neraiHooked = true;
+                        cb.addEventListener('click', function() {
+                            sb.style.transform = '';
+                            sb.style.width = '';
+                            sb.style.minWidth = '';
+                            sb.style.left = '';
+                            sb.style.transition = '';
+                        }, {once: true, capture: true});
+                    }
+                }
+                hookCollapseBtn();
+                // Retry in case button appears after sidebar renders
+                setTimeout(hookCollapseBtn, 300);
+                setTimeout(hookCollapseBtn, 800);
             }
         }
 
