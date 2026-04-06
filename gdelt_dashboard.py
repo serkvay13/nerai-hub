@@ -187,8 +187,6 @@ _IS_PRO = st.session_state.access_tier == 'pro'
 _IS_SOLO = st.session_state.access_tier == 'solo'
 
 
-
-
 # ═══════════════════════════════════════════════════════════════
 # CSS
 # ═══════════════════════════════════════════════════════════════
@@ -1523,11 +1521,12 @@ with st.sidebar:
         ('predictions', '🔮 PREDICTIONS'),
         ('causality', '🕸️ CAUSAL NETWORK'),
         ('scenarios', '⚡ WHAT-IF SCENARIOS'),
+        ('threat_radar', '🔴 THREAT RADAR'),
         ('insights', '🔍 INSIGHTS'),
         ('briefing', '📋 BRIEFING ROOM'),
     ]
     # Solo tier: restrict to basic pages only
-    _SOLO_PAGES = {'home', 'indices', 'profile', 'news', 'scenarios'}
+    _SOLO_PAGES = {'home', 'indices', 'profile', 'news', 'scenarios', 'threat_radar'}
     if _IS_SOLO:
         nav_pages = [(k, l) for k, l in nav_pages if k in _SOLO_PAGES]
     for page_key, page_label in nav_pages:
@@ -1854,9 +1853,8 @@ rot+=0.12;requestAnimationFrame(frame);}
       <div class="home-corner home-corner-bl"></div>
       <div class="home-corner home-corner-br"></div>
       <!-- Glowing orbs -->
-      <div class="home-orb" style="width:320px;height:320px;top:-100px;left:-80px;background:rgba(0,70,200,0.13);"></div>
-      <div class="home-orb" style="width:260px;height:260px;top:-60px;right:-60px;background:rgba(80,0,180,0.10);"></div>
-      <div class="home-orb" style="width:220px;height:220px;bottom:-70px;left:50%;transform:translateX(-50%);background:rgba(0,120,230,0.09);"></div>
+
+
       <!-- Floating hexagons -->
       <div class="hex-deco" style="width:70px;height:80px;top:12%;left:4%;animation-delay:0s;"></div>
       <div class="hex-deco" style="width:55px;height:63px;top:18%;right:6%;animation-delay:3s;"></div>
@@ -1999,53 +1997,6 @@ rot+=0.12;requestAnimationFrame(frame);}
     st.markdown('<div class="h-div" style="margin:28px 0 20px;"></div>', unsafe_allow_html=True)
 
     # ── Live Tension Overview ────────────────────────────────
-    st.markdown('<div class="sec-hdr">⚡  Live Top Tension Pairs</div>', unsafe_allow_html=True)
-    top_pairs = compute_top_tensions(tension_norm, coop_norm, deteri_norm)
-    if top_pairs:
-        cols_tp = st.columns(len(top_pairs))
-        for col_el, pair in zip(cols_tp, top_pairs):
-            with col_el:
-                n1  = COUNTRY_NAMES.get(pair['c1'],pair['c1'])
-                n2  = COUNTRY_NAMES.get(pair['c2'],pair['c2'])
-                net = pair['net']
-                clr = '#e05060' if net>=45 else ('#f59e0b' if net>=25 else '#00b4d8')
-                st.markdown(f"""
-                <div style="background:rgba(0,10,28,0.8);border:1px solid {clr}25;
-                     border-radius:10px;padding:14px 12px;text-align:center;
-                     border-top:3px solid {clr};">
-                  <div style="font-size:0.72rem;color:#1a3a5c;font-weight:600;margin-bottom:4px;">
-                    {n1}
-                  </div>
-                  <div style="font-size:0.55rem;color:rgba(123,47,255,0.6);
-                       font-family:monospace;margin-bottom:4px;">↔ VS ↔</div>
-                  <div style="font-size:0.72rem;color:#1a3a5c;font-weight:600;margin-bottom:8px;">
-                    {n2}
-                  </div>
-                  <div style="font-size:1.4rem;font-weight:700;color:{clr};
-                       text-shadow:0 0 14px {clr}55;">{net:.0f}</div>
-                  <div style="font-size:0.58rem;color:{clr};font-family:monospace;">
-                    {'CRITICAL' if net>=65 else 'HIGH' if net>=45 else 'ELEVATED' if net>=25 else 'MODERATE'}
-                  </div>
-                </div>""", unsafe_allow_html=True)
-
-    # ── Quick stats row ──────────────────────────────────────
-    st.markdown('<div class="h-div" style="margin:24px 0 16px;"></div>', unsafe_allow_html=True)
-    st.markdown('<div class="sec-hdr">📈  Top Risk Countries — All Topics</div>', unsafe_allow_html=True)
-
-    avg_all = tension_norm.mean(axis=1).nlargest(8)
-    cols_r  = st.columns(8)
-    for col_el, (country, val) in zip(cols_r, avg_all.items()):
-        with col_el:
-            clr = '#e05060' if val>=50 else ('#f59e0b' if val>=25 else '#00b4d8')
-            st.markdown(f"""
-            <div style="background:rgba(0,10,28,0.7);border:1px solid {clr}20;
-                 border-radius:8px;padding:10px 8px;text-align:center;">
-              <div style="font-size:0.65rem;color:#1a4070;margin-bottom:4px;">
-                {COUNTRY_NAMES.get(country,country)}
-              </div>
-              <div style="font-size:1.2rem;font-weight:700;color:{clr};
-                   text-shadow:0 0 10px {clr}50;">{val:.0f}</div>
-            </div>""", unsafe_allow_html=True)
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -2130,144 +2081,6 @@ def render_indices():
 
     st.markdown('<div class="h-div" style="margin:4px 0 14px"></div>', unsafe_allow_html=True)
 
-    # Top Signals
-    with st.expander("⚡  Top Signals — Biggest Movers (Last 7 Days)", expanded=True):
-        st.markdown('<div class="sec-hdr">Anomaly Detection</div>', unsafe_allow_html=True)
-        if len(df_norm.columns)>7:
-            last    = df_norm.iloc[:,-1]
-            prev    = df_norm.iloc[:,-8]
-            changes = ((last-prev)/(prev.abs().clip(lower=1.0))*100).clip(-200,200).dropna()
-            top_up  = changes.nlargest(5)
-            top_dn  = changes.nsmallest(3)
-            sig_c1, sig_c2 = st.columns(2)
-            with sig_c1:
-                st.markdown('<div style="font-size:0.65rem;color:#ff6b35;letter-spacing:0.15em;margin-bottom:8px;">▲ RISING RISK</div>', unsafe_allow_html=True)
-                for c,pct in top_up.items():
-                    val = last[c]
-                    st.markdown(f"""
-                    <div class='signal-card' style='border-color:rgba(255,107,53,0.2);'>
-                      <div><div class='signal-name'>{COUNTRY_NAMES.get(c,c)}</div>
-                      <div class='signal-topic'>{sel_label}</div></div>
-                      <div><div class='signal-val' style='color:#ff6b35;'>{fmt(val,norm_method)}</div>
-                      <div style='font-size:0.65rem;color:#ff9d6b;text-align:right;'>▲ {pct:+.1f}%</div></div>
-                    </div>""", unsafe_allow_html=True)
-            with sig_c2:
-                st.markdown('<div style="font-size:0.65rem;color:#00B8D4;letter-spacing:0.15em;margin-bottom:8px;">▼ DECLINING RISK</div>', unsafe_allow_html=True)
-                for c,pct in top_dn.items():
-                    val = last[c]
-                    st.markdown(f"""
-                    <div class='signal-card' style='border-color:rgba(0,255,157,0.15);'>
-                      <div><div class='signal-name'>{COUNTRY_NAMES.get(c,c)}</div>
-                      <div class='signal-topic'>{sel_label}</div></div>
-                      <div><div class='signal-val' style='color:#00B8D4;'>{fmt(val,norm_method)}</div>
-                      <div style='font-size:0.65rem;color:#00cc7a;text-align:right;'>{pct:+.1f}%</div></div>
-                    </div>""", unsafe_allow_html=True)
-
-    st.markdown('<div class="h-div"></div>', unsafe_allow_html=True)
-
-    # Time Series with Peak Detection
-    col_ts, col_map = st.columns([3,2])
-    with col_ts:
-        st.markdown('<div class="sec-hdr">Time Series Analysis</div>', unsafe_allow_html=True)
-        if sel_countries:
-            fig_ts, peak_info = chart_timeseries_with_peaks(
-                df_recent, sel_countries,
-                f'{sel_label}{norm_suffix} · Last {n_days} Days',
-                norm_method, show_peaks=True
-            )
-            st.plotly_chart(fig_ts, use_container_width=True, config={'displayModeBar':False})
-
-            # Peak News Section
-            if peak_info and sel_countries:
-                with st.expander("📰  Peak Analysis — What Happened at Spike Points?", expanded=False):
-                    st.markdown('<div class="sec-hdr">GDELT Headlines Around Peak Dates</div>', unsafe_allow_html=True)
-                    for c, peaks in peak_info.items():
-                        cname = COUNTRY_NAMES.get(c, c)
-                        for pk_date in peaks[:1]:  # top 1 peak per country
-                            pk_str = pk_date.strftime('%Y-%m-%d')
-                            st.markdown(f"""
-                            <div class="peak-date-badge">⚡ {cname} — Peak: {pk_date.strftime('%d %b %Y')}</div>
-                            """, unsafe_allow_html=True)
-                            with st.spinner(f'Fetching news for {cname}...'):
-                                articles = fetch_peak_news(c, sel_topic, pk_str)
-                            if articles:
-                                for art in articles:
-                                    title  = art.get('title','No title')
-                                    source = art.get('domain','')
-                                    url    = art.get('url','#')
-                                    seendate = art.get('seendate','')
-                                    date_disp = seendate[:8] if len(seendate)>=8 else ''
-                                    if date_disp:
-                                        try: date_disp = pd.Timestamp(date_disp).strftime('%d %b %Y')
-                                        except: pass
-                                    st.markdown(f"""
-                                    <div class="peak-news-item">
-                                      <div class="peak-news-headline">
-                                        <a href="{url}" target="_blank" style="color:#1a3a70;text-decoration:none;">
-                                          {title[:120]}{'...' if len(title)>120 else ''}
-                                        </a>
-                                      </div>
-                                      <div class="peak-news-src">{source} · {date_disp}</div>
-                                    </div>""", unsafe_allow_html=True)
-                            else:
-                                st.markdown('<div style="color:rgba(100,150,180,0.4);font-size:0.72rem;padding:8px 0;">No news found for this peak period.</div>', unsafe_allow_html=True)
-        else:
-                st.info("Select at least one country from the sidebar.")
-
-    with col_map:
-        st.markdown('<div class="sec-hdr">Global Risk Map</div>', unsafe_allow_html=True)
-        if map_date in df_norm.columns:
-            _stc.html(risk_globe_html(df_norm, map_date), height=640, scrolling=False)
-
-    st.markdown('<div class="h-div"></div>', unsafe_allow_html=True)
-
-    # Heatmap + Ranking
-    col_h, col_r = st.columns([3,2])
-    with col_h:
-        st.markdown('<div class="sec-hdr">Country Heatmap</div>', unsafe_allow_html=True)
-        _stc.html(heatmap_glow_html(df_recent, heatmap_n, norm_method, sel_label), height=580, scrolling=False)
-    with col_r:
-        st.markdown('<div class="sec-hdr">Country Ranking</div>', unsafe_allow_html=True)
-        if map_date in df_norm.columns:
-            st.plotly_chart(chart_ranking(df_norm, map_date),
-                use_container_width=True, config={'displayModeBar':False})
-
-    # Top Bilateral Alerts
-    st.markdown('<div class="h-div"></div>', unsafe_allow_html=True)
-    with st.expander("🚨  Top 5 Bilateral Tension Alerts — Auto-Detected", expanded=True):
-        st.markdown('<div class="sec-hdr">Highest Risk Country Pairs · Last 7 Days</div>', unsafe_allow_html=True)
-        top_pairs = compute_top_tensions(tension_norm, coop_norm, deteri_norm)
-        for rank, pair in enumerate(top_pairs, 1):
-            n1  = COUNTRY_NAMES.get(pair['c1'],pair['c1'])
-            n2  = COUNTRY_NAMES.get(pair['c2'],pair['c2'])
-            net = pair['net']; trnd = pair['trend']
-            if   net>=65: badge_cls,badge_txt,bar_col = 'badge-crit','CRITICAL','#e05060'
-            elif net>=45: badge_cls,badge_txt,bar_col = 'badge-high','HIGH','#e06030'
-            elif net>=25: badge_cls,badge_txt,bar_col = 'badge-med','ELEVATED','#f59e0b'
-            else:         badge_cls,badge_txt,bar_col = 'badge-low','MODERATE','#00b4d8'
-            t_sym = '▲' if trnd>0.5 else ('▼' if trnd<-0.5 else '→')
-            t_col = '#e06030' if trnd>0.5 else ('#00B8D4' if trnd<-0.5 else '#7a9ab8')
-            st.markdown(f"""
-            <div class="pair-card" style="border-color:rgba(255,255,255,0.06);">
-              <div style="font-size:1rem;font-weight:700;color:rgba(0,150,255,0.35);
-                   font-family:monospace;width:22px;flex-shrink:0;">#{rank}</div>
-              <div style="flex:1;min-width:0;">
-                <div style="font-size:0.85rem;font-weight:600;color:#2a4060;margin-bottom:5px;">
-                  {n1}<span style="color:rgba(123,47,255,0.6);padding:0 6px;">↔</span>{n2}
-                </div>
-                <div style="background:rgba(0,0,0,0.35);border-radius:3px;height:3px;width:100%;">
-                  <div style="background:{bar_col};width:{min(net,100):.0f}%;height:3px;
-                       border-radius:3px;box-shadow:0 0 8px {bar_col}70;"></div>
-                </div>
-              </div>
-              <div style="text-align:right;flex-shrink:0;margin-left:14px;">
-                <div style="font-size:1rem;font-weight:700;color:{bar_col};">{net:.1f}</div>
-                <div style="font-size:0.62rem;color:{t_col};font-family:monospace;">{t_sym} {abs(trnd):.1f}</div>
-              </div>
-              <div style="flex-shrink:0;margin-left:10px;">
-                <span class="{badge_cls}">{badge_txt}</span>
-              </div>
-            </div>""", unsafe_allow_html=True)
 
     # Data Table
     with st.expander("📊  Data Table — Selected Countries", expanded=False):
@@ -2867,65 +2680,6 @@ def render_predictions():
 
     st.markdown('<div class="h-div" style="margin:24px 0;"></div>', unsafe_allow_html=True)
 
-    # ── Top Movers (global) ───────────────────────────────────
-    if trend_df is not None:
-        st.markdown('<div class="sec-hdr">🌍  Global Top Movers — Next 12 Months</div>',
-                    unsafe_allow_html=True)
-        col_rise, col_fall = st.columns(2)
-
-        with col_rise:
-            st.markdown("""
-            <div style='font-size:0.62rem;color:rgba(255,75,110,0.6);
-                 font-family:monospace;letter-spacing:0.18em;
-                 margin-bottom:8px;'>▲  HIGHEST RISING RISKS</div>""",
-                        unsafe_allow_html=True)
-            top_rise = trend_df.nlargest(10, 'trend_pct')
-            for _, r in top_rise.iterrows():
-                _t = r['topic'] if pd.notna(r['topic']) else ''
-                lbl = TOPIC_LABELS.get(_t, str(_t).replace('_', ' ').title() if _t else 'Unknown')
-                cnt = COUNTRY_NAMES.get(r['country'], r['country'])
-                st.markdown(f"""
-                <div style='display:flex;justify-content:space-between;align-items:center;
-                     padding:5px 8px;margin-bottom:3px;
-                     background:rgba(255,75,110,0.05);
-                     border:1px solid rgba(255,75,110,0.12);border-radius:5px;'>
-                  <div>
-                    <div style='font-size:0.73rem;color:#2a4060;'>{lbl}</div>
-                    <div style='font-size:0.6rem;color:rgba(0,150,255,0.5);
-                         font-family:monospace;'>{cnt}</div>
-                  </div>
-                  <div style='font-size:0.85rem;font-weight:700;
-                       color:#e05060;font-family:monospace;'>
-                    +{r['trend_pct']:.1f}%
-                  </div>
-                </div>""", unsafe_allow_html=True)
-
-        with col_fall:
-            st.markdown("""
-            <div style='font-size:0.62rem;color:rgba(0,255,157,0.6);
-                 font-family:monospace;letter-spacing:0.18em;
-                 margin-bottom:8px;'>▼  HIGHEST FALLING RISKS</div>""",
-                        unsafe_allow_html=True)
-            top_fall = trend_df.nsmallest(10, 'trend_pct')
-            for _, r in top_fall.iterrows():
-                _t = r['topic'] if pd.notna(r['topic']) else ''
-                lbl = TOPIC_LABELS.get(_t, str(_t).replace('_', ' ').title() if _t else 'Unknown')
-                cnt = COUNTRY_NAMES.get(r['country'], r['country'])
-                st.markdown(f"""
-                <div style='display:flex;justify-content:space-between;align-items:center;
-                     padding:5px 8px;margin-bottom:3px;
-                     background:rgba(0,255,157,0.04);
-                     border:1px solid rgba(0,255,157,0.10);border-radius:5px;'>
-                  <div>
-                    <div style='font-size:0.73rem;color:#2a4060;'>{lbl}</div>
-                    <div style='font-size:0.6rem;color:rgba(0,150,255,0.5);
-                         font-family:monospace;'>{cnt}</div>
-                  </div>
-                  <div style='font-size:0.85rem;font-weight:700;
-                       color:#00B8D4;font-family:monospace;'>
-                    {r['trend_pct']:.1f}%
-                  </div>
-                </div>""", unsafe_allow_html=True)
 
     _render_footer()
 
@@ -3434,8 +3188,6 @@ def _answer_question(question, df_raw, trend_df, pred_df, insights_df):
 </div>"""
 
 
-
-
 @st.cache_data(ttl=3600)
 def load_enriched_articles():
     """Load RSS-fetched quality articles (last 30 days)."""
@@ -3523,7 +3275,6 @@ def _build_qa_context(question, article_df, commodity_df):
                     parts.append(f"{r['name']}: {r['price']} {r['unit']} | 1d: {c1d_s} | 7d: {c7d_s}")
 
     return '\n'.join(parts)
-
 
 
 def _call_claude_for_qa(question, df_raw, trend_df, pred_df, insights_df):
@@ -3804,7 +3555,6 @@ def render_insights():
     _render_footer()
 
 
-
 # ═══════════════════════════════════════════════════════════════
 # FOOTER
 # ═══════════════════════════════════════════════════════════════
@@ -3849,7 +3599,6 @@ def _node_label(node):
     return node, ''
 
 
-
 @st.cache_data(ttl=3600)
 def fetch_causal_news(topic, country_code, max_records=5):
     """Fetch recent news from GDELT DOC API for a causal topic+country."""
@@ -3892,7 +3641,6 @@ def fetch_causal_news(topic, country_code, max_records=5):
         return results
     except Exception:
         return []
-
 
 
 def build_network_figure(filtered, highlight_nodes=None, focus_node=None):
@@ -4543,7 +4291,6 @@ def render_causality():
                          'max_f_stat': 'F-Stat', 'min_p_value': 'p-value', 'best_lag': 'Lag (m)'}),
             use_container_width=True
         )
-
 
 
 # ── PDF GENERATION HELPERS ────────────────────────────────────────────
@@ -5384,10 +5131,247 @@ div[data-testid="stMetric"]:hover{box-shadow:0 0 20px rgba(0,255,200,0.2),0 0 40
 </style>
 """, unsafe_allow_html=True)
 
+
+# ═══════════════════════════════════════════════════════════════
+# PAGE: THREAT RADAR
+# ═══════════════════════════════════════════════════════════════
+def render_threat_radar():
+
+    st.markdown('<div class="sec-hdr">🔴  Live Threat Overview</div>', unsafe_allow_html=True)
+
+    # ── Live Top Tension Pairs ──
+    st.markdown('<div class="sec-hdr">⚡  Live Top Tension Pairs</div>', unsafe_allow_html=True)
+    top_pairs = compute_top_tensions(tension_norm, coop_norm, deteri_norm)
+    if top_pairs:
+        cols_tp = st.columns(len(top_pairs))
+        for col_el, pair in zip(cols_tp, top_pairs):
+            with col_el:
+                n1  = COUNTRY_NAMES.get(pair['c1'],pair['c1'])
+                n2  = COUNTRY_NAMES.get(pair['c2'],pair['c2'])
+                net = pair['net']
+                clr = '#e05060' if net>=45 else ('#f59e0b' if net>=25 else '#00b4d8')
+                st.markdown(f"""
+                <div style="background:rgba(0,10,28,0.8);border:1px solid {clr}25;
+                    border-radius:10px;padding:14px 10px;text-align:center;
+                    border-top:2px solid {clr}">
+                  <div style="font-size:0.78rem;color:#8aa0bc">{n1}</div>
+                  <div style="font-size:0.55rem;color:{clr};letter-spacing:0.2em;margin:2px 0">⇔ VS ⇔</div>
+                  <div style="font-size:0.78rem;color:#8aa0bc">{n2}</div>
+                  <div style="font-size:1.5rem;font-weight:800;color:{clr};
+                      text-shadow:0 0 12px {clr}40;margin:4px 0">{net:.0f}</div>
+                  <div style="font-size:0.58rem;color:{clr};font-family:monospace">
+                   {'CRITICAL' if net>=65 else 'HIGH' if net>=45 else 'ELEVATED' if net>=25 else 'MODERATE'}
+                  </div>
+                </div>""", unsafe_allow_html=True)
+
+    st.markdown('<div class="h-div" style="margin:24px 0 16px"></div>', unsafe_allow_html=True)
+
+    # ── Top Risk Countries ──
+    st.markdown('<div class="sec-hdr">🏴  Top Risk Countries — All Topics</div>', unsafe_allow_html=True)
+    avg_all = tension_norm.mean(axis=1).nlargest(8)
+    cols_r  = st.columns(8)
+    for col_el, (country, val) in zip(cols_r, avg_all.items()):
+        with col_el:
+            clr = '#e05060' if val>=50 else ('#f59e0b' if val>=25 else '#00b4d8')
+            st.markdown(f"""
+            <div style="background:rgba(0,10,28,0.7);border:1px solid {clr}20;
+                border-radius:8px;padding:10px 8px;text-align:center">
+              <div style="font-size:0.65rem;color:#8aa0bc">{COUNTRY_NAMES.get(country,country)}</div>
+              <div style="font-size:1.2rem;font-weight:700;color:{clr};
+                  text-shadow:0 0 10px {clr}50">{val:.0f}</div>
+            </div>""", unsafe_allow_html=True)
+
+    st.markdown('<div class="h-div" style="margin:24px 0"></div>', unsafe_allow_html=True)
+
+    # ── Anomaly Detection / Top Signals ──
+    with st.expander("⚡  Top Signals — Biggest Movers (Last 7 Days)", expanded=True):
+        st.markdown('<div class="sec-hdr">Anomaly Detection</div>', unsafe_allow_html=True)
+        # Use raw data with Score normalization for anomaly detection
+        df_all_norm = apply_norm(df.groupby(level='country').mean(), 'Score (0–100)')
+        if len(df_all_norm.columns) > 7:
+            last    = df_all_norm.iloc[:,-1]
+            prev    = df_all_norm.iloc[:,-8]
+            changes = ((last-prev)/(prev.abs().clip(lower=1.0))*100).clip(-200,200).dropna()
+            top_up  = changes.nlargest(5)
+            top_dn  = changes.nsmallest(3)
+            sig_c1, sig_c2 = st.columns(2)
+            with sig_c1:
+                st.markdown('<div style="font-size:0.65rem;color:#ff6b35;letter-spacing:0.15em;margin-bottom:8px">▲ RISING RISK</div>',
+                            unsafe_allow_html=True)
+                for c,pct in top_up.items():
+                    cname = COUNTRY_NAMES.get(c, c)
+                    clr   = '#e05060' if abs(pct)>=50 else '#ff6b35'
+                    st.markdown(f"""
+                    <div style="display:flex;justify-content:space-between;align-items:center;
+                        padding:8px 12px;margin-bottom:6px;
+                        background:rgba(224,80,96,0.06);border:1px solid rgba(224,80,96,0.12);
+                        border-radius:8px">
+                      <div>
+                        <div style="font-size:0.82rem;color:#c0d0e0;font-weight:600">{cname}</div>
+                        <div style="font-size:0.62rem;color:#5a7a9a">All Topics</div>
+                        <div style="font-size:0.95rem;font-weight:700;color:{clr}">{last[c]:.1f}</div>
+                      </div>
+                      <div style="font-size:0.8rem;font-weight:700;color:{clr}">
+                        ▲ {'+' if pct>0 else ''}{pct:.1f}%
+                      </div>
+                    </div>""", unsafe_allow_html=True)
+            with sig_c2:
+                st.markdown('<div style="font-size:0.65rem;color:#00c9a7;letter-spacing:0.15em;margin-bottom:8px">▼ DECLINING RISK</div>',
+                            unsafe_allow_html=True)
+                for c,pct in top_dn.items():
+                    cname = COUNTRY_NAMES.get(c, c)
+                    st.markdown(f"""
+                    <div style="display:flex;justify-content:space-between;align-items:center;
+                        padding:8px 12px;margin-bottom:6px;
+                        background:rgba(0,201,167,0.04);border:1px solid rgba(0,201,167,0.10);
+                        border-radius:8px">
+                      <div>
+                        <div style="font-size:0.82rem;color:#c0d0e0;font-weight:600">{cname}</div>
+                        <div style="font-size:0.62rem;color:#5a7a9a">All Topics</div>
+                        <div style="font-size:0.95rem;font-weight:700;color:#00c9a7">{last[c]:.1f}</div>
+                      </div>
+                      <div style="font-size:0.8rem;font-weight:700;color:#00c9a7">
+                        {pct:.1f}%
+                      </div>
+                    </div>""", unsafe_allow_html=True)
+        else:
+            st.info("Need at least 7 days of data for anomaly detection.")
+
+    st.markdown('<div class="h-div" style="margin:16px 0"></div>', unsafe_allow_html=True)
+
+    # ── Top 5 Bilateral Tension Alerts ──
+    with st.expander("🚨  Top 5 Bilateral Tension Alerts — Auto-Detected", expanded=True):
+        st.markdown('<div class="sec-hdr">Highest Risk Country Pairs · Last 7 Days</div>', unsafe_allow_html=True)
+        top_pairs_bi = compute_top_tensions(tension_norm, coop_norm, deteri_norm)
+        for rank, pair in enumerate(top_pairs_bi, 1):
+            n1  = COUNTRY_NAMES.get(pair['c1'],pair['c1'])
+            n2  = COUNTRY_NAMES.get(pair['c2'],pair['c2'])
+            net = pair['net'];  trnd = pair['trend']
+            if   net>=65: badge_cls,badge_txt,bar_col = 'badge-crit','CRITICAL','#e05060'
+            elif net>=45: badge_cls,badge_txt,bar_col = 'badge-high','HIGH','#e06030'
+            elif net>=25: badge_cls,badge_txt,bar_col = 'badge-med','ELEVATED','#f59e0b'
+            else:         badge_cls,badge_txt,bar_col = 'badge-low','MODERATE','#00b4d8'
+            pct = min(net, 100)
+            arrow = '▲' if trnd>=0 else '▼'
+            st.markdown(f"""
+            <div style="margin-bottom:14px">
+              <div style="font-size:0.62rem;color:#5a7a9a;font-family:monospace;margin-bottom:2px">#{rank}</div>
+              <div style="font-size:0.78rem;color:{bar_col}">{n1} ⇔ {n2}</div>
+              <div style="background:rgba(0,10,28,0.6);border-radius:6px;height:8px;margin:6px 0;overflow:hidden">
+                <div style="width:{pct}%;height:100%;background:{bar_col};border-radius:6px"></div>
+              </div>
+              <div style="display:flex;justify-content:flex-end;gap:12px;align-items:center">
+                <span style="font-size:1.15rem;font-weight:800;color:{bar_col}">{net:.1f}</span>
+                <span style="font-size:0.65rem;color:{bar_col}">{arrow} {abs(trnd):.1f}</span>
+              </div>
+              <div style="font-size:0.55rem;color:{bar_col};font-family:monospace;letter-spacing:0.15em;margin-top:2px">{badge_txt}</div>
+            </div>""", unsafe_allow_html=True)
+
+    st.markdown('<div class="h-div" style="margin:16px 0"></div>', unsafe_allow_html=True)
+
+    # ── Global Top Movers (from predictions) ──
+    if trend_df is not None:
+        st.markdown('<div class="sec-hdr">🌍  Global Top Movers — Next 12 Months</div>',
+                    unsafe_allow_html=True)
+        col_rise, col_fall = st.columns(2)
+
+        with col_rise:
+            st.markdown(
+            '<div style="font-size:0.62rem;color:rgba(255,75,110,0.6);'
+            'font-family:monospace;letter-spacing:0.18em;'
+            'margin-bottom:8px">▲ HIGHEST RISING RISKS</div>',
+                    unsafe_allow_html=True)
+            top_rise = trend_df.nlargest(10, 'trend_pct')
+            for _, r in top_rise.iterrows():
+                _t = r['topic'] if pd.notna(r['topic']) else ''
+                lbl = TOPIC_LABELS.get(_t, str(_t).replace('_',' ').title() if _t else 'Unknown')
+                cnt = COUNTRY_NAMES.get(r['country'], r['country'])
+                st.markdown(f"""
+                <div style="display:flex;justify-content:space-between;align-items:center;
+                    padding:5px 8px;margin-bottom:3px;
+                    background:rgba(224,80,96,0.04);
+                    border:1px solid rgba(224,80,96,0.10);border-radius:5px">
+                  <div>
+                    <div style="font-size:0.73rem;color:#2a4060">{lbl}</div>
+                    <div style="font-size:0.58rem;color:#5a7a9a">{cnt}</div>
+                  </div>
+                  <div style="font-size:0.85rem;font-weight:700;color:#e05060">
+                    +{r['trend_pct']:.1f}%
+                  </div>
+                </div>""", unsafe_allow_html=True)
+
+        with col_fall:
+            st.markdown(
+            '<div style="font-size:0.62rem;color:rgba(0,255,157,0.5);'
+            'font-family:monospace;letter-spacing:0.18em;'
+            'margin-bottom:8px">▼ HIGHEST FALLING RISKS</div>',
+                    unsafe_allow_html=True)
+            top_fall = trend_df.nsmallest(10, 'trend_pct')
+            for _, r in top_fall.iterrows():
+                _t = r['topic'] if pd.notna(r['topic']) else ''
+                lbl = TOPIC_LABELS.get(_t, str(_t).replace('_',' ').title() if _t else 'Unknown')
+                cnt = COUNTRY_NAMES.get(r['country'], r['country'])
+                st.markdown(f"""
+                <div style="display:flex;justify-content:space-between;align-items:center;
+                    padding:5px 8px;margin-bottom:3px;
+                    background:rgba(0,255,157,0.04);
+                    border:1px solid rgba(0,255,157,0.10);border-radius:5px">
+                  <div>
+                    <div style="font-size:0.73rem;color:#2a4060">{lbl}</div>
+                    <div style="font-size:0.58rem;color:#5a7a9a">{cnt}</div>
+                  </div>
+                  <div style="font-size:0.85rem;font-weight:700;color:#00ff9d">
+                    {r['trend_pct']:.1f}%
+                  </div>
+                </div>""", unsafe_allow_html=True)
+
+    st.markdown('<div class="h-div" style="margin:24px 0"></div>', unsafe_allow_html=True)
+
+    # ── Breaking News ──
+    st.markdown('<div class="sec-hdr">📡  Breaking News — Live Feed</div>', unsafe_allow_html=True)
+    _bn_queries = [
+        ('🔥 Conflict & War', 'war conflict military attack troops'),
+        ('⚠️ Political Crisis', 'coup sanctions political crisis emergency'),
+        ('💥 Terrorism', 'terrorism attack bombing explosion'),
+        ('🌊 Natural Disaster', 'earthquake hurricane flood disaster tsunami'),
+        ('📉 Economic Crisis', 'recession inflation economic crisis default'),
+    ]
+    bn_tabs = st.tabs([q[0] for q in _bn_queries])
+    for tab, (label, query) in zip(bn_tabs, _bn_queries):
+        with tab:
+            with st.spinner(f'Fetching {label} news...'):
+                articles = fetch_gdelt_news(query, max_records=6)
+            if articles:
+                for art in articles:
+                    title  = art.get('title', 'No title')
+                    source = art.get('domain', '')
+                    url    = art.get('url', '#')
+                    seendate = art.get('seendate', '')
+                    date_disp = seendate[:8] if len(seendate)>=8 else ''
+                    if date_disp:
+                        try: date_disp = pd.Timestamp(date_disp).strftime('%d %b %Y')
+                        except: pass
+                    st.markdown(f"""
+                    <div style="padding:10px 14px;margin-bottom:8px;
+                        background:rgba(0,10,28,0.7);border:1px solid rgba(0,180,255,0.08);
+                        border-radius:8px;border-left:3px solid #e05060">
+                      <a href="{url}" target="_blank"
+                         style="color:#c0d8ee;font-size:0.82rem;font-weight:600;
+                                text-decoration:none">{title}</a>
+                      <div style="display:flex;gap:12px;margin-top:4px">
+                        <span style="font-size:0.6rem;color:#5a7a9a">{source}</span>
+                        <span style="font-size:0.6rem;color:#3a6a8a">{date_disp}</span>
+                      </div>
+                    </div>""", unsafe_allow_html=True)
+            else:
+                st.caption('No recent articles found.')
+
+    _render_footer()
+
 page = st.session_state.get('page', 'home')
 
 # Solo tier: block access to pro-only pages
-if _IS_SOLO and page not in ('home', 'indices', 'profile', 'news', 'scenarios'):
+if _IS_SOLO and page not in ('home', 'indices', 'profile', 'news', 'scenarios', 'threat_radar'):
     st.session_state.page = 'home'
     page = 'home'
     st.warning('\u26a0\ufe0f This feature is available on the Pro plan. Upgrade at neraicorp.com/pricing')
@@ -5398,6 +5382,7 @@ elif page == 'news':        render_news()
 elif page == 'predictions': render_predictions()
 elif page == 'causality':   render_causality()
 elif page == 'scenarios':   render_scenarios()
+elif page == 'threat_radar': render_threat_radar()
 elif page == 'insights':    render_insights()
 elif page == 'briefing':    render_briefing_room()
 elif page == 'api':         render_api()
