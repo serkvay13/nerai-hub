@@ -13,7 +13,8 @@ import sys
 import argparse
 from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from statsmodels.tsa.stattools import grangercausalitytests
+from statsmodels.tsa.stattools import grangercausalitytests, adfuller
+from statsmodels.stats.multitest import multipletests
 from scipy import stats
 
 warnings.filterwarnings('ignore')
@@ -164,6 +165,31 @@ def test_pair(source_id, target_id, source_vals, target_vals):
 
         src_clean = source_vals[valid_idx]  # already numpy array
         tgt_clean = target_vals[valid_idx]  # already numpy array
+
+        # --- FAZ 1a: ADF Stationarity Test ---
+        # Granger causality requires stationary series; apply differencing if needed
+        def _ensure_stationary(series, max_diff=2):
+            """Apply differencing until ADF test passes (p < 0.05), up to max_diff times."""
+            for d in range(max_diff + 1):
+                try:
+                    adf_p = adfuller(series, autolag='AIC')[1]
+                    if adf_p < 0.05:
+                        return series, d
+                except Exception:
+                    return series, d
+                if d < max_diff:
+                    series = np.diff(series)
+            return series, max_diff
+
+        src_clean, src_d = _ensure_stationary(src_clean)
+        tgt_clean, tgt_d = _ensure_stationary(tgt_clean)
+
+        # After differencing, re-check minimum length
+        min_len = min(len(src_clean), len(tgt_clean))
+        if min_len < max_lag + 5:
+            return None
+        src_clean = src_clean[-min_len:]
+        tgt_clean = tgt_clean[-min_len:]
 
         # Run Granger causality test
         data = np.column_stack([tgt_clean, src_clean])
@@ -324,7 +350,24 @@ def run_causality_analysis(wide_df, metadata, max_series=None):
             if result:
                 edges.append(result)
 
-    print(f"Found {len(edges)} significant causal relationships")
+    print(f"Found {len(edges)} significant causal relationships (pre-FDR)")
+
+    # --- FAZ 1b: Benjamini-Hochberg FDR Correction ---
+    # With thousands of tests, raw p-values produce many false positives
+    if edges:
+        p_values = [e['p_value'] for e in edges]
+        rejected, p_adjusted, _, _ = multipletests(p_values, alpha=CONFIG['P_VALUE_THRESHOLD'], method='fdr_bh')
+        
+        # Update edges with adjusted p-values and filter
+        filtered_edges = []
+        for edge, adj_p, is_sig in zip(edges, p_adjusted, rejected):
+            edge['p_value_raw'] = edge['p_value']
+            edge['p_value'] = float(adj_p)
+            if is_sig:
+                filtered_edges.append(edge)
+        
+        print(f"After FDR correction: {len(filtered_edges)} relationships remain (from {len(edges)})")
+        edges = filtered_edges
 
     return pd.DataFrame(edges) if edges else pd.DataFrame()
 
