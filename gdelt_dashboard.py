@@ -2111,6 +2111,26 @@ def render_indices():
                         'U0001f512 CSV download — <b>Pro</b> plan only.</div>',
                         unsafe_allow_html=True)
 
+
+    # ── Heatmap ──────────────────────────────────────────────
+    try:
+        st.markdown("---")
+        st.subheader("\U0001f5fa\ufe0f  Risk Heatmap \u2014 Top Countries")
+        _fig_hm = chart_heatmap(df_norm, heatmap_n, norm_method)
+        if _fig_hm is not None:
+            st.plotly_chart(_fig_hm, use_container_width=True)
+    except Exception:
+        pass
+
+    # ── Global Risk Map ────────────────────────────────────────
+    try:
+        st.subheader("\U0001f30d  Global Risk Map")
+        _fig_wm = chart_world(df_norm, "date")
+        if _fig_wm is not None:
+            st.plotly_chart(_fig_wm, use_container_width=True)
+    except Exception:
+        pass
+
     _render_footer()
 
 # ═══════════════════════════════════════════════════════════════
