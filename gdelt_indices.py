@@ -227,10 +227,18 @@ def compute_day_indices(df):
     df['QuadClass']   = pd.to_numeric(df['QuadClass'],   errors='coerce').fillna(0)
 
     # FIX 3: Compute directional intensity columns
-    # Instability topics: negative Goldstein/AvgTone signals high intensity
-    df['instab_intensity'] = ((-df['Goldstein']).clip(lower=0)/10 + (-df['AvgTone']).clip(lower=0)/100) / 2
-    # Stability topics: positive Goldstein/AvgTone signals high intensity
-    df['stab_intensity']   = (df['Goldstein'].clip(lower=0)/10 + df['AvgTone'].clip(lower=0)/100) / 2
+    # --- FAZ 1d: Z-score normalization instead of fixed /10 and /100 ---
+    # Goldstein (-10,+10) and AvgTone (-100,+100) have different distributions.
+    # Z-score ensures equal contribution regardless of scale differences.
+    _g_mean, _g_std = df['Goldstein'].mean(), df['Goldstein'].std().clip(lower=1e-6)
+    _a_mean, _a_std = df['AvgTone'].mean(), df['AvgTone'].std().clip(lower=1e-6)
+    _g_z = (df['Goldstein'] - _g_mean) / _g_std  # z-scored Goldstein
+    _a_z = (df['AvgTone'] - _a_mean) / _a_std      # z-scored AvgTone
+
+    # Instability topics: negative z-scores signal high intensity
+    df['instab_intensity'] = ((-_g_z).clip(lower=0) + (-_a_z).clip(lower=0)) / 2
+    # Stability topics: positive z-scores signal high intensity
+    df['stab_intensity']   = (_g_z.clip(lower=0) + _a_z.clip(lower=0)) / 2
 
     # Compute contributions (before weighting by geo)
     df['instab_contribution'] = df['NumMentions'] * df['instab_intensity']
