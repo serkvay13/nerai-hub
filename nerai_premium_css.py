@@ -615,313 +615,666 @@ def inject_global_css():
     /* Hide hamburger — but NOT sidebar collapse/expand buttons */
     .stApp > header button[kind="header"] {{ display: none !important; }}
 
+    /* ══════════════════════════════════════════════════════
+       PREMIUM HOME PAGE — WORLD CLASS UPGRADE
+       ══════════════════════════════════════════════════════ */
+
+    /* ── MODULE TILE CARDS — Glassmorphism ── */
+    .stApp [data-testid="column"] > div > div {{
+        background: linear-gradient(135deg,
+            rgba(15, 23, 42, 0.85) 0%,
+            rgba(10, 14, 23, 0.95) 100%) !important;
+        border: 1px solid rgba(0, 212, 255, 0.08) !important;
+        border-radius: 16px !important;
+        padding: 28px 24px !important;
+        backdrop-filter: blur(20px) !important;
+        -webkit-backdrop-filter: blur(20px) !important;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        position: relative !important;
+        overflow: hidden !important;
+    }}
+
+    .stApp [data-testid="column"] > div > div::before {{
+        content: '' !important;
+        position: absolute !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        height: 1px !important;
+        background: linear-gradient(90deg,
+            transparent 0%,
+            rgba(0, 212, 255, 0.3) 50%,
+            transparent 100%) !important;
+    }}
+
+    .stApp [data-testid="column"] > div > div:hover {{
+        border-color: rgba(0, 212, 255, 0.25) !important;
+        box-shadow:
+            0 0 30px rgba(0, 212, 255, 0.06),
+            0 8px 32px rgba(0, 0, 0, 0.4),
+            inset 0 1px 0 rgba(0, 212, 255, 0.1) !important;
+        transform: translateY(-4px) !important;
+    }}
+
+    /* ── PREMIUM BUTTONS ── */
+    .stApp .stButton > button {{
+        background: linear-gradient(135deg,
+            rgba(0, 212, 255, 0.12) 0%,
+            rgba(0, 212, 255, 0.04) 100%) !important;
+        border: 1px solid rgba(0, 212, 255, 0.3) !important;
+        border-radius: 10px !important;
+        color: {TOKENS['cyan']} !important;
+        font-family: 'Inter', sans-serif !important;
+        font-weight: 600 !important;
+        font-size: 13px !important;
+        letter-spacing: 0.8px !important;
+        text-transform: uppercase !important;
+        padding: 12px 28px !important;
+        transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        cursor: pointer !important;
+        position: relative !important;
+        overflow: hidden !important;
+        width: 100% !important;
+    }}
+
+    .stApp .stButton > button::before {{
+        content: '' !important;
+        position: absolute !important;
+        top: 0 !important;
+        left: -100% !important;
+        width: 100% !important;
+        height: 100% !important;
+        background: linear-gradient(90deg,
+            transparent,
+            rgba(0, 212, 255, 0.15),
+            transparent) !important;
+        transition: left 0.5s ease !important;
+    }}
+
+    .stApp .stButton > button:hover {{
+        background: linear-gradient(135deg,
+            rgba(0, 212, 255, 0.22) 0%,
+            rgba(0, 212, 255, 0.10) 100%) !important;
+        border-color: {TOKENS['cyan']} !important;
+        box-shadow: 0 0 20px rgba(0, 212, 255, 0.15),
+                    0 4px 16px rgba(0, 0, 0, 0.3) !important;
+        transform: translateY(-2px) !important;
+    }}
+
+    .stApp .stButton > button:hover::before {{
+        left: 100% !important;
+    }}
+
+    .stApp .stButton > button:active {{
+        transform: translateY(0) !important;
+        box-shadow: 0 0 10px rgba(0, 212, 255, 0.1) !important;
+    }}
+
+    /* ── STREAMLIT METRICS — Premium Style ── */
+    .stApp [data-testid="stMetric"] {{
+        background: linear-gradient(135deg,
+            rgba(0, 212, 255, 0.06) 0%,
+            rgba(15, 23, 42, 0.8) 100%) !important;
+        border: 1px solid rgba(0, 212, 255, 0.1) !important;
+        border-radius: 14px !important;
+        padding: 20px 24px !important;
+        transition: all 0.3s ease !important;
+    }}
+
+    .stApp [data-testid="stMetric"]:hover {{
+        border-color: rgba(0, 212, 255, 0.25) !important;
+        box-shadow: 0 0 20px rgba(0, 212, 255, 0.06) !important;
+    }}
+
+    .stApp [data-testid="stMetricValue"] {{
+        color: {TOKENS['cyan']} !important;
+        font-weight: 700 !important;
+        font-size: 28px !important;
+        font-family: 'JetBrains Mono', monospace !important;
+    }}
+
+    .stApp [data-testid="stMetricLabel"] {{
+        color: rgba(148, 163, 184, 0.8) !important;
+        font-weight: 500 !important;
+        font-size: 11px !important;
+        letter-spacing: 1.2px !important;
+        text-transform: uppercase !important;
+    }}
+
+    .stApp [data-testid="stMetricDelta"] > div {{
+        font-family: 'JetBrains Mono', monospace !important;
+        font-size: 12px !important;
+    }}
+
+    /* ── HORIZONTAL BLOCKS — Even spacing ── */
+    .stApp [data-testid="stHorizontalBlock"] {{
+        gap: 16px !important;
+    }}
+
+    /* ── SECTION HEADERS ── */
+    .stApp h1 {{
+        font-family: 'Inter', sans-serif !important;
+        font-weight: 800 !important;
+        color: #f0f4f8 !important;
+        letter-spacing: -0.5px !important;
+    }}
+
+    .stApp h2 {{
+        font-family: 'Inter', sans-serif !important;
+        font-weight: 700 !important;
+        color: #e2e8f0 !important;
+        letter-spacing: -0.3px !important;
+    }}
+
+    .stApp h3 {{
+        font-family: 'Inter', sans-serif !important;
+        font-weight: 600 !important;
+        color: #cbd5e1 !important;
+        letter-spacing: 0 !important;
+    }}
+
+    /* ── MARKDOWN TEXT REFINEMENT ── */
+    .stApp .stMarkdown p {{
+        color: rgba(203, 213, 225, 0.85) !important;
+        line-height: 1.65 !important;
+    }}
+
+    /* ── HORIZONTAL DIVIDERS ── */
+    .stApp hr {{
+        border-color: rgba(0, 212, 255, 0.08) !important;
+        margin: 24px 0 !important;
+    }}
+
+    /* ── EXPANDER PREMIUM ── */
+    .stApp [data-testid="stExpander"] {{
+        background: rgba(15, 23, 42, 0.6) !important;
+        border: 1px solid rgba(0, 212, 255, 0.08) !important;
+        border-radius: 12px !important;
+    }}
+
+    .stApp [data-testid="stExpander"]:hover {{
+        border-color: rgba(0, 212, 255, 0.15) !important;
+    }}
+
+    /* ── SELECTBOX / INPUT FIELDS ── */
+    .stApp [data-testid="stSelectbox"],
+    .stApp [data-testid="stMultiSelect"] {{
+        background: rgba(15, 23, 42, 0.6) !important;
+    }}
+
+    .stApp .stSelectbox > div > div,
+    .stApp .stMultiSelect > div > div {{
+        background: rgba(15, 23, 42, 0.8) !important;
+        border-color: rgba(0, 212, 255, 0.12) !important;
+        border-radius: 10px !important;
+    }}
+
+    /* ── TABS PREMIUM ── */
+    .stApp .stTabs [data-baseweb="tab-list"] {{
+        gap: 4px !important;
+        border-bottom: 1px solid rgba(0, 212, 255, 0.08) !important;
+    }}
+
+    .stApp .stTabs [data-baseweb="tab"] {{
+        border-radius: 8px 8px 0 0 !important;
+        padding: 10px 20px !important;
+        font-weight: 500 !important;
+        color: rgba(148, 163, 184, 0.7) !important;
+        transition: all 0.25s ease !important;
+    }}
+
+    .stApp .stTabs [aria-selected="true"] {{
+        color: {TOKENS['cyan']} !important;
+        background: rgba(0, 212, 255, 0.06) !important;
+        border-bottom: 2px solid {TOKENS['cyan']} !important;
+    }}
+
+    /* ── PLOTLY CHART CONTAINERS ── */
+    .stApp [data-testid="stPlotlyChart"] {{
+        border: 1px solid rgba(0, 212, 255, 0.06) !important;
+        border-radius: 12px !important;
+        overflow: hidden !important;
+        background: rgba(10, 14, 23, 0.5) !important;
+    }}
+
+    /* ── DATAFRAME / TABLE ── */
+    .stApp [data-testid="stDataFrame"] {{
+        border: 1px solid rgba(0, 212, 255, 0.08) !important;
+        border-radius: 12px !important;
+        overflow: hidden !important;
+    }}
+
+    /* ── SCROLLBAR PREMIUM ── */
+    .stApp ::-webkit-scrollbar {{
+        width: 6px !important;
+        height: 6px !important;
+    }}
+    .stApp ::-webkit-scrollbar-track {{
+        background: rgba(10, 14, 23, 0.3) !important;
+    }}
+    .stApp ::-webkit-scrollbar-thumb {{
+        background: rgba(0, 212, 255, 0.15) !important;
+        border-radius: 3px !important;
+    }}
+    .stApp ::-webkit-scrollbar-thumb:hover {{
+        background: rgba(0, 212, 255, 0.3) !important;
+    }}
+
+    /* ── SIDEBAR PREMIUM INTERIOR ── */
+    .stApp [data-testid="stSidebar"] {{
+        background: linear-gradient(180deg,
+            rgba(8, 12, 21, 0.98) 0%,
+            rgba(10, 14, 23, 0.99) 100%) !important;
+        border-right: 1px solid rgba(0, 212, 255, 0.06) !important;
+    }}
+
+    .stApp [data-testid="stSidebar"] [data-testid="stSelectbox"] label,
+    .stApp [data-testid="stSidebar"] .stRadio label {{
+        color: rgba(148, 163, 184, 0.7) !important;
+        font-size: 11px !important;
+        letter-spacing: 0.8px !important;
+        text-transform: uppercase !important;
+        font-weight: 500 !important;
+    }}
+
+    /* ── TOAST / ALERTS ── */
+    .stApp [data-testid="stAlert"] {{
+        border-radius: 12px !important;
+        border-left: 3px solid {TOKENS['cyan']} !important;
+        background: rgba(0, 212, 255, 0.04) !important;
+    }}
+
+    /* ── LOADING SPINNER ── */
+    .stApp .stSpinner > div {{
+        border-top-color: {TOKENS['cyan']} !important;
+    }}
+
     </style>
     """, unsafe_allow_html=True)
 
 
 def inject_home_hero():
     """
-    Home page hero — Interactive particle network globe.
-    Mevcut spinning globe yerine kullanılacak.
-    Daha hafif, daha futuristic, tam ekran uyumlu.
+    Home page hero — Enhanced AI + Geopolitical Network visualization.
+    Central AI core + city network + data packets + HUD indicators.
+    World + AI + NERAI combined in one premium hero section.
     """
     st.markdown("""
-    <div id="nerai-hero-container" style="
-        position: relative;
-        width: 100%;
-        height: 520px;
-        overflow: hidden;
-        border-radius: 20px;
-        background: radial-gradient(ellipse at 50% 50%, rgba(0,212,255,0.04) 0%, #0a0e17 70%);
-        margin-bottom: 2rem;
-    ">
-        <canvas id="nerai-globe-canvas" style="
-            position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-        "></canvas>
+    <style>
+        /* ── NERAI HERO — Scoped styles ── */
+        #nerai-hero-wrap {
+            position: relative;
+            width: 100%;
+            height: 520px;
+            overflow: hidden;
+            border-radius: 20px;
+            background: radial-gradient(ellipse at 50% 50%, rgba(0,212,255,0.04) 0%, #0a0e17 70%);
+            margin-bottom: 2rem;
+        }
+        #nerai-hero-wrap canvas {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+        }
 
-        <!-- Grid overlay -->
-        <div style="
-            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-            background:
-                linear-gradient(rgba(0,212,255,0.015) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(0,212,255,0.015) 1px, transparent 1px);
-            background-size: 50px 50px;
-            pointer-events: none;
-        "></div>
+        /* Corner brackets */
+        .nh-corner { position:absolute; width:28px; height:28px; pointer-events:none; }
+        .nh-corner.tl { top:14px; left:14px; border-top:2px solid rgba(0,212,255,0.35); border-left:2px solid rgba(0,212,255,0.35); }
+        .nh-corner.tr { top:14px; right:14px; border-top:2px solid rgba(0,212,255,0.35); border-right:2px solid rgba(0,212,255,0.35); }
+        .nh-corner.bl { bottom:40px; left:14px; border-bottom:2px solid rgba(0,212,255,0.35); border-left:2px solid rgba(0,212,255,0.35); }
+        .nh-corner.br { bottom:40px; right:14px; border-bottom:2px solid rgba(0,212,255,0.35); border-right:2px solid rgba(0,212,255,0.35); }
 
-        <!-- Scan line -->
-        <div id="nerai-scanline" style="
-            position: absolute; left: 0; right: 0;
-            height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(0,212,255,0.3), transparent);
-            animation: scanline 4s linear infinite;
-            pointer-events: none;
-        "></div>
+        /* HUD panels */
+        .nh-hud { position:absolute; pointer-events:none; z-index:12;
+                   font-family:'JetBrains Mono',monospace; }
+        .nh-hud-tl { top:18px; left:18px; }
+        .nh-hud-tr { top:18px; right:18px; text-align:right; }
+        .nh-hud-bl { bottom:44px; left:18px; }
+        .nh-hud-br { bottom:44px; right:18px; text-align:right; }
+        .nh-hud-label { font-size:9px; letter-spacing:1.5px; color:rgba(0,212,255,0.45);
+                        text-transform:uppercase; margin-bottom:2px; }
+        .nh-hud-val { font-size:15px; font-weight:700; color:rgba(0,212,255,0.85);
+                      text-shadow:0 0 12px rgba(0,212,255,0.2); }
+
+        /* Branding overlay */
+        .nh-brand { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+                    text-align:center; z-index:10; pointer-events:none; }
+        .nh-brand svg { margin-bottom:14px; filter:drop-shadow(0 0 16px rgba(0,212,255,0.35)); }
+        .nh-brand h1 { font-family:'Inter',sans-serif; font-size:2.6rem; font-weight:900;
+                       letter-spacing:-1px; color:#e8edf4; margin:0;
+                       text-shadow:0 0 50px rgba(0,212,255,0.12); }
+        .nh-brand h1 span { color:#00d4ff; }
+        .nh-brand .nh-sub { font-size:0.6rem; font-weight:600; letter-spacing:5px;
+                            text-transform:uppercase; color:rgba(0,212,255,0.55);
+                            margin-top:6px; }
+        .nh-brand .nh-desc { font-size:0.82rem; color:#6b7f99; margin-top:16px;
+                             line-height:1.5; max-width:360px; }
+
+        /* Ticker */
+        .nh-ticker { position:absolute; bottom:0; left:0; right:0; height:26px;
+                     background:linear-gradient(90deg,rgba(0,212,255,0.04),rgba(0,212,255,0.02));
+                     border-top:1px solid rgba(0,212,255,0.08);
+                     overflow:hidden; display:flex; align-items:center; pointer-events:none; z-index:11; }
+        .nh-ticker-inner { display:flex; gap:3rem; animation:nh-scroll 35s linear infinite;
+                           white-space:nowrap; font-family:'JetBrains Mono',monospace;
+                           font-size:0.58rem; letter-spacing:1px; color:rgba(0,212,255,0.22); }
+        @keyframes nh-scroll { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
+
+        /* Scanline */
+        .nh-scanline { position:absolute; left:0; right:0; height:1px;
+                       background:linear-gradient(90deg,transparent,rgba(0,212,255,0.2),transparent);
+                       animation:nh-scan 5s linear infinite; pointer-events:none; z-index:3; }
+        @keyframes nh-scan { 0%{top:0} 100%{top:100%} }
+    </style>
+
+    <div id="nerai-hero-wrap">
+        <canvas id="nh-canvas"></canvas>
+        <div class="nh-scanline"></div>
 
         <!-- Corner brackets -->
-        <div style="position:absolute;top:16px;left:16px;width:30px;height:30px;border-top:2px solid rgba(0,212,255,0.3);border-left:2px solid rgba(0,212,255,0.3);pointer-events:none;"></div>
-        <div style="position:absolute;top:16px;right:16px;width:30px;height:30px;border-top:2px solid rgba(0,212,255,0.3);border-right:2px solid rgba(0,212,255,0.3);pointer-events:none;"></div>
-        <div style="position:absolute;bottom:16px;left:16px;width:30px;height:30px;border-bottom:2px solid rgba(0,212,255,0.3);border-left:2px solid rgba(0,212,255,0.3);pointer-events:none;"></div>
-        <div style="position:absolute;bottom:16px;right:16px;width:30px;height:30px;border-bottom:2px solid rgba(0,212,255,0.3);border-right:2px solid rgba(0,212,255,0.3);pointer-events:none;"></div>
+        <div class="nh-corner tl"></div><div class="nh-corner tr"></div>
+        <div class="nh-corner bl"></div><div class="nh-corner br"></div>
 
-        <!-- Content overlay -->
-        <div style="
-            position: absolute;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            text-align: center;
-            z-index: 10;
-            pointer-events: none;
-        ">
-            <!-- NERAI Dot Grid Logo (SVG) -->
-            <svg width="48" height="48" viewBox="0 0 48 48" style="margin-bottom:16px;filter:drop-shadow(0 0 12px rgba(0,212,255,0.4));">
-                <circle cx="6" cy="6" r="3.5" fill="#0a0e17"/><circle cx="16" cy="6" r="3.5" fill="#00d4ff"/>
-                <circle cx="26" cy="6" r="3.5" fill="#0a0e17"/><circle cx="36" cy="6" r="3.5" fill="#00d4ff"/>
-                <circle cx="6" cy="16" r="3.5" fill="#00d4ff"/><circle cx="16" cy="16" r="3.5" fill="#0a0e17"/>
-                <circle cx="26" cy="16" r="3.5" fill="#00d4ff"/><circle cx="36" cy="16" r="3.5" fill="#0a0e17"/>
-                <circle cx="6" cy="26" r="3.5" fill="#0a0e17"/><circle cx="16" cy="26" r="3.5" fill="#00d4ff"/>
-                <circle cx="26" cy="26" r="3.5" fill="#0a0e17"/><circle cx="36" cy="26" r="3.5" fill="#00d4ff"/>
-                <circle cx="6" cy="36" r="3.5" fill="#00d4ff"/><circle cx="16" cy="36" r="3.5" fill="#0a0e17"/>
-                <circle cx="26" cy="36" r="3.5" fill="#00d4ff"/><circle cx="36" cy="36" r="3.5" fill="#0a0e17"/>
-            </svg>
-
-            <div style="
-                font-family: 'Inter', sans-serif;
-                font-size: 2.2rem;
-                font-weight: 900;
-                letter-spacing: -1px;
-                color: #e8edf4;
-                text-shadow: 0 0 40px rgba(0,212,255,0.15);
-                margin-bottom: 4px;
-            ">
-                NER<span style="color:#00d4ff">AI</span>
-            </div>
-            <div style="
-                font-size: 0.62rem;
-                font-weight: 600;
-                letter-spacing: 4px;
-                text-transform: uppercase;
-                color: rgba(0,212,255,0.6);
-                margin-bottom: 20px;
-            ">STRATEGIC INSIGHTS HUB</div>
-
-            <div style="
-                font-size: 0.88rem;
-                color: #8a9bb5;
-                max-width: 380px;
-                line-height: 1.6;
-                margin: 0 auto;
-            ">Geopolitical Risk Intelligence Platform</div>
+        <!-- HUD indicators -->
+        <div class="nh-hud nh-hud-tl">
+            <div class="nh-hud-label">THREATS DETECTED</div>
+            <div class="nh-hud-val" id="nh-threats">17</div>
+        </div>
+        <div class="nh-hud nh-hud-tr">
+            <div class="nh-hud-label">AI CONFIDENCE</div>
+            <div class="nh-hud-val" id="nh-conf">94.2%</div>
+        </div>
+        <div class="nh-hud nh-hud-bl">
+            <div class="nh-hud-label">DATA STREAMS</div>
+            <div class="nh-hud-val" id="nh-streams">2,847</div>
+        </div>
+        <div class="nh-hud nh-hud-br">
+            <div class="nh-hud-label">COVERAGE</div>
+            <div class="nh-hud-val">195 NATIONS</div>
         </div>
 
-        <!-- Scrolling data ticker -->
-        <div style="
-            position: absolute;
-            bottom: 14px; left: 0; right: 0;
-            overflow: hidden;
-            height: 22px;
-            pointer-events: none;
-        ">
-            <div style="
-                display: flex;
-                gap: 3rem;
-                animation: ticker 30s linear infinite;
-                white-space: nowrap;
-                font-family: 'JetBrains Mono', monospace;
-                font-size: 0.6rem;
-                letter-spacing: 1px;
-                color: rgba(0,212,255,0.25);
-            ">
-                <span>MONITORS: 2,847</span>
-                <span>DATA STREAMS: 156</span>
-                <span>RISK ALERTS: 23</span>
-                <span>COVERAGE: 195 COUNTRIES</span>
-                <span>ACTIVE MONITORS: 2,847</span>
-                <span>DATA STREAMS: 156</span>
-                <span>RISK ALERTS: 23</span>
-                <span>COVERAGE: 195 COUNTRIES</span>
-                <span>MONITORS: 2,847</span>
-                <span>DATA STREAMS: 156</span>
-                <span>RISK ALERTS: 23</span>
-                <span>COVERAGE: 195 COUNTRIES</span>
+        <!-- Brand overlay -->
+        <div class="nh-brand">
+            <svg width="52" height="52" viewBox="0 0 48 48">
+                <circle cx="6" cy="6" r="3.2" fill="#0a0e17"/><circle cx="16" cy="6" r="3.2" fill="#00d4ff"/>
+                <circle cx="26" cy="6" r="3.2" fill="#0a0e17"/><circle cx="36" cy="6" r="3.2" fill="#00d4ff"/>
+                <circle cx="6" cy="16" r="3.2" fill="#00d4ff"/><circle cx="16" cy="16" r="3.2" fill="#0a0e17"/>
+                <circle cx="26" cy="16" r="3.2" fill="#00d4ff"/><circle cx="36" cy="16" r="3.2" fill="#0a0e17"/>
+                <circle cx="6" cy="26" r="3.2" fill="#0a0e17"/><circle cx="16" cy="26" r="3.2" fill="#00d4ff"/>
+                <circle cx="26" cy="26" r="3.2" fill="#0a0e17"/><circle cx="36" cy="26" r="3.2" fill="#00d4ff"/>
+                <circle cx="6" cy="36" r="3.2" fill="#00d4ff"/><circle cx="16" cy="36" r="3.2" fill="#0a0e17"/>
+                <circle cx="26" cy="36" r="3.2" fill="#00d4ff"/><circle cx="36" cy="36" r="3.2" fill="#0a0e17"/>
+            </svg>
+            <h1>NER<span>AI</span></h1>
+            <div class="nh-sub">STRATEGIC INSIGHTS HUB</div>
+            <div class="nh-desc">AI-Powered Geopolitical Risk Intelligence</div>
+        </div>
+
+        <!-- Ticker -->
+        <div class="nh-ticker">
+            <div class="nh-ticker-inner">
+                <span>ACTIVE MONITORS: 2,847</span><span>DATA STREAMS: 156</span>
+                <span>RISK ALERTS: 23</span><span>COVERAGE: 195 COUNTRIES</span>
+                <span>AI MODELS: 12 ACTIVE</span><span>LATENCY: 340ms</span>
+                <span>UPTIME: 99.97%</span><span>SOURCES: GDELT · NEWS · COMMODITIES</span>
+                <span>ACTIVE MONITORS: 2,847</span><span>DATA STREAMS: 156</span>
+                <span>RISK ALERTS: 23</span><span>COVERAGE: 195 COUNTRIES</span>
+                <span>AI MODELS: 12 ACTIVE</span><span>LATENCY: 340ms</span>
             </div>
         </div>
     </div>
 
-    <style>
-        @keyframes scanline {
-            0% { top: 0; }
-            100% { top: 100%; }
-        }
-        @keyframes ticker {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(-50%); }
-        }
-    </style>
-
     <script>
-    // ─── NERAI Particle Network Globe ───
-    (function() {
-        const canvas = document.getElementById('nerai-globe-canvas');
-        if (!canvas) return;
-        const ctx = canvas.getContext('2d');
-        let w, h, particles = [], connections = [], mouse = {x: -1000, y: -1000};
+    // ─── NERAI Enhanced Hero: AI Core + Geopolitical Network ───
+    (function(){
+        var canvas = document.getElementById('nh-canvas');
+        if(!canvas) return;
+        var ctx = canvas.getContext('2d');
+        var W, H, cx, cy, t=0;
+        var mouse = {x:-9999, y:-9999};
 
-        function resize() {
-            const rect = canvas.parentElement.getBoundingClientRect();
-            w = canvas.width = rect.width;
-            h = canvas.height = rect.height;
+        // ── City nodes (world-map positions) ──
+        var cities = [
+            {n:'Washington',rx:0.22,ry:0.38,risk:0},{n:'London',rx:0.44,ry:0.26,risk:0},
+            {n:'Moscow',rx:0.58,ry:0.22,risk:0},{n:'Beijing',rx:0.74,ry:0.33,risk:0},
+            {n:'Delhi',rx:0.66,ry:0.47,risk:0},{n:'Tokyo',rx:0.84,ry:0.33,risk:0},
+            {n:'São Paulo',rx:0.30,ry:0.68,risk:0},{n:'Lagos',rx:0.46,ry:0.57,risk:0},
+            {n:'Dubai',rx:0.58,ry:0.44,risk:0},{n:'Sydney',rx:0.84,ry:0.73,risk:0},
+            {n:'Cairo',rx:0.52,ry:0.42,risk:0},{n:'Berlin',rx:0.48,ry:0.25,risk:0},
+            {n:'Istanbul',rx:0.53,ry:0.33,risk:0},{n:'Singapore',rx:0.74,ry:0.58,risk:0},
+            {n:'Ankara',rx:0.55,ry:0.35,risk:0},{n:'Nairobi',rx:0.54,ry:0.60,risk:0}
+        ];
+
+        // ── Floating particles ──
+        var pts = [];
+        function initPts(){
+            pts=[];
+            for(var i=0;i<70;i++){
+                pts.push({x:Math.random()*W, y:Math.random()*H,
+                          vx:(Math.random()-0.5)*0.25, vy:(Math.random()-0.5)*0.25,
+                          r:Math.random()*1.2+0.4, a:Math.random()*0.4+0.15});
+            }
+        }
+
+        // ── Data packets (travel between cities) ──
+        var packets = [];
+        function spawnPacket(){
+            if(packets.length >= 12) return;
+            var a = Math.floor(Math.random()*cities.length);
+            var b = Math.floor(Math.random()*cities.length);
+            if(a===b) b = (b+1)%cities.length;
+            packets.push({from:a, to:b, prog:0, speed:0.004+Math.random()*0.006,
+                          color: Math.random()>0.7 ? 'rgba(255,179,71,0.9)' : 'rgba(0,212,255,0.9)'});
+        }
+
+        // ── Resize ──
+        function resize(){
+            var r = canvas.parentElement.getBoundingClientRect();
+            W = canvas.width = r.width;
+            H = canvas.height = r.height;
+            cx = W/2; cy = H/2;
+            // Update city screen positions
+            cities.forEach(function(c){ c.x=c.rx*W; c.y=c.ry*H; c.pulse=Math.random()*6.28; });
+            if(pts.length===0) initPts();
         }
         resize();
         window.addEventListener('resize', resize);
 
-        // City nodes (relative positions)
-        const cities = [
-            {name:'Washington',rx:0.22,ry:0.38},{name:'London',rx:0.44,ry:0.28},
-            {name:'Moscow',rx:0.58,ry:0.24},{name:'Beijing',rx:0.74,ry:0.35},
-            {name:'Delhi',rx:0.66,ry:0.48},{name:'Tokyo',rx:0.82,ry:0.35},
-            {name:'São Paulo',rx:0.30,ry:0.65},{name:'Lagos',rx:0.46,ry:0.55},
-            {name:'Dubai',rx:0.58,ry:0.45},{name:'Sydney',rx:0.82,ry:0.72},
-            {name:'Cairo',rx:0.52,ry:0.42},{name:'Berlin',rx:0.49,ry:0.28},
-            {name:'Istanbul',rx:0.53,ry:0.34},{name:'Singapore',rx:0.73,ry:0.58},
-            {name:'Ankara',rx:0.54,ry:0.36},{name:'Nairobi',rx:0.54,ry:0.58},
-        ];
+        // Mouse interaction
+        canvas.addEventListener('mousemove', function(e){
+            var r=canvas.getBoundingClientRect();
+            mouse.x=e.clientX-r.left; mouse.y=e.clientY-r.top;
+        });
+        canvas.addEventListener('mouseleave', function(){ mouse.x=-9999; mouse.y=-9999; });
 
-        // Create particles
-        const numParticles = 80;
-        for (let i = 0; i < numParticles; i++) {
-            particles.push({
-                x: Math.random() * w,
-                y: Math.random() * h,
-                vx: (Math.random() - 0.5) * 0.3,
-                vy: (Math.random() - 0.5) * 0.3,
-                r: Math.random() * 1.5 + 0.5,
-                isCity: false,
-                alpha: Math.random() * 0.5 + 0.2,
+        // ── Assign random risk levels periodically ──
+        function updateRisks(){
+            cities.forEach(function(c){
+                c.risk = Math.random();  // 0=safe, >0.6=amber, >0.8=red
             });
         }
+        updateRisks();
+        setInterval(updateRisks, 8000);
 
-        // Add city nodes
-        cities.forEach(c => {
-            particles.push({
-                x: c.rx * w, y: c.ry * h,
-                vx: 0, vy: 0, r: 3,
-                isCity: true, name: c.name,
-                alpha: 1, rx: c.rx, ry: c.ry,
-                pulse: Math.random() * Math.PI * 2,
-            });
-        });
+        // ── HUD counter animation ──
+        function updateHUD(){
+            var el1 = document.getElementById('nh-threats');
+            var el2 = document.getElementById('nh-conf');
+            var el3 = document.getElementById('nh-streams');
+            if(el1) el1.textContent = Math.floor(Math.random()*20+8);
+            if(el2) el2.textContent = (Math.random()*6+92).toFixed(1)+'%';
+            if(el3) el3.textContent = (Math.floor(Math.random()*500+2500)).toLocaleString();
+        }
+        setInterval(updateHUD, 4000);
 
-        canvas.addEventListener('mousemove', e => {
-            const rect = canvas.getBoundingClientRect();
-            mouse.x = e.clientX - rect.left;
-            mouse.y = e.clientY - rect.top;
-        });
-        canvas.addEventListener('mouseleave', () => { mouse.x = -1000; mouse.y = -1000; });
+        // ═══ DRAW ═══
+        function draw(){
+            t += 0.016;
+            ctx.fillStyle = 'rgba(10,14,23,0.92)';
+            ctx.fillRect(0,0,W,H);
 
-        function draw() {
-            ctx.clearRect(0, 0, w, h);
-
-            const time = Date.now() * 0.001;
-
-            // Update city positions on resize
-            particles.forEach(p => {
-                if (p.isCity) {
-                    p.x = p.rx * w;
-                    p.y = p.ry * h;
-                    p.pulse += 0.02;
-                }
-            });
-
-            // Move floating particles
-            particles.forEach(p => {
-                if (!p.isCity) {
-                    p.x += p.vx;
-                    p.y += p.vy;
-                    if (p.x < 0 || p.x > w) p.vx *= -1;
-                    if (p.y < 0 || p.y > h) p.vy *= -1;
-
-                    // Mouse repel
-                    const dx = p.x - mouse.x;
-                    const dy = p.y - mouse.y;
-                    const dist = Math.sqrt(dx*dx + dy*dy);
-                    if (dist < 100) {
-                        p.vx += dx / dist * 0.08;
-                        p.vy += dy / dist * 0.08;
-                    }
-                    // Damping
-                    p.vx *= 0.995;
-                    p.vy *= 0.995;
-                }
-            });
-
-            // Draw connections
-            const maxDist = 120;
-            for (let i = 0; i < particles.length; i++) {
-                for (let j = i + 1; j < particles.length; j++) {
-                    const dx = particles[i].x - particles[j].x;
-                    const dy = particles[i].y - particles[j].y;
-                    const dist = Math.sqrt(dx*dx + dy*dy);
-                    const threshold = (particles[i].isCity || particles[j].isCity) ? maxDist * 1.5 : maxDist;
-                    if (dist < threshold) {
-                        const alpha = (1 - dist / threshold) * 0.15;
+            // ── 1. Background dot grid (pulsing from center) ──
+            var gridSp = 45;
+            var pulseWave = Math.sin(t*0.8)*0.3+0.5;
+            for(var gx=0; gx<W; gx+=gridSp){
+                for(var gy=0; gy<H; gy+=gridSp){
+                    var dx=gx-cx, dy=gy-cy;
+                    var dist=Math.sqrt(dx*dx+dy*dy);
+                    var maxD = Math.max(W,H)*0.55;
+                    if(dist<maxD){
+                        var op = (1-dist/maxD)*pulseWave*0.12;
+                        ctx.fillStyle = 'rgba(0,212,255,'+op+')';
                         ctx.beginPath();
-                        ctx.moveTo(particles[i].x, particles[i].y);
-                        ctx.lineTo(particles[j].x, particles[j].y);
-                        ctx.strokeStyle = `rgba(0,212,255,${alpha})`;
-                        ctx.lineWidth = 0.5;
-                        ctx.stroke();
+                        ctx.arc(gx, gy, 1, 0, 6.28);
+                        ctx.fill();
                     }
                 }
             }
 
-            // Draw particles
-            particles.forEach(p => {
-                if (p.isCity) {
-                    // Pulsing city node
-                    const pulseR = 3 + Math.sin(p.pulse) * 1.5;
-                    // Outer glow
-                    ctx.beginPath();
-                    ctx.arc(p.x, p.y, pulseR + 6, 0, Math.PI * 2);
-                    ctx.fillStyle = `rgba(0,212,255,${0.03 + Math.sin(p.pulse) * 0.02})`;
-                    ctx.fill();
-                    // Core
-                    ctx.beginPath();
-                    ctx.arc(p.x, p.y, pulseR, 0, Math.PI * 2);
-                    ctx.fillStyle = `rgba(0,212,255,${0.6 + Math.sin(p.pulse) * 0.3})`;
-                    ctx.fill();
-                    // Center bright dot
-                    ctx.beginPath();
-                    ctx.arc(p.x, p.y, 1.5, 0, Math.PI * 2);
-                    ctx.fillStyle = '#fff';
-                    ctx.fill();
-                    // Label
-                    ctx.font = '500 9px Inter, sans-serif';
-                    ctx.fillStyle = `rgba(138,155,181,${0.5 + Math.sin(p.pulse) * 0.2})`;
-                    ctx.fillText(p.name, p.x + 8, p.y + 3);
-                } else {
-                    ctx.beginPath();
-                    ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-                    ctx.fillStyle = `rgba(0,212,255,${p.alpha * 0.4})`;
-                    ctx.fill();
-                }
+            // ── 2. AI Core: concentric rotating arcs ──
+            for(var ring=1; ring<=3; ring++){
+                var radius = 35 + ring*22;
+                var rot = t * (ring%2===0 ? 0.5 : -0.4) * (0.8+ring*0.1);
+                ctx.strokeStyle = 'rgba(0,212,255,'+(0.25-ring*0.06)+')';
+                ctx.lineWidth = 1.5;
+                ctx.setLineDash([10,14]);
+                ctx.beginPath();
+                ctx.arc(cx, cy, radius, rot, rot + 3.6);
+                ctx.stroke();
+                ctx.setLineDash([]);
+            }
+            // Core glow
+            var coreR = 18 + Math.sin(t*1.2)*4;
+            var grad = ctx.createRadialGradient(cx,cy,0, cx,cy, coreR+30);
+            grad.addColorStop(0, 'rgba(0,212,255,0.12)');
+            grad.addColorStop(1, 'rgba(0,212,255,0)');
+            ctx.fillStyle = grad;
+            ctx.beginPath(); ctx.arc(cx,cy,coreR+30,0,6.28); ctx.fill();
+            // Core dot
+            ctx.fillStyle = 'rgba(0,212,255,0.5)';
+            ctx.beginPath(); ctx.arc(cx,cy,coreR,0,6.28); ctx.fill();
+            ctx.fillStyle = 'rgba(255,255,255,0.7)';
+            ctx.beginPath(); ctx.arc(cx,cy,3,0,6.28); ctx.fill();
+
+            // Neural rays from core to edges
+            for(var ray=0; ray<8; ray++){
+                var angle = (ray/8)*6.28 + t*0.15;
+                var len = 70 + Math.sin(t*0.7+ray*1.3)*25;
+                var rx = cx + Math.cos(angle)*len;
+                var ry = cy + Math.sin(angle)*len;
+                ctx.strokeStyle = 'rgba(0,212,255,0.08)';
+                ctx.lineWidth = 0.8;
+                ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(rx,ry); ctx.stroke();
+                ctx.fillStyle = 'rgba(0,212,255,0.25)';
+                ctx.beginPath(); ctx.arc(rx,ry,1.5,0,6.28); ctx.fill();
+            }
+
+            // ── 3. Orbit ellipses ──
+            ctx.save();
+            ctx.strokeStyle = 'rgba(0,212,255,0.06)';
+            ctx.lineWidth = 0.8;
+            ctx.setLineDash([3,8]);
+            ctx.beginPath(); ctx.ellipse(cx,cy, 140,90, 0.15, 0, 6.28); ctx.stroke();
+            ctx.beginPath(); ctx.ellipse(cx,cy, 200,110, -0.2, 0, 6.28); ctx.stroke();
+            ctx.setLineDash([]);
+            // Orbiting dots
+            var oa1 = t*0.6;
+            var ox1 = cx+Math.cos(oa1)*140*Math.cos(0.15)-Math.sin(oa1)*90*Math.sin(0.15);
+            var oy1 = cy+Math.sin(oa1)*140*Math.cos(0.15)+Math.cos(oa1)*90*Math.sin(0.15);
+            ctx.fillStyle = 'rgba(0,212,255,0.7)';
+            ctx.beginPath(); ctx.arc(ox1,oy1,2.5,0,6.28); ctx.fill();
+            var oa2 = t*0.35+3.14;
+            var ox2 = cx+Math.cos(oa2)*200*Math.cos(-0.2)-Math.sin(oa2)*110*Math.sin(-0.2);
+            var oy2 = cy+Math.sin(oa2)*200*Math.cos(-0.2)+Math.cos(oa2)*110*Math.sin(-0.2);
+            ctx.fillStyle = 'rgba(0,212,255,0.5)';
+            ctx.beginPath(); ctx.arc(ox2,oy2,2,0,6.28); ctx.fill();
+            ctx.restore();
+
+            // ── 4. City bezier connections ──
+            var conns = [[0,1],[1,2],[2,3],[3,5],[4,8],[1,11],[11,2],[7,10],[6,0],[9,5],
+                         [8,10],[10,7],[12,14],[13,3],[15,7],[4,13],[6,7],[0,6],[1,12],[8,14]];
+            conns.forEach(function(c){
+                var a=cities[c[0]], b=cities[c[1]];
+                var mx=(a.x+b.x)/2, my=(a.y+b.y)/2;
+                // Curved arc (control point offset perpendicular)
+                var dx=b.x-a.x, dy=b.y-a.y;
+                var cpx = mx - dy*0.15;
+                var cpy = my + dx*0.15;
+                ctx.strokeStyle = 'rgba(0,212,255,0.07)';
+                ctx.lineWidth = 0.7;
+                ctx.beginPath();
+                ctx.moveTo(a.x, a.y);
+                ctx.quadraticCurveTo(cpx, cpy, b.x, b.y);
+                ctx.stroke();
             });
 
-            // Random data transmission effect
-            if (Math.random() < 0.02) {
-                const cityNodes = particles.filter(p => p.isCity);
-                if (cityNodes.length >= 2) {
-                    const a = cityNodes[Math.floor(Math.random() * cityNodes.length)];
-                    const b = cityNodes[Math.floor(Math.random() * cityNodes.length)];
-                    if (a !== b) {
-                        ctx.beginPath();
-                        ctx.moveTo(a.x, a.y);
-                        ctx.lineTo(b.x, b.y);
-                        ctx.strokeStyle = 'rgba(0,212,255,0.25)';
-                        ctx.lineWidth = 1.5;
-                        ctx.stroke();
+            // ── 5. City nodes with risk coloring ──
+            cities.forEach(function(c){
+                c.pulse += 0.025;
+                var pr = 3 + Math.sin(c.pulse)*1.2;
+                var col, gcol;
+                if(c.risk > 0.8){ col='rgba(255,71,87,'; gcol='rgba(255,71,87,'; }
+                else if(c.risk > 0.55){ col='rgba(255,179,71,'; gcol='rgba(255,179,71,'; }
+                else { col='rgba(0,212,255,'; gcol='rgba(0,212,255,'; }
+                // Glow
+                ctx.fillStyle = gcol+(0.04+Math.sin(c.pulse)*0.02)+')';
+                ctx.beginPath(); ctx.arc(c.x,c.y,pr+8,0,6.28); ctx.fill();
+                // Node
+                ctx.fillStyle = col+(0.55+Math.sin(c.pulse)*0.25)+')';
+                ctx.beginPath(); ctx.arc(c.x,c.y,pr,0,6.28); ctx.fill();
+                // Center
+                ctx.fillStyle = '#fff';
+                ctx.beginPath(); ctx.arc(c.x,c.y,1.2,0,6.28); ctx.fill();
+                // Label
+                ctx.font = '500 8.5px Inter,sans-serif';
+                ctx.fillStyle = 'rgba(138,155,181,'+(0.4+Math.sin(c.pulse)*0.15)+')';
+                ctx.fillText(c.n, c.x+9, c.y+3);
+            });
+
+            // ── 6. Data packets traveling on arcs ──
+            if(Math.random()<0.04) spawnPacket();
+            var alive = [];
+            packets.forEach(function(p){
+                p.prog += p.speed;
+                if(p.prog >= 1) return; // drop finished
+                alive.push(p);
+                var a=cities[p.from], b=cities[p.to];
+                var mx=(a.x+b.x)/2, my=(a.y+b.y)/2;
+                var dx=b.x-a.x, dy=b.y-a.y;
+                var cpx=mx-dy*0.15, cpy=my+dx*0.15;
+                // Quadratic bezier position at t
+                var u=p.prog, u1=1-u;
+                var px = u1*u1*a.x + 2*u1*u*cpx + u*u*b.x;
+                var py = u1*u1*a.y + 2*u1*u*cpy + u*u*b.y;
+                ctx.fillStyle = p.color;
+                ctx.beginPath(); ctx.arc(px,py,2,0,6.28); ctx.fill();
+                // Glow trail
+                ctx.fillStyle = p.color.replace('0.9','0.15');
+                ctx.beginPath(); ctx.arc(px,py,5,0,6.28); ctx.fill();
+            });
+            packets = alive;
+
+            // ── 7. Floating particles + connections ──
+            pts.forEach(function(p){
+                p.x+=p.vx; p.y+=p.vy;
+                if(p.x<0||p.x>W) p.vx*=-1;
+                if(p.y<0||p.y>H) p.vy*=-1;
+                // Mouse repel
+                var mdx=p.x-mouse.x, mdy=p.y-mouse.y;
+                var md=Math.sqrt(mdx*mdx+mdy*mdy);
+                if(md<100){p.vx+=mdx/md*0.06;p.vy+=mdy/md*0.06;}
+                p.vx*=0.997; p.vy*=0.997;
+                ctx.fillStyle='rgba(0,212,255,'+p.a*0.35+')';
+                ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,6.28); ctx.fill();
+            });
+            // Particle-to-particle connections
+            var maxC=100;
+            for(var i=0;i<pts.length;i++){
+                for(var j=i+1;j<pts.length;j++){
+                    var ddx=pts[i].x-pts[j].x, ddy=pts[i].y-pts[j].y;
+                    var dd=Math.sqrt(ddx*ddx+ddy*ddy);
+                    if(dd<maxC){
+                        ctx.strokeStyle='rgba(0,212,255,'+(1-dd/maxC)*0.06+')';
+                        ctx.lineWidth=0.4;
+                        ctx.beginPath();ctx.moveTo(pts[i].x,pts[i].y);ctx.lineTo(pts[j].x,pts[j].y);ctx.stroke();
                     }
                 }
             }
@@ -1131,13 +1484,13 @@ def inject_sidebar_fix():
         }
 
         function expandSidebar() {
-            // Try native Streamlit expand controls
+            // Try native Streamlit expand controls first
             const native = doc.querySelector('[data-testid="collapsedControl"] button') ||
                            doc.querySelector('[data-testid="stSidebarCollapsedControl"] button');
             if (native) { native.click(); removeBtn(); return; }
 
-            // Fallback: force sidebar visible via style
-            const sb = doc.querySelector(SIDEBAR_SEL);
+            // Fallback: force sidebar visible, keep styles until user collapses
+            var sb = doc.querySelector(SIDEBAR_SEL);
             if (sb) {
                 // 1. Force sidebar visible (keep styles until user collapses)
                 sb.style.transition = 'transform 0.3s ease';
@@ -1157,12 +1510,10 @@ def inject_sidebar_fix():
                     }
                 } catch(e) {}
 
-                // 3. Hook collapse button to clear forced styles on click.
-                //    Re-hooks every time expandSidebar runs (no stale flag).
+                // 3. Hook collapse button to clear forced styles on click
                 function hookCollapseBtn() {
                     var cb = doc.querySelector('[data-testid="stSidebarCollapseButton"] button');
                     if (!cb) return;
-                    // Remove any previous handler first
                     if (cb._neraiClearStyles) {
                         cb.removeEventListener('click', cb._neraiClearStyles, true);
                     }
