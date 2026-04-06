@@ -1622,7 +1622,7 @@ with st.sidebar:
     )
 
     # Profile selectors moved to inline (render_profile)
-    elif st.session_state.page == 'news':
+    if st.session_state.page == 'news':
         st.markdown('<div class="sec-hdr">Live News Feed</div>', unsafe_allow_html=True)
         st.markdown(f"""
         <div style='padding:8px;background:rgba(0,150,255,0.05);
