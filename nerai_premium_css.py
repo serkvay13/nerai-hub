@@ -935,18 +935,21 @@ def inject_home_hero():
         .nh-hud-val { font-size:15px; font-weight:700; color:rgba(0,212,255,0.85);
                       text-shadow:0 0 12px rgba(0,212,255,0.2); }
 
-        /* Branding overlay — bottom-left, compact */
-        .nh-brand { position:absolute; bottom:36px; left:24px;
-                    display:flex; align-items:center; gap:14px;
-                    z-index:10; pointer-events:none; }
-        .nh-brand svg { flex-shrink:0; filter:drop-shadow(0 0 10px rgba(0,212,255,0.25)); }
-        .nh-brand .nh-brand-text h1 { font-family:'Inter',sans-serif; font-size:1.4rem; font-weight:900;
-                       letter-spacing:-0.5px; color:#e8edf4; margin:0;
-                       text-shadow:0 0 30px rgba(0,212,255,0.1); }
+        /* Branding overlay — top-center, compact */
+        .nh-brand { position:absolute; top:20px; left:50%; transform:translateX(-50%);
+                    display:flex; align-items:center; gap:12px;
+                    z-index:10; pointer-events:none;
+                    background:rgba(10,14,23,0.5); backdrop-filter:blur(8px);
+                    padding:8px 20px; border-radius:40px;
+                    border:1px solid rgba(0,212,255,0.08); }
+        .nh-brand svg { flex-shrink:0; filter:drop-shadow(0 0 8px rgba(0,212,255,0.2)); }
+        .nh-brand .nh-brand-text h1 { font-family:'Inter',sans-serif; font-size:1.2rem; font-weight:800;
+                       letter-spacing:-0.3px; color:#e8edf4; margin:0;
+                       text-shadow:0 0 20px rgba(0,212,255,0.08); }
         .nh-brand .nh-brand-text h1 span { color:#00d4ff; }
-        .nh-brand .nh-sub { font-size:0.5rem; font-weight:600; letter-spacing:3px;
-                            text-transform:uppercase; color:rgba(0,212,255,0.45);
-                            margin-top:2px; }
+        .nh-brand .nh-sub { font-size:0.45rem; font-weight:600; letter-spacing:2.5px;
+                            text-transform:uppercase; color:rgba(0,212,255,0.4);
+                            margin-top:1px; }
         .nh-brand .nh-desc { display:none; }
 
         /* Ticker */
