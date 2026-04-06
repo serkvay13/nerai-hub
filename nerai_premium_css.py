@@ -901,7 +901,7 @@ def inject_home_hero():
     """
     _stc.html("""
     <style>
-        html, body { margin:0; padding:0; background:#0a0e17; overflow:hidden; font-family: "Inter", sans-serif; }
+        html, body { margin:0; padding:0; background:#0a0e17; overflow:hidden; font-family:'Inter',sans-serif; }
         /* ── NERAI HERO — Scoped styles ── */
         #nerai-hero-wrap {
             position: relative;
@@ -935,19 +935,19 @@ def inject_home_hero():
         .nh-hud-val { font-size:15px; font-weight:700; color:rgba(0,212,255,0.85);
                       text-shadow:0 0 12px rgba(0,212,255,0.2); }
 
-        /* Branding overlay */
-        .nh-brand { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
-                    text-align:center; z-index:10; pointer-events:none; }
-        .nh-brand svg { margin-bottom:14px; filter:drop-shadow(0 0 16px rgba(0,212,255,0.35)); }
-        .nh-brand h1 { font-family:'Inter',sans-serif; font-size:2.6rem; font-weight:900;
-                       letter-spacing:-1px; color:#e8edf4; margin:0;
-                       text-shadow:0 0 50px rgba(0,212,255,0.12); }
-        .nh-brand h1 span { color:#00d4ff; }
-        .nh-brand .nh-sub { font-size:0.6rem; font-weight:600; letter-spacing:5px;
-                            text-transform:uppercase; color:rgba(0,212,255,0.55);
-                            margin-top:6px; }
-        .nh-brand .nh-desc { font-size:0.82rem; color:#6b7f99; margin-top:16px;
-                             line-height:1.5; max-width:360px; }
+        /* Branding overlay — bottom-left, compact */
+        .nh-brand { position:absolute; bottom:36px; left:24px;
+                    display:flex; align-items:center; gap:14px;
+                    z-index:10; pointer-events:none; }
+        .nh-brand svg { flex-shrink:0; filter:drop-shadow(0 0 10px rgba(0,212,255,0.25)); }
+        .nh-brand .nh-brand-text h1 { font-family:'Inter',sans-serif; font-size:1.4rem; font-weight:900;
+                       letter-spacing:-0.5px; color:#e8edf4; margin:0;
+                       text-shadow:0 0 30px rgba(0,212,255,0.1); }
+        .nh-brand .nh-brand-text h1 span { color:#00d4ff; }
+        .nh-brand .nh-sub { font-size:0.5rem; font-weight:600; letter-spacing:3px;
+                            text-transform:uppercase; color:rgba(0,212,255,0.45);
+                            margin-top:2px; }
+        .nh-brand .nh-desc { display:none; }
 
         /* Ticker */
         .nh-ticker { position:absolute; bottom:0; left:0; right:0; height:26px;
@@ -992,9 +992,9 @@ def inject_home_hero():
             <div class="nh-hud-val">195 NATIONS</div>
         </div>
 
-        <!-- Brand overlay -->
+        <!-- Brand overlay — compact bottom-left -->
         <div class="nh-brand">
-            <svg width="52" height="52" viewBox="0 0 48 48">
+            <svg width="28" height="28" viewBox="0 0 48 48">
                 <circle cx="6" cy="6" r="3.2" fill="#0a0e17"/><circle cx="16" cy="6" r="3.2" fill="#00d4ff"/>
                 <circle cx="26" cy="6" r="3.2" fill="#0a0e17"/><circle cx="36" cy="6" r="3.2" fill="#00d4ff"/>
                 <circle cx="6" cy="16" r="3.2" fill="#00d4ff"/><circle cx="16" cy="16" r="3.2" fill="#0a0e17"/>
@@ -1004,9 +1004,10 @@ def inject_home_hero():
                 <circle cx="6" cy="36" r="3.2" fill="#00d4ff"/><circle cx="16" cy="36" r="3.2" fill="#0a0e17"/>
                 <circle cx="26" cy="36" r="3.2" fill="#00d4ff"/><circle cx="36" cy="36" r="3.2" fill="#0a0e17"/>
             </svg>
-            <h1>NER<span>AI</span></h1>
-            <div class="nh-sub">STRATEGIC INSIGHTS HUB</div>
-            <div class="nh-desc">AI-Powered Geopolitical Risk Intelligence</div>
+            <div class="nh-brand-text">
+                <h1>NER<span>AI</span></h1>
+                <div class="nh-sub">STRATEGIC INSIGHTS HUB</div>
+            </div>
         </div>
 
         <!-- Ticker -->
