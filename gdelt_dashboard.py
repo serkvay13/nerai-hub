@@ -1996,8 +1996,6 @@ rot+=0.12;requestAnimationFrame(frame);}
 
     st.markdown('<div class="h-div" style="margin:28px 0 20px;"></div>', unsafe_allow_html=True)
 
-    # ── Live Tension Overview ────────────────────────────────
-
 
 # ═══════════════════════════════════════════════════════════════
 # PAGE: INDICES
@@ -5367,6 +5365,7 @@ def render_threat_radar():
                 st.caption('No recent articles found.')
 
     _render_footer()
+
 
 page = st.session_state.get('page', 'home')
 
