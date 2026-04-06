@@ -1558,38 +1558,38 @@ with st.sidebar:
          padding:6px 4px;line-height:1.8;'>
       {'✅ ' + indices_age if indices_age else '⚠ No data yet'}
     </div>""", unsafe_allow_html=True)
-
-    if st.button('🔄 Refresh Indices', use_container_width=True,
-                 help='Run gdelt_indices.py to fetch latest GDELT data'):
-        with st.spinner('Fetching GDELT data…'):
-            r = subprocess.run([_sys.executable, './gdelt_indices.py'],
-                               capture_output=True, text=True, cwd='.')
-        if r.returncode == 0:
-            st.success('✅ Indices updated!')
-            st.cache_data.clear(); st.rerun()
-        else:
-            st.error(r.stderr[-600:] or 'Failed')
-
-    _max_s = st.slider('Max Series (causality)', 50, 500, 200, 50,
-                        help='Fewer = faster. 200 ≈ 5-8 min. 500 ≈ 30+ min.')
-    if st.button('🕸 Run Causal Analysis', use_container_width=True,
-                 help='Run gdelt_causality.py — top-variance series only'):
-        with st.spinner(f'Computing causality for top {_max_s} series… (~5-8 min)'):
-            r = subprocess.run(
-                [_sys.executable, './gdelt_causality.py', '--max-series', str(_max_s)],
-                capture_output=True, text=True, cwd='.')
-        if r.returncode == 0:
-            out = (r.stdout or '').strip()
-            # Check if any edges were actually found
-            if 'edges found' in out.lower() and '0 edges' in out.lower():
-                st.warning('⚠️ 0 significant relationships found — threshold values may be too strict. Try again or increase Max Series.')
-            else:
-                st.success('✅ Causal network ready!')
-            with st.expander('📋 Script output', expanded=False):
-                st.code(out[-1200:] or '(no output)')
-            st.cache_data.clear(); st.rerun()
-        else:
-            st.error('Script error:\n' + (r.stderr[-800:] or r.stdout[-400:] or 'Unknown error'))
+    # [MOVED TO INLINE] 
+    # [MOVED TO INLINE] if st.button('🔄 Refresh Indices', use_container_width=True,
+    # [MOVED TO INLINE] help='Run gdelt_indices.py to fetch latest GDELT data'):
+    # [MOVED TO INLINE] with st.spinner('Fetching GDELT data…'):
+    # [MOVED TO INLINE] r = subprocess.run([_sys.executable, './gdelt_indices.py'],
+    # [MOVED TO INLINE] capture_output=True, text=True, cwd='.')
+    # [MOVED TO INLINE] if r.returncode == 0:
+    # [MOVED TO INLINE] st.success('✅ Indices updated!')
+    # [MOVED TO INLINE] st.cache_data.clear(); st.rerun()
+    # [MOVED TO INLINE] else:
+    # [MOVED TO INLINE] st.error(r.stderr[-600:] or 'Failed')
+    # [MOVED TO INLINE] 
+    # [MOVED TO INLINE] _max_s = st.slider('Max Series (causality)', 50, 500, 200, 50,
+    # [MOVED TO INLINE] help='Fewer = faster. 200 ≈ 5-8 min. 500 ≈ 30+ min.')
+    # [MOVED TO INLINE] if st.button('🕸 Run Causal Analysis', use_container_width=True,
+    # [MOVED TO INLINE] help='Run gdelt_causality.py — top-variance series only'):
+    # [MOVED TO INLINE] with st.spinner(f'Computing causality for top {_max_s} series… (~5-8 min)'):
+    # [MOVED TO INLINE] r = subprocess.run(
+    # [MOVED TO INLINE] [_sys.executable, './gdelt_causality.py', '--max-series', str(_max_s)],
+    # [MOVED TO INLINE] capture_output=True, text=True, cwd='.')
+    # [MOVED TO INLINE] if r.returncode == 0:
+    # [MOVED TO INLINE] out = (r.stdout or '').strip()
+    # [MOVED TO INLINE] # Check if any edges were actually found
+    # [MOVED TO INLINE] if 'edges found' in out.lower() and '0 edges' in out.lower():
+    # [MOVED TO INLINE] st.warning('⚠️ 0 significant relationships found — threshold values may be too strict. Try again or increase Max Series.')
+    # [MOVED TO INLINE] else:
+    # [MOVED TO INLINE] st.success('✅ Causal network ready!')
+    # [MOVED TO INLINE] with st.expander('📋 Script output', expanded=False):
+    # [MOVED TO INLINE] st.code(out[-1200:] or '(no output)')
+    # [MOVED TO INLINE] st.cache_data.clear(); st.rerun()
+    # [MOVED TO INLINE] else:
+    # [MOVED TO INLINE] st.error('Script error:\n' + (r.stderr[-800:] or r.stdout[-400:] or 'Unknown error'))
 
     if st.button('⚡ Refresh All Data', use_container_width=True, type='primary',
                  help='Run full pipeline: indices → causality → forecast'):
@@ -3823,8 +3823,8 @@ def build_network_figure(filtered, highlight_nodes=None, focus_node=None):
 
       // Force simulation
       const sim = d3.forceSimulation(nodes)
-        .force("link", d3.forceLink(edges).id(d=>d.id).distance(160))
-        .force("charge", d3.forceManyBody().strength(-400))
+        .force("link", d3.forceLink(edges).id(d=>d.id).distance(80))
+        .force("charge", d3.forceManyBody().strength(-150))
         .force("center", d3.forceCenter(W/2, H/2))
         .force("collision", d3.forceCollide().radius(d=>d.size+20))
         .alphaDecay(0.018);
@@ -4056,6 +4056,66 @@ def render_causality():
         icon="🔗"
     )
     nerai_premium_css.inject_global_premium_css()
+    nerai_premium_css.inject_filter_bar_css()
+
+    # --- Inline Data Pipeline Controls ---
+    _pipe_cols = st.columns([2, 3, 3, 2])
+    with _pipe_cols[0]:
+        _max_s = st.slider('⚙️ Max Series', 50, 500, 200, 50,
+                    help='Fewer = faster. 200 ≈ 5-8 min. 500 ≈ 30+ min.',
+                    key='inline_causal_max_series')
+    with _pipe_cols[1]:
+        if st.button('⚙️ Run Causal Analysis', use_container_width=True,
+                help='Run gdelt_causality.py — top-variance series only',
+                key='inline_run_causal'):
+            with st.spinner(f'Computing causality for top {_max_s} series... (~5-8 min)'):
+                import subprocess, sys as _sys
+                r = subprocess.run(
+                    [_sys.executable, './gdelt_causality.py', '--max-series', str(_max_s)],
+                    capture_output=True, text=True, cwd='.')
+                if r.returncode == 0:
+                    out = (r.stdout or '').strip()
+                    if 'edges found' in out.lower() and '0 edges' in out.lower():
+                        st.warning('⚠️ 0 significant relationships found — threshold values may be too strict. Try again or increase Max Series.')
+                    else:
+                        st.success('✅ Causal network ready!')
+                        with st.expander('📜 Script output', expanded=False):
+                            st.code(out[-1200:] or '(no output)')
+                    st.cache_data.clear(); st.rerun()
+                else:
+                    st.error('Script error:\n' + (r.stderr[-800:] or r.stdout[-400:] or 'Unknown error'))
+    with _pipe_cols[2]:
+        if st.button('🔄 Refresh Indices', use_container_width=True,
+                help='Run gdelt_indices.py to fetch latest GDELT data',
+                key='inline_refresh_indices'):
+            with st.spinner('Fetching GDELT data...'):
+                import subprocess, sys as _sys
+                r = subprocess.run([_sys.executable, './gdelt_indices.py'],
+                        capture_output=True, text=True, cwd='.')
+                if r.returncode == 0:
+                    st.success('✅ Indices updated!')
+                    st.cache_data.clear(); st.rerun()
+                else:
+                    st.error(r.stderr[-600:] or 'Failed')
+    with _pipe_cols[3]:
+        if st.button('⚡ Refresh All Data', use_container_width=True,
+                help='Run full pipeline: indices → causality → forecast',
+                key='inline_refresh_all'):
+            scripts = ['gdelt_indices.py', 'gdelt_causality.py', 'gdelt_forecast_numpy.py']
+            all_ok = True
+            for script in scripts:
+                if not os.path.exists(f'./{script}'): continue
+                with st.spinner(f'Running {script}...'):
+                    import subprocess, sys as _sys
+                    r = subprocess.run([_sys.executable, f'./{script}'],
+                            capture_output=True, text=True, cwd='.')
+                    if r.returncode != 0:
+                        st.error(f'{script} failed:\n{r.stderr[-400:]}')
+                        all_ok = False; break
+            if all_ok:
+                st.success('✅ All data refreshed!')
+                st.cache_data.clear(); st.rerun()
+
 
     st.markdown(
         "<div style='padding:6px 0 10px;'>"
@@ -4919,6 +4979,7 @@ def render_scenarios():
         icon="⚡"
     )
     nerai_premium_css.inject_global_premium_css()
+    nerai_premium_css.inject_filter_bar_css()
 
     st.markdown("""
     <div style='padding:6px 0 10px;'>
