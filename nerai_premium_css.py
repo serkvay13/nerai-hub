@@ -83,6 +83,16 @@ def inject_global_css():
         font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
     }}
 
+    /* ── Protect Streamlit icon fonts ── */
+    .stApp .material-symbols-rounded,
+    .stApp .material-symbols-outlined,
+    .stApp [data-testid="collapsedControl"] span,
+    .stApp [data-testid="stSidebarCollapsedControl"] span,
+    .stApp [data-testid="stSidebar"] button span.material-symbols-rounded {{
+        font-family: 'Material Symbols Rounded', sans-serif !important;
+        -webkit-font-smoothing: antialiased;
+    }}
+
     /* ── SCROLLBAR ── */
     ::-webkit-scrollbar {{
         width: 6px;
@@ -116,23 +126,39 @@ def inject_global_css():
     /* ── Sidebar Collapse/Expand Button Fix ── */
     [data-testid="collapsedControl"],
     [data-testid="stSidebarCollapsedControl"],
-    button[kind="header"],
     .css-1rs6os.edgvbvh3,
     [data-testid="stSidebar"] button[aria-label="Close"],
     [data-testid="stSidebar"] [data-testid="stSidebarNavCollapseIcon"],
-    section[data-testid="stSidebar"] > div > button {{
+    section[data-testid="stSidebar"] > div > button:first-child {{
         color: {TOKENS['cyan']} !important;
         background: {TOKENS['bg_card']} !important;
         border: 1px solid {TOKENS['cyan_border']} !important;
         border-radius: 8px !important;
         opacity: 1 !important;
         visibility: visible !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
         z-index: 999999 !important;
+        position: fixed !important;
+    }}
+    [data-testid="collapsedControl"],
+    [data-testid="stSidebarCollapsedControl"] {{
+        top: 0.5rem !important;
+        left: 0.5rem !important;
+        width: 2rem !important;
+        height: 2rem !important;
     }}
     [data-testid="collapsedControl"]:hover,
     [data-testid="stSidebarCollapsedControl"]:hover {{
         background: {TOKENS['cyan_glow']} !important;
         border-color: {TOKENS['cyan']} !important;
+    }}
+    /* Ensure icon font renders in collapse button */
+    [data-testid="collapsedControl"] span,
+    [data-testid="stSidebarCollapsedControl"] span {{
+        font-family: 'Material Symbols Rounded' !important;
+        font-size: 20px !important;
     }}
 
     [data-testid="stSidebar"] > div:first-child {{
@@ -209,7 +235,7 @@ def inject_global_css():
     .stApp h3 {{ font-weight: 600 !important; }}
 
     /* Paragraphs & default text */
-    .stApp p, .stApp span, .stApp label {{
+    .stApp p, .stApp span:not(.material-symbols-rounded):not(.material-symbols-outlined), .stApp label {{
         font-family: 'Inter', sans-serif !important;
     }}
 
@@ -570,8 +596,8 @@ def inject_global_css():
         border-bottom: 1px solid {TOKENS['border']} !important;
     }}
 
-    /* Hide hamburger */
-    button[kind="header"] {{ display: none !important; }}
+    /* Hide hamburger — but NOT sidebar collapse/expand buttons */
+    .stApp > header button[kind="header"] {{ display: none !important; }}
 
     </style>
     """, unsafe_allow_html=True)
@@ -961,10 +987,71 @@ def inject_section_header(text):
     """, unsafe_allow_html=True)
 
 
+def inject_sidebar_fix():
+    """
+    Critical fix: Override any 'button[kind=header] display:none' rules
+    that break sidebar collapse/expand. Must load AFTER main CSS.
+    """
+    st.markdown("""
+    <style>
+    /* ── Force sidebar collapse/expand button visible ── */
+    [data-testid="collapsedControl"],
+    [data-testid="stSidebarCollapsedControl"] {
+        display: flex !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        z-index: 999999 !important;
+        position: fixed !important;
+        top: 0.375rem !important;
+        left: 0.375rem !important;
+    }
+
+    /* Ensure Material icon font renders (not text) */
+    [data-testid="collapsedControl"] span,
+    [data-testid="stSidebarCollapsedControl"] span,
+    [data-testid="stSidebar"] button span,
+    .material-symbols-rounded {
+        font-family: 'Material Symbols Rounded' !important;
+        -webkit-font-smoothing: antialiased;
+    }
+
+    /* Override broad button[kind=header] hide — re-show sidebar buttons */
+    [data-testid="collapsedControl"] button,
+    [data-testid="collapsedControl"] button[kind="header"],
+    [data-testid="stSidebarCollapsedControl"] button,
+    [data-testid="stSidebarCollapsedControl"] button[kind="header"] {
+        display: flex !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        color: #00d4ff !important;
+        background: #111827 !important;
+        border: 1px solid rgba(0,212,255,0.15) !important;
+        border-radius: 8px !important;
+        cursor: pointer !important;
+    }
+    [data-testid="collapsedControl"] button:hover,
+    [data-testid="stSidebarCollapsedControl"] button:hover {
+        background: rgba(0,212,255,0.08) !important;
+        border-color: #00d4ff !important;
+    }
+
+    /* Sidebar close (X) button inside open sidebar */
+    [data-testid="stSidebar"] [data-testid="stSidebarNavCollapseIcon"],
+    [data-testid="stSidebar"] button[aria-label*="Close"],
+    [data-testid="stSidebar"] button[aria-label*="Collapse"] {
+        display: flex !important;
+        visibility: visible !important;
+        color: #00d4ff !important;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
+
 def inject_all():
-    """Inject all global styles + freshness bar. Call once at app start."""
+    """Inject all global styles + freshness bar + sidebar fix. Call once at app start."""
     inject_global_css()
     inject_freshness_bar()
+    inject_sidebar_fix()
 
 
 # ─── Plotly Template ───
