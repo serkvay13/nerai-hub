@@ -2486,3 +2486,291 @@ def inject_country_intel_css():
     '''
     css += '</style>'
     st.markdown(css, unsafe_allow_html=True)
+
+def inject_global_premium_css():
+    """Global premium design system for all NERAI pages."""
+    css = '<style>'
+    css += '''
+    /* ============================================= */
+    /* NERAI GLOBAL PREMIUM DESIGN SYSTEM            */
+    /* Bloomberg Terminal x Apple aesthetic           */
+    /* ============================================= */
+
+    /* --- News Cards --- */
+    .news-card {
+        background: rgba(15,23,42,0.5);
+        border-left: 3px solid #e05060;
+        border-radius: 0 10px 10px 0;
+        padding: 16px 20px;
+        margin-bottom: 10px;
+        transition: all 0.25s ease;
+        border-top: 1px solid rgba(100,116,139,0.06);
+        border-right: 1px solid rgba(100,116,139,0.06);
+        border-bottom: 1px solid rgba(100,116,139,0.06);
+    }
+    .news-card:hover {
+        background: rgba(0,212,255,0.04);
+        border-left-color: #00d4ff;
+        transform: translateX(4px);
+        box-shadow: -4px 0 20px rgba(0,212,255,0.08);
+    }
+    .news-title {
+        font-size: 0.88rem !important;
+        font-weight: 600 !important;
+        color: #00d4ff !important;
+        line-height: 1.45;
+        margin-bottom: 6px;
+        text-decoration: none !important;
+    }
+    .news-title:hover {
+        color: #38bdf8 !important;
+    }
+    .news-source {
+        font-size: 0.68rem;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        font-weight: 600;
+    }
+    .news-date {
+        font-size: 0.68rem;
+        color: #475569;
+        font-family: "SF Mono", "JetBrains Mono", monospace;
+    }
+
+    /* --- Risk Badges --- */
+    .badge-crit {
+        background: rgba(224,80,96,0.15) !important;
+        color: #e05060 !important;
+        border: 1px solid rgba(224,80,96,0.3);
+        border-radius: 4px;
+        padding: 2px 8px;
+        font-size: 0.62rem;
+        font-weight: 700;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+    }
+    .badge-high {
+        background: rgba(224,96,48,0.15) !important;
+        color: #e06030 !important;
+        border: 1px solid rgba(224,96,48,0.3);
+        border-radius: 4px;
+        padding: 2px 8px;
+        font-size: 0.62rem;
+        font-weight: 700;
+        letter-spacing: 1.5px;
+    }
+    .badge-med {
+        background: rgba(245,158,11,0.15) !important;
+        color: #f59e0b !important;
+        border: 1px solid rgba(245,158,11,0.3);
+        border-radius: 4px;
+        padding: 2px 8px;
+        font-size: 0.62rem;
+        font-weight: 700;
+        letter-spacing: 1.5px;
+    }
+    .badge-low {
+        background: rgba(0,180,216,0.12) !important;
+        color: #00b4d8 !important;
+        border: 1px solid rgba(0,180,216,0.25);
+        border-radius: 4px;
+        padding: 2px 8px;
+        font-size: 0.62rem;
+        font-weight: 700;
+        letter-spacing: 1.5px;
+    }
+    .badge-neu {
+        background: rgba(100,116,139,0.12) !important;
+        color: #94a3b8 !important;
+        border: 1px solid rgba(100,116,139,0.25);
+        border-radius: 4px;
+        padding: 2px 8px;
+        font-size: 0.62rem;
+        font-weight: 700;
+        letter-spacing: 1.5px;
+    }
+
+    /* --- Expander Premium --- */
+    [data-testid="stExpander"] {
+        background: rgba(15,23,42,0.4) !important;
+        border: 1px solid rgba(100,116,139,0.1) !important;
+        border-radius: 10px !important;
+        margin-bottom: 8px;
+        overflow: hidden;
+    }
+    [data-testid="stExpander"] summary {
+        padding: 12px 16px !important;
+        font-weight: 600 !important;
+        font-size: 0.82rem !important;
+        letter-spacing: 0.3px;
+        color: #cbd5e1 !important;
+    }
+    [data-testid="stExpander"] summary:hover {
+        color: #00d4ff !important;
+        background: rgba(0,212,255,0.03) !important;
+    }
+    [data-testid="stExpander"][open] {
+        border-color: rgba(0,212,255,0.12) !important;
+    }
+
+    /* --- Dataframe Premium --- */
+    [data-testid="stDataFrame"] {
+        border: 1px solid rgba(100,116,139,0.1) !important;
+        border-radius: 10px !important;
+        overflow: hidden;
+    }
+    [data-testid="stDataFrame"] table {
+        font-size: 0.75rem !important;
+    }
+
+    /* --- Plotly Chart Container --- */
+    [data-testid="stPlotlyChart"] {
+        background: rgba(10,15,30,0.3);
+        border: 1px solid rgba(100,116,139,0.08);
+        border-radius: 10px;
+        padding: 8px;
+        margin-bottom: 8px;
+    }
+
+    /* --- Metric Cards Enhancement --- */
+    [data-testid="stMetric"] {
+        background: rgba(15,23,42,0.5);
+        border: 1px solid rgba(100,116,139,0.1);
+        border-radius: 10px;
+        padding: 14px 18px !important;
+        transition: all 0.2s ease;
+    }
+    [data-testid="stMetric"]:hover {
+        border-color: rgba(0,212,255,0.15);
+        background: rgba(0,212,255,0.03);
+    }
+    [data-testid="stMetric"] label {
+        font-size: 0.65rem !important;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        color: #64748b !important;
+        font-weight: 600 !important;
+    }
+    [data-testid="stMetric"] [data-testid="stMetricValue"] {
+        font-size: 1.4rem !important;
+        font-weight: 800 !important;
+        font-family: "SF Mono", "JetBrains Mono", monospace !important;
+    }
+
+    /* --- Tabs Premium --- */
+    [data-testid="stTabs"] [role="tablist"] {
+        gap: 0 !important;
+        border-bottom: 1px solid rgba(100,116,139,0.12) !important;
+    }
+    [data-testid="stTabs"] button[role="tab"] {
+        font-size: 0.72rem !important;
+        font-weight: 600 !important;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        color: #64748b !important;
+        padding: 10px 20px !important;
+        border: none !important;
+        border-bottom: 2px solid transparent !important;
+        transition: all 0.2s ease;
+    }
+    [data-testid="stTabs"] button[role="tab"]:hover {
+        color: #cbd5e1 !important;
+        background: rgba(0,212,255,0.03) !important;
+    }
+    [data-testid="stTabs"] button[role="tab"][aria-selected="true"] {
+        color: #00d4ff !important;
+        border-bottom: 2px solid #00d4ff !important;
+        background: rgba(0,212,255,0.05) !important;
+    }
+
+    /* --- Column Cards (for multi-column layouts) --- */
+    .hc {
+        background: rgba(15,23,42,0.4);
+        border: 1px solid rgba(100,116,139,0.08);
+        border-radius: 10px;
+        padding: 16px;
+        margin-bottom: 8px;
+    }
+
+    /* --- General Markdown Sections --- */
+    .sec-hdr {
+        font-size: 0.78rem !important;
+        font-weight: 700 !important;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        color: #94a3b8 !important;
+        padding: 10px 0;
+        margin: 16px 0 12px 0;
+        border-bottom: 1px solid rgba(0,212,255,0.06);
+    }
+
+    /* --- Progress Bars --- */
+    [data-testid="stProgress"] > div {
+        background: rgba(100,116,139,0.15) !important;
+        border-radius: 4px !important;
+        overflow: hidden;
+    }
+
+    /* --- Text Area Premium --- */
+    [data-testid="stTextArea"] textarea {
+        background: rgba(15,23,42,0.6) !important;
+        border: 1px solid rgba(100,116,139,0.15) !important;
+        border-radius: 8px !important;
+        font-size: 0.8rem !important;
+        color: #cbd5e1 !important;
+    }
+    [data-testid="stTextArea"] textarea:focus {
+        border-color: rgba(0,212,255,0.3) !important;
+        box-shadow: 0 0 0 1px rgba(0,212,255,0.15) !important;
+    }
+
+    /* --- Horizontal Dividers --- */
+    .h-div {
+        border-top: 1px solid rgba(100,116,139,0.08);
+        margin: 14px 0;
+    }
+
+    /* --- Smooth Scrollbar --- */
+    ::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+        background: rgba(15,23,42,0.3);
+    }
+    ::-webkit-scrollbar-thumb {
+        background: rgba(100,116,139,0.25);
+        border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+        background: rgba(0,212,255,0.3);
+    }
+
+    /* --- Link Styles --- */
+    a {
+        color: #00d4ff !important;
+        text-decoration: none !important;
+        transition: color 0.2s ease;
+    }
+    a:hover {
+        color: #38bdf8 !important;
+    }
+
+    /* --- Button Enhancement --- */
+    [data-testid="stButton"] button {
+        font-size: 0.72rem !important;
+        font-weight: 600 !important;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        border-radius: 8px !important;
+        transition: all 0.2s ease !important;
+    }
+
+    /* --- Column Gap Fix --- */
+    [data-testid="stHorizontalBlock"] {
+        gap: 12px !important;
+    }
+    '''
+    css += '</style>'
+    st.markdown(css, unsafe_allow_html=True)
