@@ -1633,52 +1633,7 @@ with st.sidebar:
           28 topic categories
         </div>""", unsafe_allow_html=True)
 
-    elif st.session_state.page == 'predictions':
-        st.markdown('<div class="sec-hdr">Forecast Filters</div>', unsafe_allow_html=True)
-        if has_predictions:
-            topic_display_p = {t: TOPIC_LABELS.get(t, t.replace('_',' ').title())
-                               for t in sorted(pred_df['topic'].dropna().unique()) if t}
-            if topic_display_p:
-                pred_label = st.selectbox(
-                    "pred_topic", list(topic_display_p.values()),
-                    index=list(topic_display_p.values()).index('Political Instability')
-                          if 'Political Instability' in topic_display_p.values() else 0,
-                    label_visibility='collapsed')
-                sel_pred_topic = next((k for k,v in topic_display_p.items() if v==pred_label), list(topic_display_p.keys())[0])
-            else:
-                st.warning("No valid topic data in predictions yet.")
-                sel_pred_topic = None
-            
-            st.markdown('<div class="sec-hdr" style="margin-top:14px">Country</div>',
-                        unsafe_allow_html=True)
-            pred_c_opts = [f"{COUNTRY_NAMES.get(c,c)} ({c})"
-                           for c in sorted(pred_df['country'].unique())]
-            pred_default = 'United States (US)' if 'United States (US)' in pred_c_opts \
-                           else pred_c_opts[0]
-            sel_pred_country_label = st.selectbox(
-                "pred_country", pred_c_opts,
-                index=pred_c_opts.index(pred_default),
-                label_visibility='collapsed')
-            sel_pred_country = sel_pred_country_label.split('(')[-1].strip(')')
-
-            st.markdown('<div class="sec-hdr" style="margin-top:14px">History window</div>',
-                        unsafe_allow_html=True)
-            if _IS_PRO:
-                pred_hist_months = st.slider("hist_months", 3, 60, 24,
-                                             label_visibility='collapsed')
-            else:
-                pred_hist_months = 3
-                st.markdown(
-                    '<div style="font-size:11px;color:#e07b20;padding:4px 0;">'
-                    '⚠️ Solo: Showing 3 months. '
-                    'Upgrade to Pro for up to 60 months of history.</div>',
-                    unsafe_allow_html=True)
-        else:
-            sel_pred_topic   = all_topics[0] if all_topics else ''
-            sel_pred_country = 'US'
-            pred_hist_months = 24
-
-    # defaults for pages that don't set them
+        # Predictions selectors moved to inline (render_predictions)
     if True:  # All pages get defaults; indices overrides via inline widgets
         sel_topic = all_topics[0] if all_topics else 'political_instability'
         sel_countries = ['US','RS','CH','TU']
@@ -1707,6 +1662,7 @@ def render_home():
     # ── 1. HERO: AI + Geopolitical Network Visualization ──
     # (from nerai_premium_css.py — replaces old Three.js globe)
     nerai_premium_css.inject_home_hero()
+    nerai_premium_css.inject_global_premium_css()
 
     # ── 2. PREMIUM KPI SECTION ──
     st.markdown("""
@@ -1931,6 +1887,7 @@ def render_indices():
         badge="LIVE",
         icon=""
     )
+    nerai_premium_css.inject_global_premium_css()
     nerai_premium_css.inject_filter_bar_css()
 
     # ══ INLINE FILTER BAR ══
@@ -2117,6 +2074,7 @@ def render_profile():
         badge="INTEL",
         icon="\U0001f310"
     )
+    nerai_premium_css.inject_global_premium_css()
     nerai_premium_css.inject_filter_bar_css()
     nerai_premium_css.inject_country_intel_css()
 
@@ -2406,6 +2364,7 @@ def render_news():
         badge="LIVE",
         icon="📰"
     )
+    nerai_premium_css.inject_global_premium_css()
 
 
     # === NEWS DYNAMIC BACKGROUND ===
@@ -2500,6 +2459,38 @@ def render_predictions():
         badge="AI",
         icon="🔮"
     )
+    nerai_premium_css.inject_global_premium_css()
+
+    # \u2500\u2500 Inline topic & country selectors \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+    nerai_premium_css.inject_filter_bar_css()
+    _pred_sel_cols = st.columns([4, 4, 3])
+    with _pred_sel_cols[0]:
+        topic_display_p = {t: TOPIC_LABELS.get(t, t.replace("_"," ").title())
+                           for t in sorted(pred_df["topic"].dropna().unique()) if t}
+        if topic_display_p:
+            pred_label = st.selectbox(
+                "\U0001f4ca RISK TOPIC", list(topic_display_p.values()),
+                index=list(topic_display_p.values()).index('Political Instability')
+                    if 'Political Instability' in topic_display_p.values() else 0,
+                key='inline_pred_topic'
+            )
+            sel_pred_topic = next((k for k,v in topic_display_p.items() if v==pred_label), list(topic_display_p.keys())[0])
+        else:
+            sel_pred_topic = None
+    with _pred_sel_cols[1]:
+        pred_c_opts = [f"{COUNTRY_NAMES.get(c,c)} ({c})"
+                       for c in sorted(pred_df["country"].unique())]
+        pred_default = 'United States (US)' if 'United States (US)' in pred_c_opts \
+                       else pred_c_opts[0]
+        sel_pred_country_label = st.selectbox(
+            "\U0001f310 COUNTRY", pred_c_opts,
+            index=pred_c_opts.index(pred_default),
+            key='inline_pred_country'
+        )
+        sel_pred_country = sel_pred_country_label.split('(')[-1].strip(')')
+    with _pred_sel_cols[2]:
+        pred_hist_months = st.slider('\U0001f4c5 HISTORY (months)', 6, 48, 24,
+            key='inline_pred_months')
 
     st.markdown("""
     <div style='padding:6px 0 10px;'>
@@ -3489,6 +3480,7 @@ def render_insights():
         badge="AI",
         icon="🧠"
     )
+    nerai_premium_css.inject_global_premium_css()
 
     # ── Page header ─────────────────────────────────────────────
     st.markdown("""
@@ -4063,6 +4055,7 @@ def render_causality():
         badge="NETWORK",
         icon="🔗"
     )
+    nerai_premium_css.inject_global_premium_css()
 
     st.markdown(
         "<div style='padding:6px 0 10px;'>"
@@ -4528,6 +4521,7 @@ def render_briefing_room():
         badge="REPORTS",
         icon="📋"
     )
+    nerai_premium_css.inject_global_premium_css()
 
     st.markdown(
         "<div style='padding:6px 0 10px;'>"
@@ -4924,6 +4918,7 @@ def render_scenarios():
         badge="SIM",
         icon="⚡"
     )
+    nerai_premium_css.inject_global_premium_css()
 
     st.markdown("""
     <div style='padding:6px 0 10px;'>
@@ -5124,6 +5119,7 @@ def render_api():
         badge="DEV",
         icon="🔌"
     )
+    nerai_premium_css.inject_global_premium_css()
 
     st.markdown("""
     <div style='padding:28px 0 16px 0;'>
@@ -5230,6 +5226,7 @@ def render_threat_radar():
         badge="ALERT",
         icon="🎯"
     )
+    nerai_premium_css.inject_global_premium_css()
 
 
     st.markdown('<div class="sec-hdr">🔴  Live Threat Overview</div>', unsafe_allow_html=True)
