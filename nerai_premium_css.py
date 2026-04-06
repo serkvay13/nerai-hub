@@ -2302,3 +2302,187 @@ def inject_filter_bar_css():
     }
     </style>
     """, unsafe_allow_html=True)
+def inject_country_intel_css():
+    """Premium CSS for Country Intel page - cards, indices, alarms, bilateral."""
+    css = '<style>'
+    css += '''
+    /* ===== COUNTRY INTEL - PREMIUM DESIGN SYSTEM ===== */
+
+    /* --- Profile Header Enhancement --- */
+    .prof-header {
+        background: linear-gradient(135deg, rgba(0,212,255,0.06) 0%, rgba(15,23,42,0.95) 100%);
+        border: 1px solid rgba(0,212,255,0.12);
+        border-radius: 12px;
+        padding: 20px 28px;
+        margin-bottom: 8px;
+    }
+    .prof-country {
+        font-size: 1.6rem !important;
+        font-weight: 800 !important;
+        letter-spacing: 1px;
+        color: #e2e8f0 !important;
+        text-transform: uppercase;
+    }
+    .prof-sub {
+        font-size: 0.72rem;
+        color: #64748b;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        margin-top: 2px;
+    }
+
+    /* --- Section Titles --- */
+    .prof-section-title {
+        font-size: 0.82rem !important;
+        font-weight: 700 !important;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        color: #94a3b8 !important;
+        padding-bottom: 10px;
+        margin-bottom: 12px;
+        border-bottom: 1px solid rgba(0,212,255,0.08);
+    }
+
+    /* --- Index Score Rows --- */
+    .idx-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 14px;
+        margin-bottom: 6px;
+        background: rgba(15,23,42,0.6);
+        border: 1px solid rgba(100,116,139,0.1);
+        border-radius: 8px;
+        transition: all 0.2s ease;
+    }
+    .idx-row:hover {
+        background: rgba(0,212,255,0.04);
+        border-color: rgba(0,212,255,0.15);
+        transform: translateX(2px);
+    }
+    .idx-label {
+        font-size: 0.78rem;
+        font-weight: 500;
+        color: #cbd5e1;
+        letter-spacing: 0.3px;
+        min-width: 140px;
+    }
+    .idx-bar-bg {
+        flex: 1;
+        height: 4px;
+        background: rgba(100,116,139,0.15);
+        border-radius: 4px;
+        margin: 0 14px;
+        overflow: hidden;
+    }
+    .idx-val {
+        font-size: 0.82rem;
+        font-weight: 700;
+        font-family: "SF Mono", "JetBrains Mono", monospace;
+        min-width: 45px;
+        text-align: right;
+    }
+
+    /* --- Alarm Rows --- */
+    .alarm-row {
+        padding: 12px 16px;
+        margin-bottom: 8px;
+        background: rgba(15,23,42,0.5);
+        border-left: 3px solid;
+        border-radius: 0 8px 8px 0;
+        transition: all 0.2s ease;
+    }
+    .alarm-row:hover {
+        background: rgba(15,23,42,0.8);
+        transform: translateX(3px);
+    }
+    .alarm-label {
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: #e2e8f0;
+        margin-bottom: 3px;
+    }
+    .alarm-meta {
+        font-size: 0.7rem;
+        color: #64748b;
+        font-family: "SF Mono", "JetBrains Mono", monospace;
+    }
+
+    /* --- Bilateral Relations Compact Cards --- */
+    .rel-compact {
+        padding: 10px 14px;
+        margin-bottom: 6px;
+        background: rgba(15,23,42,0.5);
+        border: 1px solid rgba(100,116,139,0.1);
+        border-radius: 8px;
+        transition: all 0.2s ease;
+    }
+    .rel-compact:hover {
+        border-color: rgba(0,212,255,0.15);
+        background: rgba(0,212,255,0.03);
+    }
+
+    /* --- Section Headers --- */
+    .sec-hdr {
+        font-size: 0.85rem;
+        font-weight: 700;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        color: #94a3b8;
+        padding: 8px 0;
+        margin: 16px 0 12px 0;
+        border-bottom: 1px solid rgba(0,212,255,0.06);
+    }
+
+    /* --- Relation Status Card --- */
+    .relation-status {
+        background: linear-gradient(135deg, rgba(0,212,255,0.05) 0%, rgba(15,23,42,0.9) 100%);
+        border: 1px solid rgba(0,212,255,0.15);
+        border-radius: 10px;
+        padding: 16px 20px;
+        text-align: center;
+    }
+
+    /* --- Mini Metrics --- */
+    .metric-mini {
+        text-align: center;
+        padding: 8px 4px;
+    }
+    .metric-mini-label {
+        font-size: 0.62rem;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        color: #64748b;
+        font-weight: 600;
+    }
+    .metric-mini-val {
+        font-size: 1.1rem;
+        font-weight: 700;
+        font-family: "SF Mono", "JetBrains Mono", monospace;
+    }
+
+    /* --- Column Cards for 3-col Layout --- */
+    [data-testid="stVerticalBlock"] > [data-testid="stVerticalBlock"] {
+        background: rgba(10,15,30,0.4);
+        border: 1px solid rgba(100,116,139,0.08);
+        border-radius: 10px;
+        padding: 8px 4px;
+    }
+
+    /* --- Gauge Charts Enhancement --- */
+    .js-plotly-plot .plotly .bg {
+        fill: transparent !important;
+    }
+
+    /* --- Worst/Best Relations Headers --- */
+    div[style*="color:#e05060"] {
+        font-size: 0.7rem !important;
+        letter-spacing: 2px;
+    }
+    div[style*="color:#00b4d8"] {
+        font-size: 0.7rem !important;
+        letter-spacing: 2px;
+    }
+    '''
+    css += '</style>'
+    st.markdown(css, unsafe_allow_html=True)
