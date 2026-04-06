@@ -1616,56 +1616,27 @@ def inject_home_hero():
     """, height=540, scrolling=False)
 
 
-def inject_page_header(title, subtitle="", badge="", icon=""):
-    """
-    Premium page header bar — used at the top of every data page.
-    Uses CSS classes defined in inject_global_css for reliable rendering.
-    """
-    badge_html = f'<span class="nerai-badge">{badge}</span>' if badge else ''
-    icon_html = f'<span style="font-size:1.4rem;margin-right:8px;">{icon}</span>' if icon else ''
+    def inject_page_header(title, subtitle="", badge="", icon=""):
+        """Premium page header bar."""
+        badge_html = f'<span class="nerai-badge">{badge}</span>' if badge else ''
+        icon_html = f'<span style="font-size:1.4rem;margin-right:8px;">{icon}</span>' if icon else ''
+        _h = '<div class="nerai-page-header">'
+        _h += '<div style="display:flex;align-items:center;gap:12px;"><div>'
+        _h += '<div style="display:flex;align-items:center;">' + icon_html + f'<h2>{title}</h2></div>'
+        _h += f'<div class="subtitle">{subtitle}</div>'
+        _h += '</div></div>' + badge_html + '</div>'
+        st.markdown(_h, unsafe_allow_html=True)
 
-    st.markdown(f"""
-    <div class="nerai-page-header">
-        <div style="display:flex;align-items:center;gap:12px;">
-            <div>
-                <div style="display:flex;align-items:center;">
-                    {icon_html}
-                    <h2>{title}</h2>
-                </div>
-                <div class="subtitle">{subtitle}</div>
-            </div>
-        </div>
-        {badge_html}
-    </div>
-    """, unsafe_allow_html=True)
-
-
-def inject_section_header(title, icon=""):
-    """
-    Premium section divider with left accent bar.
-    Used between major sections within a page.
-    """
-    icon_html = f'<span style="margin-right:6px;">{icon}</span>' if icon else ''
-    st.markdown(f"""
-    <div style="
-        display:flex;align-items:center;gap:12px;
-        margin:28px 0 16px 0;padding:10px 0;
-    ">
-        <div style="width:3px;height:22px;
-            background:linear-gradient(180deg,#00d4ff,rgba(0,212,255,0.15));
-            border-radius:2px;box-shadow:0 0 8px rgba(0,212,255,0.2);
-        "></div>
-        <span style="
-            font-family:'Inter',sans-serif;
-            font-size:0.95rem;font-weight:700;
-            color:#e2e8f0;letter-spacing:-0.2px;
-        ">{icon_html}{title}</span>
-        <div style="flex:1;height:1px;
-            background:linear-gradient(90deg,rgba(0,212,255,0.12),transparent);
-        "></div>
-    </div>
-    """, unsafe_allow_html=True)
-
+    def inject_section_header(title, icon=""):
+        """Premium section divider with left accent bar."""
+        icon_html = f'<span style="font-size:1rem;margin-right:8px;">{icon}</span>' if icon else ''
+        _h = '<div style="display:flex;align-items:center;gap:10px;margin:24px 0 12px 0;padding:10px 0;border-bottom:1px solid rgba(0,212,255,0.08);">'
+        _h += '<div style="width:3px;height:18px;background:linear-gradient(180deg,#00d4ff,rgba(0,212,255,0.3));border-radius:2px;"></div>'
+        _h += icon_html
+        _h += f'<span style="font-family:Inter,sans-serif;font-size:0.85rem;font-weight:700;color:#c8d6e5;letter-spacing:0.5px;text-transform:uppercase;">{title}</span>'
+        _h += '<div style="flex:1;height:1px;background:linear-gradient(90deg,rgba(0,212,255,0.12),transparent);margin-left:8px;"></div>'
+        _h += '</div>'
+        st.markdown(_h, unsafe_allow_html=True)
 
 def inject_kpi_row(metrics):
     """
@@ -2113,46 +2084,145 @@ def inject_globe_close():
 
 
 def inject_filter_bar_css():
-    """
-    Premium inline filter bar CSS for Risk Matrix page.
-    Renders topic/country/settings as a compact glassmorphism bar.
-    """
+    """Premium filter bar styling for Risk Matrix inline controls."""
     st.markdown("""
     <style>
-    /* ── Premium Filter Bar ── */
-    .nerai-filter-bar {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        padding: 10px 16px;
-        margin: 0 0 16px;
-        background: rgba(17,24,39,0.6);
-        backdrop-filter: blur(12px);
+    /* ── Premium Filter Bar Container ── */
+    [data-testid="stHorizontalBlock"] {
+        background: linear-gradient(135deg, rgba(15,23,42,0.6), rgba(15,23,42,0.3));
         border: 1px solid rgba(0,212,255,0.08);
         border-radius: 12px;
-    }
-    .nerai-filter-bar .stSelectbox,
-    .nerai-filter-bar .stMultiSelect {
-        min-width: 180px;
-    }
-    .nerai-filter-bar label {
-        font-family: 'JetBrains Mono', monospace !important;
-        font-size: 0.65rem !important;
-        letter-spacing: 1px;
-        text-transform: uppercase;
-        color: #4a5d75 !important;
+        padding: 8px 12px;
+        margin-bottom: 8px;
+        backdrop-filter: blur(12px);
     }
 
-    /* Compact Streamlit widgets inside filter bar */
-    .nerai-filter-bar [data-testid="stSelectbox"] > div,
-    .nerai-filter-bar [data-testid="stMultiSelect"] > div {
-        background: rgba(26,35,56,0.8) !important;
-        border: 1px solid rgba(0,212,255,0.1) !important;
+    /* ── Selectbox & Multiselect Styling ── */
+    [data-testid="stSelectbox"] > div > div,
+    [data-testid="stMultiSelect"] > div > div {
+        background: rgba(15,23,42,0.8) !important;
+        border: 1px solid rgba(0,212,255,0.12) !important;
         border-radius: 8px !important;
+        color: #e2e8f0 !important;
+        font-family: 'Inter', sans-serif !important;
+        font-size: 0.82rem !important;
+        transition: all 0.2s ease !important;
     }
-    .nerai-filter-bar [data-testid="stSelectbox"] > div:hover,
-    .nerai-filter-bar [data-testid="stMultiSelect"] > div:hover {
-        border-color: rgba(0,212,255,0.25) !important;
+
+    [data-testid="stSelectbox"] > div > div:hover,
+    [data-testid="stMultiSelect"] > div > div:hover {
+        border-color: rgba(0,212,255,0.3) !important;
+        box-shadow: 0 0 12px rgba(0,212,255,0.08) !important;
+    }
+
+    [data-testid="stSelectbox"] > div > div:focus-within,
+    [data-testid="stMultiSelect"] > div > div:focus-within {
+        border-color: #00d4ff !important;
+        box-shadow: 0 0 16px rgba(0,212,255,0.15) !important;
+    }
+
+    /* ── Labels ── */
+    [data-testid="stSelectbox"] label,
+    [data-testid="stMultiSelect"] label,
+    [data-testid="stSlider"] label {
+        font-family: 'Inter', sans-serif !important;
+        font-size: 0.7rem !important;
+        font-weight: 600 !important;
+        color: #64748b !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.8px !important;
+        margin-bottom: 2px !important;
+    }
+
+    /* ── Slider Styling ── */
+    [data-testid="stSlider"] > div > div > div {
+        background: rgba(0,212,255,0.15) !important;
+    }
+
+    [data-testid="stSlider"] [data-testid="stThumbValue"] {
+        color: #00d4ff !important;
+        font-weight: 600 !important;
+        font-size: 0.75rem !important;
+    }
+
+    /* ── Multiselect Tags ── */
+    [data-testid="stMultiSelect"] span[data-baseweb="tag"] {
+        background: linear-gradient(135deg, rgba(0,212,255,0.15), rgba(0,212,255,0.05)) !important;
+        border: 1px solid rgba(0,212,255,0.2) !important;
+        border-radius: 6px !important;
+        color: #00d4ff !important;
+        font-size: 0.75rem !important;
+        font-weight: 500 !important;
+    }
+
+    /* ── Filter Divider ── */
+    .nerai-filter-divider {
+        height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(0,212,255,0.12), transparent);
+        margin: 12px 0 16px 0;
+    }
+
+    /* ── Download Button ── */
+    [data-testid="stDownloadButton"] button {
+        background: linear-gradient(135deg, rgba(0,212,255,0.1), rgba(0,212,255,0.05)) !important;
+        border: 1px solid rgba(0,212,255,0.2) !important;
+        border-radius: 8px !important;
+        color: #00d4ff !important;
+        font-family: 'Inter', sans-serif !important;
+        font-size: 0.78rem !important;
+        font-weight: 600 !important;
+        letter-spacing: 0.3px !important;
+        transition: all 0.25s ease !important;
+    }
+
+    [data-testid="stDownloadButton"] button:hover {
+        background: linear-gradient(135deg, rgba(0,212,255,0.2), rgba(0,212,255,0.1)) !important;
+        border-color: #00d4ff !important;
+        box-shadow: 0 0 20px rgba(0,212,255,0.12) !important;
+        transform: translateY(-1px) !important;
+    }
+
+    /* ── Dataframe Table ── */
+    [data-testid="stDataFrame"] {
+        border: 1px solid rgba(0,212,255,0.08) !important;
+        border-radius: 10px !important;
+        overflow: hidden !important;
+    }
+
+    /* ── Metric Cards ── */
+    [data-testid="stMetric"] {
+        background: linear-gradient(135deg, rgba(15,23,42,0.7), rgba(15,23,42,0.4)) !important;
+        border: 1px solid rgba(0,212,255,0.08) !important;
+        border-radius: 10px !important;
+        padding: 16px !important;
+        transition: all 0.3s ease !important;
+    }
+
+    [data-testid="stMetric"]:hover {
+        border-color: rgba(0,212,255,0.2) !important;
+        box-shadow: 0 4px 20px rgba(0,212,255,0.06) !important;
+    }
+
+    [data-testid="stMetric"] label {
+        font-family: 'Inter', sans-serif !important;
+        font-size: 0.7rem !important;
+        font-weight: 600 !important;
+        color: #64748b !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.6px !important;
+    }
+
+    [data-testid="stMetric"] [data-testid="stMetricValue"] {
+        font-family: 'Inter', sans-serif !important;
+        font-size: 1.6rem !important;
+        font-weight: 700 !important;
+        color: #e2e8f0 !important;
+    }
+
+    [data-testid="stMetric"] [data-testid="stMetricDelta"] {
+        font-family: 'Inter', sans-serif !important;
+        font-size: 0.75rem !important;
+        font-weight: 600 !important;
     }
     </style>
     """, unsafe_allow_html=True)
