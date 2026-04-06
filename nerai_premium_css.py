@@ -2243,9 +2243,40 @@ def inject_filter_bar_css():
     .stSlider [data-baseweb="slider"] div {
         background-color: transparent !important;
     }
+
     /* Re-apply only track bg */
     .stSlider [data-baseweb="slider"] > div:first-child > div:first-child {
         background-color: rgba(30,41,59,0.9) !important;
+    }
+
+    /* AGGRESSIVE: Override ALL possible Streamlit slider filled-track selectors */
+    .stSlider [data-baseweb="slider"] [role="progressbar"],
+    .stSlider [data-baseweb="slider"] [role="progressbar"] div,
+    .stApp .stSlider [role="progressbar"],
+    .stApp .stSlider [role="progressbar"] div,
+    div[data-testid="stSlider"] [role="progressbar"],
+    div[data-testid="stSlider"] [role="progressbar"] div,
+    .stSlider div[role="progressbar"] {
+        background: linear-gradient(90deg, rgba(26,122,138,0.3), rgba(26,122,138,0.15)) !important;
+        background-color: rgba(26,122,138,0.25) !important;
+    }
+
+    /* Override Streamlit primary color on slider track */
+    .stSlider [data-baseweb="slider"] div[style*="background-color: rgb(26, 122, 138)"],
+    .stSlider [data-baseweb="slider"] div[style*="background-color: rgb(0, 212, 255)"],
+    .stSlider [data-baseweb="slider"] div[style*="background: rgb(26, 122, 138)"],
+    .stSlider [data-baseweb="slider"] div[style*="background: rgb(0, 212, 255)"] {
+        background: rgba(26,122,138,0.25) !important;
+        background-color: rgba(26,122,138,0.25) !important;
+    }
+
+    /* Slider thumb value - ensure readable */
+    .stSlider [data-testid="stSliderThumbValue"],
+    .stSlider [data-testid="stSliderThumbValue"] div,
+    .stSlider [data-testid="stSliderThumbValue"] span {
+        color: #ffffff !important;
+        font-weight: 700 !important;
+        text-shadow: 0 1px 3px rgba(0,0,0,0.8) !important;
     }
 
     /* ── Filter Divider ── */
