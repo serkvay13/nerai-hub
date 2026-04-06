@@ -113,6 +113,28 @@ def inject_global_css():
         border-right: 1px solid {TOKENS['border']} !important;
     }}
 
+    /* ── Sidebar Collapse/Expand Button Fix ── */
+    [data-testid="collapsedControl"],
+    [data-testid="stSidebarCollapsedControl"],
+    button[kind="header"],
+    .css-1rs6os.edgvbvh3,
+    [data-testid="stSidebar"] button[aria-label="Close"],
+    [data-testid="stSidebar"] [data-testid="stSidebarNavCollapseIcon"],
+    section[data-testid="stSidebar"] > div > button {{
+        color: {TOKENS['cyan']} !important;
+        background: {TOKENS['bg_card']} !important;
+        border: 1px solid {TOKENS['cyan_border']} !important;
+        border-radius: 8px !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+        z-index: 999999 !important;
+    }}
+    [data-testid="collapsedControl"]:hover,
+    [data-testid="stSidebarCollapsedControl"]:hover {{
+        background: {TOKENS['cyan_glow']} !important;
+        border-color: {TOKENS['cyan']} !important;
+    }}
+
     [data-testid="stSidebar"] > div:first-child {{
         padding-top: 1rem !important;
     }}
@@ -940,8 +962,9 @@ def inject_section_header(text):
 
 
 def inject_all():
-    """Inject all global styles. Call once at app start."""
+    """Inject all global styles + freshness bar. Call once at app start."""
     inject_global_css()
+    inject_freshness_bar()
 
 
 # ─── Plotly Template ───
