@@ -1621,25 +1621,7 @@ with st.sidebar:
         key="sidebar_norm",
     )
 
-    if st.session_state.page == 'profile':
-        st.markdown('<div class="sec-hdr">Country</div>', unsafe_allow_html=True)
-        profile_c_opts = [f"{COUNTRY_NAMES.get(c,c)} ({c})" for c in sorted(all_countries)]
-        profile_default = 'United States (US)' if 'United States (US)' in profile_c_opts else profile_c_opts[0]
-        sel_profile_label = st.selectbox("profile_country", profile_c_opts,
-            index=profile_c_opts.index(profile_default), label_visibility='collapsed')
-        profile_country = sel_profile_label.split('(')[-1].strip(')')
-
-        st.markdown('<div class="sec-hdr" style="margin-top:14px">Bilateral Analyzer</div>', unsafe_allow_html=True)
-        c_opts_bi = [f"{COUNTRY_NAMES.get(c,c)} ({c})" for c in sorted(all_countries)]
-        default_a = 'United States (US)' if 'United States (US)' in c_opts_bi else c_opts_bi[0]
-        default_b = 'Russia (RS)'        if 'Russia (RS)'        in c_opts_bi else c_opts_bi[1]
-        sel_bi_a = st.selectbox("Country A", c_opts_bi, index=c_opts_bi.index(default_a))
-        bi_a = sel_bi_a.split('(')[-1].strip(')')
-        sel_bi_b = st.selectbox("Country B", c_opts_bi, index=c_opts_bi.index(default_b))
-        bi_b = sel_bi_b.split('(')[-1].strip(')')
-
-        bi_days = st.slider("History (days)", 14, 90, 60)
-
+    # Profile selectors moved to inline (render_profile)
     elif st.session_state.page == 'news':
         st.markdown('<div class="sec-hdr">Live News Feed</div>', unsafe_allow_html=True)
         st.markdown(f"""
@@ -2133,11 +2115,45 @@ def render_profile():
         title="Country Intel",
         subtitle="Deep-dive risk analysis, bilateral relations & alarm monitoring",
         badge="INTEL",
-        icon="🌏"
+        icon="\U0001f310"
+    )
+    nerai_premium_css.inject_filter_bar_css()
+
+    # \u2500\u2500 Inline country selector \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+    profile_c_opts = [f"{COUNTRY_NAMES.get(c,c)} ({c})"
+                      for c in sorted(all_countries)]
+    profile_default = (
+        'United States (US)' if 'United States (US)' in profile_c_opts
+        else profile_c_opts[0]
     )
 
-    prof_name = COUNTRY_NAMES.get(profile_country, profile_country)
+    sel_cols = st.columns([3, 2, 2, 2, 1])
+    with sel_cols[0]:
+        sel_profile_label = st.selectbox(
+            "\U0001f310 TARGET COUNTRY", profile_c_opts,
+            index=profile_c_opts.index(profile_default),
+            key='inline_profile_country'
+        )
+    profile_country = sel_profile_label.split('(')[-1].strip(')')
 
+    # \u2500\u2500 Bilateral selectors \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+    c_opts_bi = [f"{COUNTRY_NAMES.get(c,c)} ({c})"
+                for c in sorted(all_countries)]
+    default_a = 'United States (US)' if 'United States (US)' in c_opts_bi else c_opts_bi[0]
+    default_b = 'Russia (RS)'       if 'Russia (RS)'       in c_opts_bi else c_opts_bi[1]
+    with sel_cols[1]:
+        sel_bi_a = st.selectbox("\U0001f1fa\U0001f1f8 COUNTRY A", c_opts_bi,
+            index=c_opts_bi.index(default_a), key='inline_bi_a')
+    bi_a = sel_bi_a.split('(')[-1].strip(')')
+    with sel_cols[2]:
+        sel_bi_b = st.selectbox("\U0001f1f7\U0001f1fa COUNTRY B", c_opts_bi,
+            index=c_opts_bi.index(default_b), key='inline_bi_b')
+    bi_b = sel_bi_b.split('(')[-1].strip(')')
+    with sel_cols[3]:
+        bi_days = st.slider("\u23f3 HISTORY", 14, 90, 60,
+            key='inline_bi_days')
+
+    prof_name = COUNTRY_NAMES.get(profile_country, profile_country)
     # Compute profile data
     prof_indices = compute_country_top_indices(df, profile_country)
     prof_alarms  = compute_country_alarms(df, profile_country)
