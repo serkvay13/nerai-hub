@@ -88,6 +88,10 @@ def inject_global_css():
     .stApp .material-symbols-outlined,
     .stApp [data-testid="collapsedControl"] span,
     .stApp [data-testid="stSidebarCollapsedControl"] span,
+    .stApp [data-testid="stSidebarCollapseButton"] span,
+    .stApp [data-testid="stSidebarCollapseButton"] span span,
+    .stApp [data-testid="stBaseButton-headerNoPadding"] span,
+    .stApp [data-testid="stSidebar"] button[data-testid="stBaseButton-headerNoPadding"] span,
     .stApp [data-testid="stSidebar"] button span.material-symbols-rounded {{
         font-family: 'Material Symbols Rounded', sans-serif !important;
         -webkit-font-smoothing: antialiased;
@@ -234,9 +238,20 @@ def inject_global_css():
     .stApp h2 {{ font-weight: 700 !important; }}
     .stApp h3 {{ font-weight: 600 !important; }}
 
-    /* Paragraphs & default text */
-    .stApp p, .stApp span:not(.material-symbols-rounded):not(.material-symbols-outlined), .stApp label {{
+    /* Paragraphs & default text — exclude icon spans */
+    .stApp p,
+    .stApp label {{
         font-family: 'Inter', sans-serif !important;
+    }}
+    .stApp span {{
+        font-family: 'Inter', sans-serif;
+    }}
+    /* Re-force icon font on Streamlit icon elements */
+    .stApp [data-testid="stSidebarCollapseButton"] span,
+    .stApp [data-testid="stBaseButton-headerNoPadding"] span,
+    .stApp [data-testid="collapsedControl"] span,
+    .stApp [data-testid="stSidebarCollapsedControl"] span {{
+        font-family: 'Material Symbols Rounded' !important;
     }}
 
     /* Links */
@@ -991,35 +1006,37 @@ def inject_sidebar_fix():
     """
     Critical fix: Override any 'button[kind=header] display:none' rules
     that break sidebar collapse/expand. Must load AFTER main CSS.
+    Correct Streamlit data-testid attributes (verified via DOM inspection):
+      - stSidebarCollapseButton  (collapse button container)
+      - stBaseButton-headerNoPadding (the actual button)
+      - collapsedControl / stSidebarCollapsedControl (expand when collapsed)
     """
     st.markdown("""
     <style>
-    /* ── Force sidebar collapse/expand button visible ── */
+    /* ══ SIDEBAR ARROW FIX — LAST CSS LOADED, HIGHEST PRIORITY ══ */
+
+    /* 1. Force sidebar collapse button visible when sidebar is OPEN */
+    [data-testid="stSidebarCollapseButton"],
+    [data-testid="stSidebarCollapseButton"] button,
+    [data-testid="stSidebarCollapseButton"] button[data-testid="stBaseButton-headerNoPadding"] {
+        display: flex !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        z-index: 999999 !important;
+        color: #00d4ff !important;
+        cursor: pointer !important;
+    }
+
+    /* 2. Force sidebar expand button visible when sidebar is COLLAPSED */
     [data-testid="collapsedControl"],
     [data-testid="stSidebarCollapsedControl"] {
         display: flex !important;
         visibility: visible !important;
         opacity: 1 !important;
         z-index: 999999 !important;
-        position: fixed !important;
-        top: 0.375rem !important;
-        left: 0.375rem !important;
     }
-
-    /* Ensure Material icon font renders (not text) */
-    [data-testid="collapsedControl"] span,
-    [data-testid="stSidebarCollapsedControl"] span,
-    [data-testid="stSidebar"] button span,
-    .material-symbols-rounded {
-        font-family: 'Material Symbols Rounded' !important;
-        -webkit-font-smoothing: antialiased;
-    }
-
-    /* Override broad button[kind=header] hide — re-show sidebar buttons */
     [data-testid="collapsedControl"] button,
-    [data-testid="collapsedControl"] button[kind="header"],
-    [data-testid="stSidebarCollapsedControl"] button,
-    [data-testid="stSidebarCollapsedControl"] button[kind="header"] {
+    [data-testid="stSidebarCollapsedControl"] button {
         display: flex !important;
         visibility: visible !important;
         opacity: 1 !important;
@@ -1035,10 +1052,33 @@ def inject_sidebar_fix():
         border-color: #00d4ff !important;
     }
 
-    /* Sidebar close (X) button inside open sidebar */
-    [data-testid="stSidebar"] [data-testid="stSidebarNavCollapseIcon"],
-    [data-testid="stSidebar"] button[aria-label*="Close"],
-    [data-testid="stSidebar"] button[aria-label*="Collapse"] {
+    /* 3. CRITICAL: Force Material Symbols font on ALL icon spans */
+    [data-testid="stSidebarCollapseButton"] span,
+    [data-testid="stSidebarCollapseButton"] span span,
+    [data-testid="stBaseButton-headerNoPadding"] span,
+    [data-testid="collapsedControl"] span,
+    [data-testid="stSidebarCollapsedControl"] span,
+    [data-testid="stSidebar"] [data-testid="stBaseButton-headerNoPadding"] span,
+    span.st-emotion-cache-12bp31y,
+    span[class*="ed4y4ls0"],
+    .material-symbols-rounded {
+        font-family: 'Material Symbols Rounded' !important;
+        font-size: 24px !important;
+        -webkit-font-smoothing: antialiased;
+        font-style: normal;
+        font-weight: normal;
+        line-height: 1;
+        letter-spacing: normal;
+        text-transform: none;
+        white-space: nowrap;
+        word-wrap: normal;
+        direction: ltr;
+        -webkit-font-feature-settings: 'liga';
+        font-feature-settings: 'liga';
+    }
+
+    /* 4. Ensure the collapse button in sidebar header is not hidden */
+    [data-testid="stSidebar"] button[data-testid="stBaseButton-headerNoPadding"] {
         display: flex !important;
         visibility: visible !important;
         color: #00d4ff !important;
