@@ -2774,15 +2774,7 @@ def render_predictions():
             try:
                 raw = df.xs(sel_pred_topic, level='topic').loc[sel_pred_country]
                 raw = raw.dropna()
-                # Detect forecast frequency (weekly vs monthly)
-                _fc_freq = 'W'
-                if len(fc) >= 2:
-                    _fc_gap = (pd.to_datetime(fc['ds'].iloc[1]) - pd.to_datetime(fc['ds'].iloc[0])).days
-                    _fc_freq = 'W' if _fc_gap < 14 else 'MS'
-                if _fc_freq == 'W':
-                    raw_monthly = raw.resample('W').mean().tail(pred_hist_months * 4)
-                else:
-                    raw_monthly = raw.resample('MS').mean().tail(pred_hist_months)
+                raw_monthly = raw.resample('MS').mean().tail(pred_hist_months)
                 hist_max = raw.max()
                 if hist_max > 0:
                     hist_series = raw_monthly / hist_max * 100
@@ -2848,7 +2840,7 @@ def render_predictions():
             # Forecast — orange/amber
             fig_fc.add_trace(go.Scatter(
                 x=fc['ds'], y=yhat,
-                name='Forecast (Weekly)' if _fc_freq == 'W' else '12-Month Forecast',
+                name='12-Month Forecast',
                 mode='lines+markers',
                 line=dict(color='#f59e0b', width=3),
                 marker=dict(size=7, color='#f59e0b', line=dict(color='#0d1220', width=1.5)),
@@ -6003,7 +5995,7 @@ def render_threat_radar():
                         "Matched Period": _match_period,
                         "Pattern Similarity": f"{(1 - _best_dist) * 100:.0f}%",
                         "Expected \u0394": f"+{_best_outcome * 100:.1f}%",
-                        "Signal": "\ud83d\udd34 HIGH" if _best_outcome > 0.3 else "\ud83d\udfe1 ELEVATED"
+                        "Signal": "HIGH" if _best_outcome > 0.3 else "ELEVATED"
                     })
             if _alerts:
                 st.dataframe(pd.DataFrame(_alerts), use_container_width=True, hide_index=True)
