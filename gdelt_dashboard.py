@@ -2068,8 +2068,7 @@ def render_indices():
 
     # ── Heatmap ──────────────────────────────────────────────
     try:
-    # (divider handled by inject_section_header)
-    nerai_premium_css.inject_section_header("Risk Heatmap \u2014 Top Countries", icon="\U0001f5fa\ufe0f")
+        nerai_premium_css.inject_section_header("Risk Heatmap \u2014 Top Countries", icon="\U0001f5fa\ufe0f")
         _fig_hm = chart_heatmap(df_norm, heatmap_n, norm_method)
         if _fig_hm is not None:
             st.plotly_chart(_fig_hm, use_container_width=True)
@@ -2078,7 +2077,7 @@ def render_indices():
 
     # ── Global Risk Map ────────────────────────────────────────
     try:
-    nerai_premium_css.inject_section_header("Global Risk Map", icon="\U0001f30d")
+        nerai_premium_css.inject_section_header("Global Risk Map", icon="\U0001f30d")
         _fig_wm = chart_world(df_norm, map_date)
         if _fig_wm is not None:
             st.plotly_chart(_fig_wm, use_container_width=True)
@@ -2091,6 +2090,13 @@ def render_indices():
 # PAGE: COUNTRY PROFILE
 # ═══════════════════════════════════════════════════════════════
 def render_profile():
+    nerai_premium_css.inject_page_header(
+        title="Country Intel",
+        subtitle="Deep-dive risk analysis, bilateral relations & alarm monitoring",
+        badge="INTEL",
+        icon="🌏"
+    )
+
     prof_name = COUNTRY_NAMES.get(profile_country, profile_country)
 
     # Compute profile data
@@ -2236,6 +2242,8 @@ def render_profile():
 
     st.markdown('<div class="h-div" style="margin:20px 0;"></div>', unsafe_allow_html=True)
 
+    nerai_premium_css.inject_section_header("Bilateral Relations Analyzer", icon="🤝")
+
     # ── Bilateral Analyzer ────────────────────────────────────
     st.markdown('<div class="sec-hdr">🔗 Bilateral Relation Analyzer</div>', unsafe_allow_html=True)
 
@@ -2336,6 +2344,13 @@ def render_profile():
 # PAGE: NEWS
 # ═══════════════════════════════════════════════════════════════
 def render_news():
+    nerai_premium_css.inject_page_header(
+        title="Signal Feed",
+        subtitle="Live GDELT headlines across 28 topic categories — real-time intelligence",
+        badge="LIVE",
+        icon="📰"
+    )
+
 
     # === NEWS DYNAMIC BACKGROUND ===
     _topic_colors = {"conflict": "rgba(255,60,60,0.05)", "diplomacy": "rgba(0,200,255,0.05)", "economy": "rgba(0,255,150,0.05)", "politics": "rgba(180,100,255,0.05)", "environment": "rgba(100,255,100,0.05)", "health": "rgba(255,200,0,0.05)", "technology": "rgba(0,150,255,0.05)"}
@@ -2423,6 +2438,13 @@ def render_news():
 # PAGE: PREDICTIONS
 # ═══════════════════════════════════════════════════════════════
 def render_predictions():
+    nerai_premium_css.inject_page_header(
+        title="Forecast Engine",
+        subtitle="N-HiTS deep learning 12-month forecasts for 2,400 risk series",
+        badge="AI",
+        icon="🔮"
+    )
+
     st.markdown("""
     <div style='padding:6px 0 10px;'>
       <div class='hero-title'>12-Month Risk Forecasts</div>
@@ -3405,6 +3427,13 @@ def _call_claude_for_qa(question, df_raw, trend_df, pred_df, insights_df):
 
 
 def render_insights():
+    nerai_premium_css.inject_page_header(
+        title="AI Insights",
+        subtitle="Machine-generated intelligence briefings & natural language Q&A",
+        badge="AI",
+        icon="🧠"
+    )
+
     # ── Page header ─────────────────────────────────────────────
     st.markdown("""
 <div style='padding:10px 0 6px;'>
@@ -3972,6 +4001,13 @@ def causal_network_narrative(filtered, highlight_nodes=None):
 
 
 def render_causality():
+    nerai_premium_css.inject_page_header(
+        title="Causal Network",
+        subtitle="Discover causal links between geopolitical risk factors",
+        badge="NETWORK",
+        icon="🔗"
+    )
+
     st.markdown(
         "<div style='padding:6px 0 10px;'>"
         "<div class='hero-title'>Causal Network Analysis</div>"
@@ -4124,7 +4160,7 @@ def render_causality():
         _net_title = f'Causal Network: {sel_topic_label} - All Countries'
     elif sel_country != 'All':
         _net_title = f'Causal Network: {sel_country_label} - All Topics'
-    st.subheader(_net_title)
+    nerai_premium_css.inject_section_header(_net_title, icon="🕸️")
     st.caption('Granger causality network diagram. Arrows show causality direction (A\u2192B: Changes in event A predict event B). Node size reflects the number of connections.')
     if scenario_nodes:
         st.caption('Orange nodes/edges = series touched by the most recent scenario run')
@@ -4162,7 +4198,7 @@ def render_causality():
         _inf_title = f'Top Causal Influencers — {sel_country_label}'
     else:
         _inf_title = 'Top Causal Influencers — All Topics & Countries'
-    st.subheader(_inf_title)
+    nerai_premium_css.inject_section_header(_inf_title, icon="📊")
     st.caption('Event-country pairs with the highest cumulative F-Statistic. These are the events with the strongest predictive (causal) influence over other events.')
     influence = filtered.groupby('source')['max_f_stat'].sum().sort_values(ascending=False).head(15)
     if len(influence) > 0:
@@ -4218,8 +4254,7 @@ def render_causality():
     st.markdown("<div style='background:rgba(10,20,50,0.4);border:1px solid rgba(0,180,255,0.15);border-radius:8px;padding:14px 18px;margin:15px 0;font-size:0.75rem;color:#8ab4d8;line-height:1.7;'><b style=\'color:#00d4ff;\'>How to Interpret?</b><br>F-Statistic: The higher the value, the stronger the causal relationship. F &gt; 10 = strong, F &gt; 50 = very strong relationship.<br>Lag (Delay): The time delay between events (months). Lag=1 means a change in one event affects another 1 month later.<br>p-value: Values below 0.05 indicate statistically significant relationships.</div>", unsafe_allow_html=True)
 
     # -- News Evidence Section --
-    # (divider handled by inject_section_header)
-    st.subheader("Recent News Evidence")
+    nerai_premium_css.inject_section_header("Recent News Evidence", icon="📰")
     st.caption("Real-world news articles that may explain or confirm the detected causal relationships.")
 
     top_sources = filtered.groupby("source")["max_f_stat"].sum().sort_values(ascending=False).head(5)
@@ -4431,6 +4466,13 @@ def _generate_risk_pdf():
 
 # ── BRIEFING ROOM ─────────────────────────────────────────────────────
 def render_briefing_room():
+    nerai_premium_css.inject_page_header(
+        title="Briefing Room",
+        subtitle="Automated intelligence reports & downloadable risk assessments",
+        badge="REPORTS",
+        icon="📋"
+    )
+
     st.markdown(
         "<div style='padding:6px 0 10px;'>"
         "<div class='hero-title'>Briefing Room</div>"
@@ -4820,6 +4862,13 @@ def scenario_narrative(result_df, sel_result):
 
 
 def render_scenarios():
+    nerai_premium_css.inject_page_header(
+        title="What-If Scenarios",
+        subtitle="Simulate geopolitical shocks and analyze cascading risk impacts",
+        badge="SIM",
+        icon="⚡"
+    )
+
     st.markdown("""
     <div style='padding:6px 0 10px;'>
       <div class='hero-title'>What-If Scenario Engine</div>
@@ -4832,7 +4881,7 @@ def render_scenarios():
 
     sdf = load_scenario_results()
 
-    st.subheader("Pre-Built Scenarios")
+    nerai_premium_css.inject_section_header("Pre-Built Scenarios", icon="📦")
     row1 = list(SCENARIO_TEMPLATES.items())[:2]
     row2 = list(SCENARIO_TEMPLATES.items())[2:]
 
@@ -4870,7 +4919,7 @@ def render_scenarios():
     st.markdown('<div class="h-div" style="margin:24px 0;"></div>', unsafe_allow_html=True)
 
     # ── Run Pre-Built Scenario ──────────────────────────────────
-    st.subheader("▶️ Run Pre-Built Scenario")
+    nerai_premium_css.inject_section_header("Run Pre-Built Scenario", icon="▶️")
     sel_scenario = st.selectbox('Select Scenario', list(SCENARIO_TEMPLATES.keys()),
                                 format_func=lambda k: SCENARIO_TEMPLATES[k]['label'])
     if st.button('▶️ Run Selected Scenario', type='primary'):
@@ -4889,7 +4938,7 @@ def render_scenarios():
     st.markdown('<div class="h-div" style="margin:24px 0;"></div>', unsafe_allow_html=True)
 
     # ── Custom Scenario Builder ─────────────────────────────────
-    st.subheader("🔧 Build a Custom Scenario")
+    nerai_premium_css.inject_section_header("Build a Custom Scenario", icon="🔧")
     st.markdown("""
     <div style='font-size:0.82rem;color:#0077a8;margin-bottom:16px;font-weight:500;'>
     Define your own scenario: select a country, topic, shock intensity and duration — then run the simulation.
@@ -4923,7 +4972,7 @@ def render_scenarios():
     # ── Results + Analysis ──────────────────────────────────────
     if sdf is not None and not sdf.empty:
         st.markdown('<div class="h-div" style="margin:20px 0;"></div>', unsafe_allow_html=True)
-        st.subheader("📊 Scenario Results")
+        nerai_premium_css.inject_section_header("Scenario Results", icon="📊")
         scenarios_run = sdf['scenario'].unique() if 'scenario' in sdf.columns else []
         sel_result = st.selectbox('View Results For', scenarios_run,
                                   format_func=lambda k: SCENARIO_TEMPLATES.get(k, {}).get('label', k))
@@ -5013,6 +5062,13 @@ def render_scenarios():
 # PAGE: API ACCESS (Pro only)
 # ═══════════════════════════════════════════════════════════════
 def render_api():
+    nerai_premium_css.inject_page_header(
+        title="API Access",
+        subtitle="Programmatic access to NERAI risk data & intelligence feeds",
+        badge="DEV",
+        icon="🔌"
+    )
+
     st.markdown("""
     <div style='padding:28px 0 16px 0;'>
       <div style='font-size:11px;letter-spacing:0.12em;color:#0077a8;
@@ -5112,6 +5168,13 @@ div[data-testid="stMetric"]:hover{box-shadow:0 0 20px rgba(0,255,200,0.2),0 0 40
 # PAGE: THREAT RADAR
 # ═══════════════════════════════════════════════════════════════
 def render_threat_radar():
+    nerai_premium_css.inject_page_header(
+        title="Threat Radar",
+        subtitle="Real-time anomaly detection & risk escalation monitoring",
+        badge="ALERT",
+        icon="🎯"
+    )
+
 
     st.markdown('<div class="sec-hdr">🔴  Live Threat Overview</div>', unsafe_allow_html=True)
 
