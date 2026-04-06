@@ -14,13 +14,13 @@ warnings.filterwarnings('ignore')
 INPUT_FILE   = './indices.csv'
 OUTPUT_PREDS = './predictions.csv'
 OUTPUT_TRENDS = './forecast_trends.csv'
-HORIZON      = 12
-MIN_MONTHS   = 4
+HORIZON      = 52    # 52 weeks ~ 12 months (weekly agg = more data points)
+MIN_WEEKS    = 12    # minimum 12 weeks of history
 BLEND_SM     = 0.55
 BLEND_NF     = 0.45
 
 
-def load_monthly(filepath):
+def load_weekly(filepath):
     print(f"[DATA] Loading {filepath}")
     raw = pd.read_csv(filepath, index_col=[0, 1])
     date_cols = [c for c in raw.columns if str(c).isdigit() and len(str(c)) == 8]
@@ -34,27 +34,27 @@ def load_monthly(filepath):
     long = df.melt(id_vars=['topic', 'country'], var_name='date_str', value_name='value')
     long['ds'] = pd.to_datetime(long['date_str'], format='%Y%m%d', errors='coerce')
     long = long.dropna(subset=['ds'])
-    long['ym'] = long['ds'].dt.to_period('M')
+    long['yw'] = long['ds'].dt.to_period('W')
 
-    monthly = (long.groupby(['topic', 'country', 'ym'])['value']
+    weekly = (long.groupby(['topic', 'country', 'yw'])['value']
                .quantile(0.90).reset_index())
-    monthly['ds'] = monthly['ym'].dt.to_timestamp()
-    monthly['unique_id'] = monthly['topic'] + '||' + monthly['country']
-    monthly = monthly.rename(columns={'value': 'y'})
-    monthly = (monthly[['unique_id', 'ds', 'y', 'topic', 'country']]
+    weekly['ds'] = weekly['yw'].dt.to_timestamp()
+    weekly['unique_id'] = weekly['topic'] + '||' + weekly['country']
+    weekly = weekly.rename(columns={'value': 'y'})
+    weekly = (weekly[['unique_id', 'ds', 'y', 'topic', 'country']]
                .sort_values(['unique_id', 'ds']).reset_index(drop=True))
 
-    counts = monthly.dropna(subset=['y']).groupby('unique_id')['y'].count()
-    valid_ids = counts[counts >= MIN_MONTHS].index
-    monthly = monthly[monthly['unique_id'].isin(valid_ids)].copy()
+    counts = weekly.dropna(subset=['y']).groupby('unique_id')['y'].count()
+    valid_ids = counts[counts >= MIN_WEEKS].index
+    weekly = weekly[weekly['unique_id'].isin(valid_ids)].copy()
 
-    zero_ratio = monthly.groupby('unique_id')['y'].apply(
+    zero_ratio = weekly.groupby('unique_id')['y'].apply(
         lambda s: (s == 0).sum() / max(len(s), 1))
     active_ids = zero_ratio[zero_ratio <= 0.85].index
-    monthly = monthly[monthly['unique_id'].isin(active_ids)].copy()
+    weekly = weekly[weekly['unique_id'].isin(active_ids)].copy()
 
-    print(f"[DATA] {monthly['unique_id'].nunique():,} active series")
-    return monthly
+    print(f"[DATA] {weekly['unique_id'].nunique():,} active series")
+    return weekly
 
 
 # ÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂ TIER 1: statsmodels (always available) ÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂ
@@ -81,7 +81,7 @@ def forecast_series_sm(y_values, h=HORIZON):
         resid = None
 
     # --- Trend from recent history ---
-    lookback = min(n, 12)
+    lookback = min(n, 52)
     recent = y[-lookback:]
     x_hist = np.arange(lookback)
     slope, _ = np.polyfit(x_hist, recent, deg=1)
@@ -92,7 +92,7 @@ def forecast_series_sm(y_values, h=HORIZON):
     trend_line = np.polyval(trend_coef, x_full)
     trend_line = np.maximum(trend_line, 1e-12)
 
-    cycle_len = min(n, 12)
+    cycle_len = min(n, 52)
     seasonal_ratio = np.zeros(cycle_len)
     counts = np.zeros(cycle_len)
     for i in range(n):
@@ -136,7 +136,7 @@ def forecast_series_numpy(y_values, h=HORIZON):
     trend_line = intercept + slope * x
     trend_line = np.maximum(trend_line, 1e-12)
 
-    cycle_len = min(n, 12)
+    cycle_len = min(n, 52)
     seasonal_ratio = np.zeros(cycle_len)
     counts = np.zeros(cycle_len)
     for i in range(n):
@@ -167,12 +167,12 @@ def forecast_series_numpy(y_values, h=HORIZON):
     lo = np.clip(fc - 1.645 * sigma * np.sqrt(steps), 0, None)
     hi = fc + 1.645 * sigma * np.sqrt(steps)
     return fc, lo, hi
-def forecast_statsmodels(monthly, horizon=HORIZON):
-    print(f"[SM] Forecasting {monthly['unique_id'].nunique():,} series with ExponentialSmoothing ...")
+def forecast_statsmodels(weekly, horizon=HORIZON):
+    print(f"[SM] Forecasting {weekly['unique_id'].nunique():,} series with ExponentialSmoothing ...")
     rows = []
-    total = monthly['unique_id'].nunique()
+    total = weekly['unique_id'].nunique()
     done = 0
-    for uid, grp in monthly.sort_values('ds').groupby('unique_id'):
+    for uid, grp in weekly.sort_values('ds').groupby('unique_id'):
         y = grp['y'].fillna(0).values
         last_ds = grp['ds'].max()
         try:
@@ -193,14 +193,14 @@ def forecast_statsmodels(monthly, horizon=HORIZON):
 
 # ÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂ TIER 2: N-HiTS (optional deep learning) ÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂ
 
-def forecast_nhits(monthly, horizon=HORIZON):
+def forecast_nhits(weekly, horizon=HORIZON):
     try:
         import torch
         os.environ['CUDA_VISIBLE_DEVICES'] = ''
         from neuralforecast import NeuralForecast
         from neuralforecast.models import NHITS
 
-        train = monthly[['unique_id', 'ds', 'y']].copy()
+        train = weekly[['unique_id', 'ds', 'y']].copy()
         n_uid = train['unique_id'].nunique()
         print(f"[NF] Training N-HiTS on {n_uid:,} series (max_steps=1500) ...")
 
@@ -283,13 +283,13 @@ def run():
         print(f"[!] {INPUT_FILE} not found.")
         sys.exit(1)
 
-    monthly = load_monthly(INPUT_FILE)
-    if len(monthly) == 0:
+    weekly = load_weekly(INPUT_FILE)
+    if len(weekly) == 0:
         print("[!] No valid series.")
         sys.exit(1)
 
     # Tier 1: statsmodels (always runs)
-    sm_fc = forecast_statsmodels(monthly, HORIZON)
+    sm_fc = forecast_statsmodels(weekly, HORIZON)
 
     # Tier 2: N-HiTS (optional)
     HAVE_NF = False
@@ -302,7 +302,7 @@ def run():
 
     nf_fc = None
     if HAVE_NF:
-        nf_fc = forecast_nhits(monthly, HORIZON)
+        nf_fc = forecast_nhits(weekly, HORIZON)
 
     # Combine
     if nf_fc is not None:
@@ -313,7 +313,7 @@ def run():
         model_label = "ExponentialSmoothing (statsmodels)"
 
     # Map topic/country
-    uid_map = monthly[['unique_id', 'topic', 'country']].drop_duplicates().set_index('unique_id')
+    uid_map = weekly[['unique_id', 'topic', 'country']].drop_duplicates().set_index('unique_id')
     forecasts['topic'] = forecasts['unique_id'].map(uid_map['topic'])
     forecasts['country'] = forecasts['unique_id'].map(uid_map['country'])
     for col in ['yhat', 'yhat_lower', 'yhat_upper']:
@@ -327,7 +327,7 @@ def run():
 
     # Trend metrics
     print("\n[TRENDS] Computing ...")
-    last_obs = (monthly.sort_values('ds').groupby('unique_id')['y']
+    last_obs = (weekly.sort_values('ds').groupby('unique_id')['y']
                 .last().reset_index().rename(columns={'y': 'last_value'}))
     avg_fc = (forecasts.groupby('unique_id')['yhat'].mean()
               .reset_index().rename(columns={'yhat': 'avg_12m'}))
@@ -341,7 +341,7 @@ def run():
         return 'stable'
 
     m['direction'] = m.apply(direction, axis=1)
-    _uid = monthly[['unique_id', 'topic', 'country']].drop_duplicates().set_index('unique_id')
+    _uid = weekly[['unique_id', 'topic', 'country']].drop_duplicates().set_index('unique_id')
     m['topic'] = m['unique_id'].map(_uid['topic'])
     m['country'] = m['unique_id'].map(_uid['country'])
     trends = m[['topic', 'country', 'last_value', 'avg_12m', 'trend_pct', 'direction']]
