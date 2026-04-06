@@ -2002,6 +2002,7 @@ def render_indices():
         badge="LIVE",
         icon="\U0001f4ca"
     )
+    nerai_premium_css.inject_filter_bar_css()
 
 
     # KPI Cards
@@ -2069,18 +2070,22 @@ def render_indices():
     # ── Heatmap ──────────────────────────────────────────────
     try:
         nerai_premium_css.inject_section_header("Risk Heatmap \u2014 Top Countries", icon="\U0001f5fa\ufe0f")
+        nerai_premium_css.inject_heatmap_glow_overlay()
         _fig_hm = chart_heatmap(df_norm, heatmap_n, norm_method)
         if _fig_hm is not None:
             st.plotly_chart(_fig_hm, use_container_width=True)
+            nerai_premium_css.inject_heatmap_glow_close()
     except Exception:
         pass
 
     # ── Global Risk Map ────────────────────────────────────────
     try:
         nerai_premium_css.inject_section_header("Global Risk Map", icon="\U0001f30d")
+        nerai_premium_css.inject_globe_container()
         _fig_wm = chart_world(df_norm, map_date)
         if _fig_wm is not None:
             st.plotly_chart(_fig_wm, use_container_width=True)
+            nerai_premium_css.inject_globe_close()
     except Exception:
         pass
 

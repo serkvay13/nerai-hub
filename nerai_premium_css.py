@@ -120,6 +120,59 @@ def inject_global_css():
         color: #fff;
     }}
 
+    /* ── PREMIUM BADGE ── */
+    .nerai-badge {{
+        display: inline-flex !important;
+        align-items: center;
+        gap: 5px;
+        font-family: 'JetBrains Mono', monospace !important;
+        font-size: 0.6rem !important;
+        font-weight: 600;
+        letter-spacing: 1.5px;
+        background: rgba(0,212,255,0.08);
+        border: 1px solid rgba(0,212,255,0.2);
+        border-radius: 20px;
+        padding: 4px 14px;
+        color: #00d4ff;
+        text-transform: uppercase;
+        animation: nerai-badge-pulse 3s ease-in-out infinite;
+    }}
+    @keyframes nerai-badge-pulse {{
+        0%,100% {{ box-shadow: 0 0 4px rgba(0,212,255,0.1); }}
+        50% {{ box-shadow: 0 0 12px rgba(0,212,255,0.25); }}
+    }}
+    .nerai-badge--alert {{
+        background: rgba(239,68,68,0.08);
+        border-color: rgba(239,68,68,0.25);
+        color: #ef4444;
+    }}
+
+    /* ── PAGE HEADER ── */
+    .nerai-page-header {{
+        display: flex !important;
+        align-items: center;
+        justify-content: space-between;
+        padding: 16px 0 12px 0;
+        margin-bottom: 12px;
+        border-bottom: 1px solid rgba(0,212,255,0.08);
+    }}
+    .nerai-page-header h2 {{
+        font-family: 'Inter', sans-serif !important;
+        font-size: 1.6rem !important;
+        font-weight: 800 !important;
+        color: #e8edf4 !important;
+        margin: 0 !important;
+        letter-spacing: -0.5px;
+        padding-left: 0 !important;
+    }}
+    .nerai-page-header .subtitle {{
+        font-family: 'Inter', sans-serif;
+        font-size: 0.75rem;
+        color: #6b7f99;
+        margin-top: 4px;
+        letter-spacing: 0.3px;
+    }}
+
     /* ══════════════════════════════════════
        SIDEBAR — Premium Navigation
        ══════════════════════════════════════ */
@@ -1566,55 +1619,20 @@ def inject_home_hero():
 def inject_page_header(title, subtitle="", badge="", icon=""):
     """
     Premium page header bar — used at the top of every data page.
-    Replaces plain text headers with a styled, consistent component.
-
-    Args:
-        title: Main page title (e.g. "Risk Matrix")
-        subtitle: Secondary text (e.g. "Topic-based geopolitical risk indices")
-        badge: Optional badge text (e.g. "LIVE" or "60 Countries")
-        icon: Optional emoji/icon prefix
+    Uses CSS classes defined in inject_global_css for reliable rendering.
     """
-    badge_html = ""
-    if badge:
-        badge_html = f"""
-        <span style="
-            display:inline-flex;align-items:center;gap:5px;
-            font-family:'JetBrains Mono',monospace;font-size:0.6rem;
-            font-weight:600;letter-spacing:1.5px;
-            background:rgba(0,212,255,0.08);
-            border:1px solid rgba(0,212,255,0.2);
-            border-radius:20px;padding:4px 14px;
-            color:#00d4ff;text-transform:uppercase;
-        ">{badge}</span>"""
-
+    badge_html = f'<span class="nerai-badge">{badge}</span>' if badge else ''
     icon_html = f'<span style="font-size:1.4rem;margin-right:8px;">{icon}</span>' if icon else ''
 
     st.markdown(f"""
-    <div style="
-        display:flex;
-        align-items:center;
-        justify-content:space-between;
-        padding:16px 0 12px 0;
-        margin-bottom:12px;
-        border-bottom:1px solid rgba(0,212,255,0.08);
-    ">
+    <div class="nerai-page-header">
         <div style="display:flex;align-items:center;gap:12px;">
             <div>
                 <div style="display:flex;align-items:center;">
                     {icon_html}
-                    <h2 style="
-                        font-family:'Inter',sans-serif;
-                        font-size:1.6rem;font-weight:800;
-                        color:#e8edf4;margin:0;
-                        letter-spacing:-0.5px;
-                        padding-left:0 !important;
-                    ">{title}</h2>
+                    <h2>{title}</h2>
                 </div>
-                <div style="
-                    font-family:'Inter',sans-serif;
-                    font-size:0.75rem;color:#6b7f99;
-                    margin-top:4px;letter-spacing:0.3px;
-                ">{subtitle}</div>
+                <div class="subtitle">{subtitle}</div>
             </div>
         </div>
         {badge_html}
@@ -1972,3 +1990,169 @@ def get_plotly_template():
         ),
         margin=dict(l=40, r=20, t=50, b=40),
     )
+
+
+# ══════════════════════════════════════════════════════════════
+# PREMIUM RISK MATRIX COMPONENTS
+# ══════════════════════════════════════════════════════════════
+
+def inject_heatmap_glow_overlay():
+    """
+    CSS overlay that adds a pulsing glow to the Plotly heatmap container.
+    High-risk cells appear to 'breathe' with cyan glow.
+    Call this right before st.plotly_chart() for the heatmap.
+    """
+    st.markdown("""
+    <style>
+    /* ── Heatmap premium container ── */
+    .nerai-heatmap-wrap {
+        position: relative;
+        border-radius: 12px;
+        overflow: hidden;
+        background: linear-gradient(135deg, rgba(17,24,39,0.95) 0%, rgba(10,14,23,0.98) 100%);
+        border: 1px solid rgba(0,212,255,0.08);
+        padding: 8px;
+        margin: 8px 0 20px;
+        transition: border-color 0.3s ease;
+    }
+    .nerai-heatmap-wrap:hover {
+        border-color: rgba(0,212,255,0.2);
+        box-shadow: 0 0 30px rgba(0,212,255,0.06);
+    }
+    /* Scanline overlay effect */
+    .nerai-heatmap-wrap::after {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: repeating-linear-gradient(
+            0deg,
+            transparent,
+            transparent 2px,
+            rgba(0,212,255,0.01) 2px,
+            rgba(0,212,255,0.01) 4px
+        );
+        pointer-events: none;
+        z-index: 1;
+        animation: nerai-scan 8s linear infinite;
+    }
+    @keyframes nerai-scan {
+        0% { transform: translateY(0); }
+        100% { transform: translateY(4px); }
+    }
+    /* Plotly chart inside gets dark treatment */
+    .nerai-heatmap-wrap .stPlotlyChart {
+        border-radius: 8px;
+        overflow: hidden;
+    }
+    </style>
+    <div class="nerai-heatmap-wrap">
+    """, unsafe_allow_html=True)
+
+
+def inject_heatmap_glow_close():
+    """Close the heatmap glow wrapper div."""
+    st.markdown("</div>", unsafe_allow_html=True)
+
+
+def inject_globe_container():
+    """
+    Premium container for the globe/world map chart.
+    Adds a radar-sweep animation overlay and terminal-style border.
+    """
+    st.markdown("""
+    <style>
+    .nerai-globe-wrap {
+        position: relative;
+        border-radius: 12px;
+        overflow: hidden;
+        background: radial-gradient(ellipse at center, rgba(0,212,255,0.03) 0%, rgba(10,14,23,0.98) 70%);
+        border: 1px solid rgba(0,212,255,0.08);
+        padding: 8px;
+        margin: 8px 0 20px;
+        transition: all 0.3s ease;
+    }
+    .nerai-globe-wrap:hover {
+        border-color: rgba(0,212,255,0.2);
+        box-shadow: 0 0 40px rgba(0,212,255,0.08);
+    }
+    /* Radar sweep overlay */
+    .nerai-globe-wrap::before {
+        content: '';
+        position: absolute;
+        top: 50%; left: 50%;
+        width: 300px; height: 300px;
+        transform: translate(-50%, -50%);
+        background: conic-gradient(
+            from 0deg,
+            transparent 0deg,
+            rgba(0,212,255,0.04) 30deg,
+            transparent 60deg
+        );
+        border-radius: 50%;
+        animation: nerai-radar 6s linear infinite;
+        pointer-events: none;
+        z-index: 1;
+        opacity: 0.5;
+    }
+    @keyframes nerai-radar {
+        0% { transform: translate(-50%, -50%) rotate(0deg); }
+        100% { transform: translate(-50%, -50%) rotate(360deg); }
+    }
+    .nerai-globe-wrap .stPlotlyChart {
+        border-radius: 8px;
+        overflow: hidden;
+    }
+    </style>
+    <div class="nerai-globe-wrap">
+    """, unsafe_allow_html=True)
+
+
+def inject_globe_close():
+    """Close the globe wrapper div."""
+    st.markdown("</div>", unsafe_allow_html=True)
+
+
+def inject_filter_bar_css():
+    """
+    Premium inline filter bar CSS for Risk Matrix page.
+    Renders topic/country/settings as a compact glassmorphism bar.
+    """
+    st.markdown("""
+    <style>
+    /* ── Premium Filter Bar ── */
+    .nerai-filter-bar {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 16px;
+        margin: 0 0 16px;
+        background: rgba(17,24,39,0.6);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(0,212,255,0.08);
+        border-radius: 12px;
+    }
+    .nerai-filter-bar .stSelectbox,
+    .nerai-filter-bar .stMultiSelect {
+        min-width: 180px;
+    }
+    .nerai-filter-bar label {
+        font-family: 'JetBrains Mono', monospace !important;
+        font-size: 0.65rem !important;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        color: #4a5d75 !important;
+    }
+
+    /* Compact Streamlit widgets inside filter bar */
+    .nerai-filter-bar [data-testid="stSelectbox"] > div,
+    .nerai-filter-bar [data-testid="stMultiSelect"] > div {
+        background: rgba(26,35,56,0.8) !important;
+        border: 1px solid rgba(0,212,255,0.1) !important;
+        border-radius: 8px !important;
+    }
+    .nerai-filter-bar [data-testid="stSelectbox"] > div:hover,
+    .nerai-filter-bar [data-testid="stMultiSelect"] > div:hover {
+        border-color: rgba(0,212,255,0.25) !important;
+    }
+    </style>
+    """, unsafe_allow_html=True)
