@@ -539,6 +539,13 @@ FIPS_TO_ISO3 = {
     'SF':'ZAF','KS':'KOR','SP':'ESP','SW':'SWE','SZ':'CHE','SY':'SYR',
     'TU':'TUR','UP':'UKR','AE':'ARE','UK':'GBR','US':'USA','YM':'YEM',
 }
+_PLOTLY_THEME = dict(
+    paper_bgcolor="rgba(0,0,0,0)",
+    plot_bgcolor="rgba(0,0,0,0)",
+    font=dict(color="#c0d0e0"),
+    xaxis=dict(gridcolor="rgba(255,255,255,0.05)", zerolinecolor="rgba(255,255,255,0.05)"),
+    yaxis=dict(gridcolor="rgba(255,255,255,0.05)", zerolinecolor="rgba(255,255,255,0.05)"),
+)
 TOPIC_LABELS = {
     'political_instability':'Political Instability','government_instability':'Government Instability',
     'military_escalation':'Military Escalation','terrorism':'Terrorism','protest':'Protest',
@@ -2108,7 +2115,7 @@ def render_indices():
 
     # âââ FAZ 3b: Risk Correlation Matrix âââ
     st.markdown('<div class="h-div" style="margin:24px 0 16px"></div>', unsafe_allow_html=True)
-    st.markdown('<div class="sec-hdr">ð  Risk Dimension Correlation Matrix</div>', unsafe_allow_html=True)
+    st.markdown('<div class="sec-hdr">&#x1F517; Risk Dimension Correlation Matrix</div>', unsafe_allow_html=True)
     try:
         _topics = df.index.get_level_values("topic").unique().tolist()
         _last_n = min(30, len(df.columns))
@@ -2144,7 +2151,7 @@ def render_indices():
 
     # âââ FAZ 3f: Commodity-Risk Scatter Plot âââ
     st.markdown('<div class="h-div" style="margin:24px 0 16px"></div>', unsafe_allow_html=True)
-    st.markdown('<div class="sec-hdr">ð  Commodity vs Risk Scatter</div>', unsafe_allow_html=True)
+    st.markdown('<div class="sec-hdr">&#x1F4B9; Commodity vs Risk Scatter</div>', unsafe_allow_html=True)
     try:
         _comm_df = load_commodities()
         if _comm_df is not None and not _comm_df.empty:
@@ -2482,7 +2489,7 @@ def render_profile():
 
     # âââ FAZ 3c: Country Radar Chart âââ
     st.markdown('<div class="h-div" style="margin:24px 0 16px"></div>', unsafe_allow_html=True)
-    st.markdown('<div class="sec-hdr">ð¯  Country Risk Radar</div>', unsafe_allow_html=True)
+    st.markdown('<div class="sec-hdr">&#x1F3AF; Country Risk Radar</div>', unsafe_allow_html=True)
     try:
         _c = profile_country
         _topics_for_radar = df.index.get_level_values("topic").unique().tolist()
@@ -5840,13 +5847,14 @@ def render_threat_radar():
 
     # âââ FAZ 3a: Global Risk Heatmap (Choropleth) âââ
     st.markdown('<div class="h-div" style="margin:24px 0 16px"></div>', unsafe_allow_html=True)
-    st.markdown('<div class="sec-hdr">ðºï¸  Global Risk Heatmap</div>', unsafe_allow_html=True)
+    st.markdown('<div class="sec-hdr">&#x1F5FA;&#xFE0F; GLOBAL RISK HEATMAP</div>', unsafe_allow_html=True)
     try:
         _latest_date = df.columns[-1]
         _risk_scores = df.xs("instability", level="topic", drop_level=True)[_latest_date].dropna()
         if not _risk_scores.empty:
+            _iso3_codes = [FIPS_TO_ISO3.get(c, c) for c in _risk_scores.index]
             _map_df = pd.DataFrame({
-                "country": _risk_scores.index,
+                "country": _iso3_codes,
                 "risk_score": _risk_scores.values,
                 "name": [COUNTRY_NAMES.get(c, c) for c in _risk_scores.index]
             })
@@ -5874,7 +5882,7 @@ def render_threat_radar():
 
     # âââ FAZ 3d: Top Movers Daily Table âââ
     st.markdown('<div class="h-div" style="margin:24px 0 16px"></div>', unsafe_allow_html=True)
-    st.markdown('<div class="sec-hdr">ð  Top Daily Movers</div>', unsafe_allow_html=True)
+    st.markdown('<div class="sec-hdr">&#x1F4CA; TOP DAILY MOVERS</div>', unsafe_allow_html=True)
     try:
         if len(df.columns) >= 2:
             _d1, _d2 = df.columns[-1], df.columns[-2]
@@ -5909,7 +5917,7 @@ def render_threat_radar():
 
     # âââ FAZ 3e: Volatility Trend âââ
     st.markdown('<div class="h-div" style="margin:24px 0 16px"></div>', unsafe_allow_html=True)
-    st.markdown('<div class="sec-hdr">ð  Instability Volatility Trend</div>', unsafe_allow_html=True)
+    st.markdown('<div class="sec-hdr">&#x1F4C8; INSTABILITY VOLATILITY TREND</div>', unsafe_allow_html=True)
     try:
         _instab_data = df.xs("instability", level="topic", drop_level=True) if "instability" in df.index.get_level_values("topic") else df.iloc[:5]
         _global_mean = _instab_data.mean(axis=0)
@@ -5925,7 +5933,7 @@ def render_threat_radar():
             fig_vol.update_layout(
                 **_PLOTLY_THEME,
                 height=320,
-                yaxis_title="Volatility (Ï)",
+                yaxis_title="Volatility (σ)",
                 xaxis_title="",
             )
             st.plotly_chart(fig_vol, use_container_width=True)
