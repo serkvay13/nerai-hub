@@ -1612,6 +1612,15 @@ with st.sidebar:
     st.markdown('<div class="h-div" style="margin:14px 0;"></div>', unsafe_allow_html=True)
 
     # ── Page-specific controls ───────────────────────────────
+    # ── Normalization Setting ──
+    st.markdown("---")
+    norm_method = st.radio(
+        "Normalization",
+        ['Score (0\u2013100)', 'Z-Score', 'Raw'],
+        index=0,
+        key="sidebar_norm",
+    )
+
     if st.session_state.page == 'profile':
         st.markdown('<div class="sec-hdr">Country</div>', unsafe_allow_html=True)
         profile_c_opts = [f"{COUNTRY_NAMES.get(c,c)} ({c})" for c in sorted(all_countries)]
@@ -1694,7 +1703,7 @@ with st.sidebar:
         n_days = 60
         map_date = date_cols[-1] if len(date_cols) else pd.Timestamp.now()
         heatmap_n = 15
-        norm_method = 'Score (0–100)'
+        norm_method = st.session_state.get('sidebar_norm', 'Score (0\u2013100)')
         map_date_str = map_date.strftime('%Y-%m-%d')
     if st.session_state.page not in ('profile',):
         profile_country = 'US'
@@ -1935,6 +1944,7 @@ def render_indices():
 
     # ── Premium Page Header
     nerai_premium_css.inject_page_header(
+    nerai_premium_css.inject_filter_bar_css()
         title="Risk Matrix",
         subtitle="Topic-based geopolitical risk indices across 60 countries",
         badge="LIVE",
@@ -1977,7 +1987,7 @@ def render_indices():
         )
     sel_countries = [x.split('(')[-1].strip(')') for x in sel_c_labels]
 
-    fc3, fc4, fc5, fc6 = st.columns([1, 1, 1, 1])
+    fc3, fc4, fc5 = st.columns([1, 1, 1])
     with fc3:
         n_days = st.slider("PERIOD (DAYS)", 14, min(180, len(date_cols)), 60, key="idx_days")
     with fc4:
@@ -1991,16 +2001,9 @@ def render_indices():
         map_date = pd.Timestamp(map_date_str) if map_date_str else pd.Timestamp.now()
     with fc5:
         heatmap_n = st.slider("HEATMAP TOP N", 8, 30, 15, key="idx_heatmap_n")
-    with fc6:
-        norm_method = st.radio(
-            "NORMALIZATION",
-            ['Score (0–100)', 'Z-Score', 'Raw'],
-            index=0,
-            key="idx_norm",
-            horizontal=True
-        )
-
     st.markdown('<div class="nerai-filter-divider"></div>', unsafe_allow_html=True)
+
+    norm_method = st.session_state.get('sidebar_norm', 'Score (0\u2013100)')
 
     # ══ DATA PREP ══
     if sel_topic in df.index.get_level_values('topic'):
