@@ -1751,259 +1751,225 @@ with st.sidebar:
 # PAGE: HOME
 # ═══════════════════════════════════════════════════════════════
 def render_home():
-    # ── Animated Hero ────────────────────────────────────────
+    """Home page — Premium world-class hero + KPIs + module navigation."""
 
-    # === 3D GLOBE ===
-    st.markdown("""<style>[data-testid="stAppViewContainer"]{background:#0e1117 !important}.main .block-container{background:#0e1117 !important;padding-top:1rem !important}.main{background:#0e1117 !important}section[data-testid="stSidebar"]{background:#0a0f1a !important}[data-testid="stVerticalBlock"]{background:transparent !important}[data-testid="stHorizontalBlock"]{background:transparent !important}iframe[title="streamlit_app.static.index"]{background:transparent !important}.stHtml{background:transparent !important}[data-testid="stHtml"]{background:transparent !important}.stMarkdown{background:transparent !important}.element-container{background:transparent !important}header[data-testid="stHeader"]{background:#0e1117 !important}</style>""", unsafe_allow_html=True)
-    _globe_html = """
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap');
-*{margin:0;padding:0;box-sizing:border-box;}
-body{background:#0e1117;overflow:hidden;font-family:'Rajdhani',sans-serif;}
-.nc{position:relative;width:100%;height:550px;overflow:hidden;background:#0e1117;}
-.nt{position:absolute;top:3%;left:50%;transform:translateX(-50%);text-align:center;z-index:10;pointer-events:none;}
-.nt h1{font-family:'Orbitron',monospace;font-size:clamp(24px,3.5vw,50px);font-weight:900;color:#00B8D4;text-shadow:0 0 20px rgba(0,184,212,0.5),0 0 40px rgba(0,184,212,0.3);letter-spacing:0.3em;animation:gl 3s ease-in-out infinite;}
-.nt .sub{font-family:'Rajdhani',sans-serif;font-size:clamp(10px,1.2vw,18px);color:rgba(0,184,212,0.7);letter-spacing:0.5em;margin-top:5px;text-transform:uppercase;}
-@keyframes gl{0%,100%{text-shadow:0 0 20px rgba(0,184,212,0.5),0 0 40px rgba(0,184,212,0.3)}50%{text-shadow:0 0 30px rgba(0,184,212,0.8),0 0 60px rgba(0,184,212,0.5),0 0 80px rgba(0,184,212,0.2)}}
-.fl,.fr{position:absolute;top:42%;transform:translateY(-50%);z-index:10;display:flex;flex-direction:column;gap:20px;pointer-events:none;}
-.fl{left:2%;}.fr{right:2%;text-align:right;}
-.fi{padding:10px 15px;border-left:2px solid rgba(0,184,212,0.4);background:linear-gradient(90deg,rgba(0,184,212,0.08),transparent);animation:fs 0.5s ease-out forwards;opacity:0;}
-.fr .fi{border-left:none;border-right:2px solid rgba(0,184,212,0.4);background:linear-gradient(-90deg,rgba(0,184,212,0.08),transparent);}
-.fi .lb{font-family:'Orbitron',monospace;font-size:clamp(8px,0.75vw,13px);color:#00B8D4;letter-spacing:0.15em;text-transform:uppercase;}
-.fi .ds{font-size:clamp(8px,0.7vw,12px);color:rgba(255,255,255,0.5);margin-top:3px;max-width:180px;}
-@keyframes fs{to{opacity:1;transform:translateX(0)}}
-.fl .fi{transform:translateX(-20px);}.fr .fi{transform:translateX(20px);}
-.fi:nth-child(1){animation-delay:0.5s}.fi:nth-child(2){animation-delay:0.8s}.fi:nth-child(3){animation-delay:1.1s}
-.bs{position:absolute;bottom:0%;left:50%;transform:translateX(-50%);text-align:center;z-index:10;pointer-events:none;}
-.bs .tg{font-family:'Rajdhani',sans-serif;font-size:clamp(9px,1vw,15px);color:rgba(255,255,255,0.4);letter-spacing:0.3em;text-transform:uppercase;}
-.tt{display:flex;gap:12px;margin-top:12px;justify-content:center;flex-wrap:wrap;}
-.t1{font-family:'Orbitron',monospace;font-size:clamp(7px,0.6vw,10px);color:rgba(0,184,212,0.5);border:1px solid rgba(0,184,212,0.2);padding:4px 10px;border-radius:2px;animation:tp 4s ease-in-out infinite;}
-.t1:nth-child(odd){animation-delay:1s}
-@keyframes tp{0%,100%{border-color:rgba(0,184,212,0.2);color:rgba(0,184,212,0.5)}50%{border-color:rgba(0,184,212,0.5);color:rgba(0,184,212,0.8)}}
-.hc{position:absolute;width:35px;height:35px;z-index:10;pointer-events:none;}
-.hc.tl{top:2%;left:2%;border-top:2px solid rgba(0,184,212,0.3);border-left:2px solid rgba(0,184,212,0.3);}
-.hc.tr{top:2%;right:2%;border-top:2px solid rgba(0,184,212,0.3);border-right:2px solid rgba(0,184,212,0.3);}
-.hc.bl{bottom:2%;left:2%;border-bottom:2px solid rgba(0,184,212,0.3);border-left:2px solid rgba(0,184,212,0.3);}
-.hc.br{bottom:2%;right:2%;border-bottom:2px solid rgba(0,184,212,0.3);border-right:2px solid rgba(0,184,212,0.3);}
-.sb{position:absolute;bottom:4%;left:50%;transform:translateX(-50%);display:flex;gap:40px;z-index:10;pointer-events:none;}
-.si{text-align:center;}.si .nm{font-family:'Orbitron',monospace;font-size:clamp(14px,1.8vw,26px);color:#00B8D4;font-weight:700;}
-.si .sl{font-size:clamp(7px,0.6vw,10px);color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.2em;margin-top:3px;}
-.gw{position:absolute;top:0;left:0;width:100%;height:100%;z-index:1;}
-.scl{position:absolute;top:0;left:0;width:100%;height:2px;background:linear-gradient(90deg,transparent,rgba(0,184,212,0.05),transparent);animation:sm 8s linear infinite;z-index:5;pointer-events:none;}
-@keyframes sm{0%{top:0}100%{top:100%}}
-</style>
-<div class="nc">
-<div class="hc tl"></div><div class="hc tr"></div><div class="hc bl"></div><div class="hc br"></div>
-<div class="scl"></div>
-<div class="nt"></div>
-<div class="fl">
-<div class="fi"><div class="lb">Real-Time Analysis</div><div class="ds">Processing millions of global events through advanced NLP pipelines</div></div>
-<div class="fi"><div class="lb">Predictive Models</div><div class="ds">Neural network forecasting with multi-dimensional risk vectors</div></div>
-<div class="fi"><div class="lb">Sentiment Engine</div><div class="ds">Deep learning sentiment analysis across 65+ languages</div></div>
-</div>
-<div class="fr">
-<div class="fi"><div class="lb">Global Coverage</div><div class="ds">Monitoring 195+ countries with real-time geopolitical signals</div></div>
-<div class="fi"><div class="lb">Data Fusion</div><div class="ds">Multi-source intelligence from GDELT, news, and social data</div></div>
-<div class="fi"><div class="lb">Risk Assessment</div><div class="ds">Automated threat detection with confidence-scored predictions</div></div>
-</div>
-<div class="gw">
-<div style="width:100%;height:100%;background:transparent;display:flex;align-items:center;justify-content:center;overflow:hidden">
-<canvas id="earthG"></canvas>
-<script src="https://cdn.jsdelivr.net/npm/topojson-client@3"></script>
-<script>
-(function(){
-var C=document.getElementById("earthG"),X=C.getContext("2d");
-var W,H,cx,cy,R,rot=0,polys=[],loaded=false;
-function resize(){W=C.width=C.parentElement.offsetWidth||800;H=C.height=510;cx=W/2;cy=H/2;R=Math.min(W,H)*0.38;}
-resize();
-var stars=[];for(var i=0;i<250;i++)stars.push({x:Math.random(),y:Math.random(),s:Math.random()*1.5+0.3,b:Math.random()});
-var CT=[{n:"Washington",lo:-77,la:38.9,m:1},{n:"London",lo:-0.1,la:51.5,m:1},{n:"Moscow",lo:37.6,la:55.8,m:1},{n:"Beijing",lo:116.4,la:39.9,m:1},{n:"Tokyo",lo:139.7,la:35.7,m:1},{n:"Delhi",lo:77.2,la:28.6,m:1},{n:"Sao Paulo",lo:-46.6,la:-23.5,m:0},{n:"Lagos",lo:3.4,la:6.5,m:0},{n:"Cairo",lo:31.2,la:30,m:0},{n:"Sydney",lo:151.2,la:-33.9,m:0},{n:"Dubai",lo:55.3,la:25.3,m:0},{n:"Singapore",lo:103.8,la:1.4,m:0},{n:"Istanbul",lo:29,la:41,m:0},{n:"Berlin",lo:13.4,la:52.5,m:0},{n:"Seoul",lo:127,la:37.6,m:0},{n:"Mumbai",lo:72.9,la:19.1,m:0},{n:"Nairobi",lo:36.8,la:-1.3,m:0},{n:"Toronto",lo:-79.4,la:43.7,m:0},{n:"Mexico City",lo:-99.1,la:19.4,m:0},{n:"Jakarta",lo:106.8,la:-6.2,m:0}];
-var CN=[[0,1],[0,2],[0,3],[0,4],[1,2],[1,5],[1,8],[2,3],[2,5],[3,4],[3,5],[4,14],[5,15],[1,13],[0,17],[0,18],[6,7],[7,8],[8,16],[9,19],[10,11],[11,19]];
-function proj(lo,la){var lr=(lo+rot)*Math.PI/180,a=la*Math.PI/180;var cA=Math.cos(a);return{x:cx+cA*Math.sin(lr)*R,y:cy-Math.sin(a)*R,z:cA*Math.cos(lr)};}
-function clipPoly(poly){var segs=[];var cur=[];for(var j=0;j<poly.length;j++){var p=proj(poly[j][0],poly[j][1]);if(p.z>0){cur.push(p);}else{if(cur.length>0){var prev=poly[(j-1+poly.length)%poly.length];var cur2=poly[j];var ep=findEdge(prev[0],prev[1],cur2[0],cur2[1]);if(ep)cur.push(ep);segs.push(cur);cur=[];}}}if(cur.length>0)segs.push(cur);if(segs.length>1){var f=segs[0];var l=segs[segs.length-1];var merged=l.concat(f);segs[0]=merged;segs.pop();}return segs;}
-function findEdge(lo1,la1,lo2,la2){for(var s=0;s<8;s++){var mlo=(lo1+lo2)/2,mla=(la1+la2)/2;var p=proj(mlo,mla);if(p.z>0){lo1=mlo;la1=mla;}else{lo2=mlo;la2=mla;}}return proj(lo1,la1);}
-fetch("https://cdn.jsdelivr.net/npm/world-atlas@2/land-110m.json").then(function(r){return r.json()}).then(function(w){var land=topojson.feature(w,w.objects.land);land.features.forEach(function(f){var geom=f.geometry;if(geom.type==="Polygon"){polys.push(geom.coordinates[0]);}else if(geom.type==="MultiPolygon"){geom.coordinates.forEach(function(p){polys.push(p[0]);});}});loaded=true;frame();});
-function showLoad(){if(loaded)return;X.clearRect(0,0,W,H);X.fillStyle="#050a15";X.fillRect(0,0,W,H);X.font="12px monospace";X.textAlign="center";X.fillStyle="#00B8D4";X.fillText("Loading World Map...",cx,cy);X.textAlign="left";requestAnimationFrame(showLoad);}showLoad();
-function frame(){var t=Date.now();X.clearRect(0,0,W,H);
-var bg=X.createLinearGradient(0,0,0,H);bg.addColorStop(0,"#0e1117");bg.addColorStop(0.5,"#0e1117");bg.addColorStop(1,"#0e1117");X.fillStyle=bg;X.fillRect(0,0,W,H);
-for(var i=0;i<stars.length;i++){var s=stars[i];var tw=0.5+0.5*Math.sin(t*0.002+s.b*80);X.fillStyle="rgba(180,220,255,"+(0.2+0.6*tw*s.b)+")";X.beginPath();X.arc(s.x*W,s.y*H,s.s,0,6.28);X.fill();}
-var ag=X.createRadialGradient(cx,cy,R*0.92,cx,cy,R*1.3);ag.addColorStop(0,"rgba(0,184,212,0.12)");ag.addColorStop(0.4,"rgba(0,180,220,0.06)");ag.addColorStop(1,"rgba(0,80,120,0)");X.fillStyle=ag;X.beginPath();X.arc(cx,cy,R*1.3,0,6.28);X.fill();
-var og=X.createRadialGradient(cx-R*0.25,cy-R*0.25,0,cx,cy,R);og.addColorStop(0,"#0c2440");og.addColorStop(0.6,"#081a30");og.addColorStop(1,"#040d1a");X.fillStyle=og;X.beginPath();X.arc(cx,cy,R,0,6.28);X.fill();
-X.strokeStyle="rgba(0,140,180,0.04)";X.lineWidth=0.4;for(var la=-80;la<=80;la+=30){X.beginPath();var st=false;for(var lo=-180;lo<=180;lo+=4){var p=proj(lo,la);if(p.z>0){if(!st){X.moveTo(p.x,p.y);st=true;}else X.lineTo(p.x,p.y);}else st=false;}X.stroke();}
-X.save();X.beginPath();X.arc(cx,cy,R,0,6.28);X.clip();
-var lg=X.createRadialGradient(cx-R*0.25,cy-R*0.25,0,cx,cy,R*1.1);lg.addColorStop(0,"rgba(0,210,220,0.5)");lg.addColorStop(0.5,"rgba(0,185,210,0.35)");lg.addColorStop(1,"rgba(0,130,170,0.2)");
-for(var i=0;i<polys.length;i++){var poly=polys[i];if(poly.length<4)continue;var segs=clipPoly(poly);for(var s=0;s<segs.length;s++){var seg=segs[s];if(seg.length<3)continue;X.beginPath();X.moveTo(seg[0].x,seg[0].y);for(var j=1;j<seg.length;j++)X.lineTo(seg[j].x,seg[j].y);X.closePath();X.fillStyle=lg;X.fill();X.strokeStyle="rgba(0,212,200,0.25)";X.lineWidth=0.5;X.stroke();}}
-X.restore();
-var eg=X.createRadialGradient(cx,cy,R*0.82,cx,cy,R);eg.addColorStop(0,"rgba(0,0,0,0)");eg.addColorStop(0.7,"rgba(0,0,0,0)");eg.addColorStop(1,"rgba(0,80,100,0.25)");X.fillStyle=eg;X.beginPath();X.arc(cx,cy,R,0,6.28);X.fill();
-var hg=X.createRadialGradient(cx-R*0.3,cy-R*0.3,0,cx-R*0.3,cy-R*0.3,R*0.7);hg.addColorStop(0,"rgba(120,220,255,0.05)");hg.addColorStop(1,"rgba(0,0,0,0)");X.fillStyle=hg;X.beginPath();X.arc(cx,cy,R,0,6.28);X.fill();
-X.lineWidth=0.8;for(var i=0;i<CN.length;i++){var a=CT[CN[i][0]],b=CT[CN[i][1]];var pa=proj(a.lo,a.la),pb=proj(b.lo,b.la);if(pa.z<0.1&&pb.z<0.1)continue;var ml=(a.lo+b.lo)/2,mt=(a.la+b.la)/2;var pm=proj(ml,mt);var dx=pm.x-cx,dy=pm.y-cy,d=Math.sqrt(dx*dx+dy*dy);if(d>0){pm.x=cx+dx*(1+R*0.18/d);pm.y=cy+dy*(1+R*0.18/d);}var al=Math.max(0,Math.min(1,Math.min(pa.z,pb.z)))*0.35;X.strokeStyle="rgba(0,184,212,"+al+")";X.beginPath();X.moveTo(pa.x,pa.y);X.quadraticCurveTo(pm.x,pm.y,pb.x,pb.y);X.stroke();var pu=(t*0.0004+i*0.13)%1;var px=(1-pu)*(1-pu)*pa.x+2*(1-pu)*pu*pm.x+pu*pu*pb.x;var py=(1-pu)*(1-pu)*pa.y+2*(1-pu)*pu*pm.y+pu*pu*pb.y;if(al>0.04){var pg=X.createRadialGradient(px,py,0,px,py,3.5);pg.addColorStop(0,"rgba(0,255,220,"+al*2.5+")");pg.addColorStop(1,"rgba(0,255,220,0)");X.fillStyle=pg;X.beginPath();X.arc(px,py,3.5,0,6.28);X.fill();}}
-for(var i=0;i<CT.length;i++){var c=CT[i],p=proj(c.lo,c.la);if(p.z<0.1)continue;var al=Math.min(1,p.z*1.8),pu=0.7+0.3*Math.sin(t*0.004+i);if(c.m){var rg=X.createRadialGradient(p.x,p.y,0,p.x,p.y,9*pu);rg.addColorStop(0,"rgba(0,255,220,"+al*0.9+")");rg.addColorStop(0.4,"rgba(0,184,212,"+al*0.3+")");rg.addColorStop(1,"rgba(0,184,212,0)");X.fillStyle=rg;X.beginPath();X.arc(p.x,p.y,9*pu,0,6.28);X.fill();X.fillStyle="rgba(255,255,255,"+al+")";X.beginPath();X.arc(p.x,p.y,2.5,0,6.28);X.fill();X.font="bold 9px monospace";X.fillStyle="rgba(0,255,220,"+al*0.9+")";X.fillText(c.n,p.x+10,p.y+3);}else{X.fillStyle="rgba(0,184,212,"+al*0.8+")";X.beginPath();X.arc(p.x,p.y,1.8,0,6.28);X.fill();X.font="7px monospace";X.fillStyle="rgba(0,184,212,"+al*0.5+")";X.fillText(c.n,p.x+5,p.y+2);}}
+    # ── 1. HERO: AI + Geopolitical Network Visualization ──
+    # (from nerai_premium_css.py — replaces old Three.js globe)
+    nerai_premium_css.inject_home_hero()
 
-X.textAlign="left";
-var ty=cy+R+28;var items=["ACTIVE MONITORS: 2,847","DATA STREAMS: 156","RISK ALERTS: 23","COVERAGE: 195 COUNTRIES"];X.font="8px monospace";var tw2=0;for(var i=0;i<items.length;i++)tw2+=X.measureText(items[i]).width+30;var off=(t*0.025)%tw2;X.fillStyle="rgba(0,184,212,0.35)";var xp=-off;for(var rp=0;rp<3;rp++){for(var i=0;i<items.length;i++){X.fillText(items[i],xp,ty);xp+=X.measureText(items[i]).width+30;}}
-rot+=0.12;requestAnimationFrame(frame);}
-})();
-</script></div></div>
-
-</div>
-"""
-    _stc.html(_globe_html, height=550, scrolling=False)
-    st.markdown("""<div style="display:flex;justify-content:center;gap:40px;padding:15px 0;background:transparent;"><div style="text-align:center;"><div style="font-family:monospace;font-size:clamp(16px,2vw,28px);color:#00B8D4;font-weight:700;">195+</div><div style="font-size:10px;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.2em;margin-top:3px;">Countries Monitored</div></div><div style="text-align:center;"><div style="font-family:monospace;font-size:clamp(16px,2vw,28px);color:#00B8D4;font-weight:700;">24/7</div><div style="font-size:10px;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.2em;margin-top:3px;">Continuous Analysis</div></div><div style="text-align:center;"><div style="font-family:monospace;font-size:clamp(16px,2vw,28px);color:#00B8D4;font-weight:700;">1M+</div><div style="font-size:10px;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.2em;margin-top:3px;">Events Daily</div></div><div style="text-align:center;"><div style="font-family:monospace;font-size:clamp(16px,2vw,28px);color:#00B8D4;font-weight:700;">99.2%</div><div style="font-size:10px;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.2em;margin-top:3px;">Model Accuracy</div></div></div><div style="text-align:center;padding:10px 0;"><div style="font-size:12px;color:rgba(255,255,255,0.4);letter-spacing:0.3em;text-transform:uppercase;">Transforming Global Data Into Actionable Intelligence</div><div style="display:flex;gap:10px;margin-top:10px;justify-content:center;flex-wrap:wrap;"><span style="font-family:monospace;font-size:10px;color:rgba(0,184,212,0.6);border:1px solid rgba(0,184,212,0.3);padding:3px 8px;border-radius:2px;">Deep Learning</span><span style="font-family:monospace;font-size:10px;color:rgba(0,184,212,0.6);border:1px solid rgba(0,184,212,0.3);padding:3px 8px;border-radius:2px;">NLP</span><span style="font-family:monospace;font-size:10px;color:rgba(0,184,212,0.6);border:1px solid rgba(0,184,212,0.3);padding:3px 8px;border-radius:2px;">GDELT</span><span style="font-family:monospace;font-size:10px;color:rgba(0,184,212,0.6);border:1px solid rgba(0,184,212,0.3);padding:3px 8px;border-radius:2px;">Predictive Analytics</span><span style="font-family:monospace;font-size:10px;color:rgba(0,184,212,0.6);border:1px solid rgba(0,184,212,0.3);padding:3px 8px;border-radius:2px;">Risk Modeling</span><span style="font-family:monospace;font-size:10px;color:rgba(0,184,212,0.6);border:1px solid rgba(0,184,212,0.3);padding:3px 8px;border-radius:2px;">Neural Networks</span></div></div>""", unsafe_allow_html=True)
-    st.markdown(f"""
-    <div class="home-hero">
-      <!-- Corner HUD brackets -->
-      <div class="home-corner home-corner-tl"></div>
-      <div class="home-corner home-corner-tr"></div>
-      <div class="home-corner home-corner-bl"></div>
-      <div class="home-corner home-corner-br"></div>
-      <!-- Glowing orbs -->
-
-
-      <!-- Floating hexagons -->
-      <div class="hex-deco" style="width:70px;height:80px;top:12%;left:4%;animation-delay:0s;"></div>
-      <div class="hex-deco" style="width:55px;height:63px;top:18%;right:6%;animation-delay:3s;"></div>
-      <div class="hex-deco" style="width:45px;height:52px;bottom:18%;left:10%;animation-delay:6s;opacity:0.6;"></div>
-      <div class="hex-deco" style="width:40px;height:46px;bottom:22%;right:9%;animation-delay:1.5s;opacity:0.5;"></div>
-      <!-- Main content -->
-      <div style="position:relative;z-index:2;padding:12px 0;">
-        <!-- CSS Text Logo -->
-        <div class="nerai-logo-wrap">
-          <div class="nerai-logo-ring"></div>
-          <div class="nerai-logo-ring nerai-logo-ring-2"></div>
-          <div class="nerai-logo-brand">
-            <span class="nerai-logo-hex">◈</span>
-            <span class="nerai-logo-ner">NER</span><span class="nerai-logo-ai">AI</span>
-          </div>
+    # ── 2. PREMIUM KPI SECTION ──
+    st.markdown("""
+    <div style="
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+        margin: -0.5rem 0 2rem 0;
+        padding: 0 4px;
+    ">
+        <div style="
+            background: linear-gradient(135deg, rgba(0,212,255,0.06) 0%, rgba(10,14,23,0.95) 100%);
+            border: 1px solid rgba(0,212,255,0.12);
+            border-radius: 14px;
+            padding: 24px 20px;
+            text-align: center;
+            backdrop-filter: blur(12px);
+            position: relative;
+            overflow: hidden;
+        ">
+            <div style="position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(0,212,255,0.25),transparent);"></div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:2rem;font-weight:700;color:#00d4ff;margin-bottom:4px;text-shadow:0 0 20px rgba(0,212,255,0.15);">60</div>
+            <div style="font-family:'Inter',sans-serif;font-size:0.65rem;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#6b7f99;">Countries</div>
         </div>
-        <!-- Sub-brand line -->
-        <div style="font-size:0.65rem;letter-spacing:0.35em;text-transform:uppercase;
-             color:rgba(0,200,255,0.4);font-family:'Share Tech Mono',monospace;
-             margin-bottom:6px;">Intelligence Hub</div>
-        <div class="hero-tagline">Geopolitical Risk Intelligence Platform</div>
-        <!-- Separator -->
-        <div style="height:1px;background:linear-gradient(90deg,transparent,rgba(0,200,255,0.4),rgba(123,47,255,0.3),transparent);
-             width:60%;margin:0 auto 30px;"></div>
-        <!-- Stats row -->
-        <div class="home-stat-row">
-          <div class="home-stat">
-            <div class="home-stat-val">{len(all_countries)}</div>
-            <div class="home-stat-lbl">Countries</div>
-          </div>
-          <div style="width:1px;background:rgba(0,150,255,0.15);align-self:stretch;"></div>
-          <div class="home-stat">
-            <div class="home-stat-val">{len(all_topics)}</div>
-            <div class="home-stat-lbl">Risk Topics</div>
-          </div>
-          <div style="width:1px;background:rgba(0,150,255,0.15);align-self:stretch;"></div>
-          <div class="home-stat">
-            <div class="home-stat-val">{len(date_cols)}</div>
-            <div class="home-stat-lbl">Days of Data</div>
-          </div>
-          <div style="width:1px;background:rgba(0,150,255,0.15);align-self:stretch;"></div>
-          <div class="home-stat">
-            <div class="home-stat-val">{len(df):,}</div>
-            <div class="home-stat-lbl">Data Points</div>
-          </div>
+        <div style="
+            background: linear-gradient(135deg, rgba(0,212,255,0.06) 0%, rgba(10,14,23,0.95) 100%);
+            border: 1px solid rgba(0,212,255,0.12);
+            border-radius: 14px;
+            padding: 24px 20px;
+            text-align: center;
+            backdrop-filter: blur(12px);
+            position: relative;
+            overflow: hidden;
+        ">
+            <div style="position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(0,212,255,0.25),transparent);"></div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:2rem;font-weight:700;color:#00d4ff;margin-bottom:4px;text-shadow:0 0 20px rgba(0,212,255,0.15);">40</div>
+            <div style="font-family:'Inter',sans-serif;font-size:0.65rem;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#6b7f99;">Risk Topics</div>
         </div>
-        <!-- Live status bar -->
-        <div style="display:inline-flex;align-items:center;gap:12px;
-             background:rgba(0,20,50,0.6);border:1px solid rgba(0,150,255,0.2);
-             border-radius:20px;padding:5px 18px;
-             font-size:0.68rem;color:rgba(0,200,255,0.6);
-             font-family:'Share Tech Mono',monospace;letter-spacing:0.1em;">
-          <span class="live-dot"></span>
-          <span>LIVE</span>
-          <span style="color:rgba(0,150,255,0.3);">|</span>
-          <span>GDELT PROJECT</span>
-          <span style="color:rgba(0,150,255,0.3);">|</span>
-          <span>LAST UPDATE: {date_cols[-1].strftime('%d %b %Y') if len(date_cols) else 'N/A'}</span>
-          <span style="color:rgba(0,150,255,0.3);">|</span>
-          <span style="color:{'#ffaa00' if is_demo else '#00B8D4'};">{'⚠ DEMO' if is_demo else '✓ ONLINE'}</span>
+        <div style="
+            background: linear-gradient(135deg, rgba(0,212,255,0.06) 0%, rgba(10,14,23,0.95) 100%);
+            border: 1px solid rgba(0,212,255,0.12);
+            border-radius: 14px;
+            padding: 24px 20px;
+            text-align: center;
+            backdrop-filter: blur(12px);
+            position: relative;
+            overflow: hidden;
+        ">
+            <div style="position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(0,212,255,0.25),transparent);"></div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:2rem;font-weight:700;color:#00d4ff;margin-bottom:4px;text-shadow:0 0 20px rgba(0,212,255,0.15);">354</div>
+            <div style="font-family:'Inter',sans-serif;font-size:0.65rem;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#6b7f99;">Days of Data</div>
         </div>
-      </div>
+        <div style="
+            background: linear-gradient(135deg, rgba(0,212,255,0.06) 0%, rgba(10,14,23,0.95) 100%);
+            border: 1px solid rgba(0,212,255,0.12);
+            border-radius: 14px;
+            padding: 24px 20px;
+            text-align: center;
+            backdrop-filter: blur(12px);
+            position: relative;
+            overflow: hidden;
+        ">
+            <div style="position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(0,212,255,0.25),transparent);"></div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:2rem;font-weight:700;color:#00d4ff;margin-bottom:4px;text-shadow:0 0 20px rgba(0,212,255,0.15);">2,400</div>
+            <div style="font-family:'Inter',sans-serif;font-size:0.65rem;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#6b7f99;">Data Points</div>
+        </div>
     </div>
     """, unsafe_allow_html=True)
 
-    # ── Module Tiles ─────────────────────────────────────────
+    # ── Status bar ──
     st.markdown("""
-    <div style="font-size:0.62rem;letter-spacing:0.35em;text-transform:uppercase;
-         color:rgba(0,180,255,0.45);font-family:'Share Tech Mono',monospace;
-         margin-bottom:20px;text-align:center;
-         display:flex;align-items:center;justify-content:center;gap:14px;">
-      <span style="flex:1;height:1px;background:linear-gradient(90deg,transparent,rgba(0,150,255,0.2));"></span>
-      SELECT A MODULE TO BEGIN
-      <span style="flex:1;height:1px;background:linear-gradient(90deg,rgba(0,150,255,0.2),transparent);"></span>
-    </div>""", unsafe_allow_html=True)
+    <div style="
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 20px;
+        padding: 10px 24px;
+        margin: 0 auto 2rem auto;
+        max-width: 600px;
+        background: rgba(17,24,39,0.6);
+        border: 1px solid rgba(0,212,255,0.08);
+        border-radius: 30px;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.65rem;
+        letter-spacing: 1.5px;
+        color: #6b7f99;
+    ">
+        <span style="color:#00e676;font-weight:600;">● LIVE</span>
+        <span style="color:rgba(0,212,255,0.15);">│</span>
+        <span>GDELT PROJECT</span>
+        <span style="color:rgba(0,212,255,0.15);">│</span>
+        <span>LAST UPDATE: RECENT</span>
+        <span style="color:rgba(0,212,255,0.15);">│</span>
+        <span style="color:#00e676;">✓ ONLINE</span>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # ── 3. MODULE NAVIGATION SECTION ──
+    st.markdown("""
+    <div style="
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin: 1.5rem 0 1.2rem 0;
+    ">
+        <div style="flex:1;height:1px;background:linear-gradient(90deg,transparent,rgba(0,212,255,0.2));"></div>
+        <span style="
+            font-family:'Inter',sans-serif;
+            font-size:0.7rem;
+            font-weight:600;
+            letter-spacing:3px;
+            text-transform:uppercase;
+            color:rgba(0,212,255,0.5);
+            white-space:nowrap;
+        ">SELECT A MODULE TO BEGIN</span>
+        <div style="flex:1;height:1px;background:linear-gradient(90deg,rgba(0,212,255,0.2),transparent);"></div>
+    </div>
+    """, unsafe_allow_html=True)
 
     m1, m2, m3, m4 = st.columns(4)
 
     with m1:
         st.markdown("""
-        <div class="home-module" style="--mc:#0077a8">
-          <div class="home-module-icon">📊</div>
-          <div class="home-module-title">Indices</div>
-          <div class="home-module-desc">
-            Topic-based geopolitical risk indices across {n_c} countries.<br>
-            Time series, heatmaps, world maps, signals &amp; alarms.
-          </div>
-        </div>""".format(n_c=len(all_countries)), unsafe_allow_html=True)
-        if st.button("→ Open Indices", key='home_to_indices', use_container_width=True):
-            st.session_state.page = 'indices'
+        <div style="text-align:center;padding:8px 0;">
+            <div style="font-size:1.6rem;margin-bottom:10px;">📊</div>
+            <div style="font-family:'Inter',sans-serif;font-size:1rem;font-weight:700;color:#e8edf4;margin-bottom:6px;">Indices</div>
+            <div style="font-family:'Inter',sans-serif;font-size:0.75rem;color:#6b7f99;line-height:1.5;">
+                Topic-based geopolitical risk indices across 60 countries.<br>
+                Time series, heatmaps, world maps, correlations.
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+        if st.button("→ Open Indices", key="home_to_indices", use_container_width=True):
+            st.session_state.page = "indices"
             st.rerun()
 
     with m2:
         st.markdown("""
-        <div class="home-module" style="--mc:#f59e0b">
-          <div class="home-module-icon">🎯</div>
-          <div class="home-module-title">Country Profile</div>
-          <div class="home-module-desc">
-            Deep-dive into any country: top risk scores, active alarms,
-            bilateral relations worst &amp; best partners.
-          </div>
-        </div>""", unsafe_allow_html=True)
-        if st.button("→ Open Profile", key='home_to_profile', use_container_width=True):
-            st.session_state.page = 'profile'
+        <div style="text-align:center;padding:8px 0;">
+            <div style="font-size:1.6rem;margin-bottom:10px;">🎯</div>
+            <div style="font-family:'Inter',sans-serif;font-size:1rem;font-weight:700;color:#e8edf4;margin-bottom:6px;">Country Profile</div>
+            <div style="font-family:'Inter',sans-serif;font-size:0.75rem;color:#6b7f99;line-height:1.5;">
+                Deep-dive into any country: top risk scores, active alarms, bilateral relations worst & best partners.
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+        if st.button("→ Open Profile", key="home_to_profile", use_container_width=True):
+            st.session_state.page = "profile"
             st.rerun()
 
     with m3:
         st.markdown("""
-        <div class="home-module" style="--mc:#00B8D4">
-          <div class="home-module-icon">📰</div>
-          <div class="home-module-title">News</div>
-          <div class="home-module-desc">
-            Live GDELT headlines across 28 topic categories.<br>
-            Real-time global news intelligence feed.
-          </div>
-        </div>""", unsafe_allow_html=True)
-        if st.button("→ Open News", key='home_to_news', use_container_width=True):
-            st.session_state.page = 'news'
+        <div style="text-align:center;padding:8px 0;">
+            <div style="font-size:1.6rem;margin-bottom:10px;">📰</div>
+            <div style="font-family:'Inter',sans-serif;font-size:1rem;font-weight:700;color:#e8edf4;margin-bottom:6px;">News</div>
+            <div style="font-family:'Inter',sans-serif;font-size:0.75rem;color:#6b7f99;line-height:1.5;">
+                Live GDELT headlines across 28 topic categories.<br>
+                Real-time global news intelligence feed.
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+        if st.button("→ Open News", key="home_to_news", use_container_width=True):
+            st.session_state.page = "news"
             st.rerun()
 
     with m4:
-        pred_status = '✓ READY' if has_predictions else '⏳ PENDING'
-        pred_color  = '#0077a8' if has_predictions else '#e06030'
-        st.markdown(f"""
-        <div class="home-module" style="--mc:{pred_color}">
-          <div class="home-module-icon">🔮</div>
-          <div class="home-module-title">Predictions</div>
-          <div class="home-module-desc">
-            N-HiTS deep learning 12-month forecasts<br>
-            for 2,400 topic × country risk series.<br>
-            <span style='color:{pred_color};font-family:monospace;font-size:0.6rem;'>
-              {pred_status}
-            </span>
-          </div>
-        </div>""", unsafe_allow_html=True)
-        if st.button("→ Open Predictions", key='home_to_pred', use_container_width=True):
-            st.session_state.page = 'predictions'
+        st.markdown("""
+        <div style="text-align:center;padding:8px 0;">
+            <div style="font-size:1.6rem;margin-bottom:10px;">🔮</div>
+            <div style="font-family:'Inter',sans-serif;font-size:1rem;font-weight:700;color:#e8edf4;margin-bottom:6px;">Predictions</div>
+            <div style="font-family:'Inter',sans-serif;font-size:0.75rem;color:#6b7f99;line-height:1.5;">
+                N-HiTS deep learning 12-month forecasts<br>
+                for 2,400 topic × country risk series.
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+        if st.button("→ Open Predictions", key="home_to_predictions", use_container_width=True):
+            st.session_state.page = "predictions"
             st.rerun()
 
-    st.markdown('<div class="h-div" style="margin:28px 0 20px;"></div>', unsafe_allow_html=True)
+    # ── Footer tagline ──
+    st.markdown("""
+    <div style="
+        text-align: center;
+        margin: 2.5rem 0 1rem 0;
+        padding: 16px 0;
+        border-top: 1px solid rgba(0,212,255,0.06);
+    ">
+        <div style="
+            font-family:'Inter',sans-serif;
+            font-size:0.7rem;
+            font-weight:600;
+            letter-spacing:3px;
+            text-transform:uppercase;
+            color:#4a5d75;
+            margin-bottom:12px;
+        ">TRANSFORMING GLOBAL DATA INTO ACTIONABLE INTELLIGENCE</div>
+        <div style="
+            display:flex;
+            justify-content:center;
+            gap:10px;
+            flex-wrap:wrap;
+        ">
+            <span style="font-family:'JetBrains Mono',monospace;font-size:0.6rem;padding:5px 12px;border:1px solid rgba(0,212,255,0.12);border-radius:20px;color:#6b7f99;letter-spacing:0.5px;">Deep Learning</span>
+            <span style="font-family:'JetBrains Mono',monospace;font-size:0.6rem;padding:5px 12px;border:1px solid rgba(0,212,255,0.12);border-radius:20px;color:#6b7f99;letter-spacing:0.5px;">NLP</span>
+            <span style="font-family:'JetBrains Mono',monospace;font-size:0.6rem;padding:5px 12px;border:1px solid rgba(0,212,255,0.12);border-radius:20px;color:#6b7f99;letter-spacing:0.5px;">GDELT</span>
+            <span style="font-family:'JetBrains Mono',monospace;font-size:0.6rem;padding:5px 12px;border:1px solid rgba(0,212,255,0.12);border-radius:20px;color:#6b7f99;letter-spacing:0.5px;">Predictive Analytics</span>
+            <span style="font-family:'JetBrains Mono',monospace;font-size:0.6rem;padding:5px 12px;border:1px solid rgba(0,212,255,0.12);border-radius:20px;color:#6b7f99;letter-spacing:0.5px;">Risk Modeling</span>
+            <span style="font-family:'JetBrains Mono',monospace;font-size:0.6rem;padding:5px 12px;border:1px solid rgba(0,212,255,0.12);border-radius:20px;color:#6b7f99;letter-spacing:0.5px;">Neural Networks</span>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
 
 
-# ═══════════════════════════════════════════════════════════════
-# PAGE: INDICES
-# ═══════════════════════════════════════════════════════════════
 def render_indices():
     # Data prep
     if sel_topic in df.index.get_level_values('topic'):
