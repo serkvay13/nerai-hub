@@ -1518,11 +1518,11 @@ with st.sidebar:
     st.markdown('<div class="sec-hdr">Navigation</div>', unsafe_allow_html=True)
 
     nav_pages = [
-        ('home', '🏠 HOME'),
-        ('indices', '📊 INDICES'),
-        ('profile', '🌏 COUNTRY PROFILE'),
-        ('news', '📰 NEWS'),
-        ('predictions', '🔮 PREDICTIONS'),
+        ('home', '🏠 COMMAND CENTER'),
+        ('indices', '📊 RISK MATRIX'),
+        ('profile', '🌏 COUNTRY INTEL'),
+        ('news', '📰 SIGNAL FEED'),
+        ('predictions', '🔮 FORECAST ENGINE'),
         ('causality', '🕸️ CAUSAL NETWORK'),
         ('scenarios', '⚡ WHAT-IF SCENARIOS'),
         ('threat_radar', '🔴 THREAT RADAR'),
@@ -1881,14 +1881,14 @@ def render_home():
         st.markdown("""
         <div style="text-align:center;padding:8px 0;">
             <div style="font-size:1.6rem;margin-bottom:10px;">📊</div>
-            <div style="font-family:'Inter',sans-serif;font-size:1rem;font-weight:700;color:#e8edf4;margin-bottom:6px;">Indices</div>
+            <div style="font-family:'Inter',sans-serif;font-size:1rem;font-weight:700;color:#e8edf4;margin-bottom:6px;">Risk Matrix</div>
             <div style="font-family:'Inter',sans-serif;font-size:0.75rem;color:#6b7f99;line-height:1.5;">
                 Topic-based geopolitical risk indices across 60 countries.<br>
                 Time series, heatmaps, world maps, correlations.
             </div>
         </div>
         """, unsafe_allow_html=True)
-        if st.button("→ Open Indices", key="home_to_indices", use_container_width=True):
+        if st.button("→ Open Risk Matrix", key="home_to_indices", use_container_width=True):
             st.session_state.page = "indices"
             st.rerun()
 
@@ -1896,13 +1896,13 @@ def render_home():
         st.markdown("""
         <div style="text-align:center;padding:8px 0;">
             <div style="font-size:1.6rem;margin-bottom:10px;">🎯</div>
-            <div style="font-family:'Inter',sans-serif;font-size:1rem;font-weight:700;color:#e8edf4;margin-bottom:6px;">Country Profile</div>
+            <div style="font-family:'Inter',sans-serif;font-size:1rem;font-weight:700;color:#e8edf4;margin-bottom:6px;">Country Intel</div>
             <div style="font-family:'Inter',sans-serif;font-size:0.75rem;color:#6b7f99;line-height:1.5;">
                 Deep-dive into any country: top risk scores, active alarms, bilateral relations worst & best partners.
             </div>
         </div>
         """, unsafe_allow_html=True)
-        if st.button("→ Open Profile", key="home_to_profile", use_container_width=True):
+        if st.button("→ Open Country Intel", key="home_to_profile", use_container_width=True):
             st.session_state.page = "profile"
             st.rerun()
 
@@ -1910,14 +1910,14 @@ def render_home():
         st.markdown("""
         <div style="text-align:center;padding:8px 0;">
             <div style="font-size:1.6rem;margin-bottom:10px;">📰</div>
-            <div style="font-family:'Inter',sans-serif;font-size:1rem;font-weight:700;color:#e8edf4;margin-bottom:6px;">News</div>
+            <div style="font-family:'Inter',sans-serif;font-size:1rem;font-weight:700;color:#e8edf4;margin-bottom:6px;">Signal Feed</div>
             <div style="font-family:'Inter',sans-serif;font-size:0.75rem;color:#6b7f99;line-height:1.5;">
                 Live GDELT headlines across 28 topic categories.<br>
                 Real-time global news intelligence feed.
             </div>
         </div>
         """, unsafe_allow_html=True)
-        if st.button("→ Open News", key="home_to_news", use_container_width=True):
+        if st.button("→ Open Signal Feed", key="home_to_news", use_container_width=True):
             st.session_state.page = "news"
             st.rerun()
 
@@ -1925,14 +1925,14 @@ def render_home():
         st.markdown("""
         <div style="text-align:center;padding:8px 0;">
             <div style="font-size:1.6rem;margin-bottom:10px;">🔮</div>
-            <div style="font-family:'Inter',sans-serif;font-size:1rem;font-weight:700;color:#e8edf4;margin-bottom:6px;">Predictions</div>
+            <div style="font-family:'Inter',sans-serif;font-size:1rem;font-weight:700;color:#e8edf4;margin-bottom:6px;">Forecast Engine</div>
             <div style="font-family:'Inter',sans-serif;font-size:0.75rem;color:#6b7f99;line-height:1.5;">
                 N-HiTS deep learning 12-month forecasts<br>
                 for 2,400 topic × country risk series.
             </div>
         </div>
         """, unsafe_allow_html=True)
-        if st.button("→ Open Predictions", key="home_to_predictions", use_container_width=True):
+        if st.button("→ Open Forecast Engine", key="home_to_predictions", use_container_width=True):
             st.session_state.page = "predictions"
             st.rerun()
 
