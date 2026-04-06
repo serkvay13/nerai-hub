@@ -2125,7 +2125,7 @@ def render_indices():
     # ── Global Risk Map ────────────────────────────────────────
     try:
         st.subheader("\U0001f30d  Global Risk Map")
-        _fig_wm = chart_world(df_norm, "date")
+        _fig_wm = chart_world(df_norm, map_date)
         if _fig_wm is not None:
             st.plotly_chart(_fig_wm, use_container_width=True)
     except Exception:
