@@ -1157,23 +1157,27 @@ def inject_sidebar_fix():
                     }
                 } catch(e) {}
 
-                // 3. Watch for collapse button and intercept click
-                //    to clear forced styles before Streamlit collapses
+                // 3. Hook collapse button to clear forced styles on click.
+                //    Re-hooks every time expandSidebar runs (no stale flag).
                 function hookCollapseBtn() {
                     var cb = doc.querySelector('[data-testid="stSidebarCollapseButton"] button');
-                    if (cb && !cb._neraiHooked) {
-                        cb._neraiHooked = true;
-                        cb.addEventListener('click', function() {
-                            sb.style.transform = '';
-                            sb.style.width = '';
-                            sb.style.minWidth = '';
-                            sb.style.left = '';
-                            sb.style.transition = '';
-                        }, {once: true, capture: true});
+                    if (!cb) return;
+                    // Remove any previous handler first
+                    if (cb._neraiClearStyles) {
+                        cb.removeEventListener('click', cb._neraiClearStyles, true);
                     }
+                    cb._neraiClearStyles = function() {
+                        sb.style.transform = '';
+                        sb.style.width = '';
+                        sb.style.minWidth = '';
+                        sb.style.left = '';
+                        sb.style.transition = '';
+                        cb.removeEventListener('click', cb._neraiClearStyles, true);
+                        cb._neraiClearStyles = null;
+                    };
+                    cb.addEventListener('click', cb._neraiClearStyles, {capture: true});
                 }
                 hookCollapseBtn();
-                // Retry in case button appears after sidebar renders
                 setTimeout(hookCollapseBtn, 300);
                 setTimeout(hookCollapseBtn, 800);
             }
