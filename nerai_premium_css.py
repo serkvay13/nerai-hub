@@ -13,6 +13,7 @@ Veya doğrudan:
 """
 
 import streamlit as st
+import streamlit.components.v1 as _stc
 
 # ─────────────────────────────────────────────────
 # NERAI BRAND TOKENS  (logo: cyan + black)
@@ -1083,8 +1084,104 @@ def inject_sidebar_fix():
         visibility: visible !important;
         color: #00d4ff !important;
     }
+
+    /* 5. Custom expand button style (injected by JS below) */
+    #nerai-sidebar-expand {
+        position: fixed !important;
+        top: 8px !important;
+        left: 8px !important;
+        z-index: 999999 !important;
+        width: 32px !important;
+        height: 32px !important;
+        background: #111827 !important;
+        border: 1px solid rgba(0,212,255,0.2) !important;
+        border-radius: 8px !important;
+        color: #00d4ff !important;
+        font-size: 18px !important;
+        cursor: pointer !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        transition: all 0.2s ease !important;
+        font-family: sans-serif !important;
+    }
+    #nerai-sidebar-expand:hover {
+        background: rgba(0,212,255,0.1) !important;
+        border-color: #00d4ff !important;
+        box-shadow: 0 0 12px rgba(0,212,255,0.15) !important;
+    }
     </style>
     """, unsafe_allow_html=True)
+
+    # --- JavaScript: Watch for sidebar collapse and inject expand button ---
+    # st.markdown strips <script> tags, so we use components.html
+    # which runs in an iframe but can access parent via window.parent
+    _stc.html("""
+    <script>
+    (function() {
+        const doc = window.parent.document;
+        const SIDEBAR_SEL = '[data-testid="stSidebar"]';
+        const EXPAND_ID = 'nerai-sidebar-expand';
+
+        function isSidebarCollapsed() {
+            const sb = doc.querySelector(SIDEBAR_SEL);
+            if (!sb) return true;
+            const rect = sb.getBoundingClientRect();
+            return rect.left < -50 || rect.width < 10;
+        }
+
+        function expandSidebar() {
+            // Try native Streamlit expand controls
+            const native = doc.querySelector('[data-testid="collapsedControl"] button') ||
+                           doc.querySelector('[data-testid="stSidebarCollapsedControl"] button');
+            if (native) { native.click(); removeBtn(); return; }
+
+            // Fallback: force sidebar visible via style
+            const sb = doc.querySelector(SIDEBAR_SEL);
+            if (sb) {
+                sb.style.transform = 'none';
+                sb.style.width = '300px';
+                sb.style.minWidth = '300px';
+                sb.style.left = '0px';
+                sb.style.transition = 'transform 0.3s ease';
+                removeBtn();
+            }
+        }
+
+        function removeBtn() {
+            const btn = doc.getElementById(EXPAND_ID);
+            if (btn) btn.remove();
+        }
+
+        function addBtn() {
+            if (doc.getElementById(EXPAND_ID)) return;
+            const btn = doc.createElement('button');
+            btn.id = EXPAND_ID;
+            btn.innerHTML = '&#9776;';
+            btn.title = 'Open Navigation';
+            btn.addEventListener('click', expandSidebar);
+            doc.body.appendChild(btn);
+        }
+
+        function check() {
+            if (isSidebarCollapsed()) {
+                addBtn();
+            } else {
+                removeBtn();
+            }
+        }
+
+        // MutationObserver + interval for reliability
+        try {
+            const obs = new MutationObserver(check);
+            obs.observe(doc.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['style','class'] });
+        } catch(e) {}
+
+        check();
+        setInterval(check, 500);
+    })();
+    </script>
+    """, height=0)
 
 
 def inject_all():
