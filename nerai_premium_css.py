@@ -2084,145 +2084,196 @@ def inject_globe_close():
 
 
 def inject_filter_bar_css():
-    """Premium filter bar styling for Risk Matrix inline controls."""
+    """Premium filter bar styling – Bloomberg-grade controls."""
     st.markdown("""
     <style>
-    /* ── Premium Filter Bar Container ── */
-    [data-testid="stHorizontalBlock"] {
-        background: linear-gradient(135deg, rgba(15,23,42,0.6), rgba(15,23,42,0.3));
-        border: 1px solid rgba(0,212,255,0.08);
-        border-radius: 12px;
-        padding: 8px 12px;
-        margin-bottom: 8px;
-        backdrop-filter: blur(12px);
+    /* ══════════════════════════════════════════
+       NERAI PREMIUM FILTER BAR
+       ══════════════════════════════════════════ */
+
+    /* ── Filter Row Container ── */
+    div[data-testid="stHorizontalBlock"] {
+        background: linear-gradient(135deg, rgba(10,18,32,0.65) 0%, rgba(15,25,45,0.45) 100%);
+        border: 1px solid rgba(0,212,255,0.07);
+        border-radius: 10px;
+        padding: 10px 14px 6px 14px;
+        margin-bottom: 6px;
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
     }
 
-    /* ── Selectbox & Multiselect Styling ── */
-    [data-testid="stSelectbox"] > div > div,
-    [data-testid="stMultiSelect"] > div > div {
-        background: rgba(15,23,42,0.8) !important;
-        border: 1px solid rgba(0,212,255,0.12) !important;
+    /* ── ALL Filter Labels ── */
+    div[data-testid="stSelectbox"] label p,
+    div[data-testid="stMultiSelect"] label p,
+    div[data-testid="stSlider"] label p {
+        font-family: 'Inter', -apple-system, sans-serif !important;
+        font-size: 0.65rem !important;
+        font-weight: 700 !important;
+        color: rgba(148,163,184,0.85) !important;
+        text-transform: uppercase !important;
+        letter-spacing: 1.2px !important;
+    }
+
+    /* ── Selectbox Dropdown ── */
+    div[data-testid="stSelectbox"] > div > div {
+        background: rgba(10,18,32,0.9) !important;
+        border: 1px solid rgba(0,212,255,0.10) !important;
         border-radius: 8px !important;
         color: #e2e8f0 !important;
         font-family: 'Inter', sans-serif !important;
         font-size: 0.82rem !important;
-        transition: all 0.2s ease !important;
+        font-weight: 500 !important;
+        min-height: 38px !important;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
+    }
+    div[data-testid="stSelectbox"] > div > div:hover {
+        border-color: rgba(0,212,255,0.25) !important;
+    }
+    div[data-testid="stSelectbox"] > div > div:focus-within {
+        border-color: rgba(0,212,255,0.5) !important;
+        box-shadow: 0 0 0 1px rgba(0,212,255,0.15), 0 0 20px rgba(0,212,255,0.06) !important;
+    }
+    /* Dropdown arrow */
+    div[data-testid="stSelectbox"] svg {
+        fill: rgba(0,212,255,0.5) !important;
     }
 
-    [data-testid="stSelectbox"] > div > div:hover,
-    [data-testid="stMultiSelect"] > div > div:hover {
-        border-color: rgba(0,212,255,0.3) !important;
-        box-shadow: 0 0 12px rgba(0,212,255,0.08) !important;
-    }
-
-    [data-testid="stSelectbox"] > div > div:focus-within,
-    [data-testid="stMultiSelect"] > div > div:focus-within {
-        border-color: #00d4ff !important;
-        box-shadow: 0 0 16px rgba(0,212,255,0.15) !important;
-    }
-
-    /* ── Labels ── */
-    [data-testid="stSelectbox"] label,
-    [data-testid="stMultiSelect"] label,
-    [data-testid="stSlider"] label {
+    /* ── Multiselect ── */
+    div[data-testid="stMultiSelect"] > div > div {
+        background: rgba(10,18,32,0.9) !important;
+        border: 1px solid rgba(0,212,255,0.10) !important;
+        border-radius: 8px !important;
+        color: #e2e8f0 !important;
         font-family: 'Inter', sans-serif !important;
-        font-size: 0.7rem !important;
-        font-weight: 600 !important;
-        color: #64748b !important;
-        text-transform: uppercase !important;
-        letter-spacing: 0.8px !important;
-        margin-bottom: 2px !important;
+        font-size: 0.82rem !important;
+        min-height: 38px !important;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
+    }
+    div[data-testid="stMultiSelect"] > div > div:hover {
+        border-color: rgba(0,212,255,0.25) !important;
+    }
+    div[data-testid="stMultiSelect"] > div > div:focus-within {
+        border-color: rgba(0,212,255,0.5) !important;
+        box-shadow: 0 0 0 1px rgba(0,212,255,0.15), 0 0 20px rgba(0,212,255,0.06) !important;
+    }
+    /* Multiselect chips/tags */
+    div[data-testid="stMultiSelect"] span[data-baseweb="tag"] {
+        background: rgba(0,212,255,0.08) !important;
+        border: 1px solid rgba(0,212,255,0.18) !important;
+        border-radius: 5px !important;
+        color: #cbd5e1 !important;
+        font-size: 0.75rem !important;
+        font-weight: 500 !important;
+        font-family: 'Inter', sans-serif !important;
+    }
+    div[data-testid="stMultiSelect"] span[data-baseweb="tag"] span {
+        color: #cbd5e1 !important;
     }
 
-    /* ── Slider Styling ── */
-    [data-testid="stSlider"] > div > div > div {
-        background: rgba(0,212,255,0.15) !important;
+    /* ══ SLIDER OVERHAUL ══ */
+    /* Track background (inactive) */
+    div[data-testid="stSlider"] > div > div > div {
+        background: rgba(30,41,59,0.8) !important;
+        height: 4px !important;
+        border-radius: 2px !important;
     }
-
-    [data-testid="stSlider"] [data-testid="stThumbValue"] {
-        color: #00d4ff !important;
+    /* Track fill (active portion) – subtle dark cyan instead of bright */
+    div[data-testid="stSlider"] > div > div > div > div {
+        background: linear-gradient(90deg, rgba(0,180,220,0.35), rgba(0,212,255,0.25)) !important;
+        height: 4px !important;
+        border-radius: 2px !important;
+    }
+    /* Slider thumb */
+    div[data-testid="stSlider"] [role="slider"] {
+        background: #0f172a !important;
+        border: 2px solid rgba(0,212,255,0.6) !important;
+        width: 14px !important;
+        height: 14px !important;
+        top: -5px !important;
+        box-shadow: 0 0 8px rgba(0,212,255,0.2) !important;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
+    }
+    div[data-testid="stSlider"] [role="slider"]:hover {
+        border-color: #00d4ff !important;
+        box-shadow: 0 0 14px rgba(0,212,255,0.35) !important;
+    }
+    /* Slider current value (the number above thumb) */
+    div[data-testid="stSlider"] [data-testid="stThumbValue"] {
+        color: #e2e8f0 !important;
+        font-family: 'Inter', sans-serif !important;
         font-weight: 600 !important;
         font-size: 0.75rem !important;
-    }
-
-    /* ── Multiselect Tags ── */
-    [data-testid="stMultiSelect"] span[data-baseweb="tag"] {
-        background: linear-gradient(135deg, rgba(0,212,255,0.15), rgba(0,212,255,0.05)) !important;
+        background: rgba(10,18,32,0.95) !important;
         border: 1px solid rgba(0,212,255,0.2) !important;
-        border-radius: 6px !important;
-        color: #00d4ff !important;
-        font-size: 0.75rem !important;
+        border-radius: 4px !important;
+        padding: 1px 6px !important;
+    }
+    /* Slider min/max labels */
+    div[data-testid="stSlider"] [data-testid="stTickBarMin"],
+    div[data-testid="stSlider"] [data-testid="stTickBarMax"] {
+        color: rgba(100,116,139,0.7) !important;
+        font-family: 'Inter', sans-serif !important;
+        font-size: 0.65rem !important;
         font-weight: 500 !important;
     }
 
     /* ── Filter Divider ── */
     .nerai-filter-divider {
         height: 1px;
-        background: linear-gradient(90deg, transparent, rgba(0,212,255,0.12), transparent);
-        margin: 12px 0 16px 0;
+        background: linear-gradient(90deg, transparent, rgba(0,212,255,0.08), transparent);
+        margin: 10px 0 14px 0;
     }
 
     /* ── Download Button ── */
-    [data-testid="stDownloadButton"] button {
-        background: linear-gradient(135deg, rgba(0,212,255,0.1), rgba(0,212,255,0.05)) !important;
-        border: 1px solid rgba(0,212,255,0.2) !important;
-        border-radius: 8px !important;
-        color: #00d4ff !important;
+    div[data-testid="stDownloadButton"] button {
+        background: rgba(10,18,32,0.7) !important;
+        border: 1px solid rgba(0,212,255,0.15) !important;
+        border-radius: 7px !important;
+        color: rgba(0,212,255,0.8) !important;
         font-family: 'Inter', sans-serif !important;
-        font-size: 0.78rem !important;
+        font-size: 0.76rem !important;
         font-weight: 600 !important;
         letter-spacing: 0.3px !important;
-        transition: all 0.25s ease !important;
+        padding: 6px 16px !important;
+        transition: all 0.2s ease !important;
     }
-
-    [data-testid="stDownloadButton"] button:hover {
-        background: linear-gradient(135deg, rgba(0,212,255,0.2), rgba(0,212,255,0.1)) !important;
-        border-color: #00d4ff !important;
-        box-shadow: 0 0 20px rgba(0,212,255,0.12) !important;
-        transform: translateY(-1px) !important;
-    }
-
-    /* ── Dataframe Table ── */
-    [data-testid="stDataFrame"] {
-        border: 1px solid rgba(0,212,255,0.08) !important;
-        border-radius: 10px !important;
-        overflow: hidden !important;
+    div[data-testid="stDownloadButton"] button:hover {
+        background: rgba(0,212,255,0.06) !important;
+        border-color: rgba(0,212,255,0.4) !important;
+        color: #00d4ff !important;
+        box-shadow: 0 0 16px rgba(0,212,255,0.08) !important;
     }
 
     /* ── Metric Cards ── */
-    [data-testid="stMetric"] {
-        background: linear-gradient(135deg, rgba(15,23,42,0.7), rgba(15,23,42,0.4)) !important;
-        border: 1px solid rgba(0,212,255,0.08) !important;
+    div[data-testid="stMetric"] {
+        background: linear-gradient(145deg, rgba(10,18,32,0.7), rgba(15,25,45,0.4)) !important;
+        border: 1px solid rgba(0,212,255,0.06) !important;
         border-radius: 10px !important;
-        padding: 16px !important;
-        transition: all 0.3s ease !important;
+        padding: 14px 16px !important;
     }
-
-    [data-testid="stMetric"]:hover {
-        border-color: rgba(0,212,255,0.2) !important;
-        box-shadow: 0 4px 20px rgba(0,212,255,0.06) !important;
+    div[data-testid="stMetric"]:hover {
+        border-color: rgba(0,212,255,0.15) !important;
     }
-
-    [data-testid="stMetric"] label {
+    div[data-testid="stMetric"] label {
         font-family: 'Inter', sans-serif !important;
-        font-size: 0.7rem !important;
+        font-size: 0.65rem !important;
         font-weight: 600 !important;
-        color: #64748b !important;
+        color: rgba(148,163,184,0.7) !important;
         text-transform: uppercase !important;
-        letter-spacing: 0.6px !important;
+        letter-spacing: 0.8px !important;
     }
-
-    [data-testid="stMetric"] [data-testid="stMetricValue"] {
+    div[data-testid="stMetric"] [data-testid="stMetricValue"] {
         font-family: 'Inter', sans-serif !important;
-        font-size: 1.6rem !important;
+        font-size: 1.5rem !important;
         font-weight: 700 !important;
         color: #e2e8f0 !important;
     }
 
-    [data-testid="stMetric"] [data-testid="stMetricDelta"] {
-        font-family: 'Inter', sans-serif !important;
-        font-size: 0.75rem !important;
-        font-weight: 600 !important;
+    /* ── Dataframe ── */
+    div[data-testid="stDataFrame"] {
+        border: 1px solid rgba(0,212,255,0.06) !important;
+        border-radius: 8px !important;
+        overflow: hidden !important;
     }
     </style>
     """, unsafe_allow_html=True)
