@@ -14,6 +14,16 @@ import time
 import concurrent.futures
 import re
 
+# --- FAZ 1 imports ---
+from scipy.stats import zscore as _scipy_zscore
+try:
+    from statsmodels.tsa.stattools import adfuller
+    from statsmodels.stats.multitest import multipletests
+    _HAS_STATSMODELS = True
+except ImportError:
+    _HAS_STATSMODELS = False
+    print("[WARN] statsmodels not installed -- ADF/FDR tests disabled")
+
 # ============================================================
 # SETTINGS
 # ============================================================
@@ -197,9 +207,9 @@ def download_gdelt_day(filename):
         except urllib.error.HTTPError as e:
             if e.code == 404:
                 return filename, None
-            print(f"  [!] HTTP {e.code} Ã¢ÂÂ {filename} (attempt {attempt+1}/{RETRY_COUNT})")
+            print(f"  [!] HTTP {e.code} — {filename} (attempt {attempt+1}/{RETRY_COUNT})")
         except Exception as e:
-            print(f"  [!] Error Ã¢ÂÂ {filename}: {e} (attempt {attempt+1}/{RETRY_COUNT})")
+            print(f"  [!] Error — {filename}: {e} (attempt {attempt+1}/{RETRY_COUNT})")
         if attempt < RETRY_COUNT - 1:
             time.sleep(RETRY_DELAY)
     return filename, None
@@ -207,10 +217,10 @@ def download_gdelt_day(filename):
 
 def compute_day_indices(df):
     """
-    V4 Ã¢ÂÂ Sentiment-Weighted Index with directional scoring and geo weighting.
+    V4 — Sentiment-Weighted Index with directional scoring and geo weighting.
 
     Improvements:
-      1. Per-country denominators (not global) Ã¢ÂÂ removes media-size bias
+      1. Per-country denominators (not global) — removes media-size bias
       2. Directional scoring: instability topics reward negative values, stability topics reward positive
       3. ActionGeo weighted 1.0, Actor geo weighted 0.4 each (max 1.0 per event)
       4. CAMEO code prefix matching
@@ -230,8 +240,8 @@ def compute_day_indices(df):
     # --- FAZ 1d: Z-score normalization instead of fixed /10 and /100 ---
     # Goldstein (-10,+10) and AvgTone (-100,+100) have different distributions.
     # Z-score ensures equal contribution regardless of scale differences.
-    _g_mean, _g_std = df['Goldstein'].mean(), df['Goldstein'].std().clip(lower=1e-6)
-    _a_mean, _a_std = df['AvgTone'].mean(), df['AvgTone'].std().clip(lower=1e-6)
+    _g_mean, _g_std = df['Goldstein'].mean(), max(df['Goldstein'].std(), 1e-6)
+    _a_mean, _a_std = df['AvgTone'].mean(), max(df['AvgTone'].std(), 1e-6)
     _g_z = (df['Goldstein'] - _g_mean) / _g_std  # z-scored Goldstein
     _a_z = (df['AvgTone'] - _a_mean) / _a_std      # z-scored AvgTone
 
@@ -340,7 +350,7 @@ def get_missing_dates(indices, target_days=365):
         cur += datetime.timedelta(days=1)
 
     if len(indices.columns) == 0:
-        print(f"First run â downloading last {target_days} days of history.")
+        print(f"First run — downloading last {target_days} days of history.")
         return sorted(all_dates)
 
     # Find dates missing from existing data
@@ -355,13 +365,114 @@ def get_missing_dates(indices, target_days=365):
 # ============================================================
 # MAIN FUNCTION
 # ============================================================
+# ============================================================
+# FAZ 1a: ADF Stationarity Test
+# ============================================================
+def adf_stationarity_check(series_dict, alpha=0.05):
+    """
+    Run Augmented Dickey-Fuller test on each (topic, country) time series.
+    Returns dict of {(topic, country): {'adf_stat', 'p_value', 'is_stationary'}}.
+    Non-stationary series may need differencing before modelling.
+    """
+    if not _HAS_STATSMODELS:
+        print("[ADF] statsmodels not available, skipping.")
+        return {}
+    results = {}
+    for key, ts in series_dict.items():
+        ts_clean = ts.dropna()
+        if len(ts_clean) < 12:
+            continue
+        try:
+            stat, pval, _usedlag, _nobs, _crit, _icbest = adfuller(ts_clean, autolag='AIC')
+            results[key] = {
+                'adf_stat': stat,
+                'p_value': pval,
+                'is_stationary': pval < alpha
+            }
+        except Exception:
+            pass
+    n_stat = sum(1 for v in results.values() if v['is_stationary'])
+    print(f"[ADF] {n_stat}/{len(results)} series stationary at alpha={alpha}")
+    return results
+
+
+# ============================================================
+# FAZ 1b: FDR (Benjamini-Hochberg) Correction
+# ============================================================
+def fdr_correction(adf_results, alpha=0.05):
+    """
+    Apply Benjamini-Hochberg FDR correction to ADF p-values.
+    Reduces false discovery rate when testing many series simultaneously.
+    Returns updated results dict with 'fdr_reject' flag.
+    """
+    if not _HAS_STATSMODELS or not adf_results:
+        return adf_results
+    keys = list(adf_results.keys())
+    pvals = [adf_results[k]['p_value'] for k in keys]
+    reject, pvals_corrected, _, _ = multipletests(pvals, alpha=alpha, method='fdr_bh')
+    for i, k in enumerate(keys):
+        adf_results[k]['p_value_fdr'] = pvals_corrected[i]
+        adf_results[k]['fdr_reject'] = bool(reject[i])
+    n_reject = sum(reject)
+    print(f"[FDR] {n_reject}/{len(keys)} series rejected H0 (stationary) after BH correction")
+    return adf_results
+
+
+# ============================================================
+# FAZ 1c: Weekly Aggregation (ISO W-SUN)
+# ============================================================
+def aggregate_weekly(daily_indices):
+    """
+    Resample daily indices to weekly (W-SUN, ISO standard).
+    Aggregation: mean of daily scores per (topic, country) per week.
+    Returns DataFrame with weekly datetime columns.
+    """
+    if daily_indices is None or daily_indices.empty:
+        return daily_indices
+    # Columns are date strings; convert to datetime
+    date_cols = pd.to_datetime(daily_indices.columns, errors='coerce')
+    valid_mask = ~date_cols.isna()
+    df = daily_indices.loc[:, valid_mask].copy()
+    df.columns = date_cols[valid_mask]
+    # Transpose: rows=dates, cols=(topic, country)
+    df_t = df.T.sort_index()
+    # Resample to weekly (W-SUN) using mean
+    weekly_t = df_t.resample('W-SUN').mean()
+    weekly_t = weekly_t.dropna(how='all')
+    # Transpose back: rows=(topic, country), cols=weekly dates
+    result = weekly_t.T
+    result.columns = [d.strftime('%Y-%m-%d') for d in result.columns]
+    print(f"[WEEKLY] Aggregated {len(df.columns)} daily -> {len(result.columns)} weekly periods")
+    return result
+
+
+# ============================================================
+# FAZ 1d: Z-score Normalization (cross-topic)
+# ============================================================
+def zscore_normalize(indices_df):
+    """
+    Apply z-score normalization across topics for each date column.
+    Ensures all risk topics are on comparable scales (mean=0, std=1)
+    before aggregation or visualization.
+    """
+    if indices_df is None or indices_df.empty:
+        return indices_df
+    normalized = indices_df.copy()
+    for col in normalized.columns:
+        vals = normalized[col].dropna()
+        if len(vals) > 2 and vals.std() > 1e-8:
+            normalized[col] = (normalized[col] - vals.mean()) / vals.std()
+    print(f"[ZSCORE] Normalized {len(normalized.columns)} date columns across {len(normalized)} series")
+    return normalized
+
+
 def run():
     print("=" * 60)
     print("GDELT INDEX GENERATOR v4.0  (Directional + Geo-Weighted)")
     print("=" * 60)
-    print("Formula: Sigma(NumMentions ÃÂ Geo_Weight ÃÂ Directional_Intensity)")
-    print("         Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ")
-    print("         Sigma(NumMentions ÃÂ Geo_Weight)  [per-country denominator]")
+    print("Formula: Sigma(NumMentions × Geo_Weight × Directional_Intensity)")
+    print("         ───────────────────────────────────────────────────────")
+    print("         Sigma(NumMentions × Geo_Weight)  [per-country denominator]")
     print("=" * 60)
 
     indices = load_existing_indices(OUTPUT_FILE)
@@ -385,12 +496,12 @@ def run():
                 if day_results:
                     indices[str(filename)] = pd.Series(day_results)
                     success += 1
-                    print(f"  [{i:>4}/{total}] Ã¢ÂÂ {filename}  ({len(df):,} events)")
+                    print(f"  [{i:>4}/{total}] ✓ {filename}  ({len(df):,} events)")
                 else:
                     skipped += 1
             else:
                 skipped += 1
-                print(f"  [{i:>4}/{total}] Ã¢ÂÂ {filename}  (skipped)")
+                print(f"  [{i:>4}/{total}] ✗ {filename}  (skipped)")
 
             if i % 10 == 0:
                 indices.to_csv(OUTPUT_FILE)
@@ -399,9 +510,35 @@ def run():
     indices = indices.reindex(sorted(indices.columns), axis=1)
     indices.to_csv(OUTPUT_FILE)
 
+    # === FAZ 1 Pipeline ===
+    # 1a: ADF Stationarity Check
+    series_dict = {}
+    for (topic, country) in indices.index:
+        ts = indices.loc[(topic, country)]
+        ts_numeric = pd.to_numeric(ts, errors='coerce')
+        if ts_numeric.dropna().shape[0] >= 12:
+            series_dict[(topic, country)] = ts_numeric
+    adf_results = adf_stationarity_check(series_dict)
+
+    # 1b: FDR Correction on ADF p-values
+    if adf_results:
+        adf_results = fdr_correction(adf_results)
+
+    # 1c: Weekly Aggregation
+    weekly_indices = aggregate_weekly(indices)
+    if weekly_indices is not None and not weekly_indices.empty:
+        weekly_indices.to_csv(OUTPUT_FILE.replace('.csv', '_weekly.csv'))
+        print(f"  Weekly indices saved: {OUTPUT_FILE.replace('.csv', '_weekly.csv')}")
+
+    # 1d: Z-score Normalization
+    zscore_indices = zscore_normalize(indices)
+    if zscore_indices is not None and not zscore_indices.empty:
+        zscore_indices.to_csv(OUTPUT_FILE.replace('.csv', '_zscore.csv'))
+        print(f"  Z-score indices saved: {OUTPUT_FILE.replace('.csv', '_zscore.csv')}")
+
     print("\n" + "=" * 60)
     print(f"Completed! Success: {success}  Skipped: {skipped}")
-    print(f"  Total: {len(indices.columns)} days x {len(indices):,} (topicÃÂcountry)")
+    print(f"  Total: {len(indices.columns)} days x {len(indices):,} (topic×country)")
     print(f"  Output: {OUTPUT_FILE}")
     print("=" * 60)
     return indices
