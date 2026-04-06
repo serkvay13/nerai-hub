@@ -1711,11 +1711,8 @@ def inject_freshness_bar(gdelt_ago="2h", commodities_ago="4h", news_ago="1h", st
     """, unsafe_allow_html=True)
 
 
-def inject_section_header(text):
-    """Branded section divider."""
-    st.markdown(f"""
-    <div class="nerai-section-header">{text}</div>
-    """, unsafe_allow_html=True)
+# inject_section_header is defined above (line ~1625) with full premium styling.
+# Do NOT redefine it here — the version with icon= parameter is the correct one.
 
 
 def inject_sidebar_fix():
