@@ -1952,15 +1952,6 @@ def render_indices():
     nerai_premium_css.inject_filter_bar_css()
 
     # ══ INLINE FILTER BAR ══
-    st.markdown("""
-    <style>
-    .nerai-filter-bar { display:flex; gap:8px; flex-wrap:wrap; margin:8px 0 16px 0; padding:14px 18px; background:rgba(0,212,255,0.03); border:1px solid rgba(0,212,255,0.08); border-radius:12px; }
-    .nerai-filter-bar .stSelectbox, .nerai-filter-bar .stMultiSelect, .nerai-filter-bar .stSlider, .nerai-filter-bar .stRadio { flex:1; min-width:180px; }
-    .nerai-filter-bar label { font-family:"Inter",sans-serif !important; font-size:0.7rem !important; font-weight:600 !important; letter-spacing:1.2px !important; text-transform:uppercase !important; color:#4a5d75 !important; }
-    .nerai-filter-divider { height:1px; background:linear-gradient(90deg,transparent,rgba(0,212,255,0.12),transparent); margin:4px 0 16px 0; }
-    </style>
-    <div class="nerai-filter-divider"></div>
-    """, unsafe_allow_html=True)
 
     topic_display = {t: TOPIC_LABELS.get(t, t.replace('_',' ').title()) for t in all_topics}
 
