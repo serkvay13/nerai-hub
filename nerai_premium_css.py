@@ -912,13 +912,119 @@ def inject_global_css():
 
     /* ── EXPANDER PREMIUM ── */
     .stApp [data-testid="stExpander"] {{
-        background: rgba(15, 23, 42, 0.6) !important;
+        background: linear-gradient(135deg, rgba(15,23,42,0.7) 0%, rgba(10,14,23,0.9) 100%) !important;
         border: 1px solid rgba(0, 212, 255, 0.08) !important;
-        border-radius: 12px !important;
+        border-radius: 14px !important;
+        overflow: hidden !important;
+        transition: all 0.3s ease !important;
     }}
 
     .stApp [data-testid="stExpander"]:hover {{
-        border-color: rgba(0, 212, 255, 0.15) !important;
+        border-color: rgba(0, 212, 255, 0.18) !important;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2) !important;
+    }}
+
+    .stApp [data-testid="stExpander"] summary {{
+        font-family: 'Inter', sans-serif !important;
+        font-weight: 600 !important;
+        letter-spacing: 0.3px !important;
+        color: {TOKENS['text_primary']} !important;
+        transition: color 0.2s ease !important;
+    }}
+
+    .stApp [data-testid="stExpander"] summary:hover {{
+        color: {TOKENS['cyan']} !important;
+    }}
+
+    /* ── SUBHEADER — Premium section titles ── */
+    .stApp .stMarkdown h2,
+    .stApp .stMarkdown h3 {{
+        position: relative !important;
+        padding-left: 14px !important;
+    }}
+
+    .stApp .stMarkdown h2::before,
+    .stApp .stMarkdown h3::before {{
+        content: '' !important;
+        position: absolute !important;
+        left: 0 !important;
+        top: 15% !important;
+        height: 70% !important;
+        width: 3px !important;
+        background: linear-gradient(180deg, {TOKENS['cyan']}, rgba(0,212,255,0.2)) !important;
+        border-radius: 2px !important;
+        box-shadow: 0 0 6px rgba(0, 212, 255, 0.25) !important;
+    }}
+
+    /* ── PLOTLY CHART CONTAINERS ── */
+    .stApp [data-testid="stPlotlyChart"] {{
+        background: rgba(10, 14, 23, 0.5) !important;
+        border: 1px solid rgba(0, 212, 255, 0.06) !important;
+        border-radius: 14px !important;
+        padding: 8px !important;
+        transition: all 0.3s ease !important;
+    }}
+
+    .stApp [data-testid="stPlotlyChart"]:hover {{
+        border-color: rgba(0, 212, 255, 0.12) !important;
+        box-shadow: 0 0 24px rgba(0, 212, 255, 0.04) !important;
+    }}
+
+    /* ── DATAFRAME / TABLE — Premium dark styling ── */
+    .stApp [data-testid="stDataFrame"] {{
+        border: 1px solid rgba(0, 212, 255, 0.08) !important;
+        border-radius: 12px !important;
+        overflow: hidden !important;
+    }}
+
+    .stApp [data-testid="stDataFrame"] [data-testid="glideDataEditor"] {{
+        border-radius: 12px !important;
+    }}
+
+    /* ── DOWNLOAD BUTTON — Subtle premium style ── */
+    .stApp [data-testid="stDownloadButton"] > button {{
+        background: rgba(0, 212, 255, 0.06) !important;
+        border: 1px solid rgba(0, 212, 255, 0.15) !important;
+        border-radius: 10px !important;
+        color: rgba(0, 212, 255, 0.7) !important;
+        font-size: 12px !important;
+        letter-spacing: 0.5px !important;
+        transition: all 0.3s ease !important;
+    }}
+
+    .stApp [data-testid="stDownloadButton"] > button:hover {{
+        background: rgba(0, 212, 255, 0.12) !important;
+        border-color: rgba(0, 212, 255, 0.35) !important;
+        color: {TOKENS['cyan']} !important;
+    }}
+
+    /* ── RADIO BUTTONS — Premium pill style ── */
+    .stApp .stRadio > div {{
+        gap: 8px !important;
+    }}
+
+    .stApp .stRadio > div > label {{
+        background: rgba(15, 23, 42, 0.6) !important;
+        border: 1px solid rgba(0, 212, 255, 0.08) !important;
+        border-radius: 8px !important;
+        padding: 6px 14px !important;
+        transition: all 0.25s ease !important;
+    }}
+
+    .stApp .stRadio > div > label:hover {{
+        border-color: rgba(0, 212, 255, 0.2) !important;
+        background: rgba(0, 212, 255, 0.06) !important;
+    }}
+
+    /* ── CHECKBOX — Cyan accent ── */
+    .stApp .stCheckbox > label > span:first-child {{
+        border-color: rgba(0, 212, 255, 0.3) !important;
+        border-radius: 4px !important;
+    }}
+
+    /* ── SLIDER — Premium track ── */
+    .stApp .stSlider [data-baseweb="slider"] div[role="progressbar"] {{
+        background: linear-gradient(90deg, rgba(0,212,255,0.4), {TOKENS['cyan']}) !important;
     }}
 
     /* ── SELECTBOX / INPUT FIELDS ── */
@@ -1455,6 +1561,92 @@ def inject_home_hero():
     })();
     </script>
     """, height=540, scrolling=False)
+
+
+def inject_page_header(title, subtitle="", badge="", icon=""):
+    """
+    Premium page header bar — used at the top of every data page.
+    Replaces plain text headers with a styled, consistent component.
+
+    Args:
+        title: Main page title (e.g. "Risk Matrix")
+        subtitle: Secondary text (e.g. "Topic-based geopolitical risk indices")
+        badge: Optional badge text (e.g. "LIVE" or "60 Countries")
+        icon: Optional emoji/icon prefix
+    """
+    badge_html = ""
+    if badge:
+        badge_html = f"""
+        <span style="
+            display:inline-flex;align-items:center;gap:5px;
+            font-family:'JetBrains Mono',monospace;font-size:0.6rem;
+            font-weight:600;letter-spacing:1.5px;
+            background:rgba(0,212,255,0.08);
+            border:1px solid rgba(0,212,255,0.2);
+            border-radius:20px;padding:4px 14px;
+            color:#00d4ff;text-transform:uppercase;
+        ">{badge}</span>"""
+
+    icon_html = f'<span style="font-size:1.4rem;margin-right:8px;">{icon}</span>' if icon else ''
+
+    st.markdown(f"""
+    <div style="
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        padding:16px 0 12px 0;
+        margin-bottom:12px;
+        border-bottom:1px solid rgba(0,212,255,0.08);
+    ">
+        <div style="display:flex;align-items:center;gap:12px;">
+            <div>
+                <div style="display:flex;align-items:center;">
+                    {icon_html}
+                    <h2 style="
+                        font-family:'Inter',sans-serif;
+                        font-size:1.6rem;font-weight:800;
+                        color:#e8edf4;margin:0;
+                        letter-spacing:-0.5px;
+                        padding-left:0 !important;
+                    ">{title}</h2>
+                </div>
+                <div style="
+                    font-family:'Inter',sans-serif;
+                    font-size:0.75rem;color:#6b7f99;
+                    margin-top:4px;letter-spacing:0.3px;
+                ">{subtitle}</div>
+            </div>
+        </div>
+        {badge_html}
+    </div>
+    """, unsafe_allow_html=True)
+
+
+def inject_section_header(title, icon=""):
+    """
+    Premium section divider with left accent bar.
+    Used between major sections within a page.
+    """
+    icon_html = f'<span style="margin-right:6px;">{icon}</span>' if icon else ''
+    st.markdown(f"""
+    <div style="
+        display:flex;align-items:center;gap:12px;
+        margin:28px 0 16px 0;padding:10px 0;
+    ">
+        <div style="width:3px;height:22px;
+            background:linear-gradient(180deg,#00d4ff,rgba(0,212,255,0.15));
+            border-radius:2px;box-shadow:0 0 8px rgba(0,212,255,0.2);
+        "></div>
+        <span style="
+            font-family:'Inter',sans-serif;
+            font-size:0.95rem;font-weight:700;
+            color:#e2e8f0;letter-spacing:-0.2px;
+        ">{icon_html}{title}</span>
+        <div style="flex:1;height:1px;
+            background:linear-gradient(90deg,rgba(0,212,255,0.12),transparent);
+        "></div>
+    </div>
+    """, unsafe_allow_html=True)
 
 
 def inject_kpi_row(metrics):

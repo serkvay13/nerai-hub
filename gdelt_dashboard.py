@@ -1995,26 +1995,14 @@ def render_indices():
     norm_suffix   = {'Raw':'','Score (0–100)':' · Score 0–100','Z-Score':' · Z-Score'}[norm_method]
     sel_label     = TOPIC_LABELS.get(sel_topic, sel_topic.replace('_',' ').title())
 
-    # Header
-    c1h, c2h = st.columns([3,1])
-    with c1h:
-        st.markdown(f"""
-        <div style='padding:6px 0 2px;'>
-          <div class='hero-title'>NERAI Intelligence Hub</div>
-          <div class='hero-sub'><span class='live-dot'></span>
-            Geopolitical Risk Intelligence &nbsp;·&nbsp; Data: GDELT Project
-          </div>
-        </div>""", unsafe_allow_html=True)
-    with c2h:
-        nm_color = {'Raw':'#2a5080','Score (0–100)':'#00b4d8','Z-Score':'#0077a8'}[norm_method]
-        st.markdown(f"""
-        <div style='text-align:right;padding-top:12px;font-family:monospace;
-             font-size:0.68rem;color:rgba(0,180,255,0.4);'>
-          LAST UPDATE<br>
-          <span style='color:#0077a8;font-size:0.9rem;'>{date_cols[-1].strftime('%d %b %Y')}</span><br>
-          <span style='color:{nm_color};font-size:0.7rem;'>▣ {norm_method}</span>
-        </div>""", unsafe_allow_html=True)
-    st.markdown('<div class="h-div"></div>', unsafe_allow_html=True)
+    # Header — Premium
+    nerai_premium_css.inject_page_header(
+        title="Risk Matrix",
+        subtitle="Topic-based geopolitical risk indices across 60 countries",
+        badge="LIVE",
+        icon="\U0001f4ca"
+    )
+
 
     # KPI Cards
     kpi_countries = (sel_countries + all_countries)[:4]
@@ -2080,8 +2068,8 @@ def render_indices():
 
     # ── Heatmap ──────────────────────────────────────────────
     try:
-        st.markdown("---")
-        st.subheader("\U0001f5fa\ufe0f  Risk Heatmap \u2014 Top Countries")
+    # (divider handled by inject_section_header)
+    nerai_premium_css.inject_section_header("Risk Heatmap \u2014 Top Countries", icon="\U0001f5fa\ufe0f")
         _fig_hm = chart_heatmap(df_norm, heatmap_n, norm_method)
         if _fig_hm is not None:
             st.plotly_chart(_fig_hm, use_container_width=True)
@@ -2090,7 +2078,7 @@ def render_indices():
 
     # ── Global Risk Map ────────────────────────────────────────
     try:
-        st.subheader("\U0001f30d  Global Risk Map")
+    nerai_premium_css.inject_section_header("Global Risk Map", icon="\U0001f30d")
         _fig_wm = chart_world(df_norm, map_date)
         if _fig_wm is not None:
             st.plotly_chart(_fig_wm, use_container_width=True)
@@ -4230,7 +4218,7 @@ def render_causality():
     st.markdown("<div style='background:rgba(10,20,50,0.4);border:1px solid rgba(0,180,255,0.15);border-radius:8px;padding:14px 18px;margin:15px 0;font-size:0.75rem;color:#8ab4d8;line-height:1.7;'><b style=\'color:#00d4ff;\'>How to Interpret?</b><br>F-Statistic: The higher the value, the stronger the causal relationship. F &gt; 10 = strong, F &gt; 50 = very strong relationship.<br>Lag (Delay): The time delay between events (months). Lag=1 means a change in one event affects another 1 month later.<br>p-value: Values below 0.05 indicate statistically significant relationships.</div>", unsafe_allow_html=True)
 
     # -- News Evidence Section --
-    st.markdown("---")
+    # (divider handled by inject_section_header)
     st.subheader("Recent News Evidence")
     st.caption("Real-world news articles that may explain or confirm the detected causal relationships.")
 
