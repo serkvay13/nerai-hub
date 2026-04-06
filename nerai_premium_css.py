@@ -2084,25 +2084,21 @@ def inject_globe_close():
 
 
 def inject_filter_bar_css():
-    """Premium filter bar styling – Bloomberg-grade controls."""
-    st.markdown("""
-    <style>
-    /* ══════════════════════════════════════════
-       NERAI PREMIUM FILTER BAR
-       ══════════════════════════════════════════ */
+    """Premium filter bar – Bloomberg-grade controls with proper contrast."""
+    st.markdown("""<style>
+    /* ══ NERAI PREMIUM FILTER BAR ══ */
 
     /* ── Filter Row Container ── */
     div[data-testid="stHorizontalBlock"] {
-        background: linear-gradient(135deg, rgba(10,18,32,0.65) 0%, rgba(15,25,45,0.45) 100%);
-        border: 1px solid rgba(0,212,255,0.07);
-        border-radius: 10px;
-        padding: 10px 14px 6px 14px;
-        margin-bottom: 6px;
-        backdrop-filter: blur(16px);
-        -webkit-backdrop-filter: blur(16px);
+        background: linear-gradient(135deg, rgba(10,18,32,0.65) 0%, rgba(15,25,45,0.45) 100%) !important;
+        border: 1px solid rgba(0,212,255,0.07) !important;
+        border-radius: 10px !important;
+        padding: 10px 14px 6px 14px !important;
+        margin-bottom: 6px !important;
+        backdrop-filter: blur(16px) !important;
     }
 
-    /* ── ALL Filter Labels ── */
+    /* ── Filter Labels ── */
     div[data-testid="stSelectbox"] label p,
     div[data-testid="stMultiSelect"] label p,
     div[data-testid="stSlider"] label p {
@@ -2114,7 +2110,7 @@ def inject_filter_bar_css():
         letter-spacing: 1.2px !important;
     }
 
-    /* ── Selectbox Dropdown ── */
+    /* ── Selectbox ── */
     div[data-testid="stSelectbox"] > div > div {
         background: rgba(10,18,32,0.9) !important;
         border: 1px solid rgba(0,212,255,0.10) !important;
@@ -2131,9 +2127,8 @@ def inject_filter_bar_css():
     }
     div[data-testid="stSelectbox"] > div > div:focus-within {
         border-color: rgba(0,212,255,0.5) !important;
-        box-shadow: 0 0 0 1px rgba(0,212,255,0.15), 0 0 20px rgba(0,212,255,0.06) !important;
+        box-shadow: 0 0 0 1px rgba(0,212,255,0.15) !important;
     }
-    /* Dropdown arrow */
     div[data-testid="stSelectbox"] svg {
         fill: rgba(0,212,255,0.5) !important;
     }
@@ -2152,11 +2147,6 @@ def inject_filter_bar_css():
     div[data-testid="stMultiSelect"] > div > div:hover {
         border-color: rgba(0,212,255,0.25) !important;
     }
-    div[data-testid="stMultiSelect"] > div > div:focus-within {
-        border-color: rgba(0,212,255,0.5) !important;
-        box-shadow: 0 0 0 1px rgba(0,212,255,0.15), 0 0 20px rgba(0,212,255,0.06) !important;
-    }
-    /* Multiselect chips/tags */
     div[data-testid="stMultiSelect"] span[data-baseweb="tag"] {
         background: rgba(0,212,255,0.08) !important;
         border: 1px solid rgba(0,212,255,0.18) !important;
@@ -2164,57 +2154,98 @@ def inject_filter_bar_css():
         color: #cbd5e1 !important;
         font-size: 0.75rem !important;
         font-weight: 500 !important;
-        font-family: 'Inter', sans-serif !important;
     }
     div[data-testid="stMultiSelect"] span[data-baseweb="tag"] span {
         color: #cbd5e1 !important;
     }
 
-    /* ══ SLIDER OVERHAUL ══ */
-    /* Track background (inactive) */
-    div[data-testid="stSlider"] > div > div > div {
-        background: rgba(30,41,59,0.8) !important;
+    /* ══════════════════════════════════
+       SLIDER – COMPLETE OVERRIDE
+       ══════════════════════════════════ */
+
+    /* Slider outer wrapper – remove cyan bg */
+    .stSlider > div,
+    .stSlider > div > div,
+    div[data-testid="stSlider"] > div,
+    div[data-testid="stSlider"] > div > div {
+        background-color: transparent !important;
+        background: transparent !important;
+    }
+
+    /* Track container – the full bar */
+    .stSlider [data-baseweb="slider"],
+    .stSlider [data-baseweb="slider"] > div {
+        background-color: transparent !important;
+        background: transparent !important;
+    }
+
+    /* Track bar (the line itself) */
+    .stSlider [data-baseweb="slider"] > div > div {
+        background: rgba(30,41,59,0.9) !important;
+        background-color: rgba(30,41,59,0.9) !important;
         height: 4px !important;
         border-radius: 2px !important;
     }
-    /* Track fill (active portion) – subtle dark cyan instead of bright */
-    div[data-testid="stSlider"] > div > div > div > div {
-        background: linear-gradient(90deg, rgba(0,180,220,0.35), rgba(0,212,255,0.25)) !important;
-        height: 4px !important;
-        border-radius: 2px !important;
+
+    /* Track filled portion */
+    .stSlider [data-baseweb="slider"] > div > div > div:first-child {
+        background: linear-gradient(90deg, rgba(26,122,138,0.6), rgba(26,122,138,0.4)) !important;
+        background-color: rgba(26,122,138,0.5) !important;
     }
-    /* Slider thumb */
-    div[data-testid="stSlider"] [role="slider"] {
+
+    /* Thumb (the draggable circle) */
+    .stSlider [role="slider"],
+    .stSlider [data-baseweb="slider"] [role="slider"] {
         background: #0f172a !important;
-        border: 2px solid rgba(0,212,255,0.6) !important;
+        background-color: #0f172a !important;
+        border: 2px solid rgba(0,212,255,0.5) !important;
         width: 14px !important;
         height: 14px !important;
-        top: -5px !important;
-        box-shadow: 0 0 8px rgba(0,212,255,0.2) !important;
-        transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
+        box-shadow: 0 0 8px rgba(0,212,255,0.15) !important;
     }
-    div[data-testid="stSlider"] [role="slider"]:hover {
+    .stSlider [role="slider"]:hover {
         border-color: #00d4ff !important;
-        box-shadow: 0 0 14px rgba(0,212,255,0.35) !important;
+        box-shadow: 0 0 14px rgba(0,212,255,0.3) !important;
     }
-    /* Slider current value (the number above thumb) */
-    div[data-testid="stSlider"] [data-testid="stThumbValue"] {
+
+    /* Thumb value (number tooltip above thumb) */
+    .stSlider [data-testid="stSliderThumbValue"],
+    div[data-testid="stSliderThumbValue"] {
         color: #e2e8f0 !important;
         font-family: 'Inter', sans-serif !important;
         font-weight: 600 !important;
         font-size: 0.75rem !important;
         background: rgba(10,18,32,0.95) !important;
-        border: 1px solid rgba(0,212,255,0.2) !important;
+        background-color: rgba(10,18,32,0.95) !important;
+        border: 1px solid rgba(0,212,255,0.15) !important;
         border-radius: 4px !important;
         padding: 1px 6px !important;
     }
-    /* Slider min/max labels */
-    div[data-testid="stSlider"] [data-testid="stTickBarMin"],
-    div[data-testid="stSlider"] [data-testid="stTickBarMax"] {
+
+    /* Tick bar – min/max labels */
+    .stSlider [data-testid="stSliderTickBar"] span,
+    .stSlider [data-testid="stSliderTickBar"] p,
+    div[data-testid="stSliderTickBar"] span,
+    div[data-testid="stSliderTickBar"] p {
         color: rgba(100,116,139,0.7) !important;
         font-family: 'Inter', sans-serif !important;
         font-size: 0.65rem !important;
-        font-weight: 500 !important;
+    }
+
+    /* The progress bar overlay within slider */
+    .stSlider div[role="progressbar"],
+    .stApp .stSlider [data-baseweb="slider"] div[role="progressbar"] {
+        background-color: transparent !important;
+        background: transparent !important;
+    }
+
+    /* Nuclear override: any div inside slider with the old cyan */
+    .stSlider [data-baseweb="slider"] div {
+        background-color: transparent !important;
+    }
+    /* Re-apply only track bg */
+    .stSlider [data-baseweb="slider"] > div:first-child > div:first-child {
+        background-color: rgba(30,41,59,0.9) !important;
     }
 
     /* ── Filter Divider ── */
@@ -2233,15 +2264,12 @@ def inject_filter_bar_css():
         font-family: 'Inter', sans-serif !important;
         font-size: 0.76rem !important;
         font-weight: 600 !important;
-        letter-spacing: 0.3px !important;
-        padding: 6px 16px !important;
         transition: all 0.2s ease !important;
     }
     div[data-testid="stDownloadButton"] button:hover {
         background: rgba(0,212,255,0.06) !important;
         border-color: rgba(0,212,255,0.4) !important;
         color: #00d4ff !important;
-        box-shadow: 0 0 16px rgba(0,212,255,0.08) !important;
     }
 
     /* ── Metric Cards ── */
@@ -2250,9 +2278,6 @@ def inject_filter_bar_css():
         border: 1px solid rgba(0,212,255,0.06) !important;
         border-radius: 10px !important;
         padding: 14px 16px !important;
-    }
-    div[data-testid="stMetric"]:hover {
-        border-color: rgba(0,212,255,0.15) !important;
     }
     div[data-testid="stMetric"] label {
         font-family: 'Inter', sans-serif !important;
