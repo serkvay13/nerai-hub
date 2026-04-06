@@ -1944,12 +1944,12 @@ def render_indices():
 
     # ── Premium Page Header
     nerai_premium_css.inject_page_header(
-    nerai_premium_css.inject_filter_bar_css()
         title="Risk Matrix",
         subtitle="Topic-based geopolitical risk indices across 60 countries",
         badge="LIVE",
         icon=""
     )
+    nerai_premium_css.inject_filter_bar_css()
 
     # ══ INLINE FILTER BAR ══
     st.markdown("""
