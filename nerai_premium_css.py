@@ -1616,27 +1616,27 @@ def inject_home_hero():
     """, height=540, scrolling=False)
 
 
-    def inject_page_header(title, subtitle="", badge="", icon=""):
-        """Premium page header bar."""
-        badge_html = f'<span class="nerai-badge">{badge}</span>' if badge else ''
-        icon_html = f'<span style="font-size:1.4rem;margin-right:8px;">{icon}</span>' if icon else ''
-        _h = '<div class="nerai-page-header">'
-        _h += '<div style="display:flex;align-items:center;gap:12px;"><div>'
-        _h += '<div style="display:flex;align-items:center;">' + icon_html + f'<h2>{title}</h2></div>'
-        _h += f'<div class="subtitle">{subtitle}</div>'
-        _h += '</div></div>' + badge_html + '</div>'
-        st.markdown(_h, unsafe_allow_html=True)
+def inject_page_header(title, subtitle="", badge="", icon=""):
+    """Premium page header bar."""
+    badge_html = f'<span class="nerai-badge">{badge}</span>' if badge else ''
+    icon_html = f'<span style="font-size:1.4rem;margin-right:8px;">{icon}</span>' if icon else ''
+    _h = '<div class="nerai-page-header">'
+    _h += '<div style="display:flex;align-items:center;gap:12px;"><div>'
+    _h += '<div style="display:flex;align-items:center;">' + icon_html + f'<h2>{title}</h2></div>'
+    _h += f'<div class="subtitle">{subtitle}</div>'
+    _h += '</div></div>' + badge_html + '</div>'
+    st.markdown(_h, unsafe_allow_html=True)
 
-    def inject_section_header(title, icon=""):
-        """Premium section divider with left accent bar."""
-        icon_html = f'<span style="font-size:1rem;margin-right:8px;">{icon}</span>' if icon else ''
-        _h = '<div style="display:flex;align-items:center;gap:10px;margin:24px 0 12px 0;padding:10px 0;border-bottom:1px solid rgba(0,212,255,0.08);">'
-        _h += '<div style="width:3px;height:18px;background:linear-gradient(180deg,#00d4ff,rgba(0,212,255,0.3));border-radius:2px;"></div>'
-        _h += icon_html
-        _h += f'<span style="font-family:Inter,sans-serif;font-size:0.85rem;font-weight:700;color:#c8d6e5;letter-spacing:0.5px;text-transform:uppercase;">{title}</span>'
-        _h += '<div style="flex:1;height:1px;background:linear-gradient(90deg,rgba(0,212,255,0.12),transparent);margin-left:8px;"></div>'
-        _h += '</div>'
-        st.markdown(_h, unsafe_allow_html=True)
+def inject_section_header(title, icon=""):
+    """Premium section divider with left accent bar."""
+    icon_html = f'<span style="font-size:1rem;margin-right:8px;">{icon}</span>' if icon else ''
+    _h = '<div style="display:flex;align-items:center;gap:10px;margin:24px 0 12px 0;padding:10px 0;border-bottom:1px solid rgba(0,212,255,0.08);">'
+    _h += '<div style="width:3px;height:18px;background:linear-gradient(180deg,#00d4ff,rgba(0,212,255,0.3));border-radius:2px;"></div>'
+    _h += icon_html
+    _h += f'<span style="font-family:Inter,sans-serif;font-size:0.85rem;font-weight:700;color:#c8d6e5;letter-spacing:0.5px;text-transform:uppercase;">{title}</span>'
+    _h += '<div style="flex:1;height:1px;background:linear-gradient(90deg,rgba(0,212,255,0.12),transparent);margin-left:8px;"></div>'
+    _h += '</div>'
+    st.markdown(_h, unsafe_allow_html=True)
 
 def inject_kpi_row(metrics):
     """
