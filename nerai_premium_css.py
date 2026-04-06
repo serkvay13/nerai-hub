@@ -170,7 +170,7 @@ def inject_global_css():
         padding-top: 1rem !important;
     }}
 
-    /* Sidebar nav buttons */
+    /* Sidebar nav buttons — premium micro-interactions */
     [data-testid="stSidebar"] .stButton > button {{
         background: transparent !important;
         color: {TOKENS['text_secondary']} !important;
@@ -181,17 +181,47 @@ def inject_global_css():
         letter-spacing: 0.5px !important;
         text-align: left !important;
         padding: 0.6rem 1rem !important;
-        transition: all 0.2s ease !important;
+        transition: all 0.3s cubic-bezier(0.22, 0.61, 0.36, 1),
+                    background 0.25s ease,
+                    border-color 0.25s ease !important;
         width: 100% !important;
+        position: relative !important;
+        overflow: hidden !important;
+    }}
+
+    /* Left accent bar — slides in on hover */
+    [data-testid="stSidebar"] .stButton > button::before {{
+        content: '' !important;
+        position: absolute !important;
+        top: 20% !important;
+        left: 0 !important;
+        width: 2px !important;
+        height: 0% !important;
+        background: {TOKENS['cyan']} !important;
+        border-radius: 0 2px 2px 0 !important;
+        box-shadow: 0 0 6px rgba(0, 212, 255, 0.4) !important;
+        transition: height 0.3s cubic-bezier(0.22, 0.61, 0.36, 1),
+                    top 0.3s cubic-bezier(0.22, 0.61, 0.36, 1) !important;
     }}
 
     [data-testid="stSidebar"] .stButton > button:hover {{
         background: {TOKENS['cyan_glow']} !important;
         color: {TOKENS['text_primary']} !important;
-        border-color: {TOKENS['border_strong']} !important;
+        border-color: rgba(0, 212, 255, 0.08) !important;
+        padding-left: 1.3rem !important;
     }}
 
-    /* Active page button override — add class .nav-active via st.markdown */
+    [data-testid="stSidebar"] .stButton > button:hover::before {{
+        height: 60% !important;
+        top: 20% !important;
+    }}
+
+    [data-testid="stSidebar"] .stButton > button:active {{
+        transform: scale(0.98) !important;
+        transition: all 0.08s ease !important;
+    }}
+
+    /* Active page button — persistent glow */
     [data-testid="stSidebar"] .stButton > button[kind="primary"],
     [data-testid="stSidebar"] .stButton > button[data-testid="baseButton-primary"] {{
         background: linear-gradient(135deg, rgba(0,60,90,0.5) 0%, rgba(0,40,60,0.3) 100%) !important;
@@ -199,6 +229,14 @@ def inject_global_css():
         border: 1px solid {TOKENS['cyan_border']} !important;
         font-weight: 600 !important;
         box-shadow: {TOKENS['shadow_glow']} !important;
+        padding-left: 1.3rem !important;
+    }}
+
+    /* Active nav — left bar always visible */
+    [data-testid="stSidebar"] .stButton > button[kind="primary"]::before,
+    [data-testid="stSidebar"] .stButton > button[data-testid="baseButton-primary"]::before {{
+        height: 60% !important;
+        top: 20% !important;
     }}
 
     /* Sidebar slider fix */
@@ -619,7 +657,31 @@ def inject_global_css():
        PREMIUM HOME PAGE — WORLD CLASS UPGRADE
        ══════════════════════════════════════════════════════ */
 
-    /* ── MODULE TILE CARDS — Glassmorphism ── */
+    /* ── PAGE ENTRANCE ANIMATION ── */
+    @keyframes nerai-fadeSlideUp {{
+        0% {{ opacity: 0; transform: translateY(16px); }}
+        100% {{ opacity: 1; transform: translateY(0); }}
+    }}
+
+    .stApp .main .block-container {{
+        animation: nerai-fadeSlideUp 0.5s cubic-bezier(0.22, 0.61, 0.36, 1) both !important;
+    }}
+
+    /* Staggered entry for columns */
+    .stApp [data-testid="column"]:nth-child(1) > div > div {{
+        animation: nerai-fadeSlideUp 0.45s cubic-bezier(0.22, 0.61, 0.36, 1) 0.05s both !important;
+    }}
+    .stApp [data-testid="column"]:nth-child(2) > div > div {{
+        animation: nerai-fadeSlideUp 0.45s cubic-bezier(0.22, 0.61, 0.36, 1) 0.12s both !important;
+    }}
+    .stApp [data-testid="column"]:nth-child(3) > div > div {{
+        animation: nerai-fadeSlideUp 0.45s cubic-bezier(0.22, 0.61, 0.36, 1) 0.19s both !important;
+    }}
+    .stApp [data-testid="column"]:nth-child(4) > div > div {{
+        animation: nerai-fadeSlideUp 0.45s cubic-bezier(0.22, 0.61, 0.36, 1) 0.26s both !important;
+    }}
+
+    /* ── MODULE TILE CARDS — Glassmorphism + Premium hover ── */
     .stApp [data-testid="column"] > div > div {{
         background: linear-gradient(135deg,
             rgba(15, 23, 42, 0.85) 0%,
@@ -629,40 +691,52 @@ def inject_global_css():
         padding: 28px 24px !important;
         backdrop-filter: blur(20px) !important;
         -webkit-backdrop-filter: blur(20px) !important;
-        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        transition: all 0.4s cubic-bezier(0.22, 0.61, 0.36, 1),
+                    border-color 0.3s ease,
+                    box-shadow 0.3s ease !important;
         position: relative !important;
         overflow: hidden !important;
     }}
 
+    /* Top glow line */
     .stApp [data-testid="column"] > div > div::before {{
         content: '' !important;
         position: absolute !important;
         top: 0 !important;
-        left: 0 !important;
-        right: 0 !important;
+        left: 50% !important;
+        width: 0% !important;
         height: 1px !important;
         background: linear-gradient(90deg,
             transparent 0%,
-            rgba(0, 212, 255, 0.3) 50%,
+            rgba(0, 212, 255, 0.5) 50%,
             transparent 100%) !important;
+        box-shadow: 0 0 10px rgba(0, 212, 255, 0.2) !important;
+        transition: width 0.4s cubic-bezier(0.22, 0.61, 0.36, 1),
+                    left 0.4s cubic-bezier(0.22, 0.61, 0.36, 1) !important;
     }}
 
     .stApp [data-testid="column"] > div > div:hover {{
-        border-color: rgba(0, 212, 255, 0.25) !important;
+        border-color: rgba(0, 212, 255, 0.2) !important;
         box-shadow:
             0 0 30px rgba(0, 212, 255, 0.06),
-            0 8px 32px rgba(0, 0, 0, 0.4),
-            inset 0 1px 0 rgba(0, 212, 255, 0.1) !important;
-        transform: translateY(-4px) !important;
+            0 12px 40px rgba(0, 0, 0, 0.45),
+            inset 0 1px 0 rgba(0, 212, 255, 0.08) !important;
+        transform: translateY(-5px) !important;
     }}
 
-    /* ── PREMIUM BUTTONS ── */
+    /* Top glow line expands on hover */
+    .stApp [data-testid="column"] > div > div:hover::before {{
+        width: 80% !important;
+        left: 10% !important;
+    }}
+
+    /* ── PREMIUM BUTTONS — Micro-animations ── */
     .stApp .stButton > button {{
         background: linear-gradient(135deg,
-            rgba(0, 212, 255, 0.12) 0%,
-            rgba(0, 212, 255, 0.04) 100%) !important;
-        border: 1px solid rgba(0, 212, 255, 0.3) !important;
-        border-radius: 10px !important;
+            rgba(0, 212, 255, 0.10) 0%,
+            rgba(0, 212, 255, 0.03) 100%) !important;
+        border: 1px solid rgba(0, 212, 255, 0.25) !important;
+        border-radius: 12px !important;
         color: {TOKENS['cyan']} !important;
         font-family: 'Inter', sans-serif !important;
         font-weight: 600 !important;
@@ -670,13 +744,17 @@ def inject_global_css():
         letter-spacing: 0.8px !important;
         text-transform: uppercase !important;
         padding: 12px 28px !important;
-        transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        transition: all 0.4s cubic-bezier(0.22, 0.61, 0.36, 1),
+                    box-shadow 0.3s ease,
+                    border-color 0.3s ease !important;
         cursor: pointer !important;
         position: relative !important;
         overflow: hidden !important;
         width: 100% !important;
+        -webkit-tap-highlight-color: transparent !important;
     }}
 
+    /* Shimmer sweep on hover */
     .stApp .stButton > button::before {{
         content: '' !important;
         position: absolute !important;
@@ -685,19 +763,38 @@ def inject_global_css():
         width: 100% !important;
         height: 100% !important;
         background: linear-gradient(90deg,
-            transparent,
-            rgba(0, 212, 255, 0.15),
-            transparent) !important;
-        transition: left 0.5s ease !important;
+            transparent 0%,
+            rgba(0, 212, 255, 0.08) 25%,
+            rgba(0, 212, 255, 0.18) 50%,
+            rgba(0, 212, 255, 0.08) 75%,
+            transparent 100%) !important;
+        transition: left 0.6s cubic-bezier(0.22, 0.61, 0.36, 1) !important;
+        z-index: 0 !important;
+    }}
+
+    /* Bottom glow line */
+    .stApp .stButton > button::after {{
+        content: '' !important;
+        position: absolute !important;
+        bottom: 0 !important;
+        left: 50% !important;
+        width: 0% !important;
+        height: 1px !important;
+        background: {TOKENS['cyan']} !important;
+        box-shadow: 0 0 8px {TOKENS['cyan']}, 0 0 20px rgba(0,212,255,0.3) !important;
+        transition: width 0.35s cubic-bezier(0.22, 0.61, 0.36, 1),
+                    left 0.35s cubic-bezier(0.22, 0.61, 0.36, 1) !important;
+        z-index: 1 !important;
     }}
 
     .stApp .stButton > button:hover {{
         background: linear-gradient(135deg,
-            rgba(0, 212, 255, 0.22) 0%,
-            rgba(0, 212, 255, 0.10) 100%) !important;
-        border-color: {TOKENS['cyan']} !important;
-        box-shadow: 0 0 20px rgba(0, 212, 255, 0.15),
-                    0 4px 16px rgba(0, 0, 0, 0.3) !important;
+            rgba(0, 212, 255, 0.18) 0%,
+            rgba(0, 212, 255, 0.08) 100%) !important;
+        border-color: rgba(0, 212, 255, 0.6) !important;
+        box-shadow: 0 0 24px rgba(0, 212, 255, 0.12),
+                    0 4px 20px rgba(0, 0, 0, 0.35),
+                    inset 0 1px 0 rgba(0, 212, 255, 0.08) !important;
         transform: translateY(-2px) !important;
     }}
 
@@ -705,9 +802,37 @@ def inject_global_css():
         left: 100% !important;
     }}
 
+    .stApp .stButton > button:hover::after {{
+        width: 60% !important;
+        left: 20% !important;
+    }}
+
+    /* Click: scale down + flash — tactile feedback */
     .stApp .stButton > button:active {{
-        transform: translateY(0) !important;
-        box-shadow: 0 0 10px rgba(0, 212, 255, 0.1) !important;
+        transform: translateY(0) scale(0.97) !important;
+        box-shadow: 0 0 30px rgba(0, 212, 255, 0.25),
+                    inset 0 0 20px rgba(0, 212, 255, 0.06) !important;
+        border-color: {TOKENS['cyan']} !important;
+        transition: all 0.08s ease !important;
+    }}
+
+    .stApp .stButton > button:active::after {{
+        width: 100% !important;
+        left: 0% !important;
+        transition: all 0.08s ease !important;
+    }}
+
+    /* ── RIPPLE ANIMATION (via keyframes) ── */
+    @keyframes nerai-btn-pulse {{
+        0% {{ box-shadow: 0 0 0 0 rgba(0, 212, 255, 0.35); }}
+        70% {{ box-shadow: 0 0 0 12px rgba(0, 212, 255, 0); }}
+        100% {{ box-shadow: 0 0 0 0 rgba(0, 212, 255, 0); }}
+    }}
+
+    .stApp .stButton > button:focus-visible {{
+        animation: nerai-btn-pulse 0.6s ease-out !important;
+        outline: 1px solid rgba(0, 212, 255, 0.4) !important;
+        outline-offset: 2px !important;
     }}
 
     /* ── STREAMLIT METRICS — Premium Style ── */
@@ -877,16 +1002,53 @@ def inject_global_css():
         font-weight: 500 !important;
     }}
 
-    /* ── TOAST / ALERTS ── */
+    /* ── TOAST / ALERTS — Slide-in animation ── */
+    @keyframes nerai-alertSlide {{
+        0% {{ opacity: 0; transform: translateX(-12px); }}
+        100% {{ opacity: 1; transform: translateX(0); }}
+    }}
+
     .stApp [data-testid="stAlert"] {{
         border-radius: 12px !important;
         border-left: 3px solid {TOKENS['cyan']} !important;
         background: rgba(0, 212, 255, 0.04) !important;
+        animation: nerai-alertSlide 0.35s cubic-bezier(0.22, 0.61, 0.36, 1) both !important;
     }}
 
-    /* ── LOADING SPINNER ── */
+    /* ── LOADING SPINNER — Branded pulse ── */
+    @keyframes nerai-spinGlow {{
+        0%, 100% {{ filter: drop-shadow(0 0 4px rgba(0,212,255,0.3)); }}
+        50% {{ filter: drop-shadow(0 0 12px rgba(0,212,255,0.6)); }}
+    }}
+
     .stApp .stSpinner > div {{
         border-top-color: {TOKENS['cyan']} !important;
+        animation: nerai-spinGlow 1.5s ease infinite !important;
+    }}
+
+    /* ── SELECTBOX / DROPDOWN — Smooth open ── */
+    @keyframes nerai-dropOpen {{
+        0% {{ opacity: 0; transform: translateY(-6px) scaleY(0.96); }}
+        100% {{ opacity: 1; transform: translateY(0) scaleY(1); }}
+    }}
+
+    [data-baseweb="popover"] {{
+        animation: nerai-dropOpen 0.2s cubic-bezier(0.22, 0.61, 0.36, 1) both !important;
+    }}
+
+    /* ── TABS — Smooth indicator ── */
+    .stApp .stTabs [data-baseweb="tab-highlight"] {{
+        transition: all 0.35s cubic-bezier(0.22, 0.61, 0.36, 1) !important;
+        background-color: {TOKENS['cyan']} !important;
+        box-shadow: 0 0 8px rgba(0, 212, 255, 0.3) !important;
+    }}
+
+    .stApp .stTabs [data-baseweb="tab"] {{
+        transition: color 0.25s ease !important;
+    }}
+
+    .stApp .stTabs [data-baseweb="tab"]:hover {{
+        color: {TOKENS['cyan']} !important;
     }}
 
     </style>
@@ -935,21 +1097,22 @@ def inject_home_hero():
         .nh-hud-val { font-size:15px; font-weight:700; color:rgba(0,212,255,0.85);
                       text-shadow:0 0 12px rgba(0,212,255,0.2); }
 
-        /* Branding overlay — top-center, compact */
-        .nh-brand { position:absolute; top:20px; left:50%; transform:translateX(-50%);
-                    display:flex; align-items:center; gap:12px;
+        /* Branding overlay — top-center, prominent badge */
+        .nh-brand { position:absolute; top:18px; left:50%; transform:translateX(-50%);
+                    display:flex; align-items:center; gap:14px;
                     z-index:10; pointer-events:none;
-                    background:rgba(10,14,23,0.5); backdrop-filter:blur(8px);
-                    padding:8px 20px; border-radius:40px;
-                    border:1px solid rgba(0,212,255,0.08); }
-        .nh-brand svg { flex-shrink:0; filter:drop-shadow(0 0 8px rgba(0,212,255,0.2)); }
-        .nh-brand .nh-brand-text h1 { font-family:'Inter',sans-serif; font-size:1.2rem; font-weight:800;
-                       letter-spacing:-0.3px; color:#e8edf4; margin:0;
-                       text-shadow:0 0 20px rgba(0,212,255,0.08); }
+                    background:rgba(10,14,23,0.55); backdrop-filter:blur(10px);
+                    padding:10px 26px; border-radius:40px;
+                    border:1px solid rgba(0,212,255,0.12);
+                    box-shadow:0 4px 20px rgba(0,0,0,0.3); }
+        .nh-brand svg { flex-shrink:0; filter:drop-shadow(0 0 10px rgba(0,212,255,0.3)); }
+        .nh-brand .nh-brand-text h1 { font-family:'Inter',sans-serif; font-size:1.6rem; font-weight:800;
+                       letter-spacing:-0.5px; color:#e8edf4; margin:0;
+                       text-shadow:0 0 24px rgba(0,212,255,0.1); }
         .nh-brand .nh-brand-text h1 span { color:#00d4ff; }
-        .nh-brand .nh-sub { font-size:0.45rem; font-weight:600; letter-spacing:2.5px;
-                            text-transform:uppercase; color:rgba(0,212,255,0.4);
-                            margin-top:1px; }
+        .nh-brand .nh-sub { font-size:0.52rem; font-weight:600; letter-spacing:3px;
+                            text-transform:uppercase; color:rgba(0,212,255,0.45);
+                            margin-top:2px; }
         .nh-brand .nh-desc { display:none; }
 
         /* Ticker */
@@ -997,7 +1160,7 @@ def inject_home_hero():
 
         <!-- Brand overlay — compact bottom-left -->
         <div class="nh-brand">
-            <svg width="28" height="28" viewBox="0 0 48 48">
+            <svg width="36" height="36" viewBox="0 0 48 48">
                 <circle cx="6" cy="6" r="3.2" fill="#0a0e17"/><circle cx="16" cy="6" r="3.2" fill="#00d4ff"/>
                 <circle cx="26" cy="6" r="3.2" fill="#0a0e17"/><circle cx="36" cy="6" r="3.2" fill="#00d4ff"/>
                 <circle cx="6" cy="16" r="3.2" fill="#00d4ff"/><circle cx="16" cy="16" r="3.2" fill="#0a0e17"/>
@@ -1048,26 +1211,27 @@ def inject_home_hero():
             {n:'Ankara',rx:0.55,ry:0.35,risk:0},{n:'Nairobi',rx:0.54,ry:0.60,risk:0}
         ];
 
-        // ── Floating particles ──
+        // ── Floating particles (increased density) ──
         var pts = [];
         function initPts(){
             pts=[];
-            for(var i=0;i<70;i++){
+            for(var i=0;i<100;i++){
                 pts.push({x:Math.random()*W, y:Math.random()*H,
-                          vx:(Math.random()-0.5)*0.25, vy:(Math.random()-0.5)*0.25,
-                          r:Math.random()*1.2+0.4, a:Math.random()*0.4+0.15});
+                          vx:(Math.random()-0.5)*0.18, vy:(Math.random()-0.5)*0.18,
+                          r:Math.random()*1.0+0.3, a:Math.random()*0.35+0.1});
             }
         }
 
-        // ── Data packets (travel between cities) ──
+        // ── Data packets (travel between cities — smoother, more visible) ──
         var packets = [];
         function spawnPacket(){
-            if(packets.length >= 12) return;
+            if(packets.length >= 16) return;
             var a = Math.floor(Math.random()*cities.length);
             var b = Math.floor(Math.random()*cities.length);
             if(a===b) b = (b+1)%cities.length;
-            packets.push({from:a, to:b, prog:0, speed:0.004+Math.random()*0.006,
-                          color: Math.random()>0.7 ? 'rgba(255,179,71,0.9)' : 'rgba(0,212,255,0.9)'});
+            packets.push({from:a, to:b, prog:0, speed:0.003+Math.random()*0.005,
+                          color: Math.random()>0.65 ? 'rgba(255,179,71,0.85)' : 'rgba(0,212,255,0.85)',
+                          size: Math.random()*1.5+1.5});
         }
 
         // ── Resize ──
@@ -1134,22 +1298,23 @@ def inject_home_hero():
                 }
             }
 
-            // ── 2. AI Core: concentric rotating arcs ──
-            for(var ring=1; ring<=3; ring++){
-                var radius = 35 + ring*22;
-                var rot = t * (ring%2===0 ? 0.5 : -0.4) * (0.8+ring*0.1);
-                ctx.strokeStyle = 'rgba(0,212,255,'+(0.25-ring*0.06)+')';
-                ctx.lineWidth = 1.5;
-                ctx.setLineDash([10,14]);
+            // ── 2. AI Core: concentric rotating arcs (enhanced) ──
+            for(var ring=1; ring<=4; ring++){
+                var radius = 30 + ring*20;
+                var rot = t * (ring%2===0 ? 0.45 : -0.35) * (0.7+ring*0.12);
+                var arcAlpha = 0.28 - ring*0.05;
+                ctx.strokeStyle = 'rgba(0,212,255,'+arcAlpha+')';
+                ctx.lineWidth = ring===1 ? 2 : 1.2;
+                ctx.setLineDash([8+ring*3, 12+ring*2]);
                 ctx.beginPath();
-                ctx.arc(cx, cy, radius, rot, rot + 3.6);
+                ctx.arc(cx, cy, radius, rot, rot + 3.2 + ring*0.3);
                 ctx.stroke();
                 ctx.setLineDash([]);
             }
-            // Core glow
-            var coreR = 18 + Math.sin(t*1.2)*4;
-            var grad = ctx.createRadialGradient(cx,cy,0, cx,cy, coreR+30);
-            grad.addColorStop(0, 'rgba(0,212,255,0.12)');
+            // Core glow (stronger)
+            var coreR = 20 + Math.sin(t*1.0)*5;
+            var grad = ctx.createRadialGradient(cx,cy,0, cx,cy, coreR+40);
+            grad.addColorStop(0, 'rgba(0,212,255,0.18)');
             grad.addColorStop(1, 'rgba(0,212,255,0)');
             ctx.fillStyle = grad;
             ctx.beginPath(); ctx.arc(cx,cy,coreR+30,0,6.28); ctx.fill();
