@@ -899,8 +899,9 @@ def inject_home_hero():
     Central AI core + city network + data packets + HUD indicators.
     World + AI + NERAI combined in one premium hero section.
     """
-    st.markdown("""
+    _stc.html("""
     <style>
+        html, body { margin:0; padding:0; background:#0a0e17; overflow:hidden; font-family: "Inter", sans-serif; }
         /* ── NERAI HERO — Scoped styles ── */
         #nerai-hero-wrap {
             position: relative;
@@ -1284,7 +1285,7 @@ def inject_home_hero():
         draw();
     })();
     </script>
-    """, unsafe_allow_html=True)
+    """, height=540, scrolling=False)
 
 
 def inject_kpi_row(metrics):
