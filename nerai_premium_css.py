@@ -1139,12 +1139,32 @@ def inject_sidebar_fix():
             // Fallback: force sidebar visible via style
             const sb = doc.querySelector(SIDEBAR_SEL);
             if (sb) {
+                // 1. Instantly show sidebar
+                sb.style.transition = 'transform 0.3s ease';
                 sb.style.transform = 'none';
                 sb.style.width = '300px';
                 sb.style.minWidth = '300px';
                 sb.style.left = '0px';
-                sb.style.transition = 'transform 0.3s ease';
                 removeBtn();
+
+                // 2. Update Streamlit localStorage state
+                try {
+                    var keys = Object.keys(localStorage);
+                    for (var i = 0; i < keys.length; i++) {
+                        if (keys[i].indexOf('stSidebarCollapsed') !== -1) {
+                            localStorage.setItem(keys[i], 'false');
+                        }
+                    }
+                } catch(e) {}
+
+                // 3. Clear forced styles so Streamlit CSS regains control
+                setTimeout(function() {
+                    sb.style.transform = '';
+                    sb.style.width = '';
+                    sb.style.minWidth = '';
+                    sb.style.left = '';
+                    sb.style.transition = '';
+                }, 600);
             }
         }
 
