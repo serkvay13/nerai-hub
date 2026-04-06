@@ -197,9 +197,9 @@ def download_gdelt_day(filename):
         except urllib.error.HTTPError as e:
             if e.code == 404:
                 return filename, None
-            print(f"  [!] HTTP {e.code} â {filename} (attempt {attempt+1}/{RETRY_COUNT})")
+            print(f"  [!] HTTP {e.code} Ã¢ÂÂ {filename} (attempt {attempt+1}/{RETRY_COUNT})")
         except Exception as e:
-            print(f"  [!] Error â {filename}: {e} (attempt {attempt+1}/{RETRY_COUNT})")
+            print(f"  [!] Error Ã¢ÂÂ {filename}: {e} (attempt {attempt+1}/{RETRY_COUNT})")
         if attempt < RETRY_COUNT - 1:
             time.sleep(RETRY_DELAY)
     return filename, None
@@ -207,10 +207,10 @@ def download_gdelt_day(filename):
 
 def compute_day_indices(df):
     """
-    V4 â Sentiment-Weighted Index with directional scoring and geo weighting.
+    V4 Ã¢ÂÂ Sentiment-Weighted Index with directional scoring and geo weighting.
 
     Improvements:
-      1. Per-country denominators (not global) â removes media-size bias
+      1. Per-country denominators (not global) Ã¢ÂÂ removes media-size bias
       2. Directional scoring: instability topics reward negative values, stability topics reward positive
       3. ActionGeo weighted 1.0, Actor geo weighted 0.4 each (max 1.0 per event)
       4. CAMEO code prefix matching
@@ -244,11 +244,14 @@ def compute_day_indices(df):
     df['instab_contribution'] = df['NumMentions'] * df['instab_intensity']
     df['stab_contribution']   = df['NumMentions'] * df['stab_intensity']
 
-    # FIX 6: Add QuadClass boost to instability contributions
-    # QuadClass=4 (Material Conflict) gets +0.2, QuadClass=3 (Verbal Conflict) gets +0.05
-    df['quad_boost'] = df['NumMentions'] * (
-        (df['QuadClass'] == 4).astype(float) * 0.2 +
-        (df['QuadClass'] == 3).astype(float) * 0.05
+    # FIX 6 + FAZ 2a: Data-driven QuadClass boost (replaces hardcoded 0.2 / 0.05)
+    # Use median instability as anchor so boost scales with actual data distribution
+    _median_instab = df["instab_intensity"].median()
+    _boost_material = _median_instab * 0.40   # Material Conflict: 40% of median
+    _boost_verbal   = _median_instab * 0.10   # Verbal Conflict:  10% of median
+    df["quad_boost"] = df["NumMentions"] * (
+        (df["QuadClass"] == 4).astype(float) * _boost_material +
+        (df["QuadClass"] == 3).astype(float) * _boost_verbal
     )
     df['instab_contribution'] = df['instab_contribution'] + df['quad_boost']
 
@@ -337,7 +340,7 @@ def get_missing_dates(indices, target_days=365):
         cur += datetime.timedelta(days=1)
 
     if len(indices.columns) == 0:
-        print(f"First run — downloading last {target_days} days of history.")
+        print(f"First run â downloading last {target_days} days of history.")
         return sorted(all_dates)
 
     # Find dates missing from existing data
@@ -356,9 +359,9 @@ def run():
     print("=" * 60)
     print("GDELT INDEX GENERATOR v4.0  (Directional + Geo-Weighted)")
     print("=" * 60)
-    print("Formula: Sigma(NumMentions Ã Geo_Weight Ã Directional_Intensity)")
-    print("         âââââââââââââââââââââââââââââââââââââââââââââââââââââââ")
-    print("         Sigma(NumMentions Ã Geo_Weight)  [per-country denominator]")
+    print("Formula: Sigma(NumMentions ÃÂ Geo_Weight ÃÂ Directional_Intensity)")
+    print("         Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ")
+    print("         Sigma(NumMentions ÃÂ Geo_Weight)  [per-country denominator]")
     print("=" * 60)
 
     indices = load_existing_indices(OUTPUT_FILE)
@@ -382,12 +385,12 @@ def run():
                 if day_results:
                     indices[str(filename)] = pd.Series(day_results)
                     success += 1
-                    print(f"  [{i:>4}/{total}] â {filename}  ({len(df):,} events)")
+                    print(f"  [{i:>4}/{total}] Ã¢ÂÂ {filename}  ({len(df):,} events)")
                 else:
                     skipped += 1
             else:
                 skipped += 1
-                print(f"  [{i:>4}/{total}] â {filename}  (skipped)")
+                print(f"  [{i:>4}/{total}] Ã¢ÂÂ {filename}  (skipped)")
 
             if i % 10 == 0:
                 indices.to_csv(OUTPUT_FILE)
@@ -398,7 +401,7 @@ def run():
 
     print("\n" + "=" * 60)
     print(f"Completed! Success: {success}  Skipped: {skipped}")
-    print(f"  Total: {len(indices.columns)} days x {len(indices):,} (topicÃcountry)")
+    print(f"  Total: {len(indices.columns)} days x {len(indices):,} (topicÃÂcountry)")
     print(f"  Output: {OUTPUT_FILE}")
     print("=" * 60)
     return indices
