@@ -20,7 +20,18 @@ from reportlab.platypus import (
 import datetime, os, json
 import re
 import streamlit.components.v1 as _stc
-import nerai_premium_css
+try:
+    import nerai_premium_css
+except Exception as _css_err:
+    import types as _t
+    nerai_premium_css = _t.ModuleType("nerai_premium_css")
+    def _noop(*a, **kw): pass
+    for _fn in ("inject_all","inject_home_hero","inject_global_premium_css",
+                "inject_page_header","inject_filter_bar_css","inject_section_header",
+                "inject_country_intel_css","inject_country_intel_header"):
+        setattr(nerai_premium_css, _fn, _noop)
+    import streamlit as _st2
+    _st2.warning(f"Premium CSS failed to load: {_css_err}")
 
 def _safe_pct(val, maxabs=150):
     """Cap percentage to +/-maxabs to prevent display of astronomical values."""
