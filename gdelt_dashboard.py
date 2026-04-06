@@ -786,11 +786,11 @@ def chart_heatmap(df_n, top_n, method):
     xlabels = [d if i%step==0 else '' for i,d in enumerate(dates_str)]
     ylabels = [COUNTRY_NAMES.get(c,c) for c in sel]
     colorscale = (
-        [[0,'#0d3464'],[0.25,'#00b4d8'],
-         [0.5,'#0077a8'],[0.75,'#f59e0b'],[1,'#e05060']]
+        [[0,'#0a1628'],[0.15,'#0d3464'],[0.35,'#00b4d8'],
+         [0.55,'#0077a8'],[0.75,'#f59e0b'],[0.9,'#e05060'],[1,'#ff2d55']]
         if method!='Z-Score' else
-        [[0,'#00B8D4'],[0.35,'#0d3464'],
-         [0.5,'#f4f7fb'],[0.65,'#f59e0b'],[1,'#e05060']]
+        [[0,'#00B8D4'],[0.25,'#0d3464'],
+         [0.5,'#1a2338'],[0.65,'#f59e0b'],[1,'#e05060']]
     )
     fig = go.Figure(go.Heatmap(
         z=matrix,x=xlabels,y=ylabels,colorscale=colorscale,
@@ -802,7 +802,7 @@ def chart_heatmap(df_n, top_n, method):
     t['xaxis'] = dict(showticklabels=True,tickangle=-45,
                       tickfont=dict(size=8,color='#5a6b82'),gridcolor='rgba(0,0,0,0)')
     t['yaxis'] = dict(tickfont=dict(size=9,color='#8aa0bc'),gridcolor='rgba(0,0,0,0)')
-    fig.update_layout(**t,height=420,
+    fig.update_layout(**t,height=460,
         title=dict(text=f'Top {top_n} Countries — Heatmap',
                    font=dict(size=12,color='#0077a8'),x=0.01))
     return fig
@@ -917,13 +917,13 @@ def chart_world(df_n,date_col):
         hovertemplate='<b>%{text}</b><br>Value: %{z:.3f}<extra></extra>'
     ))
     t = {**BASE_THEME}
-    fig.update_layout(**t,height=330,
+    fig.update_layout(**t,height=420,
         title=dict(text=f'Global Risk Map — {pd.Timestamp(date_col).strftime("%d %b %Y")}',
                    font=dict(size=12,color='#0077a8'),x=0.01),
         geo=dict(bgcolor='rgba(0,0,0,0)',showframe=False,showcoastlines=True,
-                 coastlinecolor='rgba(0,119,168,0.3)',showland=True,
-                 landcolor='#0d3464',showocean=True,
-                 oceancolor='#f4f7fb',showlakes=False,
+                 coastlinecolor='rgba(0,212,255,0.15)',showland=True,
+                 landcolor='#111d33',showocean=True,
+                 oceancolor='#0a0e17',showlakes=False,
                  projection_type='natural earth'))
     return fig
 
@@ -2002,7 +2002,6 @@ def render_indices():
         badge="LIVE",
         icon="\U0001f4ca"
     )
-    nerai_premium_css.inject_filter_bar_css()
 
 
     # KPI Cards
@@ -2070,22 +2069,18 @@ def render_indices():
     # ── Heatmap ──────────────────────────────────────────────
     try:
         nerai_premium_css.inject_section_header("Risk Heatmap \u2014 Top Countries", icon="\U0001f5fa\ufe0f")
-        nerai_premium_css.inject_heatmap_glow_overlay()
         _fig_hm = chart_heatmap(df_norm, heatmap_n, norm_method)
         if _fig_hm is not None:
             st.plotly_chart(_fig_hm, use_container_width=True)
-            nerai_premium_css.inject_heatmap_glow_close()
     except Exception:
         pass
 
     # ── Global Risk Map ────────────────────────────────────────
     try:
         nerai_premium_css.inject_section_header("Global Risk Map", icon="\U0001f30d")
-        nerai_premium_css.inject_globe_container()
         _fig_wm = chart_world(df_norm, map_date)
         if _fig_wm is not None:
             st.plotly_chart(_fig_wm, use_container_width=True)
-            nerai_premium_css.inject_globe_close()
     except Exception:
         pass
 
