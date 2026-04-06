@@ -2118,6 +2118,7 @@ def render_profile():
         icon="\U0001f310"
     )
     nerai_premium_css.inject_filter_bar_css()
+    nerai_premium_css.inject_country_intel_css()
 
     # \u2500\u2500 Inline country selector \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
     profile_c_opts = [f"{COUNTRY_NAMES.get(c,c)} ({c})"
