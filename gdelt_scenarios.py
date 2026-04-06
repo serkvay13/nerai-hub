@@ -90,6 +90,78 @@ SCENARIO_TEMPLATES = {
 }
 
 
+# --- FAZ 2c: Historical crisis calibration ---
+# Known crisis periods for calibration (topic, country, start, end)
+HISTORICAL_CRISES = [
+    ("military_escalation", "RS", "2022-02-01", "2022-08-01"),   # Russia-Ukraine invasion
+    ("military_clash", "UP", "2022-02-01", "2022-12-01"),        # Ukraine frontline
+    ("military_escalation", "IR", "2020-01-01", "2020-04-01"),   # Soleimani / Iran tensions
+    ("international_crisis", "IR", "2019-06-01", "2019-12-01"),  # Iran tanker crisis
+    ("military_escalation", "CH", "2022-08-01", "2022-10-01"),   # Pelosi Taiwan visit
+    ("instability", "SA", "2019-09-01", "2019-12-01"),           # Aramco attack
+    ("international_crisis", "RS", "2014-03-01", "2014-09-01"),  # Crimea annexation
+]
+
+
+def calibrate_from_history(topic, country, data_df, fallback_magnitude=0.5):
+    """
+    FAZ 2c: Compute shock magnitude from observed historical crises.
+    Looks at actual data during known crisis windows and measures the
+    peak relative change vs. the pre-crisis rolling mean.
+    Returns calibrated magnitude or fallback if no matching crisis found.
+    """
+    if data_df is None or data_df.empty:
+        return fallback_magnitude
+
+    matching_crises = [
+        c for c in HISTORICAL_CRISES
+        if c[0] == topic and c[1] == country
+    ]
+    if not matching_crises:
+        # Try topic-only match (any country with same topic type)
+        matching_crises = [c for c in HISTORICAL_CRISES if c[0] == topic]
+
+    if not matching_crises:
+        return fallback_magnitude
+
+    magnitudes = []
+    for _, _, start_str, end_str in matching_crises:
+        start = pd.Timestamp(start_str)
+        end   = pd.Timestamp(end_str)
+        # Pre-crisis window: 6 months before start
+        pre_start = start - pd.DateOffset(months=6)
+
+        mask_tc = (data_df["topic"] == topic) & (data_df["country"] == country)
+        series = data_df.loc[mask_tc].copy()
+        if series.empty:
+            # Try just topic match across all countries
+            series = data_df.loc[data_df["topic"] == topic].copy()
+        if series.empty:
+            continue
+
+        series = series.sort_values("date")
+        pre_crisis  = series[(series["date"] >= pre_start) & (series["date"] < start)]
+        crisis_peak = series[(series["date"] >= start) & (series["date"] <= end)]
+
+        if pre_crisis.empty or crisis_peak.empty:
+            continue
+
+        baseline = pre_crisis["value"].mean()
+        if baseline < 1e-6:
+            continue
+
+        peak = crisis_peak["value"].max()
+        rel_change = abs(peak - baseline) / baseline
+        magnitudes.append(min(rel_change, 2.0))  # cap at 2x
+
+    if magnitudes:
+        calibrated = round(float(np.median(magnitudes)), 2)
+        print(f"[CALIBRATE] {topic}/{country}: historical median magnitude = {calibrated}")
+        return calibrated
+
+    return fallback_magnitude
+
+
 # ============================================================================
 # CORE FUNCTIONS
 # ============================================================================
@@ -136,7 +208,7 @@ def load_data(indices_path='./indices.csv', predictions_path='./predictions.csv'
         indices_df.rename(columns={'Date': 'date'}, inplace=True)
 
     predictions_df = pd.read_csv(predictions_path)
-    # Normalize date column name — could be 'ds', 'date', or 'Date'
+    # Normalize date column name â could be 'ds', 'date', or 'Date'
     for col in ['ds', 'Date']:
         if col in predictions_df.columns and 'date' not in predictions_df.columns:
             predictions_df.rename(columns={col: 'date'}, inplace=True)
@@ -173,6 +245,13 @@ def apply_shock(monthly_df, shock, shock_start_date, shock_id=1):
     country = shock['country']
     magnitude = shock['magnitude']
     duration_months = shock['duration_months']
+
+    # FAZ 2c: Calibrate magnitude from historical data if available
+    if not shock.get("skip_calibration", False):
+        calibrated = calibrate_from_history(topic, country, monthly_df, fallback_magnitude=magnitude)
+        if calibrated != magnitude:
+            print(f"[SCENARIO] Calibrated magnitude for {topic}/{country}: {magnitude} -> {calibrated}")
+            magnitude = calibrated
 
     # Filter to the shocked series
     mask = (monthly_df['topic'] == topic) & (monthly_df['country'] == country)
