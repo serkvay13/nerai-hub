@@ -3,6 +3,8 @@ toolbarMode = "minimal"
 
 [server]
 runOnSave = true
+enableXsrfProtection = false
+maxMessageSize = 400
 
 [theme]
 primaryColor = "#1a7a8a"
