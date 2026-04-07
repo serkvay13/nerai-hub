@@ -2039,6 +2039,15 @@ def render_indices():
 
     # ══ KPI CARDS ══
     nerai_premium_css.inject_section_header("Key Risk Indicators", icon="")
+    st.markdown("""
+    <div style='padding:10px 16px;background:rgba(0,119,168,0.06);border-left:3px solid #0077a8;
+         border-radius:4px;margin-bottom:16px;font-size:0.78rem;color:#2a4a6a;line-height:1.7;'>
+      <b>How to read:</b> Scores range from <b>0</b> (minimal risk activity) to <b>100</b> (peak recorded risk).
+      A <span style='color:#00b4d8;font-weight:700;'>low score</span> indicates relative stability, while a
+      <span style='color:#e05060;font-weight:700;'>high score</span> signals elevated risk events in GDELT data.
+      The <b>delta</b> (\u25b2/\u25bc) shows the change from the previous period \u2014 positive delta means <i>increasing risk</i>.
+      Scores are normalized per-topic: a score of 60 in "Political Instability" means 60% of the historical peak for that dimension.
+    </div>""", unsafe_allow_html=True)
 
     kpi_countries = (sel_countries + all_countries)[:4]
     kpi_cols = st.columns(4)
@@ -2302,7 +2311,17 @@ def render_profile():
     </div>""", unsafe_allow_html=True)
     st.markdown('<div class="h-div"></div>', unsafe_allow_html=True)
 
-    # ── Profile Header ────────────────────────────────────────
+    st.markdown("""
+    <div style='padding:8px 14px;background:rgba(0,119,168,0.05);border-radius:6px;
+         margin-bottom:14px;font-size:0.75rem;color:#3a5a7a;line-height:1.6;'>
+      <b>Data sources:</b> Risk scores are computed from GDELT event streams \u2014 automated analysis of
+      global news and media reporting on conflict, cooperation, and political events.
+      <b>Bilateral relations</b> are derived from GDELT's dyadic event data (country-to-country interactions),
+      measuring cooperation vs. tension intensity between pairs.
+      <b>Alarms</b> trigger when a country's risk score exceeds 2 standard deviations above its 90-day rolling mean.
+    </div>""", unsafe_allow_html=True)
+
+    # \u2500\u2500 Profile Header ────────────────────────────────────────
     _pc = '#e05060' if _prof_score>=60 else ('#f59e0b' if _prof_score>=35 else '#00b4d8')
     st.markdown(f"""
     <div class="prof-header">
@@ -2604,7 +2623,7 @@ def render_news():
     cat_queries = {c[0]: c[1] for c in NEWS_CATEGORIES}
 
     # Category selector + news
-    left_col, right_col = st.columns([2, 5])
+    left_col, mid_col, right_col = st.columns([2, 2, 5])
 
     with left_col:
         st.markdown('<div class="sec-hdr">Topics</div>', unsafe_allow_html=True)
@@ -2614,7 +2633,14 @@ def render_news():
             key='news_cat'
         )
 
-    with right_col:
+    with mid_col:
+        st.markdown('<div class="sec-hdr">Country Filter</div>', unsafe_allow_html=True)
+        _news_c_opts = ['All Countries'] + [f"{COUNTRY_NAMES.get(c,c)} ({c})" for c in sorted(all_countries)]
+        _news_country = st.selectbox("Filter by country", _news_c_opts, index=0,
+                                      label_visibility='collapsed', key='news_country_filter')
+        _news_country_name = None if _news_country == 'All Countries' else _news_country.split(' (')[0]
+
+        with right_col:
         cat_q = cat_queries.get(sel_cat, sel_cat)
         st.markdown(f"""
         <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px;">
@@ -2628,7 +2654,7 @@ def render_news():
         </div>""", unsafe_allow_html=True)
 
         with st.spinner(f'Fetching latest {sel_cat} news...'):
-            articles = fetch_gdelt_news(cat_q, max_records=10)
+            articles = fetch_gdelt_news(cat_q + (f' {_news_country_name}' if _news_country_name else ''), max_records=10)
 
         if articles:
             for art in articles:
@@ -2917,6 +2943,10 @@ def render_predictions():
     with col_right:
         st.markdown('<div class="sec-hdr">Trend Summary — All Topics</div>',
                     unsafe_allow_html=True)
+        st.markdown("""<div style='font-size:0.68rem;color:#6a8aaa;margin-bottom:10px;line-height:1.5;'>
+          Topics with <span style='color:#8a8a8a;'>gray</span> indicators have minimal baseline activity for this country
+          — large % changes from a near-zero base may not indicate meaningful risk shifts.
+        </div>""", unsafe_allow_html=True)
         if trend_df is not None:
             country_trends = trend_df[trend_df['country'] == sel_pred_country].copy()
             country_trends['label'] = country_trends['topic'].apply(
@@ -2926,6 +2956,7 @@ def render_predictions():
             for _, row in country_trends.iterrows():
                 pct   = row['trend_pct']
                 dirn  = row['direction']
+                _abs_ctx = ' (low base)' if abs(pct) > 100 else ''
                 arrow = '▲' if dirn == 'rising' else ('▼' if dirn == 'falling' else '→')
                 col_d = ('#e05060' if dirn == 'rising'
                          else '#00B8D4' if dirn == 'falling' else '#7a9ab8')
@@ -5276,19 +5307,17 @@ SCENARIO_GEO_CONTEXT = {
 }
 
 def scenario_narrative(result_df, sel_result):
-    """Return (p1_html, p2_html) plain-English analysis of a scenario result."""
+    """Return (p1_html, p2_html, geo_ctx) plain-language analysis for security professionals."""
     val_cols = [c for c in result_df.columns if c not in ('scenario', 'series_id', 'topic', 'country')]
     if not val_cols or result_df.empty:
-        return None, None
+        return None, None, ''
 
     val_col = val_cols[0]
     sid_col = 'series_id' if 'series_id' in result_df.columns else result_df.index.name or 'index'
     if sid_col == 'index':
         impacts = result_df[val_col]
-        ids     = result_df.index.astype(str)
     else:
         impacts = result_df.set_index(sid_col)[val_col]
-        ids     = impacts.index
 
     max_impact  = float(impacts.abs().max())
     avg_impact  = float(impacts.abs().mean())
@@ -5296,44 +5325,40 @@ def scenario_narrative(result_df, sel_result):
     direction   = "upward" if float(impacts.mean()) >= 0 else "downward"
     n_elevated  = int((impacts.abs() > avg_impact).sum())
     n_total     = len(impacts)
-    breadth     = "concentrated in a small cluster of series" if n_elevated < n_total / 2 else "broad across the monitored universe"
+    breadth     = "concentrated in a small cluster" if n_elevated < n_total / 2 else "broad-based across regions"
 
     sel_result_str = str(sel_result) if sel_result is not None else ''
     scenario_label = SCENARIO_TEMPLATES.get(sel_result_str, {}).get('label', sel_result_str.replace('_', ' ').title())
 
-    p1 = (
-        f"Under the <b>{scenario_label}</b> simulation, the model projects a "
-        f"<b>{'widespread' if n_elevated >= n_total/2 else 'localised'} {direction} pressure</b> "
-        f"across the affected risk series, with an average absolute deviation of "
-        f"<b>{avg_impact:.4f} index points</b> from baseline forecasts. "
-    )
+    # Severity classification
+    if max_impact >= 0.3:
+        severity = "severe"
+        sev_meaning = "historically associated with observable market reactions, diplomatic escalations, or security posture changes"
+    elif max_impact >= 0.1:
+        severity = "moderate"
+        sev_meaning = "likely to increase monitoring intensity and may trigger precautionary measures"
+    else:
+        severity = "limited"
+        sev_meaning = "unlikely to require immediate action but warrants continued monitoring"
+
+    p1 = f"<b>Bottom line:</b> The <b>{scenario_label}</b> scenario produces <b>{severity}</b> risk impact that is <b>{breadth}</b>. "
     if top_hit is not None:
         lbl, cc = _node_label(str(top_hit))
         p1 += (
-            f"The most severely impacted series is <b>{lbl}</b> "
-            f"({COUNTRY_NAMES.get(cc, cc)}), which registers a peak deviation of "
-            f"<b>{max_impact:.4f}</b> — roughly "
-            f"{'moderate' if max_impact < 0.1 else 'substantial' if max_impact < 0.3 else 'severe'}. "
-            f"In total, <b>{n_elevated} of {n_total}</b> monitored series show above-average exposure to this shock, "
-            f"meaning the impact is {breadth}."
+            f"The most exposed area is <b>{lbl}</b> ({COUNTRY_NAMES.get(cc, cc)}). "
+            f"This level of impact is {sev_meaning}. "
+            f"Of the {n_total} risk series monitored, <b>{n_elevated}</b> show above-average exposure."
         )
 
     p2 = (
-        f"From a risk-intelligence perspective, this pattern suggests that the shock "
-        f"{'concentrates risk within a limited geographic or thematic cluster, limiting direct contagion but potentially creating a pressure-cooker effect in those areas' if n_elevated < n_total/2 else 'spreads risk broadly, increasing the probability of multi-front instability and cross-domain contagion'}. "
-        f"Elevated readings in geopolitical indices of this magnitude are historically associated with "
-        f"increased media attention, diplomatic activity, and in severe cases, market repricing of "
-        f"sovereign risk in the affected region. "
-        f"These projections are generated by ARIMA re-forecasting on GDELT-derived event indices — "
-        f"they represent statistically plausible directional shifts, not deterministic point forecasts. "
-        f"For a fuller picture of downstream exposure, visit the <b>Causal Network</b> tab: "
-        f"series that are statistically caused by the shocked origin will appear as direct descendants "
-        f"in the network graph and are the most likely vectors of second-order propagation."
+        f"<b>What this means for decision-makers:</b> "
+        f"{'The shock concentrates risk in specific areas \u2014 monitor those closely but broader contagion risk is contained.' if n_elevated < n_total/2 else 'The shock spreads broadly, increasing multi-front instability risk. Organizations with exposure to multiple affected regions should review contingency plans.'} "
+        f"These projections indicate <i>directional pressure</i>, not precise predictions. "
+        f"For second-order effects, check the <b>Causal Network</b> tab."
     )
 
     geo_ctx = SCENARIO_GEO_CONTEXT.get(str(sel_result_str), '')
     return p1, p2, geo_ctx
-
 
 def render_scenarios():
     nerai_premium_css.inject_page_header(
@@ -5391,10 +5416,52 @@ def render_scenarios():
               <div style='font-size:0.7rem;color:{s_col};font-weight:600;'>{s_txt}</div>
             </div>""", unsafe_allow_html=True)
 
+    # ── Methodology & Assumptions ───────────
+    with st.expander("\U0001f4d0 Methodology, Assumptions & Parameters", expanded=False):
+        st.markdown("""
+        <div style='font-size:0.82rem;color:#1a3a5c;line-height:1.8;'>
+        <b>Model Architecture:</b> Each scenario applies an exogenous shock to GDELT-derived risk indices,
+        then propagates effects through an ARIMA re-forecasting pipeline with cross-series spillover coefficients.<br><br>
+        <b>Key Assumptions:</b>
+        <ul style='margin:6px 0 10px 16px;'>
+          <li><b>Shock propagation:</b> Uses Granger-causality-derived weights to determine how a shock in one series spills over to related series.</li>
+          <li><b>Decay function:</b> Shocks decay exponentially over the simulation horizon (half-life = duration/3).</li>
+          <li><b>Baseline:</b> "Normal" is defined as the ARIMA forecast with no shock applied \u2014 deltas are measured vs. this baseline.</li>
+          <li><b>Linear spillover:</b> Cross-country/topic propagation is linear and additive; the model does NOT capture non-linear escalation spirals.</li>
+          <li><b>Historical calibration:</b> Shock magnitudes for pre-built scenarios are calibrated to historical analogues where available.</li>
+        </ul>
+        <b>Pre-Built Scenario Parameters:</b>
+        <table style='width:100%;border-collapse:collapse;margin-top:8px;font-size:0.75rem;'>
+          <tr style='border-bottom:1px solid rgba(0,80,160,0.15);'>
+            <th style='text-align:left;padding:6px;color:#0055a8;'>Scenario</th>
+            <th style='text-align:left;padding:6px;color:#0055a8;'>Shock Origin</th>
+            <th style='text-align:left;padding:6px;color:#0055a8;'>Magnitude</th>
+            <th style='text-align:left;padding:6px;color:#0055a8;'>Duration</th>
+          </tr>
+          <tr style='border-bottom:1px solid rgba(0,80,160,0.08);'>
+            <td style='padding:6px;'>\u2622\ufe0f Iran Nuclear</td><td>Iran \u00d7 Military Activity</td><td>1.5\u00d7</td><td>6 months</td>
+          </tr>
+          <tr style='border-bottom:1px solid rgba(0,80,160,0.08);'>
+            <td style='padding:6px;'>\u2694\ufe0f Russia Escalation</td><td>Russia \u00d7 Armed Conflict</td><td>1.8\u00d7</td><td>9 months</td>
+          </tr>
+          <tr style='border-bottom:1px solid rgba(0,80,160,0.08);'>
+            <td style='padding:6px;'>\U0001f30a China-Taiwan</td><td>China \u00d7 Military Posturing</td><td>1.2\u00d7</td><td>3 months</td>
+          </tr>
+          <tr style='border-bottom:1px solid rgba(0,80,160,0.08);'>
+            <td style='padding:6px;'>\U0001f6e2\ufe0f ME Oil Crisis</td><td>Saudi Arabia \u00d7 Energy</td><td>2.0\u00d7</td><td>4 months</td>
+          </tr>
+          <tr>
+            <td style='padding:6px;'>\U0001f5f3\ufe0f Democratic Backsliding</td><td>Global \u00d7 Political Instability</td><td>0.8\u00d7</td><td>12 months</td>
+          </tr>
+        </table><br>
+        <b>Limitations:</b> These are statistical projections based on GDELT event data patterns, not intelligence assessments.
+        They do not account for classified information, private diplomatic channels, or sudden policy pivots.
+        </div>""", unsafe_allow_html=True)
+
     import subprocess, sys as _sys
     st.markdown('<div class="h-div" style="margin:24px 0;"></div>', unsafe_allow_html=True)
 
-    # ── Run Pre-Built Scenario ──────────────────────────────────
+    # \u2500\u2500 Run Pre-Built Scenario ──────────────────────────────────
     nerai_premium_css.inject_section_header("Run Pre-Built Scenario", icon="▶️")
     sel_scenario = st.selectbox('Select Scenario', list(SCENARIO_TEMPLATES.keys()),
                                 format_func=lambda k: SCENARIO_TEMPLATES[k]['label'])
@@ -5468,7 +5535,7 @@ def render_scenarios():
                 # ── Top-40 by absolute impact ─────────────────────
                 impact_df = pd.DataFrame({'sid': x_src.values, 'val': y_vals.values})
                 impact_df['abs'] = impact_df['val'].abs()
-                impact_df = impact_df.nlargest(40, 'abs').sort_values('val', ascending=False)
+                impact_df = impact_df.nlargest(15, 'abs').sort_values('val', ascending=False)
                 # ── Human-readable labels ─────────────────────────
                 def _sid_label(sid):
                     parts = str(sid).rsplit('_', 1)
@@ -5489,7 +5556,7 @@ def render_scenarios():
                     hovertemplate='<b>%{x}</b><br>Impact: %{y:.5f}<extra></extra>'
                 ))
                 fig.update_layout(
-                    title=dict(text=f'Top 40 Most Impacted Series — {scen_lbl}',
+                    title=dict(text=f'Top 15 Most Impacted Series — {scen_lbl}',
                                font=dict(size=12, color='#1a2a3a'), x=0.5, xanchor='center'),
                     height=440,
                     paper_bgcolor='rgba(0,0,0,0)',
@@ -5507,7 +5574,7 @@ def render_scenarios():
                   <b>How to read:</b> Each bar = one risk dimension × country pair.
                   <span style='color:#dc3c3c;font-weight:700;'>Red</span> = risk rises above baseline after shock.
                   <span style='color:#008cdc;font-weight:700;'>Blue</span> = risk falls below baseline.
-                  Only the 40 most impacted series are shown, sorted by impact magnitude.
+                  Only the 15 most impacted series are shown, sorted by impact magnitude.
                 </div>""", unsafe_allow_html=True)
 
             # ── Plain-English Analysis ──────────────────────────
@@ -5528,6 +5595,23 @@ def render_scenarios():
                   <p style='margin:0 0 4px;'>{p2}</p>
                   {geo_block}
                 </div>""", unsafe_allow_html=True)
+
+            # Statistical details (expandable for analysts)
+            with st.expander("\U0001f4ca Statistical Details", expanded=False):
+                _v_cols = [c for c in result_df.columns if c not in ('scenario','series_id','topic','country')]
+                if _v_cols:
+                    _vc = _v_cols[0]
+                    _si = result_df[_vc]
+                    st.markdown(f"""
+                    <div style='font-size:0.8rem;color:#1a3a5c;line-height:1.8;'>
+                    <b>Statistical Summary:</b><br>
+                    \u2022 Mean absolute deviation: <code>{_si.abs().mean():.6f}</code> index points<br>
+                    \u2022 Max absolute deviation: <code>{_si.abs().max():.6f}</code> index points<br>
+                    \u2022 Standard deviation: <code>{_si.std():.6f}</code><br>
+                    \u2022 Series above average impact: <code>{int((_si.abs() > _si.abs().mean()).sum())}</code> / <code>{len(_si)}</code><br>
+                    \u2022 Net direction: <code>{'Upward' if _si.mean() >= 0 else 'Downward'} pressure</code>
+                    (mean delta = <code>{_si.mean():.6f}</code>)
+                    </div>""", unsafe_allow_html=True)
 
             # Raw data table (collapsible)
             with st.expander("🔢 Raw Results Table", expanded=False):
