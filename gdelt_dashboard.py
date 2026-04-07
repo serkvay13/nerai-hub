@@ -71,6 +71,21 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+# --- Auto-retry on WebSocket cache miss ---
+st.markdown("""<script>
+(function(){
+  var rc=0;
+  new MutationObserver(function(m){
+    document.querySelectorAll("pre").forEach(function(el){
+      if(el.textContent.indexOf("Cached ForwardMsg")!==-1 && rc<2){
+        rc++; setTimeout(function(){window.location.reload()},1500);
+      }
+    });
+  }).observe(document.body,{childList:true,subtree:true});
+})();
+</script>""", unsafe_allow_html=True)
+
+
 # -- NERAI Premium CSS --
 nerai_premium_css.inject_all()
 
