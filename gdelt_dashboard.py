@@ -1717,6 +1717,243 @@ with st.sidebar:
         sel_pred_country = 'US'
         pred_hist_months = 24
 
+
+# ══════════════════════════════════════════════════════════════
+# STRATEGIC ANALYSIS ENGINE — Insight Layer
+# ══════════════════════════════════════════════════════════════
+
+_ANALYSIS_CSS = """<style>
+.nerai-sa{background:linear-gradient(135deg,rgba(0,212,255,.06) 0%,rgba(0,40,60,.15) 100%);border-left:3px solid #00d4ff;border-radius:0 8px 8px 0;padding:16px 20px;margin:12px 0 20px 0;font-size:14px;line-height:1.65;color:#c8d6e5}
+.nerai-sa .sa-h{display:flex;align-items:center;gap:8px;margin-bottom:10px;font-weight:600;font-size:13px;text-transform:uppercase;letter-spacing:1.2px;color:#00d4ff}
+.nerai-sa .sa-b{color:#dfe6ec;font-size:14px}.nerai-sa .sa-b strong{color:#00d4ff}
+.sig-b{display:inline-flex;align-items:center;gap:4px;padding:2px 10px;border-radius:12px;font-size:12px;font-weight:700;letter-spacing:.5px}
+.sig-b.ri{background:rgba(255,71,87,.18);color:#ff4757}.sig-b.fa{background:rgba(46,213,115,.18);color:#2ed573}
+.sig-b.st{background:rgba(255,165,2,.15);color:#ffa502}.sig-b.al{background:rgba(255,71,87,.25);color:#ff4757;border:1px solid rgba(255,71,87,.4)}
+.sig-b.no{background:rgba(46,213,115,.15);color:#2ed573}.sig-b.vo{background:rgba(255,165,2,.2);color:#ffa502}
+.nerai-es{background:linear-gradient(135deg,rgba(0,212,255,.08) 0%,rgba(0,30,50,.2) 100%);border:1px solid rgba(0,212,255,.2);border-radius:10px;padding:20px 24px;margin:0 0 24px 0}
+.nerai-es .es-t{font-size:14px;font-weight:700;color:#00d4ff;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.nerai-es .es-i{display:flex;align-items:flex-start;gap:10px;margin-bottom:8px;font-size:13.5px;color:#c8d6e5;line-height:1.5}
+.nerai-es .es-i .bu{color:#00d4ff;font-size:16px;margin-top:-1px}
+</style>"""
+
+def _sig(d, lbl=None):
+    _m = {'rising':'ri','falling':'fa','stable':'st','alert':'al','normal':'no','volatile':'vo'}
+    _a = {'rising':'\u2191','falling':'\u2193','stable':'\u2192','alert':'\u26a0','normal':'\u25cf','volatile':'\u2195'}
+    return f'<span class="sig-b {_m.get(d,"st")}">{_a.get(d,"\u25cf")} {lbl or d.upper()}</span>'
+
+def _sa_box(header, body, sig=None):
+    s = f' {_sig(sig[0], sig[1])}' if sig else ''
+    return f'<div class="nerai-sa"><div class="sa-h">\u25c6 {header}{s}</div><div class="sa-b">{body}</div></div>'
+
+def _es_box(items):
+    b = ''.join(f'<div class="es-i"><span class="bu">\u25b8</span><span>{i}</span></div>' for i in items)
+    return f'<div class="nerai-es"><div class="es-t">\u25c8 Strategic Assessment</div>{b}</div>'
+
+
+def _indices_exec_analysis(df_recent, sel_topic, COUNTRY_NAMES):
+    """Executive strategic assessment for Risk Matrix page."""
+    items = []
+    if df_recent.empty or len(df_recent.columns) < 2:
+        return ''
+    latest = df_recent.iloc[:, -1]
+    prev = df_recent.iloc[:, -2]
+    deltas = latest - prev
+    top_r = deltas.nlargest(3)
+    top_f = deltas.nsmallest(2)
+    for c, d in top_r.items():
+        cn = COUNTRY_NAMES.get(c, c)
+        v = latest.get(c, 0)
+        if abs(d) > 2:
+            sev = 'significant' if abs(d) > 5 else 'moderate'
+            items.append(f"<strong>{cn}</strong> {sel_topic} index surged {_sig('rising', f'+{d:.1f}')} to <strong>{v:.0f}</strong> \u2014 {sev} escalation signal.")
+    for c, d in top_f.items():
+        cn = COUNTRY_NAMES.get(c, c)
+        v = latest.get(c, 0)
+        if d < -2:
+            items.append(f"<strong>{cn}</strong> {sel_topic} easing {_sig('falling', f'{d:.1f}')} \u2014 de-escalation or policy shift may be underway.")
+    if len(df_recent.columns) >= 7:
+        std_w = df_recent.iloc[:, -7:].std(axis=1)
+        mv = std_w.nlargest(1)
+        for c, vol in mv.items():
+            cn = COUNTRY_NAMES.get(c, c)
+            if vol > 5:
+                items.append(f"<strong>{cn}</strong> high volatility {_sig('volatile', f'\u03c3={vol:.1f}')} \u2014 erratic trajectory suggests unpredictable environment.")
+    if not items:
+        items.append(f"All monitored countries showing stable {sel_topic} indicators within normal ranges. {_sig('normal', 'BASELINE')}")
+    return _es_box(items[:4])
+
+def _indices_ts_analysis(df_recent, sel_topic, sel_countries, COUNTRY_NAMES):
+    """7-day trend assessment after time-series chart."""
+    if df_recent.empty or len(df_recent.columns) < 3:
+        return ''
+    ncols = min(7, len(df_recent.columns))
+    ws = df_recent.iloc[:, -ncols]
+    we = df_recent.iloc[:, -1]
+    wc = we - ws
+    parts = []
+    for c in sel_countries[:4]:
+        if c not in wc.index: continue
+        chg = wc[c]; v = we[c]; cn = COUNTRY_NAMES.get(c, c)
+        if abs(chg) < 1:
+            desc = 'holding steady'
+        elif chg > 0:
+            desc = f'up {chg:.1f}pts over {ncols}d'
+        else:
+            desc = f'down {abs(chg):.1f}pts over {ncols}d'
+        if v > 70: rl = '\u2014 <strong>elevated risk zone</strong>, potential crisis conditions'
+        elif v > 50: rl = '\u2014 above baseline, sustained pressure on governance structures'
+        elif v > 30: rl = '\u2014 moderate levels within historical norms'
+        else: rl = '\u2014 low-risk territory, relative stability'
+        parts.append(f"<strong>{cn}</strong> ({v:.0f}): {desc} {rl}")
+    if not parts: return ''
+    avg = wc.reindex(sel_countries[:4]).dropna().mean() if len(sel_countries) else 0
+    if avg > 3: sig = ('rising', 'ESCALATING')
+    elif avg < -3: sig = ('falling', 'DE-ESCALATING')
+    else: sig = ('stable', 'HOLDING')
+    return _sa_box('7-Day Trend Assessment', '<br>'.join(parts), sig)
+
+def _indices_heatmap_analysis(df_norm, sel_topic, COUNTRY_NAMES):
+    """Regional heat distribution analysis after heatmap."""
+    if df_norm.empty or len(df_norm.columns) < 5:
+        return ''
+    lat5 = df_norm.iloc[:, -5:]
+    hot = lat5.mean(axis=1).nlargest(3)
+    cold = lat5.mean(axis=1).nsmallest(3)
+    hn = [COUNTRY_NAMES.get(c, c) for c in hot.index]
+    cn_list = [COUNTRY_NAMES.get(c, c) for c in cold.index]
+    body = (
+        f"<strong>Hotspot cluster:</strong> {', '.join(hn)} \u2014 consistently elevated {sel_topic} scores indicate structural pressure, not isolated events. Policy responses from these states bear close monitoring.<br>"
+        f"<strong>Stability corridor:</strong> {', '.join(cn_list)} \u2014 sustained low activity. However, sudden reversals in quiet environments often precede the most disruptive shocks."
+    )
+    return _sa_box('Regional Heat Distribution', body)
+
+def _indices_corr_analysis(df_norm, sel_countries, COUNTRY_NAMES):
+    """Cross-country risk linkage analysis after correlation matrix."""
+    if df_norm.empty or len(sel_countries) < 2:
+        return ''
+    sub = df_norm.reindex([c for c in sel_countries if c in df_norm.index]).dropna(how='all')
+    if sub.shape[0] < 2: return ''
+    corr = sub.T.corr()
+    hi, lo = [], []
+    for i in range(len(corr)):
+        for j in range(i+1, len(corr)):
+            v = corr.iloc[i, j]
+            if v > 0.7: hi.append((corr.index[i], corr.columns[j], v))
+            elif v < -0.3: lo.append((corr.index[i], corr.columns[j], v))
+    parts = []
+    for c1, c2, v in sorted(hi, key=lambda x: -x[2])[:2]:
+        n1, n2 = COUNTRY_NAMES.get(c1, c1), COUNTRY_NAMES.get(c2, c2)
+        parts.append(f"<strong>{n1}\u2013{n2}</strong> (r={v:.2f}): Risk trajectories tightly coupled \u2014 escalation in one cascades to the other. Likely shared geopolitical drivers or alliance dynamics.")
+    for c1, c2, v in sorted(lo, key=lambda x: x[2])[:1]:
+        n1, n2 = COUNTRY_NAMES.get(c1, c1), COUNTRY_NAMES.get(c2, c2)
+        parts.append(f"<strong>{n1}\u2013{n2}</strong> (r={v:.2f}): Inverse dynamics \u2014 when one stabilizes, the other destabilizes. Possible resource/attention reallocation between theaters.")
+    if not parts:
+        parts.append("Selected countries show moderate independence \u2014 no dominant contagion pattern detected in current window.")
+    return _sa_box('Cross-Country Risk Linkages', '<br>'.join(parts))
+
+
+def _profile_exec_analysis(profile_country, cur_t, cur_c, cur_net, trend_bi, prof_alarms, partner_a, partner_b, COUNTRY_NAMES):
+    """Strategic assessment for Country Intelligence page."""
+    cn = COUNTRY_NAMES.get(profile_country, profile_country)
+    items = []
+    if cur_t > 70 and cur_c < 30:
+        items.append(f"<strong>{cn}</strong> in high-conflict/low-cooperation state {_sig('alert','CRITICAL')} \u2014 diplomatic channels strained. This configuration historically precedes significant policy shifts or escalatory actions.")
+    elif cur_t > 50:
+        items.append(f"<strong>{cn}</strong> conflict pressure at <strong>{cur_t:.0f}</strong> {_sig('rising','ELEVATED')} \u2014 above stability threshold. Regional actors should prepare contingency responses.")
+    elif cur_c > 60:
+        items.append(f"<strong>{cn}</strong> cooperative signals strong at <strong>{cur_c:.0f}</strong> {_sig('normal','CONSTRUCTIVE')} \u2014 diplomatic engagement active. Window for productive negotiations may be open.")
+    else:
+        items.append(f"<strong>{cn}</strong> operating within normal parameters \u2014 conflict ({cur_t:.0f}) and cooperation ({cur_c:.0f}) in equilibrium.")
+    if partner_a and partner_b:
+        pa = COUNTRY_NAMES.get(partner_a, partner_a)
+        pb = COUNTRY_NAMES.get(partner_b, partner_b)
+        if cur_net > 0.3:
+            items.append(f"<strong>{pa}\u2013{pb}</strong> bilateral: Net positive ({cur_net:.2f}) \u2014 cooperative dynamics dominate. Trade, diplomatic, and security cooperation likely stable.")
+        elif cur_net < -0.3:
+            items.append(f"<strong>{pa}\u2013{pb}</strong> bilateral: Net negative ({cur_net:.2f}) {_sig('rising','TENSION')} \u2014 adversarial dynamics prevail. Monitor for sanctions, military posturing, or proxy conflicts.")
+        else:
+            items.append(f"<strong>{pa}\u2013{pb}</strong> bilateral: Neutral zone ({cur_net:.2f}) \u2014 neither cooperative nor adversarial. Relationship in transitional phase.")
+    if trend_bi is not None:
+        if trend_bi > 5:
+            items.append(f"Bilateral trend sharply positive (+{trend_bi:.1f}) \u2014 rapid improvement in relations, possibly driven by new diplomatic initiatives or shared threat perception.")
+        elif trend_bi < -5:
+            items.append(f"Bilateral trend deteriorating ({trend_bi:.1f}) {_sig('rising','DETERIORATING')} \u2014 relationship under increasing strain. Early warning for potential diplomatic incidents.")
+    return _es_box(items[:4])
+
+def _profile_gauge_analysis(cur_t, cur_c, cur_net, profile_country, COUNTRY_NAMES):
+    """Conflict/cooperation gauge interpretation."""
+    cn = COUNTRY_NAMES.get(profile_country, profile_country)
+    ratio = cur_c / max(cur_t, 0.1)
+    if ratio > 2:
+        state = f"{cn}'s diplomatic environment is cooperation-dominant (ratio {ratio:.1f}:1). Political risk for foreign investment and partnerships is <strong>low</strong>."
+        sig = ('normal', 'LOW RISK')
+    elif ratio > 1:
+        state = f"{cn} leans cooperative but with meaningful conflict undercurrents. Engagement is viable but requires active risk monitoring."
+        sig = ('stable', 'MODERATE')
+    elif ratio > 0.5:
+        state = f"{cn} conflict and cooperation are nearly balanced \u2014 a volatile equilibrium. Small shocks could tip the balance in either direction."
+        sig = ('volatile', 'UNSTABLE EQ.')
+    else:
+        state = f"{cn} is conflict-dominant (ratio {1/max(ratio,0.01):.1f}:1). Operating environment is adversarial. Recommend defensive posture for exposed assets and personnel."
+        sig = ('alert', 'HIGH RISK')
+    return _sa_box('Conflict-Cooperation Balance', state, sig)
+
+
+def _forecast_exec_analysis(topic, country, current_val, fc_end_val, fc, COUNTRY_NAMES):
+    """Strategic forecast intelligence."""
+    cn = COUNTRY_NAMES.get(country, country)
+    if fc is None or len(fc) == 0 or current_val is None or fc_end_val is None:
+        return ''
+    chg = fc_end_val - current_val
+    if chg > 10:
+        d, lbl = 'rising', 'ESCALATION FORECAST'
+        sev = 'significant escalation' if chg > 20 else 'moderate increase'
+        body = (f"Model projects <strong>{sev}</strong> in {topic} for {cn}. Trajectory from <strong>{current_val:.0f}</strong> to <strong>{fc_end_val:.0f}</strong> signals building structural pressure. "
+                f"<strong>Decision signal:</strong> Increase monitoring frequency and prepare scenario-specific response options. Consider pre-positioning diplomatic or operational assets.")
+    elif chg < -10:
+        d, lbl = 'falling', 'DE-ESCALATION FORECAST'
+        sev = 'significant de-escalation' if chg < -20 else 'gradual cooling'
+        body = (f"Model projects <strong>{sev}</strong> for {cn} {topic}. Moving from <strong>{current_val:.0f}</strong> toward <strong>{fc_end_val:.0f}</strong>. "
+                f"<strong>Decision signal:</strong> Window for diplomatic engagement or investment repositioning. Reduced operational tempo may be appropriate.")
+    else:
+        d, lbl = 'stable', 'STEADY STATE'
+        body = (f"{cn} {topic} forecast shows minimal directional change \u2014 current levels (~<strong>{current_val:.0f}</strong>) expected to persist. "
+                f"<strong>Decision signal:</strong> Maintain standard monitoring protocols. No immediate recalibration needed.")
+    ci_cols = [c for c in fc.columns if 'lower' in c.lower() or 'lo' in c.lower()]
+    ci_cols_u = [c for c in fc.columns if 'upper' in c.lower() or 'hi' in c.lower()]
+    if ci_cols and ci_cols_u:
+        try:
+            ci_w = (fc[ci_cols_u[0]] - fc[ci_cols[0]]).mean()
+            if ci_w > 30: body += "<br><em>Wide confidence bands \u2014 high uncertainty. Treat as directional guidance only.</em>"
+            elif ci_w > 15: body += "<br><em>Moderate confidence \u2014 forecast is indicative but watch for deviation triggers.</em>"
+            else: body += "<br><em>Tight intervals \u2014 model has high conviction in this trajectory.</em>"
+        except: pass
+    return _sa_box('Forecast Intelligence', body, (d, lbl))
+
+def _causality_exec_analysis(narrative_text):
+    """Wrap causal narrative in strategic analysis box."""
+    if not narrative_text:
+        return ''
+    return _sa_box('Causal Network Intelligence', narrative_text, ('alert', 'WATCH'))
+
+def _threat_radar_analysis(df_recent, sel_topic, COUNTRY_NAMES):
+    """Strategic threat radar analysis."""
+    if df_recent is None or df_recent.empty:
+        return ''
+    latest = df_recent.iloc[:, -1]
+    crit = latest[latest > 70]
+    warn = latest[(latest > 50) & (latest <= 70)]
+    items = []
+    if len(crit) > 0:
+        crit_names = [COUNTRY_NAMES.get(c, c) for c in crit.nlargest(5).index]
+        items.append(f"<strong>Critical zone ({len(crit)} countries):</strong> {', '.join(crit_names)} \u2014 operating above crisis threshold. Active monitoring and contingency planning recommended.")
+    if len(warn) > 0:
+        warn_names = [COUNTRY_NAMES.get(c, c) for c in warn.nlargest(5).index]
+        items.append(f"<strong>Watch zone ({len(warn)} countries):</strong> {', '.join(warn_names)} \u2014 elevated but below crisis level. Potential for rapid deterioration if external shocks occur.")
+    stable_count = len(latest[latest <= 50])
+    items.append(f"<strong>{stable_count} countries</strong> in stable zone \u2014 normal operational environment. Standard risk posture appropriate.")
+    return _es_box(items[:4])
+
 # ═══════════════════════════════════════════════════════════════
 # PAGE: HOME
 # ═══════════════════════════════════════════════════════════════
@@ -2037,6 +2274,13 @@ def render_indices():
 
     sel_label = TOPIC_LABELS.get(sel_topic, sel_topic.replace('_',' ').title())
 
+    st.markdown(_ANALYSIS_CSS, unsafe_allow_html=True)
+    # ── Strategic Executive Assessment ──
+    try:
+        _exec_html = _indices_exec_analysis(df_recent, sel_topic, COUNTRY_NAMES)
+        if _exec_html: st.markdown(_exec_html, unsafe_allow_html=True)
+    except: pass
+
     # ══ KPI CARDS ══
     nerai_premium_css.inject_section_header("Key Risk Indicators", icon="")
     st.markdown("""
@@ -2106,6 +2350,12 @@ def render_indices():
         except Exception:
             pass
 
+    # ── Strategic: 7-Day Trend Assessment ──
+    try:
+        _ts_html = _indices_ts_analysis(df_recent, sel_topic, sel_countries, COUNTRY_NAMES)
+        if _ts_html: st.markdown(_ts_html, unsafe_allow_html=True)
+    except: pass
+
     # ══ DAILY INDICES TABLE ══
     if sel_countries:
         nerai_premium_css.inject_section_header(f"Daily Indices — {sel_label}", icon="")
@@ -2153,6 +2403,12 @@ def render_indices():
         except Exception:
             pass
 
+
+    # ── Strategic: Regional Heat Distribution ──
+    try:
+        _hm_html = _indices_heatmap_analysis(df_norm, sel_topic, COUNTRY_NAMES)
+        if _hm_html: st.markdown(_hm_html, unsafe_allow_html=True)
+    except: pass
 
     # âââ FAZ 3b: Risk Correlation Matrix âââ
     st.markdown('<div class="h-div" style="margin:24px 0 16px"></div>', unsafe_allow_html=True)
@@ -2241,6 +2497,12 @@ def render_indices():
             st.caption("Commodity data not available.")
     except Exception as _e:
         st.caption(f"Commodity-Risk scatter unavailable: {_e}")
+    # ── Strategic: Cross-Country Linkages ──
+    try:
+        _corr_html = _indices_corr_analysis(df_norm, sel_countries, COUNTRY_NAMES)
+        if _corr_html: st.markdown(_corr_html, unsafe_allow_html=True)
+    except: pass
+
     _render_footer()
 
 def render_profile():
@@ -2300,6 +2562,13 @@ def render_profile():
     if profile_country in tension_norm.index:
         _prof_score = float(tension_norm.loc[profile_country].iloc[-7:].mean())
         _prof_badge = risk_badge(_prof_score, 'Score (0–100)')
+
+    st.markdown(_ANALYSIS_CSS, unsafe_allow_html=True)
+    # ── Strategic Executive Assessment ──
+    try:
+        _prof_exec = _profile_exec_analysis(profile_country, cur_t, cur_c, cur_net, trend_bi, prof_alarms, bi_a, bi_b, COUNTRY_NAMES)
+        if _prof_exec: st.markdown(_prof_exec, unsafe_allow_html=True)
+    except: pass
 
     # Page header
     st.markdown(f"""
@@ -2589,6 +2858,12 @@ def render_profile():
             st.caption("Not enough risk dimensions for radar chart.")
     except Exception as _e:
         st.caption(f"Radar chart unavailable: {_e}")
+    # ── Strategic: Conflict-Cooperation Balance ──
+    try:
+        _gauge_html = _profile_gauge_analysis(cur_t, cur_c, cur_net, profile_country, COUNTRY_NAMES)
+        if _gauge_html: st.markdown(_gauge_html, unsafe_allow_html=True)
+    except: pass
+
     _render_footer()
 
 
@@ -2982,6 +3257,13 @@ def render_predictions():
 
     st.markdown('<div class="h-div" style="margin:24px 0;"></div>', unsafe_allow_html=True)
 
+
+    st.markdown(_ANALYSIS_CSS, unsafe_allow_html=True)
+    # ── Strategic: Forecast Intelligence ──
+    try:
+        _fc_html = _forecast_exec_analysis(sel_pred_topic, sel_pred_country, current_val, fc_end_val, fc, COUNTRY_NAMES)
+        if _fc_html: st.markdown(_fc_html, unsafe_allow_html=True)
+    except: pass
 
     _render_footer()
 
@@ -5707,6 +5989,8 @@ def render_api():
       Contact <a href='mailto:info@neraicorp.com' style='color:#0077a8;'>info@neraicorp.com</a>
       for enterprise API access.
     </div>""", unsafe_allow_html=True)
+    st.markdown(_ANALYSIS_CSS, unsafe_allow_html=True)
+
     _render_footer()
 
 
@@ -6120,6 +6404,13 @@ def render_threat_radar():
     except Exception as _e:
         st.caption(f"Early warning unavailable: {_e}")
         st.caption(f"Volatility trend unavailable: {_e}")
+    st.markdown(_ANALYSIS_CSS, unsafe_allow_html=True)
+    # ── Strategic: Threat Radar Assessment ──
+    try:
+        _tr_html = _threat_radar_analysis(df_recent, sel_topic, COUNTRY_NAMES)
+        if _tr_html: st.markdown(_tr_html, unsafe_allow_html=True)
+    except: pass
+
     _render_footer()
 
 
