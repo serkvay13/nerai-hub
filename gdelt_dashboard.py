@@ -2640,7 +2640,7 @@ def render_news():
                                       label_visibility='collapsed', key='news_country_filter')
         _news_country_name = None if _news_country == 'All Countries' else _news_country.split(' (')[0]
 
-        with right_col:
+    with right_col:
         cat_q = cat_queries.get(sel_cat, sel_cat)
         st.markdown(f"""
         <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px;">
