@@ -1505,7 +1505,8 @@ if _IS_SOLO:
     _keep = [c for c in df.columns if c >= _cutoff]
     if _keep:
         df = df[_keep]
-all_topics  = sorted(df.index.get_level_values('topic').unique().tolist())
+_EXCLUDE_TOPICS = {'democratization','deteriorating_bilateral_relations','increasing_bilateral_relations','increasing_international_financial_support','military_deescalation','political_stability','regime_instability'}
+all_topics  = sorted([t for t in df.index.get_level_values('topic').unique().tolist() if t not in _EXCLUDE_TOPICS])
 all_countries = sorted(df.index.get_level_values('country').unique().tolist())
 
 tension_norm, coop_norm = compute_bilateral_base(df)
@@ -2414,7 +2415,7 @@ def render_indices():
     st.markdown('<div class="h-div" style="margin:24px 0 16px"></div>', unsafe_allow_html=True)
     st.markdown('<div class="sec-hdr">&#x1F517; Risk Dimension Correlation Matrix</div>', unsafe_allow_html=True)
     try:
-        _topics = df.index.get_level_values("topic").unique().tolist()
+        _topics = [t for t in df.index.get_level_values("topic").unique().tolist() if t not in _EXCLUDE_TOPICS]
         _last_n = min(30, len(df.columns))
         _recent_cols = df.columns[-_last_n:]
         _topic_means = {}
@@ -6294,7 +6295,7 @@ def render_threat_radar():
     try:
         if len(df.columns) >= 2:
             _d1, _d2 = df.columns[-1], df.columns[-2]
-            _all_topics = df.index.get_level_values("topic").unique()
+            _all_topics = [t for t in df.index.get_level_values("topic").unique() if t not in _EXCLUDE_TOPICS]
             _instab_topics = [t for t in _all_topics if "instab" in t.lower() or "tension" in t.lower() or "military" in t.lower() or "crisis" in t.lower()]
             if not _instab_topics:
                 _instab_topics = list(_all_topics)[:5]
@@ -6420,6 +6421,7 @@ page = st.session_state.get('page', 'home')
 # Solo tier: show pro-only pages with lock overlay
 _SOLO_LOCKED = _IS_SOLO and page in _PRO_ONLY_PAGES
 # -- scroll to top on every page load --
+st.markdown('<style>[data-baseweb="popover"]{z-index:999999 !important} [data-baseweb="popover"] ul{max-height:350px !important}</style>', unsafe_allow_html=True)
 st.markdown('<script>var m=window.parent.document.querySelector("section.main");if(m)m.scrollTop=0;</script>', unsafe_allow_html=True)
 
 if _SOLO_LOCKED:
