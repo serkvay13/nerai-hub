@@ -2989,9 +2989,19 @@ def render_news():
                 for a in gdelt_arts:
                     a['_src'] = a.get('_src', 'GDELT')
             if '🌐' in _src_mode or 'RSS' in _src_mode:
-                rss_arts = fetch_global_media_rss(cat_q_kw, max_per_feed=3)
+                rss_arts = fetch_global_media_rss(search_q, max_per_feed=3)
 
             articles = gdelt_arts + rss_arts
+
+            # Post-filter by country if selected
+            if _news_country_name:
+                _cn_low = _news_country_name.lower()
+                _cn_parts = _cn_low.split()
+                def _country_match(art):
+                    haystack = (art.get('title','') + ' ' + art.get('domain','') + ' ' + art.get('url','')).lower()
+                    return _cn_low in haystack or any(p in haystack for p in _cn_parts if len(p) > 3)
+                articles = [a for a in articles if _country_match(a)]
+
             # Sort by date desc
             articles.sort(key=lambda x: x.get('seendate', ''), reverse=True)
 
