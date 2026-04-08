@@ -6421,47 +6421,7 @@ page = st.session_state.get('page', 'home')
 # Solo tier: show pro-only pages with lock overlay
 _SOLO_LOCKED = _IS_SOLO and page in _PRO_ONLY_PAGES
 # -- scroll to top on every page load --
-st.markdown("""
-<style>
-[data-baseweb="popover"]{z-index:999999 !important}
-[data-baseweb="popover"] ul{max-height:350px !important}
-[data-baseweb="popover"] > div {position:absolute !important}
-</style>
-<script>
-(function(){
-  var obs = new MutationObserver(function(muts){
-    muts.forEach(function(m){
-      m.addedNodes.forEach(function(n){
-        if(!n.querySelector) return;
-        var pop = (n.matches && n.matches('[data-baseweb="popover"]')) ? n : n.querySelector('[data-baseweb="popover"]');
-        if(!pop) return;
-        var body = pop.closest('div[data-baseweb="popover"]') || pop;
-        var container = body.parentElement;
-        if(!container) return;
-        var selects = document.querySelectorAll('[data-baseweb="select"]');
-        var best = null; var bestD = 1e9;
-        selects.forEach(function(s){
-          var r = s.getBoundingClientRect();
-          if(r.width > 0){
-            var d = Math.abs(r.left - container.getBoundingClientRect().left) + Math.abs(r.top - container.getBoundingClientRect().top);
-            if(d < bestD){bestD = d; best = s;}
-          }
-        });
-        if(best){
-          var r = best.getBoundingClientRect();
-          var scrollY = window.scrollY || document.documentElement.scrollTop;
-          container.style.position = 'absolute';
-          container.style.top = (r.bottom + scrollY) + 'px';
-          container.style.left = r.left + 'px';
-          container.style.width = r.width + 'px';
-        }
-      });
-    });
-  });
-  obs.observe(document.body, {childList:true, subtree:true});
-})();
-</script>
-""", unsafe_allow_html=True)
+st.markdown('<style>[data-baseweb="popover"]{z-index:999999 !important} [data-baseweb="popover"] ul{max-height:350px !important}</style>', unsafe_allow_html=True)
 st.markdown('<script>var m=window.parent.document.querySelector("section.main");if(m)m.scrollTop=0;</script>', unsafe_allow_html=True)
 
 if _SOLO_LOCKED:
