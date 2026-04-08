@@ -23,7 +23,7 @@ jobs:
           python-version: '3.11'
 
       - name: Install data dependencies
-        run: pip install pandas feedparser yfinance
+        run: pip install pandas feedparser yfinance scipy
 
       - name: Run GDELT indices script
         run: python gdelt_indices.py
