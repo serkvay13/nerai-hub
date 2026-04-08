@@ -6422,6 +6422,24 @@ page = st.session_state.get('page', 'home')
 _SOLO_LOCKED = _IS_SOLO and page in _PRO_ONLY_PAGES
 # -- scroll to top on every page load --
 st.markdown('<style>[data-baseweb="popover"]{z-index:999999 !important} [data-baseweb="popover"] ul{max-height:350px !important}</style>', unsafe_allow_html=True)
+st.markdown("""<script>
+(function(){
+  var D=window.parent.document||document;
+  if(D._popFix) return;
+  D._popFix=true;
+  new MutationObserver(function(){
+    var p=D.querySelector('[data-baseweb="popover"]');
+    if(!p)return;
+    var r=p.getBoundingClientRect();
+    if(r.top>10||r.left>10)return;
+    var sels=D.querySelectorAll('[data-baseweb="select"]');
+    var o=null;
+    sels.forEach(function(s){if(s.contains(D.activeElement))o=s;});
+    if(!o)sels.forEach(function(s){var b=s.getBoundingClientRect();if(!o&&b.width>0)o=s;});
+    if(o){var sr=o.getBoundingClientRect();p.style.top=Math.round(sr.bottom)+'px';p.style.left=Math.round(sr.left)+'px';p.style.width=Math.round(sr.width)+'px';p.style.zIndex='999999';}
+  }).observe(D.body||D.documentElement,{childList:true,subtree:true});
+})();
+</script>""", unsafe_allow_html=True)
 st.markdown('<script>var m=window.parent.document.querySelector("section.main");if(m)m.scrollTop=0;</script>', unsafe_allow_html=True)
 
 if _SOLO_LOCKED:
