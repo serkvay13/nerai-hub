@@ -2975,72 +2975,72 @@ def render_news():
         </div>""", unsafe_allow_html=True)
 
         # ── Source selector ──
-            _src_mode = st.radio("Source", ["🌐 All Sources", "📡 GDELT + Google", "📰 Global Media RSS"],
-                                 index=0, horizontal=True, label_visibility='collapsed', key='news_src_mode')
-            st.markdown('<div style="height:4px"></div>', unsafe_allow_html=True)
+        _src_mode = st.radio("Source", ["🌐 All Sources", "📡 GDELT + Google", "📰 Global Media RSS"],
+                             index=0, horizontal=True, label_visibility='collapsed', key='news_src_mode')
+        st.markdown('<div style="height:4px"></div>', unsafe_allow_html=True)
 
-            with st.spinner('Fetching multi-source intelligence...'):
-                cat_q_kw = cat_queries.get(sel_cat, sel_cat)
-                search_q = cat_q_kw + (f' {_news_country_name}' if _news_country_name else '')
+        with st.spinner('Fetching multi-source intelligence...'):
+            cat_q_kw = cat_queries.get(sel_cat, sel_cat)
+            search_q = cat_q_kw + (f' {_news_country_name}' if _news_country_name else '')
 
-                gdelt_arts, rss_arts = [], []
-                if '🌐' in _src_mode or 'GDELT' in _src_mode:
-                    gdelt_arts = fetch_gdelt_news(search_q, max_records=10)
-                    for a in gdelt_arts:
-                        a['_src'] = a.get('_src', 'GDELT')
-                if '🌐' in _src_mode or 'RSS' in _src_mode:
-                    rss_arts = fetch_global_media_rss(cat_q_kw, max_per_feed=3)
+            gdelt_arts, rss_arts = [], []
+            if '🌐' in _src_mode or 'GDELT' in _src_mode:
+                gdelt_arts = fetch_gdelt_news(search_q, max_records=10)
+                for a in gdelt_arts:
+                    a['_src'] = a.get('_src', 'GDELT')
+            if '🌐' in _src_mode or 'RSS' in _src_mode:
+                rss_arts = fetch_global_media_rss(cat_q_kw, max_per_feed=3)
 
-                articles = gdelt_arts + rss_arts
-                # Sort by date desc
-                articles.sort(key=lambda x: x.get('seendate', ''), reverse=True)
+            articles = gdelt_arts + rss_arts
+            # Sort by date desc
+            articles.sort(key=lambda x: x.get('seendate', ''), reverse=True)
 
-            # Source stats
-            _gdelt_c = sum(1 for a in articles if a.get('_src') != 'RSS')
-            _rss_c = sum(1 for a in articles if a.get('_src') == 'RSS')
-            st.markdown(f"""<div style="display:flex;gap:12px;margin-bottom:10px;font-size:0.6rem;font-family:monospace;color:rgba(0,200,255,0.4);">
-                <span>📡 GDELT/Google: {_gdelt_c}</span>
-                <span>📰 Global RSS: {_rss_c}</span>
-                <span>∑ Total: {len(articles)}</span>
-            </div>""", unsafe_allow_html=True)
+        # Source stats
+        _gdelt_c = sum(1 for a in articles if a.get('_src') != 'RSS')
+        _rss_c = sum(1 for a in articles if a.get('_src') == 'RSS')
+        st.markdown(f"""<div style="display:flex;gap:12px;margin-bottom:10px;font-size:0.6rem;font-family:monospace;color:rgba(0,200,255,0.4);">
+            <span>📡 GDELT/Google: {_gdelt_c}</span>
+            <span>📰 Global RSS: {_rss_c}</span>
+            <span>∑ Total: {len(articles)}</span>
+        </div>""", unsafe_allow_html=True)
 
-            if articles:
-                for art in articles:
-                    title = art.get('title', 'No title')
-                    source = art.get('domain', '')
-                    url = art.get('url', '#')
-                    seendate = art.get('seendate', '')
-                    language = art.get('language', '')
-                    src_type = art.get('_src', 'GDELT')
-                    date_disp = seendate[:8] if len(seendate)>=8 else ''
-                    if date_disp:
-                        try:
-                            date_disp = pd.Timestamp(date_disp).strftime('%d %b %Y')
-                        except:
-                            pass
-                    src_badge_color = 'rgba(0,200,255,0.15)' if src_type == 'RSS' else 'rgba(255,180,0,0.15)'
-                    src_badge_text = '📰 RSS' if src_type == 'RSS' else '📡 GDELT'
-                    st.markdown(f"""
-                    <div class="news-card">
-                        <div class="news-title">
-                            <a href="{url}" target="_blank" style="color:#2a4060;text-decoration:none;">
-                                {title[:180]}{'...' if len(title)>180 else ''}
-                            </a>
-                        </div>
-                        <div style="display:flex;gap:14px;margin-top:6px;align-items:center;flex-wrap:wrap;">
-                            <div style="font-size:0.58rem;color:rgba(0,180,255,0.6);background:{src_badge_color};padding:2px 8px;border-radius:4px;font-family:monospace;">{src_badge_text}</div>
-                            <div class="news-source">🌐 {source}</div>
-                            <div class="news-date">📅 {date_disp}</div>
-                            {'<div style="font-size:0.58rem;color:rgba(100,180,255,0.3);font-family:monospace;border:1px solid rgba(0,150,255,0.15);border-radius:4px;padding:2px 8px;">LANG: '+language.upper()+'</div>' if language else ''}
-                        </div>
-                    </div>""", unsafe_allow_html=True)
-            else:
+        if articles:
+            for art in articles:
+                title = art.get('title', 'No title')
+                source = art.get('domain', '')
+                url = art.get('url', '#')
+                seendate = art.get('seendate', '')
+                language = art.get('language', '')
+                src_type = art.get('_src', 'GDELT')
+                date_disp = seendate[:8] if len(seendate)>=8 else ''
+                if date_disp:
+                    try:
+                        date_disp = pd.Timestamp(date_disp).strftime('%d %b %Y')
+                    except:
+                        pass
+                src_badge_color = 'rgba(0,200,255,0.15)' if src_type == 'RSS' else 'rgba(255,180,0,0.15)'
+                src_badge_text = '📰 RSS' if src_type == 'RSS' else '📡 GDELT'
                 st.markdown(f"""
-                <div style="text-align:center;padding:40px;color:rgba(100,150,200,0.4);font-family:monospace;font-size:0.8rem;">
-                    <div style="font-size:2rem;margin-bottom:12px;">📡</div>
-                    No articles found for "{sel_cat}".<br>
-                    <span style="font-size:0.65rem;">Sources may be temporarily unavailable.</span>
+                <div class="news-card">
+                    <div class="news-title">
+                        <a href="{url}" target="_blank" style="color:#2a4060;text-decoration:none;">
+                            {title[:180]}{'...' if len(title)>180 else ''}
+                        </a>
+                    </div>
+                    <div style="display:flex;gap:14px;margin-top:6px;align-items:center;flex-wrap:wrap;">
+                        <div style="font-size:0.58rem;color:rgba(0,180,255,0.6);background:{src_badge_color};padding:2px 8px;border-radius:4px;font-family:monospace;">{src_badge_text}</div>
+                        <div class="news-source">🌐 {source}</div>
+                        <div class="news-date">📅 {date_disp}</div>
+                        {'<div style="font-size:0.58rem;color:rgba(100,180,255,0.3);font-family:monospace;border:1px solid rgba(0,150,255,0.15);border-radius:4px;padding:2px 8px;">LANG: '+language.upper()+'</div>' if language else ''}
+                    </div>
                 </div>""", unsafe_allow_html=True)
+        else:
+            st.markdown(f"""
+            <div style="text-align:center;padding:40px;color:rgba(100,150,200,0.4);font-family:monospace;font-size:0.8rem;">
+                <div style="font-size:2rem;margin-bottom:12px;">📡</div>
+                No articles found for "{sel_cat}".<br>
+                <span style="font-size:0.65rem;">Sources may be temporarily unavailable.</span>
+            </div>""", unsafe_allow_html=True)
     _render_footer()
 
 
