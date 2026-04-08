@@ -1353,8 +1353,7 @@ def compute_country_alarms(_df_raw, country, top_n=5):
 # ═══════════════════════════════════════════════════════════════
 # GDELT NEWS FUNCTIONS
 # ═══════════════════════════════════════════════════════════════
-@st.cache_data(ttl=900)
-# ── Global Media RSS Feeds ──────────────────────────────────────
+# ── Global Media RSS Feeds ──────────────────────────────────────────────────
 _GLOBAL_RSS_FEEDS = {
     'BBC World': 'http://feeds.bbci.co.uk/news/world/rss.xml',
     'Al Jazeera': 'https://www.aljazeera.com/xml/rss/all.xml',
@@ -1398,6 +1397,7 @@ def fetch_global_media_rss(topic_query='', max_per_feed=3):
     all_articles.sort(key=lambda x: x.get('seendate', ''), reverse=True)
     return all_articles
 
+@st.cache_data(ttl=900)
 def fetch_gdelt_news(query_str, max_records=8):
     """Fetch news via Google News RSS (primary) + GDELT fallback. Filters last 2 days."""
     import xml.etree.ElementTree as ET
