@@ -3947,235 +3947,287 @@ def _build_qa_context(question, article_df, commodity_df):
 
 
 def _call_claude_for_qa(question, df_raw, trend_df, pred_df, insights_df):
-    """Enhanced multi-source Claude analysis for Insights Q&A."""
+    """Comprehensive Claude analysis using NERAI index data, predictions, and live news."""
     import anthropic, os, datetime
-    api_key = os.environ.get('ANTHROPIC_API_KEY', '')
-    if not api_key:
-        return ('<div style="background:#1a1a2e;border:1px solid #00d4ff33;border-radius:8px;padding:16px;">'
-            '<span style="color:#ff6b6b;">\u26a0 ANTHROPIC_API_KEY not configured.</span></div>')
-
-    today_str = datetime.date.today().strftime('%Y-%m-%d')
-    _pq = _parse_question(question)
-    if isinstance(_pq, dict):
-        country = _pq.get('country', '') or ''
-        topic   = _pq.get('topic', '')   or ''
-    elif isinstance(_pq, (list, tuple)) and len(_pq) >= 2:
-        country = str(_pq[0]) if _pq[0] else ''
-        topic   = str(_pq[1]) if _pq[1] else ''
-    else:
-        country, topic = '', ''
-
-    # Find ALL related topics from the question
-    q_low = question.lower()
-    related_topics = set()
-    for kw, topics_list in _QUESTION_KEYWORDS.items():
-        if kw in q_low:
-            related_topics.update(topics_list)
-    if topic and topic not in related_topics:
-        related_topics.add(topic)
-    if not related_topics:
-        related_topics = {'political_instability', 'international_crisis', 'military_escalation'}
-
-    sections = []
-    # ── 1. MULTI-TOPIC INDEX ANALYSIS ──
-    if df_raw is not None and not df_raw.empty:
-        ckey = 'country' if 'country' in df_raw.columns else None
-        tkey = 'topic' if 'topic' in df_raw.columns else None
-        if ckey and tkey and 'y' in df_raw.columns and 'ds' in df_raw.columns:
-            base_df = df_raw[df_raw[ckey].str.lower() == country.lower()] if country else df_raw
-            if not base_df.empty:
-                base_df = base_df.copy()
-                base_df['ds'] = pd.to_datetime(base_df['ds'], errors='coerce')
-                now = base_df['ds'].max()
-                idx_lines = []
-                for tp in related_topics:
-                    tdf = base_df[base_df[tkey].str.lower() == tp.lower()]
-                    if tdf.empty:
-                        continue
-                    d7  = tdf[tdf['ds'] >= now - pd.Timedelta(days=7)]
-                    d30 = tdf[tdf['ds'] >= now - pd.Timedelta(days=30)]
-                    d90 = tdf[tdf['ds'] >= now - pd.Timedelta(days=90)]
-                    avg7  = round(d7['y'].mean(), 2)  if not d7.empty  else None
-                    avg30 = round(d30['y'].mean(), 2) if not d30.empty else None
-                    avg90 = round(d90['y'].mean(), 2) if not d90.empty else None
-                    latest = round(tdf.sort_values('ds').iloc[-1]['y'], 2)
-                    chg7  = round((avg7 - avg30) / avg30 * 100, 1) if avg7 and avg30 and avg30 != 0 else 0
-                    chg30 = round((avg30 - avg90) / avg90 * 100, 1) if avg30 and avg90 and avg90 != 0 else 0
-                    peak90 = round(d90['y'].max(), 2) if not d90.empty else latest
-                    low90  = round(d90['y'].min(), 2) if not d90.empty else latest
-                    idx_lines.append(
-                        f'  {tp}: current={latest} | 7d_avg={avg7} | 30d_avg={avg30} | '
-                        f'90d_avg={avg90} | 7d_vs_30d={chg7:+.1f}% | 30d_vs_90d={chg30:+.1f}% | '
-                        f'90d_peak={peak90} | 90d_low={low90}')
-                if idx_lines:
-                    ctry_label = country.upper() if country else 'GLOBAL'
-                    sections.append(
-                        f'=== NERAI RISK INDEX ANALYSIS — {ctry_label} ===\n'
-                        f'Related topics: {chr(44).join(related_topics)}\n'
-                        'Multi-period trends:\n' + '\n'.join(idx_lines))
-
-                # Cross-topic movers
-                all_topics = base_df[tkey].unique()
-                top_movers = []
-                for tp in all_topics:
-                    tdf2 = base_df[base_df[tkey] == tp]
-                    d7x = tdf2[tdf2['ds'] >= now - pd.Timedelta(days=7)]
-                    d30x = tdf2[tdf2['ds'] >= now - pd.Timedelta(days=30)]
-                    if not d7x.empty and not d30x.empty and d30x['y'].mean() != 0:
-                        chg = round((d7x['y'].mean() - d30x['y'].mean()) / d30x['y'].mean() * 100, 1)
-                        top_movers.append((tp, chg))
-                top_movers.sort(key=lambda x: abs(x[1]), reverse=True)
-                if top_movers:
-                    mover_lines = [f'  {t}: {c:+.1f}%' for t, c in top_movers[:8]]
-                    sections.append('=== TOP MOVING INDICES (7d vs 30d) ===\n' + '\n'.join(mover_lines))
-
-    # ── 2. PREDICTION ANALYSIS — ALL RELATED TOPICS ──
-    if pred_df is not None and not pred_df.empty:
-        ckey = 'country' if 'country' in pred_df.columns else None
-        tkey = 'topic' if 'topic' in pred_df.columns else None
-        if ckey and tkey and 'ds' in pred_df.columns and 'yhat' in pred_df.columns:
-            pdf = pred_df.copy()
-            pdf['ds'] = pd.to_datetime(pdf['ds'], errors='coerce')
-            if country:
-                pdf = pdf[pdf[ckey].str.lower() == country.lower()]
-            pred_now = pd.Timestamp.now()
-            future = pdf[pdf['ds'] > pred_now]
-            past_pred = pdf[pdf['ds'] <= pred_now]
-            if not future.empty:
-                # Detailed forecast for RELATED topics
-                rel_lines = []
-                for tp in related_topics:
-                    fp = future[future[tkey].str.lower() == tp.lower()]
-                    if fp.empty:
-                        continue
-                    avg_fc = round(fp['yhat'].mean(), 2)
-                    max_fc = round(fp['yhat'].max(), 2)
-                    min_fc = round(fp['yhat'].min(), 2)
-                    # Model accuracy check
-                    acc_note = ''
-                    try:
-                        pp = past_pred[past_pred[tkey].str.lower() == tp.lower()]
-                        if not pp.empty and df_raw is not None and 'topic' in df_raw.columns:
-                            adf = df_raw[df_raw['topic'].str.lower() == tp.lower()]
-                            if not adf.empty:
-                                actual = adf.sort_values('ds').iloc[-1]['y']
-                                last_p = pp.sort_values('ds').iloc[-1]['yhat']
-                                dev = round((actual - last_p) / last_p * 100, 1) if last_p != 0 else 0
-                                acc_note = f' | model_dev={dev:+.1f}%'
-                    except Exception:
-                        pass
-                    rel_lines.append(f'  {tp}: forecast_avg={avg_fc} range=[{min_fc},{max_fc}]{acc_note}')
-                if rel_lines:
-                    sections.append('=== NERAI PREDICTION — RELATED TOPICS ===\n' + '\n'.join(rel_lines))
-
-                # Cross-topic comparison (ALL topics)
-                all_fc = future.groupby(tkey)['yhat'].agg(['mean','max','min']).round(2)
-                all_fc = all_fc.sort_values('mean', ascending=False)
-                comp_lines = []
-                rel_low = {r.lower() for r in related_topics}
-                for tp_name, row in all_fc.head(12).iterrows():
-                    marker = ' << RELATED' if tp_name.lower() in rel_low else ''
-                    comp_lines.append(f"  {tp_name}: avg={row['mean']} [{row['min']}-{row['max']}]{marker}")
-                if comp_lines:
-                    sections.append('=== CROSS-TOPIC PREDICTION RANKING (30d) ===\n' + '\n'.join(comp_lines))
-
-    # ── 3. LIVE NEWS from Multiple Sources ──
-    news_items = []
+    import pandas as _pd
     try:
-        search_term = question[:80]
-        if country:
-            cn_name = ''
-            for alias, code in _COUNTRY_ALIASES.items():
-                if code.lower() == country.lower():
-                    cn_name = alias.capitalize()
-                    break
-            if cn_name:
-                search_term = cn_name + ' ' + search_term
-        live_news = fetch_gdelt_news(search_term, max_records=6)
-        for art in live_news:
-            news_items.append(f"  [{art.get('domain','')}] {art.get('title','')} ({art.get('seendate','')[:8]})")
-    except Exception:
-        pass
-    try:
-        rss_news = fetch_global_media_rss(search_term, max_per_feed=2)
-        for art in rss_news[:6]:
-            news_items.append(f"  [{art.get('domain','')} RSS] {art.get('title','')} ({art.get('seendate','')[:8]})")
-    except Exception:
-        pass
-    if news_items:
-        sections.append('=== LIVE NEWS (Google News + Global Media RSS) ===\n' + '\n'.join(news_items[:12]))
+        api_key = os.environ.get('ANTHROPIC_API_KEY', '')
+        if not api_key:
+            return (
+                '<div style="background:#1a0d0d;border:1px solid #8a3a3a;border-radius:8px;'
+                'padding:14px;margin-top:14px;color:#ff9999;font-size:13px;">'
+                '\u26a0\ufe0f <b>ANTHROPIC_API_KEY</b> Streamlit Cloud Secrets b\u00f6l\u00fcm\u00fcnde tan\u0131ml\u0131 de\u011fil. '
+                'Settings \u2192 Secrets k\u0131sm\u0131na ekleyin.</div>'
+            )
+        today_str = datetime.datetime.now().strftime('%d %B %Y')
 
-    # insights_df news
-    if insights_df is not None and not insights_df.empty:
-        news_cols = [c for c in ['title','headline','text','event'] if c in insights_df.columns]
-        if news_cols:
-            nc = news_cols[0]
-            idf = insights_df
-            if country:
-                ctry_col = next((c for c in ['country','geo'] if c in insights_df.columns), None)
-                if ctry_col:
-                    mask = idf[ctry_col].str.lower().str.contains(country.lower(), na=False)
-                    idf = idf[mask] if mask.any() else insights_df
-            top_news = idf.head(6)
-            items = []
-            for _, row in top_news.iterrows():
-                s = str(row[nc])[:200]
-                if 'topic' in row.index:
-                    s = f"[{row['topic']}] {s}"
-                items.append('  ' + s)
-            if items:
-                sections.append('=== INDEX-DRIVING EVENTS ===\n' + '\n'.join(items))
+        _pq = _parse_question(question)
+        countries = _pq[0] if isinstance(_pq, (list, tuple)) and len(_pq) >= 2 else []
+        topics = _pq[1] if isinstance(_pq, (list, tuple)) and len(_pq) >= 2 else []
 
-    if not sections:
-        sections.append('Note: Limited structured data. Analysis will use general knowledge and live news.')
+        q_low = question.lower()
+        for kw, topic_list in _QUESTION_KEYWORDS.items():
+            if kw in q_low:
+                for t in topic_list:
+                    if t not in topics:
+                        topics.append(t)
 
-    context = '\n\n'.join(sections)
+        if not topics:
+            topics = ['political_instability', 'military_escalation', 'international_crisis',
+                      'military_crisis', 'coup', 'terrorism', 'deteriorating_bilateral_relations']
 
-    prompt = (
-        'You are a senior geopolitical risk analyst for the NERAI Intelligence Platform. '
-        'Today is ' + today_str + '.\n\n'
-        'Below is real-time intelligence data from NERAI indices, prediction engine, and multi-source news:\n\n'
-        + context +
-        '\n\nUSER QUESTION: ' + question + '\n\n'
-        'Provide a comprehensive analytical response following this framework:\n\n'
-        '1) INDEX ANALYSIS: Examine ALL related NERAI risk indices. Compare current values with '
-        '7-day, 30-day, and 90-day averages. Identify acceleration/deceleration patterns. Note which '
-        'indices are at historical highs/lows. Cross-reference with other moving indices.\n\n'
-        '2) PREDICTION & PROJECTION: Analyze forward forecasts across ALL related topics (not just one). '
-        'Identify convergence/divergence patterns. If multiple related indices are all rising/falling, '
-        'explain the compounding effect. Note model deviation to assess reliability.\n\n'
-        '3) CURRENT DEVELOPMENTS: Synthesize live news from Google News, Global Media RSS, and '
-        'index-driving events. Connect specific events to index movements. Identify catalysts.\n\n'
-        '4) STRATEGIC ASSESSMENT: Based on convergence of index data, predictions, and current events, '
-        'provide a forward-looking assessment with probability-weighted scenarios. Identify key triggers.\n\n'
-        'Use specific numbers from the data. Write in flowing paragraphs, not bullet points. '
-        'Do not use Markdown formatting. Respond in the same language as the question.'
-    )
+        sections = []
 
-    try:
+        if df_raw is not None and not df_raw.empty:
+            try:
+                date_cols = sorted([c for c in df_raw.columns if hasattr(c, 'strftime')])
+                if date_cols:
+                    now = date_cols[-1]
+                    d7  = now - _pd.Timedelta(days=7)
+                    d30 = now - _pd.Timedelta(days=30)
+                    d90 = now - _pd.Timedelta(days=90)
+                    cols_7d  = [c for c in date_cols if c >= d7]
+                    cols_30d = [c for c in date_cols if c >= d30]
+                    cols_90d = [c for c in date_cols if c >= d90]
+
+                    idx_lines = []
+                    target_countries = countries if countries else []
+                    if not target_countries and trend_df is not None and len(trend_df) > 0:
+                        target_countries = trend_df.sort_values('trend_pct', ascending=False)['country'].unique()[:3].tolist()
+
+                    for ccode in target_countries:
+                        cname = COUNTRY_NAMES.get(ccode, ccode)
+                        idx_lines.append(f"\n--- {cname} ({ccode}) ---")
+                        for tp in topics:
+                            try:
+                                row = df_raw.loc[(tp, ccode)]
+                                cur = round(float(row[date_cols[-1]]), 4) if date_cols[-1] in row.index else None
+                                avg7 = round(float(row[cols_7d].mean()), 4) if cols_7d else None
+                                avg30 = round(float(row[cols_30d].mean()), 4) if cols_30d else None
+                                avg90 = round(float(row[cols_90d].mean()), 4) if cols_90d else None
+                                peak7 = round(float(row[cols_7d].max()), 4) if cols_7d else None
+                                low7 = round(float(row[cols_7d].min()), 4) if cols_7d else None
+                                chg_7v30 = round((avg7 - avg30) / max(avg30, 0.0001) * 100, 1) if avg7 and avg30 else None
+                                chg_30v90 = round((avg30 - avg90) / max(avg90, 0.0001) * 100, 1) if avg30 and avg90 else None
+                                lbl = TOPIC_LABELS.get(tp, tp.replace('_', ' ').title())
+                                line = f"  {lbl}: current={cur}"
+                                if avg7 is not None: line += f" | 7d_avg={avg7}"
+                                if avg30 is not None: line += f" | 30d_avg={avg30}"
+                                if avg90 is not None: line += f" | 90d_avg={avg90}"
+                                if peak7 is not None: line += f" | 7d_peak={peak7} | 7d_low={low7}"
+                                if chg_7v30 is not None: line += f" | 7d_vs_30d={chg_7v30:+.1f}%"
+                                if chg_30v90 is not None: line += f" | 30d_vs_90d={chg_30v90:+.1f}%"
+                                idx_lines.append(line)
+                            except (KeyError, TypeError):
+                                pass
+
+                    mover_lines = []
+                    for tp in topics[:8]:
+                        try:
+                            tp_data = df_raw.loc[tp] if tp in df_raw.index.get_level_values(0) else None
+                            if tp_data is not None and not tp_data.empty:
+                                avg_recent = tp_data[cols_7d].mean(axis=1)
+                                avg_old = tp_data[cols_30d].mean(axis=1)
+                                pct_chg = ((avg_recent - avg_old) / avg_old.clip(lower=0.0001) * 100).dropna()
+                                if len(pct_chg) > 0:
+                                    top_rise = pct_chg.nlargest(3)
+                                    lbl = TOPIC_LABELS.get(tp, tp.replace('_', ' ').title())
+                                    for cc, val in top_rise.items():
+                                        cn = COUNTRY_NAMES.get(cc, cc)
+                                        mover_lines.append(f"  {lbl} in {cn}: {val:+.1f}% (7d vs 30d)")
+                        except Exception:
+                            pass
+
+                    if idx_lines:
+                        sections.append("=== NERAI INDEX VALUES (Real GDELT-based Risk Indices) ===\n"
+                                        "Data date: " + str(now.date()) + "\n" + "\n".join(idx_lines))
+                    if mover_lines:
+                        sections.append("=== TOP MOVERS: Related Topics Globally (7d vs 30d) ===\n" + "\n".join(mover_lines[:15]))
+            except Exception:
+                pass
+
+        if trend_df is not None and not trend_df.empty:
+            try:
+                trend_lines = []
+                for ccode in (countries if countries else []):
+                    cname = COUNTRY_NAMES.get(ccode, ccode)
+                    ct = trend_df[trend_df['country'] == ccode]
+                    for tp in topics:
+                        row = ct[ct['topic'] == tp]
+                        if not row.empty:
+                            r = row.iloc[0]
+                            lbl = TOPIC_LABELS.get(tp, tp.replace('_', ' ').title())
+                            pct = r.get('trend_pct', 0)
+                            dirn = r.get('direction', 'stable')
+                            trend_lines.append(f"  {cname} - {lbl}: trend={pct:+.1f}% ({dirn})")
+                if trend_lines:
+                    sections.append("=== NERAI FORECAST TRENDS (Predicted Direction) ===\n" + "\n".join(trend_lines))
+            except Exception:
+                pass
+
+        if pred_df is not None and not pred_df.empty:
+            try:
+                pred_lines = []
+                now_ts = _pd.Timestamp.now()
+                for ccode in (countries if countries else []):
+                    cname = COUNTRY_NAMES.get(ccode, ccode)
+                    cpred = pred_df[pred_df['country'] == ccode] if 'country' in pred_df.columns else pred_df
+                    for tp in topics:
+                        tp_pred = cpred[cpred['topic'] == tp] if 'topic' in cpred.columns else cpred
+                        if tp_pred.empty:
+                            continue
+                        tp_pred = tp_pred.sort_values('ds')
+                        hist = tp_pred[tp_pred['ds'] <= now_ts].tail(30)
+                        future = tp_pred[tp_pred['ds'] > now_ts].head(60)
+                        lbl = TOPIC_LABELS.get(tp, tp.replace('_', ' ').title())
+                        line = f"  {cname} - {lbl}:"
+                        if not hist.empty and 'yhat' in hist.columns:
+                            h_avg = round(float(hist['yhat'].mean()), 4)
+                            h_last = round(float(hist['yhat'].iloc[-1]), 4)
+                            line += f" recent_pred_avg={h_avg} | last_pred={h_last}"
+                        if not future.empty and 'yhat' in future.columns:
+                            f_avg = round(float(future['yhat'].mean()), 4)
+                            f_max = round(float(future['yhat'].max()), 4)
+                            f_min = round(float(future['yhat'].min()), 4)
+                            line += f" | forecast_avg={f_avg} | forecast_max={f_max} | forecast_min={f_min}"
+                            if 'yhat_upper' in future.columns:
+                                f_up = round(float(future['yhat_upper'].max()), 4)
+                                f_lo = round(float(future['yhat_lower'].min()), 4)
+                                line += f" | upper_bound={f_up} | lower_bound={f_lo}"
+                        pred_lines.append(line)
+
+                cross_lines = []
+                all_future = pred_df[pred_df['ds'] > now_ts] if 'ds' in pred_df.columns else _pd.DataFrame()
+                if not all_future.empty and 'topic' in all_future.columns and 'yhat' in all_future.columns:
+                    topic_avg = all_future.groupby('topic')['yhat'].mean().sort_values(ascending=False)
+                    for tp_name, val in topic_avg.head(20).items():
+                        marker = " [RELATED]" if tp_name in topics else ""
+                        lbl = TOPIC_LABELS.get(tp_name, tp_name.replace('_', ' ').title())
+                        cross_lines.append(f"  {lbl}: avg_forecast={val:.4f}{marker}")
+
+                if pred_lines:
+                    sections.append("=== NERAI PREDICTIONS (Model Forecasts) ===\n" + "\n".join(pred_lines))
+                if cross_lines:
+                    sections.append("=== CROSS-TOPIC PREDICTION RANKING (All Topics) ===\n" + "\n".join(cross_lines[:15]))
+            except Exception:
+                pass
+
+        try:
+            news_lines = []
+            search_terms = []
+            for tp in topics[:3]:
+                lbl = TOPIC_LABELS.get(tp, tp.replace('_', ' ').title())
+                search_terms.append(lbl)
+            for ccode in (countries[:2] if countries else []):
+                cname = COUNTRY_NAMES.get(ccode, ccode)
+                search_terms.append(cname)
+            search_q = ' '.join(search_terms[:4])
+            seen_titles = set()
+            if search_q:
+                gdelt_arts = fetch_gdelt_news(search_q, max_records=5)
+                rss_arts = fetch_global_media_rss(search_q, max_per_feed=2)
+                all_arts = (gdelt_arts or []) + (rss_arts or [])
+                for art in all_arts[:10]:
+                    ttl = art.get('title', '')[:120]
+                    if ttl and ttl not in seen_titles:
+                        seen_titles.add(ttl)
+                        src = art.get('domain', art.get('source', ''))
+                        dt = art.get('date', '')[:10]
+                        news_lines.append(f"  [{dt}] {ttl} ({src})")
+            if insights_df is not None and not insights_df.empty:
+                news_cols = [c for c in ['title', 'headline', 'text', 'event'] if c in insights_df.columns]
+                if news_cols:
+                    nc = news_cols[0]
+                    for _, row in insights_df.head(5).iterrows():
+                        s = str(row[nc])[:120]
+                        if s and s not in seen_titles:
+                            seen_titles.add(s)
+                            news_lines.append(f"  {s}")
+            if news_lines:
+                sections.append("=== LIVE NEWS & EVENTS ===\n" + "\n".join(news_lines[:12]))
+        except Exception:
+            pass
+
+        if insights_df is not None and not insights_df.empty:
+            try:
+                ins_lines = []
+                ctry_col = next((c for c in ['country', 'geo'] if c in insights_df.columns), None)
+                for ccode in (countries if countries else []):
+                    cname = COUNTRY_NAMES.get(ccode, ccode)
+                    if ctry_col:
+                        cdf = insights_df[insights_df[ctry_col].str.upper() == ccode.upper()]
+                    else:
+                        cdf = insights_df
+                    if not cdf.empty:
+                        if 'forecast_dir' in cdf.columns:
+                            dirs = cdf['forecast_dir'].value_counts().to_dict()
+                            ins_lines.append(f"  {cname}: forecast directions = {dirs}")
+                        if 'trend_pct' in cdf.columns:
+                            avg_t = round(float(cdf['trend_pct'].mean()), 1)
+                            ins_lines.append(f"  {cname}: avg trend = {avg_t:+.1f}%")
+                if ins_lines:
+                    sections.append("=== COUNTRY RISK INSIGHTS ===\n" + "\n".join(ins_lines))
+            except Exception:
+                pass
+
+        if not sections:
+            sections.append("Note: No structured NERAI data found for this query. Providing general analysis.")
+
+        context = "\n\n".join(sections)
+
+        prompt = (
+            "You are NERAI Intelligence Platform's senior geopolitical risk analyst. "
+            "Today: " + today_str + ".\n\n"
+            "IMPORTANT: Below is REAL data from NERAI's proprietary GDELT-based risk indices and "
+            "prediction models. These are actual quantitative measurements, NOT estimates. "
+            "You MUST reference specific numerical values from this data in your analysis.\n\n"
+            + context +
+            "\n\n=== USER QUESTION ===\n" + question + "\n\n"
+            "ANALYSIS FRAMEWORK (respond in structured paragraphs, NOT markdown):\n\n"
+            "1) INDEX ANALYSIS: Reference specific NERAI index values for each relevant topic. "
+            "Compare current values with 7-day, 30-day, and 90-day averages. Highlight which indices "
+            "are rising or falling and by how much (use the exact percentages from the data).\n\n"
+            "2) PREDICTION & PROJECTION: Use the NERAI prediction model forecasts. Compare predicted "
+            "values with recent actuals. Identify divergences between forecast and current trajectory. "
+            "Rank related topics by predicted future intensity.\n\n"
+            "3) CROSS-TOPIC ANALYSIS: Examine how different related indices interact. "
+            "If military_escalation is rising but dispute_settlement is also rising, what does that mean? "
+            "Identify convergence or divergence patterns across related topics.\n\n"
+            "4) CURRENT DEVELOPMENTS: Integrate live news with the index data. Which news events "
+            "correlate with index movements?\n\n"
+            "5) STRATEGIC ASSESSMENT: Synthesize all data into a forward-looking assessment with "
+            "probability-weighted scenarios.\n\n"
+            "CRITICAL: Always cite specific NERAI index values and prediction numbers. "
+            "Do NOT say 'data not provided' - use the actual numbers above. "
+            "Write in plain text paragraphs, NO markdown formatting. Respond in English."
+        )
+
         client = anthropic.Anthropic(api_key=api_key)
-        resp = client.messages.create(
+        msg = client.messages.create(
             model='claude-haiku-4-5-20251001',
-            max_tokens=2048,
+            max_tokens=4000,
             messages=[{'role': 'user', 'content': prompt}]
         )
-        answer = resp.content[0].text
+        narrative = msg.content[0].text.strip()
+
         return (
-            '<div style="background:linear-gradient(135deg,#0d1b2a,#1b2838);border:1px solid #00d4ff44;'
-            'border-radius:10px;padding:20px;margin:10px 0;line-height:1.8;color:#e0e0e0;'
-            'font-size:0.95rem;">'
-            '<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">'
-            '<span style="font-size:1.3em;">\U0001f52c</span>'
-            '<span style="color:#00d4ff;font-weight:600;font-size:1.05rem;">NERAI Deep Analysis</span></div>'
-            + answer.replace('\n', '<br>') +
-            '<div style="border-top:1px solid #00d4ff22;margin-top:14px;'
-            'padding-top:8px;font-size:0.75rem;color:#888;">'
-            'NERAI Intelligence \u00b7 Multi-source \u00b7 claude-haiku-4-5 \u00b7 ' + today_str +
-            ' \u00b7 Sources: Indices + Predictions + Google News + Global Media RSS</div></div>')
-    except Exception as e:
+            '<div style="background:linear-gradient(135deg,#0d1e38,#0a1628);'
+            'border:1px solid #2a5080;border-radius:12px;padding:20px;margin-top:16px;">'
+            '<div style="color:#5ba3f5;font-size:11px;font-weight:700;letter-spacing:2px;'
+            'margin-bottom:14px;">\U0001f916 NERAI AI ANALYSIS \u2014 INDEX-BASED ASSESSMENT</div>'
+            '<div style="color:#c8d8f0;font-size:14px;line-height:1.85;white-space:pre-wrap;">'
+            + narrative +
+            '</div>'
+            '<div style="color:#3a5a7a;font-size:10px;margin-top:14px;border-top:1px solid #1a3a5a;'
+            'padding-top:8px;">NERAI indices + predictions \u00b7 claude-haiku-4-5 \u00b7 ' + today_str + '</div>'
+            '</div>'
+        )
+    except Exception as _e:
         return (
-            '<div style="background:#1a1a2e;border:1px solid #ff6b6b33;border-radius:8px;padding:16px;">'
-            '<span style="color:#ff6b6b;">Analysis error: ' + str(e)[:200] + '</span></div>')
+            '<div style="background:#1a0808;border:1px solid #8a2a2a;border-radius:8px;'
+            'padding:12px;margin-top:12px;color:#ff9999;font-size:12px;">'
+            '\u26a0\ufe0f AI analysis error: ' + str(_e)[:300] + '</div>'
+        )
 
 def render_insights():
     nerai_premium_css.inject_page_header(
