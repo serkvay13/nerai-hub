@@ -4184,6 +4184,10 @@ def _call_claude_for_qa(question, df_raw, trend_df, pred_df, insights_df):
             + context +
             "\n\n=== USER QUESTION ===\n" + question + "\n\n"
             "ANALYSIS FRAMEWORK (respond in structured paragraphs, NOT markdown):\n\n"
+            "0) EXECUTIVE SUMMARY: Start with a 3-4 sentence executive summary that directly answers "
+            "the user question based on your full analysis. State the bottom-line conclusion, the key "
+            "evidence from NERAI indices and predictions supporting it, and the probability assessment. "
+            "This summary should give the reader the final answer upfront before the detailed analysis follows.\n\n"
             "1) INDEX ANALYSIS: Reference specific NERAI index values for each relevant topic. "
             "Compare current values with 7-day, 30-day, and 90-day averages. Highlight which indices "
             "are rising or falling and by how much (use the exact percentages from the data).\n\n"
@@ -4205,7 +4209,7 @@ def _call_claude_for_qa(question, df_raw, trend_df, pred_df, insights_df):
         client = anthropic.Anthropic(api_key=api_key)
         msg = client.messages.create(
             model='claude-haiku-4-5-20251001',
-            max_tokens=4000,
+            max_tokens=4500,
             messages=[{'role': 'user', 'content': prompt}]
         )
         narrative = msg.content[0].text.strip()
