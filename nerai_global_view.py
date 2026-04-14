@@ -487,12 +487,14 @@ const deckgl = new deck.DeckGL({{
   onHover: tooltipFn,
   getTooltip: null,
   layers: [
-    // Background: earth texture (Blue Marble from deck.gl-data)
-    new deck.BitmapLayer({{
+    // Background: dark earth sphere (6-vertex polygon, splits at antimeridian for proper tessellation)
+    new deck.SolidPolygonLayer({{
       id: 'earth-bg',
-      image: 'https://raw.githubusercontent.com/vasturiano/three-globe/master/example/img/earth-dark.jpg',
-      bounds: [-180, -90, 180, 90],
-      opacity: 0.55,
+      data: [[[-180, 90], [0, 90], [180, 90], [180, -90], [0, -90], [-180, -90]]],
+      getPolygon: d => d,
+      getFillColor: [18, 32, 58, 255],
+      stroked: false,
+      filled: true,
       pickable: false
     }}),
         ...layers
