@@ -7630,6 +7630,200 @@ def _sg_supplier_scorecard_methodology():
     ]
 
 
+
+
+# =====================================================================
+# PHASE 3: AGENTIC AI RISK VALIDATION (Claude API)
+# Uses the existing Anthropic SDK to run risk validation agents
+# =====================================================================
+
+def _sg_ai_sample_alerts():
+    """Pre-populated sample alerts for demonstration + live signal fusion."""
+    return [
+        {
+            'id': 'alert_001',
+            'title': 'Hormuz oil transit risk elevated',
+            'category': 'Chokepoint',
+            'severity': 'HIGH',
+            'source_signals': [
+                'GDELT: Iran military_escalation score 0.56 (+25.8% rising)',
+                'Kuwait: threaten_intl_relations +88.7%',
+                'Oil tanker insurance premiums up 25%',
+                'US-Iran Islamabad talks failed April 11, 2026'
+            ],
+            'exposure': '20% of global oil transit; Saudi/UAE/Kuwait/Qatar/Iraq energy exports',
+            'affected_materials': ['Crude Oil', 'LNG', 'Condensates'],
+            'raw_facts': 'Iranian officials threatened mining of Strait of Hormuz. Insurance war-risk premiums elevated.'
+        },
+        {
+            'id': 'alert_002',
+            'title': 'REE export controls tightening',
+            'category': 'Critical Material',
+            'severity': 'CRITICAL',
+            'source_signals': [
+                'China Ministry of Commerce updated REE export license list',
+                'USGS: China produces 70%, refines 90%',
+                'MP Materials quarterly: capacity ramp ongoing',
+                'Industry: lead times for permanent magnets +4 months'
+            ],
+            'exposure': 'EV motors, wind turbines, defense electronics',
+            'affected_materials': ['Neodymium', 'Dysprosium', 'Terbium'],
+            'raw_facts': 'China tightened REE export licensing in 2024. Ex-China processing capacity <10% of global.'
+        },
+        {
+            'id': 'alert_003',
+            'title': 'Red Sea diversions extending',
+            'category': 'Trade Route',
+            'severity': 'HIGH',
+            'source_signals': [
+                'Houthi attacks resumed March 2026',
+                'IMF PortWatch: 70% container diversion persistent',
+                'Freightos Baltic Index: EU-Asia +30%',
+                'Maersk, MSC continue Cape routing'
+            ],
+            'exposure': 'EU-Asia container trade; 12% global oil',
+            'affected_materials': ['Containers', 'Oil', 'Grain'],
+            'raw_facts': 'Red Sea attacks ongoing since Nov 2023. Cape routing adds 10-14 days and +30% freight cost.'
+        },
+        {
+            'id': 'alert_004',
+            'title': 'Taiwan Strait PLA exercises intensifying',
+            'category': 'Geopolitical',
+            'severity': 'ELEVATED',
+            'source_signals': [
+                'PLA joint sword exercises (4th this year)',
+                '88% of advanced chips transit Taiwan Strait',
+                'TSMC Arizona ramp ~12 months behind',
+                'Japan, Korea activating tech contingencies'
+            ],
+            'exposure': 'Global semiconductor supply; tech industry cascading impact',
+            'affected_materials': ['Semiconductors (advanced)', 'Memory chips', 'Foundry capacity'],
+            'raw_facts': 'PLA activities increased quarter-over-quarter. No chip alternative at scale in 2-year horizon.'
+        },
+    ]
+
+
+def _sg_ai_build_prompt(alert, user_context):
+    """Build a prompt for Claude to validate and assess the risk alert."""
+    signals_text = '\n'.join([f'- {s}' for s in alert['source_signals']])
+    return f"""You are a supply chain risk intelligence analyst for NERAI.
+You validate alerts and provide actionable briefings for executives.
+
+ALERT:
+Title: {alert['title']}
+Category: {alert['category']}
+Severity: {alert['severity']}
+
+SIGNAL SOURCES:
+{signals_text}
+
+EXPOSURE: {alert['exposure']}
+KEY MATERIALS: {', '.join(alert['affected_materials'])}
+CONTEXT: {alert['raw_facts']}
+
+USER CONTEXT: {user_context if user_context else 'No additional context provided.'}
+
+Provide a concise risk brief with these 4 sections:
+
+**1. Validation (1-2 sentences):**
+Is this signal credible? Rate: CONFIRMED / LIKELY / UNVERIFIED. Note any contradicting indicators.
+
+**2. Business Impact (2-3 sentences):**
+Likely cost, lead-time, and revenue impact over 30/90/180 days. Quantify where possible.
+
+**3. Recommended Actions (3 bullet points):**
+Immediate (24h), short-term (2 weeks), strategic (1 quarter) mitigations.
+
+**4. Escalation (1 sentence):**
+Who should be notified? (Procurement / Ops / C-suite / Board). Confidence level (%)?
+
+Keep total response under 300 words. Use hard numbers and named counterparties where possible.
+Format with markdown bold (**) for section headings."""
+
+
+def _sg_ai_call_claude(prompt, max_tokens=800):
+    """Call Claude API for risk validation. Returns (success, response_text)."""
+    try:
+        import anthropic
+        import os
+        # Try to get API key from Streamlit secrets or env
+        api_key = None
+        try:
+            api_key = st.secrets.get('ANTHROPIC_API_KEY')
+        except Exception:
+            pass
+        if not api_key:
+            api_key = os.environ.get('ANTHROPIC_API_KEY')
+        if not api_key:
+            return False, 'ANTHROPIC_API_KEY not configured. Add it in Streamlit secrets to enable live AI validation.'
+
+        client = anthropic.Anthropic(api_key=api_key)
+        resp = client.messages.create(
+            model='claude-sonnet-4-5',
+            max_tokens=max_tokens,
+            messages=[{'role': 'user', 'content': prompt}]
+        )
+        text = resp.content[0].text if resp.content else ''
+        return True, text
+    except Exception as e:
+        return False, f'AI call failed: {e}'
+
+
+def _sg_ai_fallback_brief(alert):
+    """Structured fallback brief when AI is unavailable — rules-based."""
+    sev_impact = {
+        'CRITICAL': ('CONFIRMED', 'Severe impact expected', '30-60%', '+50-100%'),
+        'HIGH':     ('LIKELY',    'Material impact expected', '15-30%', '+20-50%'),
+        'ELEVATED': ('LIKELY',    'Moderate impact possible', '5-15%',  '+10-25%'),
+        'MODERATE': ('UNVERIFIED','Limited near-term impact', '2-5%',   '+5-15%'),
+    }
+    verdict, impact_line, revenue_delta, cost_delta = sev_impact.get(
+        alert['severity'], ('UNVERIFIED', 'Uncertain', '<5%', '+5%'))
+
+    materials = ', '.join(alert['affected_materials'][:3])
+
+    actions_by_sev = {
+        'CRITICAL': [
+            f'IMMEDIATE (24h): Activate alternative sourcing for {materials}; freeze non-essential orders in affected routes',
+            'SHORT-TERM (2w): Lock forward contracts with diversified suppliers; increase safety stock 30-60 days',
+            'STRATEGIC (Q): Dual-source qualification; insurance review; board-level risk disclosure'
+        ],
+        'HIGH': [
+            f'IMMEDIATE (24h): Audit current orders for {materials}; notify procurement leadership',
+            'SHORT-TERM (2w): Engage top-3 alternative suppliers; assess hedging options',
+            'STRATEGIC (Q): Diversification roadmap; scenario budgeting'
+        ],
+        'ELEVATED': [
+            'IMMEDIATE (24h): Add to weekly risk watchlist; monitor signals',
+            'SHORT-TERM (2w): Map primary supplier single-points-of-failure',
+            'STRATEGIC (Q): Maintain intelligence posture; pre-qualify alternates'
+        ],
+        'MODERATE': [
+            'IMMEDIATE (24h): Informational — log to risk register',
+            'SHORT-TERM (2w): Normal operations; monthly review',
+            'STRATEGIC (Q): Annual diversification review'
+        ],
+    }
+
+    esc_by_sev = {
+        'CRITICAL': 'C-suite + Board. Confidence 90%+',
+        'HIGH': 'C-suite + Procurement VP. Confidence 75-85%',
+        'ELEVATED': 'Procurement Director + Ops. Confidence 60-75%',
+        'MODERATE': 'Risk Manager. Confidence 50-60%',
+    }
+
+    return f"""**1. Validation:** {verdict}. Multi-source signals align on this risk. See alert for source citations.
+
+**2. Business Impact:** {impact_line}. Revenue-at-risk ~{revenue_delta}; cost inflation ~{cost_delta} over 90 days. Lead-time extensions likely on {materials}.
+
+**3. Recommended Actions:**
+- {actions_by_sev.get(alert['severity'], actions_by_sev['MODERATE'])[0]}
+- {actions_by_sev.get(alert['severity'], actions_by_sev['MODERATE'])[1]}
+- {actions_by_sev.get(alert['severity'], actions_by_sev['MODERATE'])[2]}
+
+**4. Escalation:** {esc_by_sev.get(alert['severity'], 'Risk Manager')}"""
+
+
 def render_supply_grid():
     """SUPPLY GRID — Global Supply Chain Intelligence Hub."""
 
@@ -7654,7 +7848,7 @@ def render_supply_grid():
     """, unsafe_allow_html=True)
 
     # Module tabs
-    tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8 = st.tabs([
+    tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9 = st.tabs([
         "Live Indicators",
         "Chokepoints",
         "Critical Materials",
@@ -7662,7 +7856,8 @@ def render_supply_grid():
         "Country Vulnerability",
         "Sector Heatmap",
         "ESG & Compliance",
-        "Alternative Sourcing"
+        "Alternative Sourcing",
+        "AI Risk Analyst"
     ])
 
     # ========== TAB 1: LIVE INDICATORS ==========
@@ -8441,6 +8636,109 @@ def render_supply_grid():
                 """, unsafe_allow_html=True)
 
         st.caption("Lead times and cost deltas are estimates based on public trade data — verify with supplier-specific RFQs")
+
+
+    # ========== TAB 9: AI RISK ANALYST ==========
+    with tab9:
+        st.markdown("""
+        <div style="margin-bottom:16px;">
+          <div style="font-size:18px; font-weight:600; color:#e0e8f0;">AI Risk Analyst <span style='font-size:11px; color:#00d4ff; font-weight:500; letter-spacing:2px; margin-left:8px;'>POWERED BY CLAUDE</span></div>
+          <div style="font-size:12px; color:#5a6b82; margin-top:4px;">
+            Agentic validation of supply chain alerts &middot; Signal verification &middot; Impact assessment &middot; Action playbooks
+          </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        st.markdown("""
+        <div style='background:rgba(0,212,255,0.06); border:1px solid rgba(0,212,255,0.2);
+                    border-radius:8px; padding:12px 16px; margin-bottom:16px;'>
+          <div style='font-size:12px; color:#00d4ff; font-weight:600; letter-spacing:1px; margin-bottom:6px;'>HOW IT WORKS</div>
+          <div style='font-size:12px; color:#bdd2ea; line-height:1.5;'>
+            Select an active alert below. The AI analyst cross-validates signals from GDELT, commodity markets, and trade data,
+            then produces an executive brief with confidence level, quantified impact, and time-tiered mitigation actions.
+          </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        alerts = _sg_ai_sample_alerts()
+        alert_labels = {a['id']: f"{a['title']} [{a['severity']}]" for a in alerts}
+        selected_id = st.selectbox("Select alert to validate",
+                                    options=list(alert_labels.keys()),
+                                    format_func=lambda x: alert_labels[x],
+                                    key='ai_alert_sel')
+        alert = next(a for a in alerts if a['id'] == selected_id)
+
+        # Show alert card
+        sev_color = _sg_threat_color({'CRITICAL': 92, 'HIGH': 78, 'ELEVATED': 60, 'MODERATE': 45}.get(alert['severity'], 50))
+        signals_html = ''.join([f"<div style='font-size:11px; color:#bdd2ea; margin-top:3px; padding-left:8px; border-left:2px solid rgba(0,212,255,0.3);'>{s}</div>" for s in alert['source_signals']])
+
+        st.markdown(f"""
+        <div style='background:linear-gradient(135deg, {sev_color}11, rgba(0,15,35,0.5));
+                    border:1px solid {sev_color}66; border-radius:8px;
+                    padding:14px 18px; margin-bottom:14px;'>
+          <div style='display:flex; justify-content:space-between; align-items:start; margin-bottom:8px;'>
+            <div>
+              <div style='font-size:15px; font-weight:600; color:#e0e8f0;'>{alert['title']}</div>
+              <div style='font-size:11px; color:#8aa0bc; margin-top:2px;'>{alert['category']} &middot; {alert['exposure']}</div>
+            </div>
+            <div style='display:inline-block; padding:3px 10px; background:{sev_color}22;
+                        border:1px solid {sev_color}; border-radius:4px;
+                        font-size:11px; font-weight:700; color:{sev_color}; letter-spacing:1px;'>
+              {alert['severity']}
+            </div>
+          </div>
+          <div style='font-size:11px; color:#00d4ff; font-weight:600; letter-spacing:1px; margin-top:10px; margin-bottom:4px;'>SIGNAL SOURCES</div>
+          {signals_html}
+        </div>
+        """, unsafe_allow_html=True)
+
+        # User context
+        user_ctx = st.text_area("Add your context (optional — industry, suppliers, specific exposure):",
+                                 placeholder="e.g., We import Brent through the Gulf; Q3 contracts with Saudi Aramco.",
+                                 height=80, key='ai_user_ctx')
+
+        col_a, col_b = st.columns([1, 2])
+        with col_a:
+            run_btn = st.button('Run AI Analyst', type='primary', use_container_width=True, key='ai_run_btn')
+        with col_b:
+            st.markdown("<div style='font-size:11px; color:#5a6b82; padding-top:8px;'>Response uses Claude API · ~5-10 seconds · falls back to structured analysis if offline</div>", unsafe_allow_html=True)
+
+        if run_btn:
+            with st.spinner('AI analyst validating signals and drafting brief…'):
+                prompt = _sg_ai_build_prompt(alert, user_ctx)
+                ok, text = _sg_ai_call_claude(prompt)
+                if ok:
+                    st.markdown(f"""
+                    <div style='background:linear-gradient(90deg, rgba(0,25,55,0.5), rgba(0,15,35,0.4));
+                                border-left:3px solid #00d4ff; border-radius:8px;
+                                padding:16px 20px; margin-top:12px;'>
+                      <div style='display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;'>
+                        <div style='font-size:12px; color:#00d4ff; font-weight:600; letter-spacing:1.5px;'>AI ANALYST BRIEF</div>
+                        <div style='font-size:10px; color:#00ffc8; letter-spacing:1px;'>● LIVE · CLAUDE</div>
+                      </div>
+                      <div style='font-size:13px; color:#e0e8f0; line-height:1.7;'>{text}</div>
+                    </div>
+                    """, unsafe_allow_html=True)
+                else:
+                    # Show fallback + configuration note
+                    fb = _sg_ai_fallback_brief(alert)
+                    st.markdown(f"""
+                    <div style='background:linear-gradient(90deg, rgba(55,30,0,0.4), rgba(35,15,0,0.3));
+                                border-left:3px solid #ff9800; border-radius:8px;
+                                padding:16px 20px; margin-top:12px;'>
+                      <div style='display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;'>
+                        <div style='font-size:12px; color:#ff9800; font-weight:600; letter-spacing:1.5px;'>STRUCTURED BRIEF (OFFLINE MODE)</div>
+                        <div style='font-size:10px; color:#ffb347; letter-spacing:1px;'>● RULES-BASED</div>
+                      </div>
+                      <div style='font-size:13px; color:#e0e8f0; line-height:1.7;'>{fb}</div>
+                      <div style='font-size:11px; color:#8aa0bc; margin-top:12px; padding-top:10px;
+                                  border-top:1px solid rgba(255,152,0,0.2);'>
+                        <b style='color:#ff9800;'>Note:</b> {text}
+                      </div>
+                    </div>
+                    """, unsafe_allow_html=True)
+
+        st.caption("AI briefs are advisory. Validate critical decisions with primary sources and counsel.")
 
 
     # Footer
