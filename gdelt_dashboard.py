@@ -8033,6 +8033,110 @@ def _sg_scenario_library():
     }
 
 
+
+
+# =====================================================================
+# PHASE 5: WEATHER & PORT DISRUPTION ALERTS (NOAA/NWS)
+# Live weather alerts for major US ports + curated global port weather
+# =====================================================================
+
+def _sg_weather_ports():
+    """Major global ports with coordinates for weather monitoring."""
+    return [
+        # US ports — live NWS data
+        {'port': 'Los Angeles / Long Beach', 'country': 'USA', 'region': 'us', 'lat': 33.75, 'lon': -118.2,
+         'tz': 'US West', 'trade_rank': 1, 'key_cargo': 'Containers, autos (Pacific trade)'},
+        {'port': 'New York / New Jersey', 'country': 'USA', 'region': 'us', 'lat': 40.67, 'lon': -74.1,
+         'tz': 'US East', 'trade_rank': 3, 'key_cargo': 'Containers (transatlantic)'},
+        {'port': 'Savannah', 'country': 'USA', 'region': 'us', 'lat': 32.08, 'lon': -81.1,
+         'tz': 'US East', 'trade_rank': 5, 'key_cargo': 'Containers, forest products'},
+        {'port': 'Houston', 'country': 'USA', 'region': 'us', 'lat': 29.74, 'lon': -95.27,
+         'tz': 'US Gulf', 'trade_rank': 7, 'key_cargo': 'Oil, LNG, petrochemicals'},
+        {'port': 'Seattle / Tacoma', 'country': 'USA', 'region': 'us', 'lat': 47.58, 'lon': -122.35,
+         'tz': 'US West', 'trade_rank': 8, 'key_cargo': 'Containers (Alaska, Asia)'},
+        {'port': 'Norfolk / Hampton Roads', 'country': 'USA', 'region': 'us', 'lat': 36.93, 'lon': -76.32,
+         'tz': 'US East', 'trade_rank': 10, 'key_cargo': 'Containers, coal'},
+        # International ports — curated snapshot
+        {'port': 'Shanghai', 'country': 'CHN', 'region': 'intl', 'lat': 31.24, 'lon': 121.50,
+         'tz': 'Asia', 'trade_rank': 'Global #1', 'key_cargo': 'Containers (world largest)'},
+        {'port': 'Singapore', 'country': 'SGP', 'region': 'intl', 'lat': 1.27, 'lon': 103.84,
+         'tz': 'Asia', 'trade_rank': 'Global #2', 'key_cargo': 'Transshipment, oil, containers'},
+        {'port': 'Rotterdam', 'country': 'NLD', 'region': 'intl', 'lat': 51.93, 'lon': 4.14,
+         'tz': 'Europe', 'trade_rank': 'EU #1', 'key_cargo': 'Containers, oil, ores'},
+        {'port': 'Busan', 'country': 'KOR', 'region': 'intl', 'lat': 35.10, 'lon': 129.04,
+         'tz': 'Asia', 'trade_rank': 'Global #7', 'key_cargo': 'Containers (NE Asia hub)'},
+        {'port': 'Hamburg', 'country': 'DEU', 'region': 'intl', 'lat': 53.55, 'lon': 9.99,
+         'tz': 'Europe', 'trade_rank': 'EU #3', 'key_cargo': 'Containers, vehicles'},
+        {'port': 'Jebel Ali (Dubai)', 'country': 'ARE', 'region': 'intl', 'lat': 25.03, 'lon': 55.07,
+         'tz': 'Middle East', 'trade_rank': 'Regional #1', 'key_cargo': 'Containers, transshipment'},
+        {'port': 'Antwerp-Bruges', 'country': 'BEL', 'region': 'intl', 'lat': 51.26, 'lon': 4.4,
+         'tz': 'Europe', 'trade_rank': 'EU #2', 'key_cargo': 'Containers, chemicals'},
+        {'port': 'Yokohama / Tokyo', 'country': 'JPN', 'region': 'intl', 'lat': 35.45, 'lon': 139.65,
+         'tz': 'Asia', 'trade_rank': 'Japan #1', 'key_cargo': 'Autos, electronics, containers'},
+    ]
+
+
+@st.cache_data(ttl=1800)
+def _sg_fetch_nws_alerts():
+    """Fetch active NWS weather alerts for US ports. Returns (alerts_by_region, status_msg)."""
+    try:
+        import urllib.request, json, ssl
+        req = urllib.request.Request(
+            'https://api.weather.gov/alerts/active?status=actual&message_type=alert',
+            headers={
+                'User-Agent': 'NERAI-SupplyGrid/1.0 supply-chain-intel@neraicorp.com',
+                'Accept': 'application/geo+json'
+            }
+        )
+        ctx = ssl.create_default_context()
+        with urllib.request.urlopen(req, timeout=12, context=ctx) as resp:
+            data = json.loads(resp.read())
+        features = data.get('features', [])
+        # Extract key fields
+        out = []
+        for f in features:
+            props = f.get('properties', {})
+            event = props.get('event', '')
+            # Filter for supply-chain-relevant events
+            if any(kw in event for kw in ['Hurricane', 'Tropical', 'Storm', 'Flood', 'Winter', 'Freeze',
+                                           'Blizzard', 'Tornado', 'Wind', 'Fog', 'Marine', 'Gale', 'Heat']):
+                out.append({
+                    'event': event,
+                    'severity': props.get('severity', 'Unknown'),
+                    'urgency': props.get('urgency', 'Unknown'),
+                    'area': props.get('areaDesc', '')[:140],
+                    'headline': props.get('headline', '')[:200],
+                    'effective': props.get('effective', '')[:16].replace('T', ' '),
+                    'expires': props.get('expires', '')[:16].replace('T', ' '),
+                })
+        return out[:60], f'{len(out)} supply-chain-relevant alerts (of {len(features)} total)'
+    except Exception as e:
+        return [], f'NWS API unavailable: {str(e)[:80]}'
+
+
+def _sg_intl_port_weather():
+    """Curated current weather risk for international ports (updated weekly)."""
+    # Based on seasonal climate patterns and known recurring risks
+    return {
+        'Shanghai': {'status': 'NORMAL', 'note': 'Mid-April: stable; typhoon season Jun-Oct'},
+        'Singapore': {'status': 'MONITORING', 'note': 'Inter-monsoon: thunderstorms possible afternoons'},
+        'Rotterdam': {'status': 'NORMAL', 'note': 'Spring patterns; occasional North Sea gales'},
+        'Busan': {'status': 'NORMAL', 'note': 'Clear spring; typhoon season Aug-Oct'},
+        'Hamburg': {'status': 'NORMAL', 'note': 'Spring winds; Elbe tide-sensitive'},
+        'Jebel Ali (Dubai)': {'status': 'NORMAL', 'note': 'Pre-summer stable; Shamal winds possible'},
+        'Antwerp-Bruges': {'status': 'NORMAL', 'note': 'Spring conditions stable'},
+        'Yokohama / Tokyo': {'status': 'NORMAL', 'note': 'Cherry blossom season; typhoon risk Jul-Oct'},
+    }
+
+
+def _sg_weather_severity_color(severity):
+    return {
+        'Extreme': '#ff2952', 'Severe': '#ff7a00', 'Moderate': '#ffd000',
+        'Minor': '#7fb800', 'Unknown': '#8aa0bc',
+        'CRITICAL': '#ff2952', 'MONITORING': '#ffd000', 'NORMAL': '#00ffc8'
+    }.get(severity, '#8aa0bc')
+
+
 def render_supply_grid():
     """SUPPLY GRID — Global Supply Chain Intelligence Hub."""
 
@@ -8057,7 +8161,7 @@ def render_supply_grid():
     """, unsafe_allow_html=True)
 
     # Module tabs
-    tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9, tab10 = st.tabs([
+    tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9, tab10, tab11 = st.tabs([
         "Live Indicators",
         "Chokepoints",
         "Critical Materials",
@@ -8067,7 +8171,8 @@ def render_supply_grid():
         "ESG & Compliance",
         "Alternative Sourcing",
         "AI Risk Analyst",
-        "Scenario Simulator"
+        "Scenario Simulator",
+        "Weather Alerts"
     ])
 
     # ========== TAB 1: LIVE INDICATORS ==========
@@ -9074,6 +9179,132 @@ def render_supply_grid():
         """, unsafe_allow_html=True)
 
         st.caption("Projections are based on historical disruption analogs (1973 oil crisis, 2011 Fukushima, 2021 Suez Ever Given, 2022 Russia sanctions) · adjusted for 2026 supply chain structure")
+
+
+    # ========== TAB 11: WEATHER & PORT DISRUPTION ==========
+    with tab11:
+        st.markdown("""
+        <div style="margin-bottom:16px;">
+          <div style="font-size:18px; font-weight:600; color:#e0e8f0;">Weather &amp; Port Disruption Alerts</div>
+          <div style="font-size:12px; color:#5a6b82; margin-top:4px;">
+            Live NOAA/NWS alerts for US ports &middot; Curated global port weather &middot; Chokepoint exposure overlay
+          </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        # Fetch live NWS alerts
+        with st.spinner('Fetching live NOAA/NWS alerts…'):
+            alerts, nws_status = _sg_fetch_nws_alerts()
+
+        # Banner showing fetch status
+        banner_color = '#00ffc8' if alerts else '#ff9800'
+        st.markdown(f"""
+        <div style='background:linear-gradient(135deg, {banner_color}11, rgba(0,15,35,0.5));
+                    border:1px solid {banner_color}44; border-radius:8px;
+                    padding:10px 16px; margin-bottom:16px;
+                    display:flex; justify-content:space-between; align-items:center;'>
+          <div>
+            <span style='font-size:11px; color:{banner_color}; font-weight:600; letter-spacing:1.5px;'>NWS LIVE FEED</span>
+            <span style='font-size:11px; color:#8aa0bc; margin-left:10px;'>{nws_status}</span>
+          </div>
+          <div style='font-size:10px; color:#5a6b82;'>Cache 30 min &middot; api.weather.gov</div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        # Active alerts
+        if alerts:
+            st.markdown("<div style='font-size:14px; color:#00d4ff; font-weight:600; letter-spacing:1px; margin:12px 0 10px 0;'>ACTIVE US ALERTS (supply-chain relevant)</div>", unsafe_allow_html=True)
+            for a in alerts[:30]:
+                color = _sg_weather_severity_color(a['severity'])
+                st.markdown(f"""
+                <div style='background:linear-gradient(90deg, rgba(0,25,55,0.5), rgba(0,15,35,0.4));
+                            border-left:3px solid {color}; border-radius:8px;
+                            padding:10px 14px; margin-bottom:6px;'>
+                  <div style='display:flex; justify-content:space-between; align-items:start; margin-bottom:4px;'>
+                    <div style='font-size:13px; color:#e0e8f0; font-weight:600;'>{a['event']}</div>
+                    <div style='display:flex; gap:6px;'>
+                      <span style='font-size:10px; padding:2px 8px; background:{color}22;
+                                   border:1px solid {color}; border-radius:3px;
+                                   color:{color}; font-weight:700; letter-spacing:0.5px;'>
+                        {a['severity'].upper()}
+                      </span>
+                      <span style='font-size:10px; padding:2px 8px; background:rgba(0,212,255,0.1);
+                                   border:1px solid rgba(0,212,255,0.3); border-radius:3px;
+                                   color:#00d4ff; font-weight:600;'>{a['urgency']}</span>
+                    </div>
+                  </div>
+                  <div style='font-size:11px; color:#bdd2ea; margin-top:2px; line-height:1.4;'>{a['area']}</div>
+                  <div style='display:flex; gap:16px; margin-top:6px; font-size:10px; color:#5a6b82;'>
+                    <span>Start: <b style='color:#8aa0bc;'>{a['effective']}</b></span>
+                    <span>Expires: <b style='color:#8aa0bc;'>{a['expires']}</b></span>
+                  </div>
+                </div>
+                """, unsafe_allow_html=True)
+            if len(alerts) > 30:
+                st.caption(f"Showing 30 of {len(alerts)} alerts. Full data at weather.gov/alerts")
+        else:
+            st.info("No active supply-chain-relevant US alerts currently, or NWS feed unreachable. International port status below.")
+
+        # Port weather overview
+        st.markdown("<div style='font-size:14px; color:#00d4ff; font-weight:600; letter-spacing:1px; margin:24px 0 10px 0;'>GLOBAL PORT WEATHER STATUS</div>", unsafe_allow_html=True)
+
+        ports = _sg_weather_ports()
+        intl_weather = _sg_intl_port_weather()
+
+        # US ports — derive status from NWS alerts matching the state
+        us_alert_areas = ' | '.join([a.get('area', '') for a in alerts])
+
+        for p in ports:
+            if p['region'] == 'us':
+                # Check if port area appears in active alerts
+                port_city = p['port'].split(' / ')[0].split(' (')[0]
+                state_match = False
+                for keyword in [port_city, p['port'].split(' (')[0]]:
+                    if keyword in us_alert_areas:
+                        state_match = True
+                        break
+                # Coarse state matching
+                state_map = {'Los Angeles': 'Califor', 'Long Beach': 'Califor', 'Seattle': 'Washing',
+                             'Tacoma': 'Washing', 'New York': 'New York', 'Savannah': 'Georgia',
+                             'Houston': 'Texas', 'Norfolk': 'Virginia', 'Hampton Roads': 'Virginia'}
+                for k, st_kw in state_map.items():
+                    if k in p['port'] and st_kw in us_alert_areas:
+                        state_match = True
+                        break
+                status = 'MONITORING' if state_match else 'NORMAL'
+                note = 'Active NWS alerts in port region' if state_match else 'No active NWS alerts'
+                live_label = '● LIVE'
+            else:
+                w = intl_weather.get(p['port'], {'status': 'NORMAL', 'note': 'No current advisories'})
+                status = w['status']
+                note = w['note']
+                live_label = '○ CURATED'
+
+            color = _sg_weather_severity_color(status)
+            st.markdown(f"""
+            <div style='background:rgba(0,20,45,0.4); border:1px solid rgba(0,212,255,0.1);
+                        border-left:3px solid {color}; border-radius:6px;
+                        padding:10px 14px; margin-bottom:5px;
+                        display:flex; justify-content:space-between; align-items:center;'>
+              <div>
+                <div style='font-size:13px; color:#e0e8f0; font-weight:600;'>{p['port']}
+                  <span style='font-size:10px; color:#5a6b82; margin-left:6px;'>{p['country']} &middot; {p['tz']}</span>
+                </div>
+                <div style='font-size:11px; color:#8aa0bc; margin-top:2px;'>{note}</div>
+                <div style='font-size:10px; color:#5a6b82; margin-top:2px;'>{p['key_cargo']}</div>
+              </div>
+              <div style='text-align:right;'>
+                <span style='font-size:10px; padding:2px 8px; background:{color}22;
+                             border:1px solid {color}; border-radius:3px;
+                             color:{color}; font-weight:700; letter-spacing:1px;'>
+                  {status}
+                </span>
+                <div style='font-size:9px; color:#5a6b82; margin-top:3px;'>{live_label}</div>
+              </div>
+            </div>
+            """, unsafe_allow_html=True)
+
+        st.caption("US port status derived from live NWS alerts (geographic match). International ports show curated seasonal risk advisories updated weekly. For real-time global coverage, commercial sources (Windy.com, WeatherFlow, StormGeo) recommended.")
 
 
     # Footer
