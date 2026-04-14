@@ -9336,7 +9336,15 @@ page = st.session_state.get('page', 'home')
 if st.session_state.get('_last_page') != page:
     st.session_state['_last_page'] = page
     import streamlit.components.v1 as _nerai_components
-    _nerai_components.html("<script>try{window.parent.document.querySelector('section.main').scrollTo({top:0,behavior:'instant'});}catch(e){try{window.parent.scrollTo(0,0);}catch(_){}}</script>", height=0)
+    _nerai_components.html("""<script>
+(function(){ try{
+  var doc = window.parent.document;
+  var sels = ['section[data-testid=\"stMain\"]','div[data-testid=\"stAppViewContainer\"]','section.main','main','.main'];
+  for (var i=0;i<sels.length;i++){ var el = doc.querySelector(sels[i]); if(el){ el.scrollTop=0; } }
+  try{ window.parent.scrollTo(0,0); }catch(e){}
+  try{ doc.documentElement.scrollTop=0; doc.body.scrollTop=0; }catch(e){}
+}catch(e){} })();
+</script>""", height=0)
 
 # Solo tier: show pro-only pages with lock overlay
 _SOLO_LOCKED = _IS_SOLO and page in _PRO_ONLY_PAGES
