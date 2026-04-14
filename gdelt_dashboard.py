@@ -9335,7 +9335,8 @@ page = st.session_state.get('page', 'home')
 # Scroll to top whenever the user switches pages
 if st.session_state.get('_last_page') != page:
     st.session_state['_last_page'] = page
-    components.html("<script>try{window.parent.document.querySelector('section.main').scrollTo({top:0,behavior:'instant'});}catch(e){try{window.parent.scrollTo(0,0);}catch(_){}}</script>", height=0)
+    import streamlit.components.v1 as _nerai_components
+    _nerai_components.html("<script>try{window.parent.document.querySelector('section.main').scrollTo({top:0,behavior:'instant'});}catch(e){try{window.parent.scrollTo(0,0);}catch(_){}}</script>", height=0)
 
 # Solo tier: show pro-only pages with lock overlay
 _SOLO_LOCKED = _IS_SOLO and page in _PRO_ONLY_PAGES
