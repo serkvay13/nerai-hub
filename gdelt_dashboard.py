@@ -7979,13 +7979,13 @@ def _sg_scenario_library():
             },
             'price_projections': {
                 'TTF Natural Gas': '+80-150%',
-                'LNG spot': '+80-150%',
                 'LNG spot': '+60-120%',
                 'Fertilizer (urea)': '+40-80%',
                 'Steel (EU energy cost)': '+15-25%',
                 'Electricity (baseload)': '+30-50%',
             },
-         'Germany industrial recession (chemicals, steel, auto)',
+            'cascade_effects': [
+                'Germany industrial recession (chemicals, steel, auto)',
                 'Asian LNG competition drives global gas volatility',
                 'Hungary, Slovakia push for bilateral exceptions',
                 'Green hydrogen + nuclear buildouts accelerate',
@@ -9073,8 +9073,7 @@ def render_supply_grid():
         </div>
         """, unsafe_allow_html=True)
 
-        st.caption("Projections are based on historical disruption analogs (1973 oil crisis, 2011 Fukushima, 2021 Suez Ever Given, 2022 Russia sanctions) · adjusted for 2026 supply chain structure")
-
+        st.caption("Projections are based on historical disruption analogs (1973 oil crisis, 2011 Fukushima, 2021 Suez Ever Given, 2022 Suez Ever Given, 2022 Russia sanctions) · adjusted for 2026 sup
 
     # Footer
     st.markdown("""
