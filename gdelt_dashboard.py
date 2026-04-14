@@ -9073,7 +9073,8 @@ def render_supply_grid():
         </div>
         """, unsafe_allow_html=True)
 
-        st.caption("Projections are based on historical disruption analogs (1973 oil crisis, 2011 Fukushima, 2021 Suez Ever Given, 2022 Suez Ever Given, 2022 Russia sanctions) · adjusted for 2026 sup
+        st.caption("Projections are based on historical disruption analogs (1973 oil crisis, 2011 Fukushima, 2021 Suez Ever Given, 2022 Russia sanctions) · adjusted for 2026 supply chain structure")
+
 
     # Footer
     st.markdown("""
