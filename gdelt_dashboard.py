@@ -3,6 +3,7 @@ NERAI INTELLIGENCE HUB — Dashboard v3.0
 Multi-page: Home | Indices | Country Profile | News
 """
 import streamlit as st
+from nerai_supply_phase67 import render_trade_flows_tab, render_lpi_tab
 import pandas as pd
 import numpy as np
 import plotly.graph_objects as go
@@ -8161,7 +8162,7 @@ def render_supply_grid():
     """, unsafe_allow_html=True)
 
     # Module tabs
-    tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9, tab10, tab11 = st.tabs([
+    tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9, tab10, tab11, tab12, tab13 = st.tabs([
         "Live Indicators",
         "Chokepoints",
         "Critical Materials",
@@ -8172,7 +8173,9 @@ def render_supply_grid():
         "Alternative Sourcing",
         "AI Risk Analyst",
         "Scenario Simulator",
-        "Weather Alerts"
+        "Weather Alerts",
+        "Trade Flows",
+        "LPI Corridors"
     ])
 
     # ========== TAB 1: LIVE INDICATORS ==========
@@ -9306,6 +9309,14 @@ def render_supply_grid():
 
         st.caption("US port status derived from live NWS alerts (geographic match). International ports show curated seasonal risk advisories updated weekly. For real-time global coverage, commercial sources (Windy.com, WeatherFlow, StormGeo) recommended.")
 
+
+    # ========== TAB 12: TRADE FLOWS ==========
+    with tab12:
+        render_trade_flows_tab()
+
+    # ========== TAB 13: LPI CORRIDORS ==========
+    with tab13:
+        render_lpi_tab()
 
     # Footer
     st.markdown("""
