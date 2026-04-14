@@ -7801,7 +7801,7 @@ elif page == 'causality':   render_causality()
 elif page == 'scenarios':   render_scenarios()
 elif page == 'threat_radar': render_threat_radar()
 elif page == 'insights':    render_insights()
-    elif page == 'supply_grid': render_supply_grid()
+elif page == 'supply_grid': render_supply_grid()
 elif page == 'briefing':    render_briefing_room()
 elif page == 'api':         render_api()
 else:
