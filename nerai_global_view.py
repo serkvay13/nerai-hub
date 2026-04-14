@@ -1,5 +1,5 @@
 # =====================================================================
-# NERAI GLOBAL VIEW - 3D rotating globe (deck.gl) with 8 intelligence layers
+# NERAI GLOBAL VIEW - 3D rotating globe (ECharts-GL) with 8 intelligence layers
 # Chokepoints · Ports · Trade arcs · Sanctions · Materials · GDELT · Weather · Country Risk
 # =====================================================================
 import streamlit as st
@@ -42,37 +42,28 @@ def _gv_ports():
 def _gv_trade_arcs():
     """Key bilateral trade flows: source -> target."""
     return [
-        # Oil flows
         {'from_lat': 24.47, 'from_lon': 39.61, 'to_lat': 35.86, 'to_lon': 104.19, 'label': 'Saudi oil -> China', 'category': 'oil', 'intensity': 10},
         {'from_lat': 60.0, 'from_lon': 90.0, 'to_lat': 20.59, 'to_lon': 78.96, 'label': 'Russia oil -> India', 'category': 'oil', 'intensity': 9},
         {'from_lat': 60.0, 'from_lon': 90.0, 'to_lat': 35.86, 'to_lon': 104.19, 'label': 'Russia oil -> China', 'category': 'oil', 'intensity': 8},
         {'from_lat': 33.0, 'from_lon': 44.0, 'to_lat': 51.16, 'to_lon': 10.45, 'label': 'Iraq oil -> Germany', 'category': 'oil', 'intensity': 5},
-        # LNG flows
         {'from_lat': 29.76, 'from_lon': -95.37, 'to_lat': 51.16, 'to_lon': 10.45, 'label': 'US LNG -> Germany', 'category': 'lng', 'intensity': 8},
         {'from_lat': 25.29, 'from_lon': 51.53, 'to_lat': 35.67, 'to_lon': 139.65, 'label': 'Qatar LNG -> Japan', 'category': 'lng', 'intensity': 7},
         {'from_lat': -25.27, 'from_lon': 133.77, 'to_lat': 35.86, 'to_lon': 104.19, 'label': 'Australia LNG -> China', 'category': 'lng', 'intensity': 9},
-        # Chips
         {'from_lat': 23.69, 'from_lon': 120.96, 'to_lat': 35.86, 'to_lon': 104.19, 'label': 'Taiwan chips -> China', 'category': 'chip', 'intensity': 10},
         {'from_lat': 23.69, 'from_lon': 120.96, 'to_lat': 37.09, 'to_lon': -95.71, 'label': 'Taiwan chips -> USA', 'category': 'chip', 'intensity': 8},
         {'from_lat': 35.90, 'from_lon': 127.76, 'to_lat': 35.86, 'to_lon': 104.19, 'label': 'Korea chips -> China', 'category': 'chip', 'intensity': 9},
-        # Wheat
         {'from_lat': 60.0, 'from_lon': 90.0, 'to_lat': 26.82, 'to_lon': 30.80, 'label': 'Russia wheat -> Egypt', 'category': 'food', 'intensity': 6},
         {'from_lat': 60.0, 'from_lon': 90.0, 'to_lat': 38.96, 'to_lon': 35.24, 'label': 'Russia wheat -> Turkiye', 'category': 'food', 'intensity': 5},
-        # Iron Ore
         {'from_lat': -25.27, 'from_lon': 133.77, 'to_lat': 35.86, 'to_lon': 104.19, 'label': 'Australia iron -> China', 'category': 'ore', 'intensity': 10},
         {'from_lat': -14.23, 'from_lon': -51.92, 'to_lat': 35.86, 'to_lon': 104.19, 'label': 'Brazil iron -> China', 'category': 'ore', 'intensity': 8},
-        # REE / Materials
         {'from_lat': 35.86, 'from_lon': 104.19, 'to_lat': 51.16, 'to_lon': 10.45, 'label': 'China REE -> Germany', 'category': 'material', 'intensity': 7},
         {'from_lat': 35.86, 'from_lon': 104.19, 'to_lat': 37.09, 'to_lon': -95.71, 'label': 'China REE -> USA', 'category': 'material', 'intensity': 6},
-        # Cobalt
         {'from_lat': -4.04, 'from_lon': 21.75, 'to_lat': 35.86, 'to_lon': 104.19, 'label': 'DRC cobalt -> China', 'category': 'material', 'intensity': 8},
-        # Soybean
         {'from_lat': -14.23, 'from_lon': -51.92, 'to_lat': 35.86, 'to_lon': 104.19, 'label': 'Brazil soy -> China', 'category': 'food', 'intensity': 9},
     ]
 
 
 def _gv_sanctioned_countries():
-    """Key sanctioned jurisdictions with approximate centroids."""
     return [
         {'name': 'Russia', 'lat': 61.52, 'lon': 105.31, 'severity': 95},
         {'name': 'Iran', 'lat': 32.43, 'lon': 53.69, 'severity': 92},
@@ -86,7 +77,6 @@ def _gv_sanctioned_countries():
 
 
 def _gv_material_producers():
-    """Critical material source countries with approximate mine locations."""
     return [
         {'material': 'Rare Earths', 'country': 'China (Inner Mongolia)', 'lat': 40.82, 'lon': 111.65, 'share': 70},
         {'material': 'Rare Earths', 'country': 'Australia (Mt Weld)', 'lat': -28.85, 'lon': 122.55, 'share': 14},
@@ -107,7 +97,6 @@ def _gv_material_producers():
 
 
 def _gv_gdelt_events():
-    """Recent geopolitical event flares (curated from Week 15 W14 incidents)."""
     return [
         {'event': 'US-Iran talks failed (Islamabad)', 'lat': 33.68, 'lon': 73.04, 'severity': 'HIGH', 'days_ago': 3},
         {'event': 'Israel strikes in Lebanon (Black Wednesday)', 'lat': 33.89, 'lon': 35.50, 'severity': 'CRITICAL', 'days_ago': 5},
@@ -125,7 +114,6 @@ def _gv_gdelt_events():
 
 
 def _gv_weather_advisories():
-    """Current weather advisories for ports."""
     return [
         {'port': 'Houston', 'lat': 29.74, 'lon': -95.27, 'event': 'Heat advisory'},
         {'port': 'New York', 'lat': 40.67, 'lon': -74.1, 'event': 'Coastal fog'},
@@ -136,7 +124,6 @@ def _gv_weather_advisories():
 
 
 def _gv_country_risk_markers():
-    """Country-level risk markers (top high-risk + top low-risk for context)."""
     return [
         {'country': 'Germany', 'lat': 51.16, 'lon': 10.45, 'risk': 70},
         {'country': 'Japan', 'lat': 36.20, 'lon': 138.25, 'risk': 74},
@@ -153,108 +140,118 @@ def _gv_country_risk_markers():
 
 # ---------- COLOR HELPERS ----------
 
-def _severity_color(score):
-    """Return RGB tuple for severity 0-100."""
-    if score >= 90: return [255, 41, 82]       # red
-    if score >= 75: return [255, 122, 0]       # orange
-    if score >= 55: return [255, 208, 0]       # yellow
-    if score >= 30: return [127, 184, 0]       # green
-    return [0, 212, 255]                        # cyan
+def _severity_color_hex(score):
+    if score >= 90: return '#ff2952'
+    if score >= 75: return '#ff7a00'
+    if score >= 55: return '#ffd000'
+    if score >= 30: return '#7fb800'
+    return '#00d4ff'
 
 
-def _category_color(cat):
+def _category_color_hex(cat):
     return {
-        'oil': [255, 122, 0],
-        'lng': [0, 212, 255],
-        'chip': [200, 100, 255],
-        'food': [255, 208, 0],
-        'ore': [180, 150, 100],
-        'material': [255, 41, 200],
-    }.get(cat, [150, 150, 150])
+        'oil': '#ff7a00',
+        'lng': '#00d4ff',
+        'chip': '#c864ff',
+        'food': '#ffd000',
+        'ore': '#b49664',
+        'material': '#ff29c8',
+    }.get(cat, '#969696')
 
 
-# ---------- GLOBE HTML ----------
+def _event_severity_color(sev):
+    return {'CRITICAL': '#ff2952', 'HIGH': '#ff7a00', 'ELEVATED': '#ffd000', 'MODERATE': '#7fb800'}.get(sev, '#00d4ff')
+
+
+# ---------- GLOBE HTML (ECharts-GL) ----------
 
 def _build_globe_html(layers_enabled):
-    """Generate deck.gl HTML with GlobeView and selected layers."""
-    # Prepare data for each layer
-    chokepoints = [{'name': d['name'], 'coordinates': [d['lon'], d['lat']],
-                    'score': d['score'], 'color': _severity_color(d['score']) + [220],
-                    'radius': 40000 + (d['score'] * 2500), 'info': d['info']}
-                   for d in _gv_chokepoints()]
+    """Generate ECharts-GL HTML with 3D globe and selected intelligence layers."""
+    # Prepare series data
+    chokepoints = [{
+        'name': d['name'],
+        'value': [d['lon'], d['lat'], d['score']],
+        'itemStyle': {'color': _severity_color_hex(d['score'])},
+        'info': d['info']
+    } for d in _gv_chokepoints()]
 
-    ports = [{'name': d['name'], 'coordinates': [d['lon'], d['lat']], 'rank': d['rank']}
-             for d in _gv_ports()]
+    ports = [{
+        'name': d['name'],
+        'value': [d['lon'], d['lat'], 1],
+        'rank': d['rank']
+    } for d in _gv_ports()]
 
-    arcs = [{'source': [d['from_lon'], d['from_lat']],
-             'target': [d['to_lon'], d['to_lat']],
-             'label': d['label'], 'category': d['category'],
-             'color': _category_color(d['category']),
-             'width': 1 + d['intensity'] / 3}
-            for d in _gv_trade_arcs()]
+    arcs = [{
+        'coords': [[d['from_lon'], d['from_lat']], [d['to_lon'], d['to_lat']]],
+        'label': d['label'],
+        'lineStyle': {'color': _category_color_hex(d['category']), 'width': 1 + d['intensity'] / 3}
+    } for d in _gv_trade_arcs()]
 
-    sanctions = [{'name': d['name'], 'coordinates': [d['lon'], d['lat']],
-                  'severity': d['severity'],
-                  'radius': 300000, 'color': [255, 41, 82, 80]}
-                 for d in _gv_sanctioned_countries()]
+    sanctions = [{
+        'name': d['name'],
+        'value': [d['lon'], d['lat'], d['severity']],
+        'itemStyle': {'color': '#ff2952', 'opacity': 0.75}
+    } for d in _gv_sanctioned_countries()]
 
-    materials = [{'material': d['material'], 'country': d['country'],
-                  'coordinates': [d['lon'], d['lat']],
-                  'share': d['share'], 'size': 80000 + d['share'] * 2000}
-                 for d in _gv_material_producers()]
+    materials = [{
+        'name': d['material'] + ' · ' + d['country'],
+        'value': [d['lon'], d['lat'], d['share']],
+        'itemStyle': {'color': '#ff29c8'},
+        'share': d['share']
+    } for d in _gv_material_producers()]
 
-    events = [{'event': d['event'], 'coordinates': [d['lon'], d['lat']],
-               'severity': d['severity'],
-               'color': _severity_color({'CRITICAL': 92, 'HIGH': 78, 'ELEVATED': 60, 'MODERATE': 45}.get(d['severity'], 50)) + [255],
-               'radius': 60000 + (95 - d.get('days_ago', 5)) * 500,
-               'days_ago': d['days_ago']}
-              for d in _gv_gdelt_events()]
+    events = [{
+        'name': d['event'],
+        'value': [d['lon'], d['lat'], 1],
+        'itemStyle': {'color': _event_severity_color(d['severity'])},
+        'severity': d['severity'],
+        'days_ago': d['days_ago']
+    } for d in _gv_gdelt_events()]
 
-    weather = [{'port': d['port'], 'coordinates': [d['lon'], d['lat']], 'event': d['event']}
-               for d in _gv_weather_advisories()]
+    weather = [{
+        'name': d['port'],
+        'value': [d['lon'], d['lat'], 1],
+        'itemStyle': {'color': '#ffff00'},
+        'event': d['event']
+    } for d in _gv_weather_advisories()]
 
-    risk = [{'country': d['country'], 'coordinates': [d['lon'], d['lat']],
-             'risk': d['risk'], 'color': _severity_color(d['risk']) + [180],
-             'radius': 200000 + d['risk'] * 3000}
-            for d in _gv_country_risk_markers()]
+    risk = [{
+        'name': d['country'],
+        'value': [d['lon'], d['lat'], d['risk']],
+        'itemStyle': {'color': _severity_color_hex(d['risk']), 'opacity': 0.7}
+    } for d in _gv_country_risk_markers()]
 
-    data_json = json.dumps({
+    payload = json.dumps({
         'chokepoints': chokepoints, 'ports': ports, 'arcs': arcs,
         'sanctions': sanctions, 'materials': materials, 'events': events,
         'weather': weather, 'risk': risk
     })
+    enabled = json.dumps(layers_enabled)
 
-    layers_json = json.dumps(layers_enabled)
-
-    html = f"""
+    html = """
 <!DOCTYPE html>
 <html>
 <head>
 <meta charset="utf-8">
-<script src="https://unpkg.com/deck.gl@8.9.33/dist.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/echarts-gl@2.0.9/dist/echarts-gl.min.js"></script>
 <style>
-  body {{ margin: 0; padding: 0; background: #0a0e17; color: #e0e8f0;
-         font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; }}
-  #container {{ position: relative; width: 100%; height: 720px; background: #0a0e17; }}
-  #tooltip {{ position: absolute; pointer-events: none; z-index: 10;
-              background: linear-gradient(135deg, rgba(0,25,55,0.95), rgba(0,15,35,0.95));
-              border: 1px solid rgba(0,212,255,0.4); border-radius: 6px;
-              padding: 10px 14px; font-size: 12px; max-width: 300px;
-              box-shadow: 0 4px 20px rgba(0,212,255,0.2); display: none; }}
-  #tooltip .title {{ color: #00d4ff; font-weight: 700; letter-spacing: 0.5px;
-                     margin-bottom: 4px; font-size: 11px; text-transform: uppercase; }}
-  #tooltip .content {{ color: #e0e8f0; line-height: 1.5; }}
-  #legend {{ position: absolute; top: 12px; right: 12px; z-index: 5;
-             background: rgba(0,15,35,0.85); border: 1px solid rgba(0,212,255,0.2);
-             border-radius: 8px; padding: 10px 14px; font-size: 11px;
-             color: #bdd2ea; max-width: 240px; }}
-  #legend .item {{ display:flex; align-items:center; gap:8px; margin:4px 0; }}
-  #legend .dot {{ width:10px; height:10px; border-radius:50%; flex-shrink:0; }}
+  body { margin:0; padding:0; background:#0a0e17; color:#e0e8f0;
+         font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; overflow:hidden; }
+  #container { width:100%; height:720px; }
+  #legend { position:absolute; top:12px; right:12px; z-index:5;
+            background:rgba(0,15,35,0.85); border:1px solid rgba(0,212,255,0.25);
+            border-radius:8px; padding:10px 14px; font-size:11px; color:#bdd2ea; max-width:240px; }
+  #legend .item { display:flex; align-items:center; gap:8px; margin:4px 0; }
+  #legend .dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+  #errbox { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+            padding:14px 20px; background:rgba(255,41,82,0.1); border:1px solid #ff2952;
+            border-radius:8px; color:#ff7a00; font-size:12px; max-width:500px; display:none; }
 </style>
 </head>
 <body>
 <div id="container"></div>
-<div id="tooltip"></div>
+<div id="errbox"></div>
 <div id="legend">
   <div style="color:#00d4ff; font-weight:700; letter-spacing:1.5px; margin-bottom:6px;
               border-bottom:1px solid rgba(0,212,255,0.2); padding-bottom:4px;">LEGEND</div>
@@ -268,242 +265,108 @@ def _build_globe_html(layers_enabled):
   <div class="item"><div class="dot" style="background:#ffff00"></div>Weather advisory</div>
   <div style="margin-top:8px; color:#5a6b82; font-size:10px;">Trade arcs colored by commodity · drag to rotate</div>
 </div>
-
 <script>
-const D = {data_json};
-const ENABLED = {layers_json};
+const D = __PAYLOAD__;
+const EN = __ENABLED__;
 
-function rgbaOrRgb(c) {{
-  if (c.length === 3) return c.concat([200]);
-  return c;
-}}
+function waitAndRender() {
+  if (typeof echarts === 'undefined') {
+    document.getElementById('errbox').style.display='block';
+    document.getElementById('errbox').textContent='ECharts library failed to load';
+    return;
+  }
+  if (!echarts.getMap && !echarts.registerMap) {
+    // ECharts-GL not loaded yet, wait
+    setTimeout(waitAndRender, 100);
+    return;
+  }
 
-const layers = [];
+  const chart = echarts.init(document.getElementById('container'));
+  const series = [];
 
-// Layer 1: Chokepoints (pulsing scatter)
-if (ENABLED.chokepoints) {{
-  layers.push(new deck.ScatterplotLayer({{
-    id: 'chokepoints',
-    data: D.chokepoints,
-    getPosition: d => d.coordinates,
-    getFillColor: d => rgbaOrRgb(d.color),
-    getRadius: d => d.radius,
-    radiusUnits: 'meters',
-    radiusMinPixels: 5,
-    radiusMaxPixels: 22,
-    stroked: true,
-    getLineColor: [255, 255, 255, 200],
-    lineWidthMinPixels: 1,
-    pickable: true
-  }}));
-}}
+  function scatter(name, data, symbolSize) {
+    return {
+      name: name, type: 'scatter3D', coordinateSystem: 'globe',
+      data: data, symbolSize: symbolSize || 8,
+      itemStyle: { borderColor: 'rgba(255,255,255,0.6)', borderWidth: 1 },
+      emphasis: { itemStyle: { borderColor: '#fff', borderWidth: 2 }, label: { show: true, formatter: '{b}', color: '#fff', backgroundColor: 'rgba(0,15,35,0.9)', padding: [4,8], borderRadius: 4 } },
+      blendMode: 'source-over'
+    };
+  }
 
-// Layer 2: Sanctioned countries (glow circles)
-if (ENABLED.sanctions) {{
-  layers.push(new deck.ScatterplotLayer({{
-    id: 'sanctions',
-    data: D.sanctions,
-    getPosition: d => d.coordinates,
-    getFillColor: d => d.color,
-    getRadius: d => d.radius,
-    radiusUnits: 'meters',
-    radiusMinPixels: 12,
-    radiusMaxPixels: 60,
-    stroked: true,
-    getLineColor: [255, 41, 82, 180],
-    lineWidthMinPixels: 2,
-    pickable: true
-  }}));
-}}
+  if (EN.chokepoints) series.push(Object.assign(scatter('Chokepoints', D.chokepoints, function(v){return 6 + v[2]/12;}), {}));
+  if (EN.ports) series.push(scatter('Ports', D.ports, 5));
+  if (EN.sanctions) series.push(scatter('Sanctions', D.sanctions, 14));
+  if (EN.materials) series.push(scatter('Materials', D.materials, function(v){return 5 + v[2]/15;}));
+  if (EN.events) series.push(scatter('Events', D.events, 10));
+  if (EN.weather) series.push(scatter('Weather', D.weather, 8));
+  if (EN.risk) series.push(scatter('Country Risk', D.risk, function(v){return 4 + v[2]/15;}));
 
-// Layer 3: Country risk markers
-if (ENABLED.risk) {{
-  layers.push(new deck.ScatterplotLayer({{
-    id: 'risk',
-    data: D.risk,
-    getPosition: d => d.coordinates,
-    getFillColor: d => d.color,
-    getRadius: d => d.radius,
-    radiusUnits: 'meters',
-    radiusMinPixels: 4,
-    radiusMaxPixels: 20,
-    stroked: false,
-    pickable: true,
-    opacity: 0.6
-  }}));
-}}
+  if (EN.arcs) {
+    series.push({
+      name: 'Trade Arcs', type: 'lines3D', coordinateSystem: 'globe',
+      data: D.arcs,
+      effect: { show: true, period: 4, trailWidth: 2, trailLength: 0.4, trailOpacity: 0.8 },
+      blendMode: 'lighter',
+      lineStyle: { width: 1.5, opacity: 0.7 }
+    });
+  }
 
-// Layer 4: Ports (small bright dots)
-if (ENABLED.ports) {{
-  layers.push(new deck.ScatterplotLayer({{
-    id: 'ports',
-    data: D.ports,
-    getPosition: d => d.coordinates,
-    getFillColor: [0, 212, 255, 230],
-    getRadius: 40000,
-    radiusUnits: 'meters',
-    radiusMinPixels: 3,
-    radiusMaxPixels: 8,
-    stroked: true,
-    getLineColor: [0, 255, 200, 255],
-    lineWidthMinPixels: 1,
-    pickable: true
-  }}));
-}}
+  const option = {
+    backgroundColor: '#0a0e17',
+    tooltip: {
+      trigger: 'item',
+      backgroundColor: 'rgba(0,15,35,0.95)',
+      borderColor: 'rgba(0,212,255,0.5)',
+      borderWidth: 1,
+      textStyle: { color: '#e0e8f0', fontSize: 11 },
+      formatter: function(p) {
+        const d = p.data || {};
+        let html = '<div style="color:#00d4ff;font-weight:700;letter-spacing:0.5px;margin-bottom:4px;font-size:10px;">'+(p.seriesName||'').toUpperCase()+'</div>';
+        html += '<div style="font-weight:600;">'+(d.name||p.name||'')+'</div>';
+        if (d.info) html += '<div style="color:#bdd2ea;margin-top:3px;">'+d.info+'</div>';
+        if (d.rank) html += '<div style="color:#8aa0bc;margin-top:3px;">'+d.rank+'</div>';
+        if (d.severity) html += '<div style="color:#ff7a00;margin-top:3px;">'+d.severity+(d.days_ago?' · '+d.days_ago+' days ago':'')+'</div>';
+        if (d.event && p.seriesName==='Weather') html += '<div style="color:#ffd000;margin-top:3px;">'+d.event+'</div>';
+        if (typeof d.share !== 'undefined') html += '<div style="color:#ff29c8;margin-top:3px;">Global share: '+d.share+'%</div>';
+        if (d.label) html += '<div style="color:#bdd2ea;margin-top:3px;">'+d.label+'</div>';
+        return html;
+      }
+    },
+    globe: {
+      globeRadius: 100,
+      globeOuterRadius: 110,
+      environment: '#0a0e17',
+      shading: 'color',
+      itemStyle: { color: '#1a2f4e' },
+      atmosphere: { show: true, color: '#00d4ff', glowPower: 4, innerGlowPower: 2 },
+      light: {
+        main: { color: '#ffffff', intensity: 1.5, shadow: false, alpha: 40, beta: 40 },
+        ambient: { color: '#ffffff', intensity: 0.4 }
+      },
+      viewControl: {
+        autoRotate: true,
+        autoRotateAfterStill: 3,
+        autoRotateSpeed: 5,
+        distance: 200,
+        alpha: 25,
+        beta: 160
+      },
+      postEffect: { enable: true, bloom: { enable: true, bloomIntensity: 0.15 } }
+    },
+    series: series
+  };
 
-// Layer 5: Trade arcs
-if (ENABLED.arcs) {{
-  layers.push(new deck.ArcLayer({{
-    id: 'trade-arcs',
-    data: D.arcs,
-    getSourcePosition: d => d.source,
-    getTargetPosition: d => d.target,
-    getSourceColor: d => d.color.concat([180]),
-    getTargetColor: d => d.color.concat([220]),
-    getWidth: d => d.width,
-    widthMinPixels: 1,
-    widthMaxPixels: 4,
-    greatCircle: true,
-    pickable: true
-  }}));
-}}
+  chart.setOption(option);
+  window.addEventListener('resize', function(){ chart.resize(); });
+}
 
-// Layer 6: Material producers (diamond markers)
-if (ENABLED.materials) {{
-  layers.push(new deck.ScatterplotLayer({{
-    id: 'materials',
-    data: D.materials,
-    getPosition: d => d.coordinates,
-    getFillColor: [255, 41, 200, 220],
-    getRadius: d => d.size,
-    radiusUnits: 'meters',
-    radiusMinPixels: 4,
-    radiusMaxPixels: 14,
-    stroked: true,
-    getLineColor: [255, 255, 255, 180],
-    lineWidthMinPixels: 1,
-    pickable: true
-  }}));
-}}
-
-// Layer 7: GDELT events (pulsing flares)
-if (ENABLED.events) {{
-  layers.push(new deck.ScatterplotLayer({{
-    id: 'events',
-    data: D.events,
-    getPosition: d => d.coordinates,
-    getFillColor: d => d.color,
-    getRadius: d => d.radius,
-    radiusUnits: 'meters',
-    radiusMinPixels: 6,
-    radiusMaxPixels: 18,
-    stroked: true,
-    getLineColor: [255, 255, 255, 255],
-    lineWidthMinPixels: 2,
-    pickable: true
-  }}));
-}}
-
-// Layer 8: Weather advisories
-if (ENABLED.weather) {{
-  layers.push(new deck.IconLayer({{
-    id: 'weather',
-    data: D.weather,
-    getPosition: d => d.coordinates,
-    getSize: 32,
-    sizeScale: 1,
-    getColor: [255, 255, 0, 230],
-    // Using text layer fallback with triangle-like rendering via scatter
-    getIcon: () => 'weather',
-    iconAtlas: null,
-    pickable: true
-  }}));
-  // Fallback: use scatter for weather since icon atlas unavailable
-  layers.push(new deck.ScatterplotLayer({{
-    id: 'weather-dots',
-    data: D.weather,
-    getPosition: d => d.coordinates,
-    getFillColor: [255, 255, 0, 200],
-    getRadius: 90000,
-    radiusUnits: 'meters',
-    radiusMinPixels: 5,
-    radiusMaxPixels: 12,
-    stroked: true,
-    getLineColor: [255, 200, 0, 255],
-    lineWidthMinPixels: 2,
-    pickable: true
-  }}));
-}}
-
-// Tooltip handler
-function tooltipFn(info) {{
-  const tt = document.getElementById('tooltip');
-  if (!info || !info.object) {{ tt.style.display = 'none'; return; }}
-  const o = info.object;
-  let title = '', content = '';
-  if (info.layer.id === 'chokepoints') {{
-    title = 'CHOKEPOINT';
-    content = '<b>' + o.name + '</b><br>' + o.info;
-  }} else if (info.layer.id === 'ports') {{
-    title = 'PORT';
-    content = '<b>' + o.name + '</b><br>' + o.rank;
-  }} else if (info.layer.id === 'trade-arcs') {{
-    title = 'TRADE FLOW · ' + o.category.toUpperCase();
-    content = o.label;
-  }} else if (info.layer.id === 'sanctions') {{
-    title = 'SANCTIONED';
-    content = '<b>' + o.name + '</b><br>Severity: ' + o.severity + '/100';
-  }} else if (info.layer.id === 'materials') {{
-    title = 'CRITICAL MATERIAL';
-    content = '<b>' + o.material + '</b><br>' + o.country + '<br>Global share: ' + o.share + '%';
-  }} else if (info.layer.id === 'events') {{
-    title = 'GEOPOLITICAL EVENT · ' + o.severity;
-    content = '<b>' + o.event + '</b><br>' + o.days_ago + ' days ago';
-  }} else if (info.layer.id === 'weather-dots') {{
-    title = 'WEATHER ADVISORY';
-    content = '<b>' + o.port + '</b><br>' + o.event;
-  }} else if (info.layer.id === 'risk') {{
-    title = 'COUNTRY RISK';
-    content = '<b>' + o.country + '</b><br>Risk score: ' + o.risk + '/100';
-  }}
-  tt.innerHTML = '<div class="title">' + title + '</div><div class="content">' + content + '</div>';
-  tt.style.display = 'block';
-  tt.style.left = (info.x + 12) + 'px';
-  tt.style.top = (info.y + 12) + 'px';
-}}
-
-const deckgl = new deck.DeckGL({{
-  container: 'container',
-  views: new deck.GlobeView({{id: 'globe', resolution: 10}}),
-  initialViewState: {{
-    longitude: 30,
-    latitude: 25,
-    zoom: 0.3
-  }},
-  controller: true,
-  parameters: {{
-    clearColor: [0.04, 0.055, 0.09, 1.0]
-  }},
-  onHover: tooltipFn,
-  getTooltip: null,
-  layers: [
-    // Background: dark earth sphere (6-vertex polygon, splits at antimeridian for proper tessellation)
-    new deck.SolidPolygonLayer({{
-      id: 'earth-bg',
-      data: [[[-180, 90], [0, 90], [180, 90], [180, -90], [0, -90], [-180, -90]]],
-      getPolygon: d => d,
-      getFillColor: [18, 32, 58, 255],
-      stroked: false,
-      filled: true,
-      pickable: false
-    }}),
-        ...layers
-  ]
-}});
+waitAndRender();
 </script>
 </body>
 </html>
 """
+    html = html.replace('__PAYLOAD__', payload).replace('__ENABLED__', enabled)
     return html
 
 
@@ -565,7 +428,7 @@ def render_global_view():
                 border:1px solid rgba(0,212,255,0.12); border-radius:8px;
                 font-size:11px; color:#8aa0bc; line-height:1.6;'>
       <b style='color:#00d4ff;'>Data sources:</b> IMF PortWatch, UNCTAD, USGS, UN Comtrade, NOAA/NWS,
-      GDELT · <b style='color:#00d4ff;'>Rendering:</b> deck.gl GlobeView (WebGL 2.0) ·
-      Trade arcs use great-circle paths · All coordinates centroid-based
+      GDELT · <b style='color:#00d4ff;'>Rendering:</b> ECharts-GL 3D Globe (WebGL) ·
+      Trade arcs show great-circle paths with animated effects · All coordinates centroid-based
     </div>
     """, unsafe_allow_html=True)
