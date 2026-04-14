@@ -4,6 +4,7 @@ Multi-page: Home | Indices | Country Profile | News
 """
 import streamlit as st
 from nerai_supply_phase67 import render_trade_flows_tab, render_lpi_tab
+from nerai_global_view import render_global_view
 import pandas as pd
 import numpy as np
 import plotly.graph_objects as go
@@ -1642,10 +1643,11 @@ with st.sidebar:
         ('threat_radar', '🔴 THREAT RADAR'),
         ('insights', '🔍 INSIGHTS'),
         ('briefing', '📋 BRIEFING ROOM'),
+        ('global_view', '🌍 GLOBAL VIEW'),
         ('supply_grid', '🌐 SUPPLY GRID'),
     ]
     # Solo tier: show all pages in nav, pro-only content is locked
-    _PRO_ONLY_PAGES = {'predictions', 'causality', 'insights', 'briefing', 'supply_grid'}
+    _PRO_ONLY_PAGES = {'predictions', 'causality', 'insights', 'briefing', 'supply_grid', 'global_view'}
     for page_key, page_label in nav_pages:
         active_style = 'border-color:rgba(0,180,255,0.5) !important;color:#007a99 !important;background:rgba(0,50,110,0.4) !important;' if st.session_state.page == page_key else ''
         if st.button(page_label, key=f'nav_{page_key}'):
@@ -9382,6 +9384,7 @@ elif page == 'scenarios':   render_scenarios()
 elif page == 'threat_radar': render_threat_radar()
 elif page == 'insights':    render_insights()
 elif page == 'supply_grid': render_supply_grid()
+elif page == 'global_view': render_global_view()
 elif page == 'briefing':    render_briefing_room()
 elif page == 'api':         render_api()
 else:
