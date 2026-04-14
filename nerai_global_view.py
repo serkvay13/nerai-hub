@@ -337,8 +337,9 @@ function waitAndRender() {
       globeRadius: 100,
       globeOuterRadius: 110,
       environment: '#0a0e17',
-      shading: 'color',
-      itemStyle: { color: '#1a2f4e' },
+      baseTexture: 'https://raw.githubusercontent.com/vasturiano/three-globe/master/example/img/earth-dark.jpg',
+      heightTexture: 'https://raw.githubusercontent.com/vasturiano/three-globe/master/example/img/earth-dark.jpg',
+      shading: 'lambert',
       atmosphere: { show: true, color: '#00d4ff', glowPower: 4, innerGlowPower: 2 },
       light: {
         main: { color: '#ffffff', intensity: 1.5, shadow: false, alpha: 40, beta: 40 },
