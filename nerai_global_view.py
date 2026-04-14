@@ -490,7 +490,7 @@ const deckgl = new deck.DeckGL({{
     // Background: earth texture (Blue Marble from deck.gl-data)
     new deck.BitmapLayer({{
       id: 'earth-bg',
-      image: 'https://raw.githubusercontent.com/visgl/deck.gl-data/master/website/bathymetry.jpg',
+      image: 'https://raw.githubusercontent.com/vasturiano/three-globe/master/example/img/earth-dark.jpg',
       bounds: [-180, -90, 180, 90],
       opacity: 0.55,
       pickable: false
