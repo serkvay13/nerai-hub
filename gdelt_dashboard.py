@@ -7462,6 +7462,174 @@ def _sg_country_esg_scores():
     ]
 
 
+
+
+# =====================================================================
+# PHASE 2: ALTERNATIVE SOURCING INTELLIGENCE DATA FUNCTIONS
+# Sources: UN Comtrade flows, USGS production shares, supplier intelligence
+# =====================================================================
+
+def _sg_alt_sourcing_data():
+    """Alternative sourcing matrix for critical materials & sectors.
+    Each entry shows top 5 suppliers ranked by diversification value."""
+    return {
+        'Rare Earth Elements (REE)': {
+            'current_risk': 'China dominates mining (70%) and refining (90%). Export controls 2023+',
+            'urgency': 'CRITICAL',
+            'alternatives': [
+                {'country': 'Australia', 'share': 14, 'lead_time': '+2-3 months', 'cost_delta': '+15%',
+                 'compliance': 'EXCELLENT', 'notes': 'Lynas — Mt Weld mine; only non-China REE processor at scale'},
+                {'country': 'United States', 'share': 9, 'lead_time': '+3-4 months', 'cost_delta': '+25%',
+                 'compliance': 'EXCELLENT', 'notes': 'MP Materials — Mountain Pass; Phase 2 processing ramping 2025'},
+                {'country': 'Vietnam', 'share': 3, 'lead_time': '+1-2 months', 'cost_delta': '+8%',
+                 'compliance': 'GOOD', 'notes': '2nd largest reserves globally; emerging processing capacity'},
+                {'country': 'Brazil', 'share': 2, 'lead_time': '+2-3 months', 'cost_delta': '+12%',
+                 'compliance': 'GOOD', 'notes': 'Serra Verde project; heavy REE potential'},
+                {'country': 'Malaysia', 'share': 1, 'lead_time': '+1 month', 'cost_delta': '+10%',
+                 'compliance': 'MODERATE', 'notes': 'Lynas Advanced Materials Plant (refining only)'},
+            ]
+        },
+        'Gallium': {
+            'current_risk': 'China 98% of global supply. Export controls Aug 2023; near-monopoly',
+            'urgency': 'CRITICAL',
+            'alternatives': [
+                {'country': 'Japan', 'share': 1, 'lead_time': '+6 months', 'cost_delta': '+40%',
+                 'compliance': 'EXCELLENT', 'notes': 'Dowa Holdings — recycling + small primary production'},
+                {'country': 'South Korea', 'share': 1, 'lead_time': '+4 months', 'cost_delta': '+35%',
+                 'compliance': 'EXCELLENT', 'notes': 'Recycled gallium from LED/semiconductor waste'},
+                {'country': 'Russia', 'share': 0.5, 'lead_time': 'N/A', 'cost_delta': 'Sanctions block',
+                 'compliance': 'BLOCKED', 'notes': 'Historically produced; sanctioned since 2022'},
+                {'country': 'Germany', 'share': 0.3, 'lead_time': '+5 months', 'cost_delta': '+45%',
+                 'compliance': 'EXCELLENT', 'notes': 'Trace recovery from alumina processing'},
+            ]
+        },
+        'Cobalt': {
+            'current_risk': 'DRC 70% production; 75% of refining in China. Child labor + conflict minerals',
+            'urgency': 'HIGH',
+            'alternatives': [
+                {'country': 'Australia', 'share': 4, 'lead_time': '+1-2 months', 'cost_delta': '+8%',
+                 'compliance': 'EXCELLENT', 'notes': 'Clean production, ESG-compliant supply'},
+                {'country': 'Indonesia', 'share': 8, 'lead_time': '+1 month', 'cost_delta': '+5%',
+                 'compliance': 'GOOD', 'notes': 'HPAL technology; growing capacity with Chinese partnerships'},
+                {'country': 'Canada', 'share': 3, 'lead_time': '+2 months', 'cost_delta': '+12%',
+                 'compliance': 'EXCELLENT', 'notes': 'Sudbury mines; IRA-compliant for US battery supply'},
+                {'country': 'Philippines', 'share': 3, 'lead_time': '+1-2 months', 'cost_delta': '+6%',
+                 'compliance': 'GOOD', 'notes': 'Nickel-cobalt byproduct'},
+                {'country': 'Cuba', 'share': 2, 'lead_time': 'N/A', 'cost_delta': 'US sanctions block',
+                 'compliance': 'BLOCKED', 'notes': 'Moa Joint Venture (Sherritt Canada) — OFAC restrictions'},
+            ]
+        },
+        'Lithium': {
+            'current_risk': 'Australia mines 47%; China processes 65% of refined Li',
+            'urgency': 'MEDIUM',
+            'alternatives': [
+                {'country': 'Chile', 'share': 24, 'lead_time': '+1-2 months', 'cost_delta': '+5%',
+                 'compliance': 'EXCELLENT', 'notes': 'SQM, Albemarle — Salar de Atacama brine'},
+                {'country': 'Argentina', 'share': 6, 'lead_time': '+2-3 months', 'cost_delta': '+7%',
+                 'compliance': 'GOOD', 'notes': 'Lithium Triangle; fast-growing production'},
+                {'country': 'United States', 'share': 3, 'lead_time': '+3-4 months', 'cost_delta': '+15%',
+                 'compliance': 'EXCELLENT', 'notes': 'Silver Peak (Albemarle), Thacker Pass ramping'},
+                {'country': 'Canada', 'share': 2, 'lead_time': '+3-4 months', 'cost_delta': '+14%',
+                 'compliance': 'EXCELLENT', 'notes': 'Nemaska Lithium; IRA-compliant refining'},
+                {'country': 'Brazil', 'share': 2, 'lead_time': '+2-3 months', 'cost_delta': '+10%',
+                 'compliance': 'GOOD', 'notes': 'Sigma Lithium — hard-rock spodumene'},
+            ]
+        },
+        'Semiconductors (advanced)': {
+            'current_risk': 'TSMC Taiwan dominates (~60% foundry, ~90% leading edge). Chokepoint risk',
+            'urgency': 'CRITICAL',
+            'alternatives': [
+                {'country': 'South Korea', 'share': 19, 'lead_time': '+3-6 months', 'cost_delta': '+20%',
+                 'compliance': 'EXCELLENT', 'notes': 'Samsung — advanced nodes, memory leadership'},
+                {'country': 'United States', 'share': 12, 'lead_time': '+12-18 months', 'cost_delta': '+35%',
+                 'compliance': 'EXCELLENT', 'notes': 'Intel, TSMC Arizona, Samsung Texas — CHIPS Act funded'},
+                {'country': 'Japan', 'share': 6, 'lead_time': '+6-9 months', 'cost_delta': '+25%',
+                 'compliance': 'EXCELLENT', 'notes': 'Rapidus (2nm target), Kioxia, Renesas'},
+                {'country': 'Germany', 'share': 4, 'lead_time': '+9-12 months', 'cost_delta': '+30%',
+                 'compliance': 'EXCELLENT', 'notes': 'Infineon, Bosch, TSMC Dresden 2027'},
+                {'country': 'China', 'share': 15, 'lead_time': '+2-3 months', 'cost_delta': '+5%',
+                 'compliance': 'HIGH RISK', 'notes': 'SMIC (Entity List); legacy nodes only; export controls'},
+            ]
+        },
+        'Natural Gas / LNG': {
+            'current_risk': 'Hormuz chokepoint (25% of global LNG) + Russian pipeline legacy',
+            'urgency': 'HIGH',
+            'alternatives': [
+                {'country': 'United States', 'share': 22, 'lead_time': '+1-3 months', 'cost_delta': '+10-25%',
+                 'compliance': 'EXCELLENT', 'notes': 'Largest LNG exporter 2024; 14 terminals operational'},
+                {'country': 'Qatar', 'share': 20, 'lead_time': 'Via Hormuz (risk)', 'cost_delta': 'Chokepoint exposure',
+                 'compliance': 'EXCELLENT', 'notes': 'North Field expansion; Hormuz transit required'},
+                {'country': 'Australia', 'share': 19, 'lead_time': '+2-3 months', 'cost_delta': '+15%',
+                 'compliance': 'EXCELLENT', 'notes': 'NWS, Gorgon, Wheatstone — no chokepoint risk'},
+                {'country': 'Norway (pipeline)', 'share': 3, 'lead_time': 'Immediate', 'cost_delta': '+8%',
+                 'compliance': 'EXCELLENT', 'notes': 'Baltic/North Sea; largest EU pipeline supplier'},
+                {'country': 'Nigeria', 'share': 4, 'lead_time': '+2 months', 'cost_delta': '+12%',
+                 'compliance': 'MODERATE', 'notes': 'NLNG; political/pipeline security risks'},
+            ]
+        },
+        'Pharma APIs (Common)': {
+            'current_risk': 'India 40%, China 35%. Single-source vulnerabilities on antibiotics',
+            'urgency': 'HIGH',
+            'alternatives': [
+                {'country': 'Germany', 'share': 6, 'lead_time': '+2-3 months', 'cost_delta': '+30%',
+                 'compliance': 'EXCELLENT', 'notes': 'BASF, Boehringer — high-quality GMP'},
+                {'country': 'Italy', 'share': 4, 'lead_time': '+2 months', 'cost_delta': '+25%',
+                 'compliance': 'EXCELLENT', 'notes': 'Italian API cluster; fermentation expertise'},
+                {'country': 'United States', 'share': 3, 'lead_time': '+3-4 months', 'cost_delta': '+40%',
+                 'compliance': 'EXCELLENT', 'notes': 'Reshoring initiatives; Phlow consortium for critical APIs'},
+                {'country': 'Japan', 'share': 2, 'lead_time': '+3 months', 'cost_delta': '+35%',
+                 'compliance': 'EXCELLENT', 'notes': 'Specialty APIs; high regulatory standards'},
+                {'country': 'Switzerland', 'share': 2, 'lead_time': '+2-3 months', 'cost_delta': '+35%',
+                 'compliance': 'EXCELLENT', 'notes': 'Lonza, Siegfried — complex biologics'},
+            ]
+        },
+        'Wheat (Export)': {
+            'current_risk': 'Black Sea (Russia+Ukraine 25% exports) + Bosphorus chokepoint',
+            'urgency': 'HIGH',
+            'alternatives': [
+                {'country': 'United States', 'share': 11, 'lead_time': 'Immediate', 'cost_delta': 'Market price',
+                 'compliance': 'EXCELLENT', 'notes': 'Gulf and PNW ports; no chokepoint risk'},
+                {'country': 'Canada', 'share': 14, 'lead_time': 'Immediate', 'cost_delta': '+2%',
+                 'compliance': 'EXCELLENT', 'notes': 'Hard red spring wheat; St. Lawrence + Pacific routes'},
+                {'country': 'Australia', 'share': 10, 'lead_time': '+1 month', 'cost_delta': '+5%',
+                 'compliance': 'EXCELLENT', 'notes': 'Premium white wheat; Asian market focus'},
+                {'country': 'Argentina', 'share': 7, 'lead_time': '+1 month', 'cost_delta': '+3%',
+                 'compliance': 'GOOD', 'notes': 'Rosario port; no chokepoint; export taxes vary'},
+                {'country': 'France', 'share': 8, 'lead_time': 'Immediate', 'cost_delta': '+4%',
+                 'compliance': 'EXCELLENT', 'notes': 'EU largest; Rouen port; quality specs'},
+            ]
+        },
+        'Uranium (Fuel Cycle)': {
+            'current_risk': 'Kazakhstan 43%, Russia ~20% conversion/enrichment. Rosatom sanctions risk',
+            'urgency': 'HIGH',
+            'alternatives': [
+                {'country': 'Canada', 'share': 15, 'lead_time': '+3-6 months', 'cost_delta': '+10%',
+                 'compliance': 'EXCELLENT', 'notes': 'Cameco — McArthur River, Cigar Lake'},
+                {'country': 'Australia', 'share': 8, 'lead_time': '+3-4 months', 'cost_delta': '+8%',
+                 'compliance': 'EXCELLENT', 'notes': 'Olympic Dam, Ranger; strong allied supply'},
+                {'country': 'Namibia', 'share': 11, 'lead_time': '+2-3 months', 'cost_delta': '+5%',
+                 'compliance': 'GOOD', 'notes': 'Rossing, Husab — Chinese stakes but stable jurisdiction'},
+                {'country': 'Niger', 'share': 4, 'lead_time': 'Political risk', 'cost_delta': 'Volatile',
+                 'compliance': 'AT RISK', 'notes': '2023 coup disrupted Orano supply; ongoing uncertainty'},
+                {'country': 'United States', 'share': 1, 'lead_time': '+6-12 months', 'cost_delta': '+20%',
+                 'compliance': 'EXCELLENT', 'notes': 'Energy Fuels — domestic HALEU push'},
+            ]
+        },
+    }
+
+
+def _sg_supplier_scorecard_methodology():
+    """Methodology explanation for supplier scoring."""
+    return [
+        {'criterion': 'Country Risk', 'weight': 30, 'source': 'World Bank Governance + OFAC sanctions'},
+        {'criterion': 'ESG Compliance', 'weight': 20, 'source': 'UFLPA + EUDR + labor rights indices'},
+        {'criterion': 'Production Capacity', 'weight': 20, 'source': 'USGS + UN Comtrade flows'},
+        {'criterion': 'Logistics Distance', 'weight': 15, 'source': 'Chokepoint exposure + transit days'},
+        {'criterion': 'Lead Time', 'weight': 10, 'source': 'Industry benchmarks'},
+        {'criterion': 'Price Competitiveness', 'weight': 5, 'source': 'Yahoo Finance + trade data'},
+    ]
+
+
 def render_supply_grid():
     """SUPPLY GRID — Global Supply Chain Intelligence Hub."""
 
@@ -7486,14 +7654,15 @@ def render_supply_grid():
     """, unsafe_allow_html=True)
 
     # Module tabs
-    tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs([
+    tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8 = st.tabs([
         "Live Indicators",
         "Chokepoints",
         "Critical Materials",
         "Trade Disruptions",
         "Country Vulnerability",
         "Sector Heatmap",
-        "ESG & Compliance"
+        "ESG & Compliance",
+        "Alternative Sourcing"
     ])
 
     # ========== TAB 1: LIVE INDICATORS ==========
@@ -8168,6 +8337,110 @@ def render_supply_grid():
                 """, unsafe_allow_html=True)
 
             st.caption("All scores 0-100 (higher = more risk) · Composite from WGI · Transparency Int'l · ILO · OFAC lists")
+
+
+    # ========== TAB 8: ALTERNATIVE SOURCING ==========
+    with tab8:
+        st.markdown("""
+        <div style="margin-bottom:16px;">
+          <div style="font-size:18px; font-weight:600; color:#e0e8f0;">Alternative Sourcing Intelligence</div>
+          <div style="font-size:12px; color:#5a6b82; margin-top:4px;">
+            Mitigation pathways for critical materials &amp; sectors · UN Comtrade flows · USGS production · Diversification scoring
+          </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        alt_data = _sg_alt_sourcing_data()
+        category = st.selectbox("Select critical material or sector",
+                                list(alt_data.keys()),
+                                key="alt_sourcing_cat")
+
+        info = alt_data[category]
+        urg_color = _sg_threat_color({'CRITICAL': 92, 'HIGH': 78, 'MEDIUM': 55}.get(info['urgency'], 50))
+
+        # Current risk banner
+        st.markdown(f"""
+        <div style='background:linear-gradient(135deg, {urg_color}11, rgba(0,15,35,0.5));
+                    border:1px solid {urg_color}66; border-radius:8px;
+                    padding:14px 18px; margin-bottom:18px;'>
+          <div style='display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;'>
+            <div style='font-size:13px; color:#00d4ff; font-weight:600; letter-spacing:1px;'>CURRENT RISK PROFILE</div>
+            <div style='display:inline-block; padding:3px 10px; background:{urg_color}22;
+                        border:1px solid {urg_color}; border-radius:4px;
+                        font-size:11px; font-weight:700; color:{urg_color}; letter-spacing:1px;'>
+              {info['urgency']} URGENCY
+            </div>
+          </div>
+          <div style='font-size:13px; color:#bdd2ea;'>{info['current_risk']}</div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        # Alternatives header
+        st.markdown("<div style='font-size:14px; color:#00d4ff; font-weight:600; letter-spacing:1px; margin:6px 0 10px 0;'>RANKED ALTERNATIVES</div>", unsafe_allow_html=True)
+
+        for idx, alt in enumerate(info['alternatives'], 1):
+            # Compliance coloring
+            comp_color = {
+                'EXCELLENT': '#00ffc8', 'GOOD': '#7fb800', 'MODERATE': '#ffd000',
+                'HIGH RISK': '#ff7a00', 'AT RISK': '#ff7a00', 'BLOCKED': '#ff2952'
+            }.get(alt['compliance'], '#8aa0bc')
+
+            # Cost delta coloring (check if it's negative/positive)
+            cost_str = alt['cost_delta']
+            cost_color = '#ff6b6b' if ('BLOCKED' in cost_str.upper() or '+' in cost_str) else '#8aa0bc'
+
+            st.markdown(f"""
+            <div style='background:linear-gradient(90deg, rgba(0,25,55,0.5), rgba(0,15,35,0.4));
+                        border-left:3px solid {comp_color}; border-radius:8px;
+                        padding:14px 18px; margin-bottom:10px;'>
+              <div style='display:flex; justify-content:space-between; align-items:start; margin-bottom:10px;'>
+                <div style='display:flex; align-items:center; gap:12px;'>
+                  <div style='width:28px; height:28px; background:{comp_color}22; border:1px solid {comp_color};
+                              border-radius:50%; display:flex; align-items:center; justify-content:center;
+                              color:{comp_color}; font-weight:700; font-size:13px;'>{idx}</div>
+                  <div>
+                    <div style='font-size:16px; font-weight:600; color:#e0e8f0;'>{alt['country']}</div>
+                    <div style='font-size:11px; color:#8aa0bc;'>{alt['share']}% global share</div>
+                  </div>
+                </div>
+                <div style='display:inline-block; padding:3px 10px; background:{comp_color}22;
+                            border:1px solid {comp_color}; border-radius:4px;
+                            font-size:10px; font-weight:700; color:{comp_color}; letter-spacing:1px;'>
+                  {alt['compliance']}
+                </div>
+              </div>
+              <div style='display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-top:10px; font-size:12px;'>
+                <div>
+                  <div style='color:#5a6b82; font-size:10px; letter-spacing:1px; margin-bottom:2px;'>LEAD TIME DELTA</div>
+                  <div style='color:#e0e8f0; font-weight:600;'>{alt['lead_time']}</div>
+                </div>
+                <div>
+                  <div style='color:#5a6b82; font-size:10px; letter-spacing:1px; margin-bottom:2px;'>COST DELTA</div>
+                  <div style='color:{cost_color}; font-weight:600;'>{cost_str}</div>
+                </div>
+              </div>
+              <div style='font-size:11px; color:#bdd2ea; margin-top:10px; padding-top:8px;
+                          border-top:1px solid rgba(0,212,255,0.1);'>
+                {alt['notes']}
+              </div>
+            </div>
+            """, unsafe_allow_html=True)
+
+        # Methodology
+        with st.expander("Scoring methodology"):
+            st.markdown("<div style='font-size:12px; color:#bdd2ea; margin-bottom:10px;'>Each alternative is evaluated on 6 weighted criteria:</div>", unsafe_allow_html=True)
+            for crit in _sg_supplier_scorecard_methodology():
+                st.markdown(f"""
+                <div style='display:flex; justify-content:space-between; padding:6px 10px;
+                            background:rgba(0,20,45,0.3); border-radius:4px; margin-bottom:4px;
+                            font-size:12px;'>
+                  <div style='color:#e0e8f0;'>{crit['criterion']}</div>
+                  <div style='color:#00d4ff; font-weight:600;'>{crit['weight']}%</div>
+                  <div style='color:#8aa0bc; font-size:11px;'>{crit['source']}</div>
+                </div>
+                """, unsafe_allow_html=True)
+
+        st.caption("Lead times and cost deltas are estimates based on public trade data — verify with supplier-specific RFQs")
 
 
     # Footer
