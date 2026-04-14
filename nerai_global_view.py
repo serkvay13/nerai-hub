@@ -337,8 +337,9 @@ function waitAndRender() {
       globeRadius: 100,
       globeOuterRadius: 110,
       environment: '#0a0e17',
-      shading: 'color',
-      itemStyle: { color: '#0e1a2f' },
+      baseTexture: 'https://raw.githubusercontent.com/turban/webgl-earth/master/images/2_no_clouds_4k.jpg',
+      heightTexture: 'https://raw.githubusercontent.com/turban/webgl-earth/master/images/2_no_clouds_4k.jpg',
+      shading: 'lambert',
       atmosphere: { show: true, color: '#00d4ff', glowPower: 4, innerGlowPower: 2 },
       light: {
         main: { color: '#ffffff', intensity: 1.5, shadow: false, alpha: 40, beta: 40 },
@@ -357,25 +358,7 @@ function waitAndRender() {
     series: series
   };
 
-  // Fetch country borders GeoJSON and add as lines3D overlay (cyan outlines on globe)
-  fetch('https://cdn.jsdelivr.net/gh/johan/world.geo.json@master/countries.geo.json')
-    .then(function(r){ return r.json(); })
-    .then(function(geo){
-      var borderLines = [];
-      geo.features.forEach(function(f){
-        var g = f.geometry; if (!g) return;
-        if (g.type === 'Polygon') { g.coordinates.forEach(function(ring){ borderLines.push({coords: ring}); }); }
-        else if (g.type === 'MultiPolygon') { g.coordinates.forEach(function(poly){ poly.forEach(function(ring){ borderLines.push({coords: ring}); }); }); }
-      });
-      series.push({
-        name: 'Country Borders', type: 'lines3D', coordinateSystem: 'globe',
-        data: borderLines,
-        lineStyle: { width: 1.8, color: 'rgba(120,230,255,0.95)', opacity: 1 },
-        silent: true, blendMode: 'lighter'
-      });
-      chart.setOption(option);
-    })
-    .catch(function(e){ chart.setOption(option); });
+  chart.setOption(option);
   window.addEventListener('resize', function(){ chart.resize(); });
 }
 
