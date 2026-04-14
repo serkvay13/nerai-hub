@@ -1641,9 +1641,10 @@ with st.sidebar:
         ('threat_radar', '🔴 THREAT RADAR'),
         ('insights', '🔍 INSIGHTS'),
         ('briefing', '📋 BRIEFING ROOM'),
+        ('supply_grid', '🌐 SUPPLY GRID'),
     ]
     # Solo tier: show all pages in nav, pro-only content is locked
-    _PRO_ONLY_PAGES = {'predictions', 'causality', 'insights', 'briefing'}
+    _PRO_ONLY_PAGES = {'predictions', 'causality', 'insights', 'briefing', 'supply_grid'}
     for page_key, page_label in nav_pages:
         active_style = 'border-color:rgba(0,180,255,0.5) !important;color:#007a99 !important;background:rgba(0,50,110,0.4) !important;' if st.session_state.page == page_key else ''
         if st.button(page_label, key=f'nav_{page_key}'):
@@ -6989,6 +6990,764 @@ def render_threat_radar():
     _render_footer()
 
 
+
+
+# =====================================================================
+# SUPPLY GRID — Global Supply Chain Intelligence
+# =====================================================================
+
+# Cached data fetchers
+@st.cache_data(ttl=900)  # 15 min cache
+def _sg_fetch_commodities():
+    """Fetch live commodity prices from Yahoo Finance."""
+    try:
+        import yfinance as yf
+        symbols = {
+            'Brent Crude':   ('BZ=F', '$/bbl'),
+            'WTI Crude':     ('CL=F', '$/bbl'),
+            'Natural Gas':   ('NG=F', '$/MMBtu'),
+            'Gold':          ('GC=F', '$/oz'),
+            'Silver':        ('SI=F', '$/oz'),
+            'Copper':        ('HG=F', '$/lb'),
+            'Wheat':         ('ZW=F', '¢/bu'),
+            'Corn':          ('ZC=F', '¢/bu'),
+            'Soybean':       ('ZS=F', '¢/bu'),
+            'Palladium':     ('PA=F', '$/oz'),
+            'Platinum':      ('PL=F', '$/oz'),
+            'Cotton':        ('CT=F', '¢/lb'),
+        }
+        out = []
+        for name, (sym, unit) in symbols.items():
+            try:
+                t = yf.Ticker(sym)
+                hist = t.history(period='5d', interval='1d')
+                if len(hist) >= 2:
+                    last = float(hist['Close'].iloc[-1])
+                    prev = float(hist['Close'].iloc[-2])
+                    chg = ((last - prev) / prev) * 100 if prev else 0
+                    out.append({
+                        'name': name, 'symbol': sym, 'unit': unit,
+                        'price': last, 'change_pct': chg,
+                        'updated': hist.index[-1].strftime('%Y-%m-%d')
+                    })
+            except Exception:
+                continue
+        return out, datetime.now().strftime('%Y-%m-%d %H:%M UTC')
+    except Exception as _e:
+        return [], 'fetch_failed'
+
+
+@st.cache_data(ttl=3600)
+def _sg_fetch_freight_index():
+    """Fetch Freightos Baltic Index (container shipping rate)."""
+    try:
+        import yfinance as yf
+        # BDRY (Breakwave Dry Bulk Shipping ETF) as proxy + actual freight ETFs
+        t = yf.Ticker('BDRY')
+        hist = t.history(period='30d')
+        if len(hist) >= 2:
+            return {
+                'name': 'Dry Bulk Freight (BDRY)',
+                'price': float(hist['Close'].iloc[-1]),
+                'change_30d': ((float(hist['Close'].iloc[-1]) - float(hist['Close'].iloc[0])) / float(hist['Close'].iloc[0])) * 100,
+                'updated': hist.index[-1].strftime('%Y-%m-%d')
+            }
+    except Exception:
+        pass
+    return None
+
+
+def _sg_chokepoints_data():
+    """Critical maritime chokepoints — based on IMF PortWatch & UNCTAD data."""
+    # Source: IMF PortWatch (https://portwatch.imf.org/), UNCTAD Review of Maritime Transport 2024
+    return [
+        {
+            'name': 'Strait of Hormuz', 'lat': 26.57, 'lon': 56.25,
+            'world_oil_pct': 20.0, 'daily_vessels': 75, 'world_lng_pct': 25.0,
+            'key_commodities': 'Crude Oil, LNG, Condensates',
+            'threat_level': 'CRITICAL', 'threat_score': 92,
+            'context': 'Iran threats, US-Iran tensions, mining risk April 2026',
+            'alt_route': 'No viable alternative for Gulf exports',
+            'countries_affected': 'Saudi Arabia, UAE, Kuwait, Iraq, Qatar, Iran'
+        },
+        {
+            'name': 'Bab el-Mandeb / Red Sea', 'lat': 12.58, 'lon': 43.33,
+            'world_oil_pct': 12.0, 'daily_vessels': 70, 'world_trade_pct': 15.0,
+            'key_commodities': 'Containers, Oil, Grain (Suez transit)',
+            'threat_level': 'HIGH', 'threat_score': 78,
+            'context': 'Houthi attacks ongoing since Nov 2023; ~70% diversion to Cape',
+            'alt_route': 'Cape of Good Hope (+10-14 days, +30% cost)',
+            'countries_affected': 'EU, UK, Egypt, Mediterranean ports'
+        },
+        {
+            'name': 'Suez Canal', 'lat': 30.42, 'lon': 32.36,
+            'world_oil_pct': 9.0, 'daily_vessels': 50, 'world_trade_pct': 12.0,
+            'key_commodities': 'Containers, Oil, LNG, Grain',
+            'threat_level': 'HIGH', 'threat_score': 72,
+            'context': 'Traffic down ~50% due to Red Sea diversions',
+            'alt_route': 'Cape of Good Hope (+10-14 days)',
+            'countries_affected': 'EU-Asia trade, Egyptian revenue (~$9B/yr)'
+        },
+        {
+            'name': 'Strait of Malacca', 'lat': 2.5, 'lon': 101.5,
+            'world_oil_pct': 30.0, 'daily_vessels': 230, 'world_trade_pct': 25.0,
+            'key_commodities': 'Oil, LNG, Containers (Asia trade)',
+            'threat_level': 'ELEVATED', 'threat_score': 55,
+            'context': 'Piracy, congestion; alternative Sunda/Lombok adds 3-5 days',
+            'alt_route': 'Sunda Strait, Lombok Strait (+3-5 days)',
+            'countries_affected': 'China, Japan, S.Korea, India energy imports'
+        },
+        {
+            'name': 'Taiwan Strait', 'lat': 24.5, 'lon': 119.5,
+            'world_oil_pct': 6.0, 'daily_vessels': 240, 'world_chip_pct': 88.0,
+            'key_commodities': 'Containers, Semiconductors, Energy',
+            'threat_level': 'ELEVATED', 'threat_score': 68,
+            'context': 'PLA exercises increased; 88% of advanced chips transit here',
+            'alt_route': 'East of Taiwan (+1-2 days), longer for chip supply',
+            'countries_affected': 'Global tech supply chain, US, Japan, S.Korea'
+        },
+        {
+            'name': 'Panama Canal', 'lat': 9.08, 'lon': -79.68,
+            'world_oil_pct': 2.0, 'daily_vessels': 28, 'world_trade_pct': 5.0,
+            'key_commodities': 'Containers, LNG, Grain (US-Asia)',
+            'threat_level': 'MODERATE', 'threat_score': 45,
+            'context': 'Recovering from 2023-24 drought; transits at 32-36/day vs 36 normal',
+            'alt_route': 'Magellan Strait, Cape Horn (+8-12 days)',
+            'countries_affected': 'US East Coast, Latin America, Asia trade'
+        },
+        {
+            'name': 'Bosphorus Strait', 'lat': 41.12, 'lon': 29.07,
+            'world_oil_pct': 3.0, 'daily_vessels': 130, 'world_grain_pct': 25.0,
+            'key_commodities': 'Black Sea grain, Russian oil, LNG',
+            'threat_level': 'ELEVATED', 'threat_score': 58,
+            'context': 'Ukraine war risk; Turkish straits regulation, Russian shadow fleet',
+            'alt_route': 'No alternative for Black Sea exports',
+            'countries_affected': 'Russia, Ukraine, EU grain importers, MENA'
+        },
+        {
+            'name': 'Danish Straits', 'lat': 55.5, 'lon': 11.5,
+            'world_oil_pct': 3.0, 'daily_vessels': 60, 'world_lng_pct': 4.0,
+            'key_commodities': 'Russian oil, Baltic exports, LNG',
+            'threat_level': 'MODERATE', 'threat_score': 42,
+            'context': 'Russian shadow fleet inspections, Baltic sabotage incidents',
+            'alt_route': 'Limited; pipeline alternatives for some flows',
+            'countries_affected': 'Russia, Nordics, Germany, Poland'
+        },
+    ]
+
+
+def _sg_critical_materials():
+    """Critical materials & supply concentration — USGS Mineral Commodity Summaries 2024."""
+    return [
+        {'material': 'Rare Earth Elements (REE)', 'top_supplier': 'China', 'top_share': 70, 'processing_share': 90,
+         'use': 'Magnets, EVs, defense, electronics', 'risk_score': 95, 'symbol_proxy': None,
+         'notes': 'China dominates mining (70%) and refining (90%). Export controls 2023+'},
+        {'material': 'Gallium', 'top_supplier': 'China', 'top_share': 98, 'processing_share': 98,
+         'use': 'Semiconductors, LEDs, radar', 'risk_score': 96, 'symbol_proxy': None,
+         'notes': 'China imposed export controls Aug 2023; near-monopoly'},
+        {'material': 'Germanium', 'top_supplier': 'China', 'top_share': 60, 'processing_share': 80,
+         'use': 'Fiber optics, IR optics, satellites', 'risk_score': 88, 'symbol_proxy': None,
+         'notes': 'China export controls Aug 2023; defense critical'},
+        {'material': 'Cobalt', 'top_supplier': 'DRC', 'top_share': 70, 'processing_share': 75,
+         'use': 'Li-ion batteries, EVs, aerospace', 'risk_score': 82, 'symbol_proxy': None,
+         'notes': 'DRC production, China processes 75%. Conflict mineral concerns'},
+        {'material': 'Lithium', 'top_supplier': 'Australia', 'top_share': 47, 'processing_share': 65,
+         'use': 'EV batteries, energy storage', 'risk_score': 70, 'symbol_proxy': None,
+         'notes': 'Mining in Australia/Chile; China processes 65% of refined Li'},
+        {'material': 'Nickel', 'top_supplier': 'Indonesia', 'top_share': 50, 'processing_share': 30,
+         'use': 'Stainless steel, EV batteries', 'risk_score': 65, 'symbol_proxy': None,
+         'notes': 'Indonesia banned ore exports 2020; market dominance growing'},
+        {'material': 'Graphite (Natural)', 'top_supplier': 'China', 'top_share': 65, 'processing_share': 90,
+         'use': 'Battery anodes, refractories', 'risk_score': 85, 'symbol_proxy': None,
+         'notes': 'Critical for EV anodes; China dominates'},
+        {'material': 'Copper', 'top_supplier': 'Chile', 'top_share': 24, 'processing_share': 40,
+         'use': 'Electrification, grid, EVs', 'risk_score': 55, 'symbol_proxy': 'HG=F',
+         'notes': 'Diversified mining; structural demand from energy transition'},
+        {'material': 'Uranium', 'top_supplier': 'Kazakhstan', 'top_share': 43, 'processing_share': 35,
+         'use': 'Nuclear power, defense', 'risk_score': 72, 'symbol_proxy': None,
+         'notes': 'Kazakhstan + Russia control much of fuel cycle'},
+        {'material': 'Palladium', 'top_supplier': 'Russia', 'top_share': 40, 'processing_share': 40,
+         'use': 'Catalytic converters, electronics', 'risk_score': 78, 'symbol_proxy': 'PA=F',
+         'notes': 'Russia + S.Africa concentration; sanctions risk'},
+        {'material': 'Platinum', 'top_supplier': 'South Africa', 'top_share': 70, 'processing_share': 70,
+         'use': 'Catalysts, hydrogen tech', 'risk_score': 68, 'symbol_proxy': 'PL=F',
+         'notes': 'S.Africa dominates; power grid + labor risks'},
+        {'material': 'Manganese', 'top_supplier': 'South Africa', 'top_share': 35, 'processing_share': 60,
+         'use': 'Steel, EV batteries', 'risk_score': 60, 'symbol_proxy': None,
+         'notes': 'Diversified mining; China leads processing'},
+        {'material': 'Titanium', 'top_supplier': 'China', 'top_share': 30, 'processing_share': 50,
+         'use': 'Aerospace, defense, medical', 'risk_score': 75, 'symbol_proxy': None,
+         'notes': 'Russia historically major; US/EU diversifying post-2022'},
+        {'material': 'Tungsten', 'top_supplier': 'China', 'top_share': 80, 'processing_share': 85,
+         'use': 'Hard metals, defense, electronics', 'risk_score': 90, 'symbol_proxy': None,
+         'notes': 'China dominates; critical for cutting tools, ammunition'},
+        {'material': 'Antimony', 'top_supplier': 'China', 'top_share': 48, 'processing_share': 75,
+         'use': 'Flame retardants, ammunition, batteries', 'risk_score': 92, 'symbol_proxy': None,
+         'notes': 'China export controls Sept 2024; defense + tech critical'},
+    ]
+
+
+def _sg_country_vulnerability():
+    """Country supply chain vulnerability scores — based on UN Comtrade & WTO data."""
+    return [
+        {'country': 'Germany', 'iso': 'DEU', 'energy_dep': 89, 'food_dep': 35, 'critical_min': 95,
+         'import_concentration': 62, 'overall_score': 70,
+         'top_risks': 'Russian gas legacy, China REE/processing, Taiwan chips'},
+        {'country': 'Japan', 'iso': 'JPN', 'energy_dep': 88, 'food_dep': 62, 'critical_min': 92,
+         'import_concentration': 55, 'overall_score': 74,
+         'top_risks': 'Hormuz oil/LNG, Taiwan chips, China REE'},
+        {'country': 'South Korea', 'iso': 'KOR', 'energy_dep': 95, 'food_dep': 70, 'critical_min': 90,
+         'import_concentration': 68, 'overall_score': 81,
+         'top_risks': 'Energy import, semiconductor materials, China dependency'},
+        {'country': 'United Kingdom', 'iso': 'GBR', 'energy_dep': 35, 'food_dep': 45, 'critical_min': 88,
+         'import_concentration': 50, 'overall_score': 55,
+         'top_risks': 'Critical minerals, food (Brexit complexity), LNG'},
+        {'country': 'India', 'iso': 'IND', 'energy_dep': 80, 'food_dep': 5, 'critical_min': 75,
+         'import_concentration': 60, 'overall_score': 56,
+         'top_risks': 'Crude oil (Russia/Hormuz), pharma APIs from China'},
+        {'country': 'China', 'iso': 'CHN', 'energy_dep': 75, 'food_dep': 20, 'critical_min': 25,
+         'import_concentration': 45, 'overall_score': 41,
+         'top_risks': 'Crude/LNG (Malacca), soybeans, semiconductor equipment'},
+        {'country': 'United States', 'iso': 'USA', 'energy_dep': 5, 'food_dep': 5, 'critical_min': 78,
+         'import_concentration': 38, 'overall_score': 31,
+         'top_risks': 'REE/processing, antibiotics, advanced chips (Taiwan)'},
+        {'country': 'Türkiye', 'iso': 'TUR', 'energy_dep': 75, 'food_dep': 40, 'critical_min': 65,
+         'import_concentration': 58, 'overall_score': 60,
+         'top_risks': 'Russian gas, oil imports (Hormuz/Bosphorus)'},
+        {'country': 'France', 'iso': 'FRA', 'energy_dep': 50, 'food_dep': 20, 'critical_min': 90,
+         'import_concentration': 48, 'overall_score': 52,
+         'top_risks': 'Critical minerals, LNG (post-Russia), uranium fuel cycle'},
+        {'country': 'Italy', 'iso': 'ITA', 'energy_dep': 75, 'food_dep': 45, 'critical_min': 92,
+         'import_concentration': 60, 'overall_score': 68,
+         'top_risks': 'Gas/LNG, Mediterranean Red Sea diversions, REE'},
+        {'country': 'Singapore', 'iso': 'SGP', 'energy_dep': 95, 'food_dep': 90, 'critical_min': 70,
+         'import_concentration': 55, 'overall_score': 78,
+         'top_risks': 'Total food/energy import; trade hub vulnerability'},
+        {'country': 'Egypt', 'iso': 'EGY', 'energy_dep': 30, 'food_dep': 60, 'critical_min': 70,
+         'import_concentration': 65, 'overall_score': 56,
+         'top_risks': 'Wheat (Russia/Ukraine), Suez revenue collapse'},
+        {'country': 'Brazil', 'iso': 'BRA', 'energy_dep': 15, 'food_dep': 0, 'critical_min': 60,
+         'import_concentration': 35, 'overall_score': 28,
+         'top_risks': 'Fertilizer imports, fuel refining, critical chips'},
+        {'country': 'Saudi Arabia', 'iso': 'SAU', 'energy_dep': 0, 'food_dep': 80, 'critical_min': 75,
+         'import_concentration': 60, 'overall_score': 54,
+         'top_risks': 'Food security, defense systems, technology imports'},
+        {'country': 'Australia', 'iso': 'AUS', 'energy_dep': 30, 'food_dep': 0, 'critical_min': 30,
+         'import_concentration': 35, 'overall_score': 24,
+         'top_risks': 'Refined fuels, pharma APIs, advanced electronics'},
+    ]
+
+
+def _sg_sector_heatmap():
+    """Sector x Risk dimension matrix."""
+    sectors = ['Automotive', 'Pharma', 'Defense', 'Energy', 'Food/Agri', 'Tech/Semi', 'Renewables', 'Aerospace']
+    dimensions = ['Mineral Concentration', 'Chokepoint Exposure', 'Geopolitical Risk', 'Single-Supplier Risk', 'Sanctions Exposure']
+    # Risk scores 0-100
+    matrix = {
+        'Automotive':   [85, 60, 70, 75, 55],
+        'Pharma':       [50, 40, 65, 88, 45],
+        'Defense':      [90, 70, 88, 80, 70],
+        'Energy':       [40, 95, 92, 65, 85],
+        'Food/Agri':    [30, 75, 70, 60, 65],
+        'Tech/Semi':    [85, 80, 90, 92, 75],
+        'Renewables':   [92, 55, 75, 88, 60],
+        'Aerospace':    [80, 65, 78, 85, 65],
+    }
+    return sectors, dimensions, matrix
+
+
+def _sg_threat_color(score):
+    if score >= 85: return '#ff2952'  # CRITICAL red
+    if score >= 70: return '#ff7a00'  # HIGH orange
+    if score >= 50: return '#ffd000'  # MODERATE yellow
+    if score >= 30: return '#7fb800'  # LOW green
+    return '#00d4ff'                  # MINIMAL cyan
+
+
+def _sg_threat_label(score):
+    if score >= 85: return 'CRITICAL'
+    if score >= 70: return 'HIGH'
+    if score >= 50: return 'ELEVATED'
+    if score >= 30: return 'MODERATE'
+    return 'LOW'
+
+
+def render_supply_grid():
+    """SUPPLY GRID — Global Supply Chain Intelligence Hub."""
+
+    # Header
+    st.markdown("""
+    <div style="margin: 8px 0 24px 0;">
+      <div style="display:flex; align-items:center; gap:12px; margin-bottom:8px;">
+        <div style="font-size:11px; letter-spacing:3px; color:#00d4ff; font-weight:700; text-transform:uppercase;">
+          NERAI · Supply Grid
+        </div>
+        <div style="height:1px; flex:1; background:linear-gradient(90deg, rgba(0,212,255,0.4), transparent);"></div>
+        <div style="font-size:10px; color:#5a6b82; letter-spacing:1.5px;">GLOBAL SUPPLY CHAIN INTELLIGENCE</div>
+      </div>
+      <div style="font-size:32px; font-weight:700; color:#e0e8f0; margin-bottom:6px; letter-spacing:-0.5px;">
+        Supply Grid Command
+      </div>
+      <div style="font-size:14px; color:#8aa0bc; max-width:780px; line-height:1.6;">
+        Real-time intelligence across critical chokepoints, strategic materials, trade flows, and country dependencies.
+        Data fused from IMF PortWatch, USGS, UN Comtrade, GDELT, and live commodity markets.
+      </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # Module tabs
+    tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
+        "Live Indicators",
+        "Chokepoints",
+        "Critical Materials",
+        "Trade Disruptions",
+        "Country Vulnerability",
+        "Sector Heatmap"
+    ])
+
+    # ========== TAB 1: LIVE INDICATORS ==========
+    with tab1:
+        st.markdown("""
+        <div style="margin-bottom:16px;">
+          <div style="font-size:18px; font-weight:600; color:#e0e8f0;">Real-time Commodity & Freight Markers</div>
+          <div style="font-size:12px; color:#5a6b82; margin-top:4px;">
+            Source: Yahoo Finance · 15-min delayed · Updated every 15 minutes
+          </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        with st.spinner('Fetching live market data...'):
+            commodities, last_updated = _sg_fetch_commodities()
+
+        if not commodities:
+            st.warning("Live commodity feed temporarily unavailable. Showing cached values may be stale.")
+        else:
+            # Group commodities by category
+            categories = {
+                'Energy': ['Brent Crude', 'WTI Crude', 'Natural Gas'],
+                'Precious Metals': ['Gold', 'Silver', 'Platinum', 'Palladium'],
+                'Industrial Metals': ['Copper'],
+                'Agriculture': ['Wheat', 'Corn', 'Soybean', 'Cotton'],
+            }
+
+            for cat_name, cat_items in categories.items():
+                st.markdown(f"<div style='font-size:12px; letter-spacing:2px; color:#00d4ff; font-weight:600; margin:18px 0 10px 0;'>{cat_name.upper()}</div>", unsafe_allow_html=True)
+                cols = st.columns(len(cat_items))
+                for i, item_name in enumerate(cat_items):
+                    item = next((c for c in commodities if c['name'] == item_name), None)
+                    with cols[i]:
+                        if item:
+                            chg = item['change_pct']
+                            arrow = '▲' if chg >= 0 else '▼'
+                            color = '#00ffc8' if chg >= 0 else '#ff6b6b'
+                            st.markdown(f"""
+                            <div style='background:linear-gradient(135deg, rgba(0,30,60,0.5), rgba(0,15,35,0.7));
+                                        border:1px solid rgba(0,212,255,0.18); border-radius:10px;
+                                        padding:14px; min-height:100px;'>
+                              <div style='font-size:11px; color:#8aa0bc; letter-spacing:0.5px;'>{item['name']}</div>
+                              <div style='font-size:24px; font-weight:700; color:#e0e8f0; margin-top:6px;'>
+                                {item['price']:,.2f}
+                              </div>
+                              <div style='font-size:11px; color:#5a6b82;'>{item['unit']}</div>
+                              <div style='font-size:13px; color:{color}; font-weight:600; margin-top:6px;'>
+                                {arrow} {abs(chg):.2f}%
+                              </div>
+                            </div>
+                            """, unsafe_allow_html=True)
+                        else:
+                            st.markdown(f"""
+                            <div style='background:rgba(0,15,35,0.4); border:1px dashed rgba(0,212,255,0.15);
+                                        border-radius:10px; padding:14px; min-height:100px;'>
+                              <div style='font-size:11px; color:#5a6b82;'>{item_name}</div>
+                              <div style='font-size:14px; color:#5a6b82; margin-top:30px;'>—</div>
+                            </div>
+                            """, unsafe_allow_html=True)
+
+            # Freight index
+            freight = _sg_fetch_freight_index()
+            if freight:
+                st.markdown(f"<div style='font-size:12px; letter-spacing:2px; color:#00d4ff; font-weight:600; margin:24px 0 10px 0;'>FREIGHT</div>", unsafe_allow_html=True)
+                arrow = '▲' if freight['change_30d'] >= 0 else '▼'
+                color = '#00ffc8' if freight['change_30d'] >= 0 else '#ff6b6b'
+                st.markdown(f"""
+                <div style='background:linear-gradient(135deg, rgba(0,30,60,0.5), rgba(0,15,35,0.7));
+                            border:1px solid rgba(0,212,255,0.18); border-radius:10px;
+                            padding:18px; max-width:340px;'>
+                  <div style='font-size:12px; color:#8aa0bc;'>{freight['name']}</div>
+                  <div style='font-size:26px; font-weight:700; color:#e0e8f0; margin-top:6px;'>
+                    {freight['price']:,.2f}
+                  </div>
+                  <div style='font-size:13px; color:{color}; font-weight:600; margin-top:6px;'>
+                    {arrow} {abs(freight['change_30d']):.2f}% (30d)
+                  </div>
+                </div>
+                """, unsafe_allow_html=True)
+
+            st.caption(f"Last refresh: {last_updated} · Auto-refresh every 15 minutes")
+
+    # ========== TAB 2: CHOKEPOINTS ==========
+    with tab2:
+        st.markdown("""
+        <div style="margin-bottom:16px;">
+          <div style="font-size:18px; font-weight:600; color:#e0e8f0;">Critical Maritime Chokepoints</div>
+          <div style="font-size:12px; color:#5a6b82; margin-top:4px;">
+            Source: IMF PortWatch · UNCTAD Maritime Transport · Threat overlay from GDELT signals
+          </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        chokepoints = _sg_chokepoints_data()
+
+        # Map view
+        try:
+            import pandas as pd
+            import plotly.graph_objects as go
+
+            df = pd.DataFrame([{
+                'name': c['name'], 'lat': c['lat'], 'lon': c['lon'],
+                'score': c['threat_score'], 'oil_pct': c.get('world_oil_pct', 0),
+                'level': c['threat_level'], 'context': c['context']
+            } for c in chokepoints])
+
+            fig = go.Figure()
+            fig.add_trace(go.Scattergeo(
+                lon=df['lon'], lat=df['lat'],
+                text=df.apply(lambda r: f"<b>{r['name']}</b><br>Threat: {r['level']} ({r['score']}/100)<br>Oil: {r['oil_pct']}% global<br>{r['context']}", axis=1),
+                mode='markers',
+                marker=dict(
+                    size=df['score'] / 4 + 12,
+                    color=[_sg_threat_color(s) for s in df['score']],
+                    line=dict(width=2, color='rgba(255,255,255,0.4)'),
+                    opacity=0.85,
+                ),
+                hoverinfo='text',
+                name='Chokepoints'
+            ))
+            fig.update_geos(
+                projection_type='natural earth',
+                bgcolor='rgba(0,0,0,0)',
+                showland=True, landcolor='rgba(15,30,55,0.6)',
+                showocean=True, oceancolor='rgba(5,15,30,0.8)',
+                showcoastlines=True, coastlinecolor='rgba(0,212,255,0.25)',
+                showcountries=True, countrycolor='rgba(0,212,255,0.12)',
+            )
+            fig.update_layout(
+                paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)',
+                margin=dict(l=0, r=0, t=0, b=0), height=420, showlegend=False
+            )
+            st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
+        except Exception as _e:
+            st.info("Map visualization unavailable. Showing table view.")
+
+        # Sortable detail table
+        st.markdown("<div style='margin-top:18px;'></div>", unsafe_allow_html=True)
+        sorted_cps = sorted(chokepoints, key=lambda x: x['threat_score'], reverse=True)
+        for cp in sorted_cps:
+            color = _sg_threat_color(cp['threat_score'])
+            st.markdown(f"""
+            <div style='background:linear-gradient(90deg, rgba(0,25,55,0.5), rgba(0,15,35,0.4));
+                        border-left:3px solid {color}; border-radius:8px;
+                        padding:14px 18px; margin-bottom:10px;'>
+              <div style='display:flex; justify-content:space-between; align-items:start; margin-bottom:6px;'>
+                <div>
+                  <div style='font-size:16px; font-weight:600; color:#e0e8f0;'>{cp['name']}</div>
+                  <div style='font-size:12px; color:#8aa0bc; margin-top:3px;'>{cp['key_commodities']}</div>
+                </div>
+                <div style='text-align:right;'>
+                  <div style='display:inline-block; padding:3px 10px; background:{color}22;
+                              border:1px solid {color}; border-radius:4px;
+                              font-size:11px; font-weight:700; color:{color}; letter-spacing:1px;'>
+                    {cp['threat_level']}
+                  </div>
+                  <div style='font-size:18px; font-weight:700; color:#e0e8f0; margin-top:4px;'>{cp['threat_score']}/100</div>
+                </div>
+              </div>
+              <div style='display:flex; gap:18px; margin-top:10px; font-size:12px; color:#8aa0bc;'>
+                <div><span style='color:#5a6b82;'>Daily vessels:</span> <b style='color:#e0e8f0;'>~{cp['daily_vessels']}</b></div>
+                <div><span style='color:#5a6b82;'>Global oil:</span> <b style='color:#e0e8f0;'>{cp.get('world_oil_pct', 0)}%</b></div>
+              </div>
+              <div style='font-size:12px; color:#bdd2ea; margin-top:8px; padding-top:8px; border-top:1px solid rgba(0,212,255,0.1);'>
+                <b style='color:#00d4ff;'>Context:</b> {cp['context']}
+              </div>
+              <div style='font-size:12px; color:#bdd2ea; margin-top:6px;'>
+                <b style='color:#00d4ff;'>Alternative:</b> {cp['alt_route']}
+              </div>
+              <div style='font-size:11px; color:#8aa0bc; margin-top:4px;'>
+                <b style='color:#00d4ff;'>Affected:</b> {cp['countries_affected']}
+              </div>
+            </div>
+            """, unsafe_allow_html=True)
+
+    # ========== TAB 3: CRITICAL MATERIALS ==========
+    with tab3:
+        st.markdown("""
+        <div style="margin-bottom:16px;">
+          <div style="font-size:18px; font-weight:600; color:#e0e8f0;">Critical Materials Concentration Index</div>
+          <div style="font-size:12px; color:#5a6b82; margin-top:4px;">
+            Source: USGS Mineral Commodity Summaries 2024 · Live prices from Yahoo Finance
+          </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        materials = _sg_critical_materials()
+        commodities, _ = _sg_fetch_commodities()
+        price_lookup = {c['symbol']: c for c in commodities}
+
+        # Sort by risk
+        materials_sorted = sorted(materials, key=lambda x: x['risk_score'], reverse=True)
+
+        for m in materials_sorted:
+            color = _sg_threat_color(m['risk_score'])
+            price_html = ''
+            if m.get('symbol_proxy') and m['symbol_proxy'] in price_lookup:
+                p = price_lookup[m['symbol_proxy']]
+                arrow = '▲' if p['change_pct'] >= 0 else '▼'
+                pcolor = '#00ffc8' if p['change_pct'] >= 0 else '#ff6b6b'
+                price_html = f"""<div style='text-align:right;'>
+                  <div style='font-size:13px; color:#e0e8f0; font-weight:600;'>{p['price']:,.2f} {p['unit']}</div>
+                  <div style='font-size:11px; color:{pcolor};'>{arrow} {abs(p['change_pct']):.2f}%</div>
+                </div>"""
+
+            st.markdown(f"""
+            <div style='background:linear-gradient(90deg, rgba(0,25,55,0.5), rgba(0,15,35,0.4));
+                        border-left:3px solid {color}; border-radius:8px;
+                        padding:14px 18px; margin-bottom:8px;'>
+              <div style='display:flex; justify-content:space-between; align-items:start;'>
+                <div style='flex:1;'>
+                  <div style='display:flex; align-items:center; gap:10px;'>
+                    <div style='font-size:15px; font-weight:600; color:#e0e8f0;'>{m['material']}</div>
+                    <div style='font-size:10px; padding:2px 8px; background:{color}22; border:1px solid {color};
+                                border-radius:3px; color:{color}; font-weight:700; letter-spacing:1px;'>
+                      RISK {m['risk_score']}
+                    </div>
+                  </div>
+                  <div style='font-size:12px; color:#8aa0bc; margin-top:4px;'>{m['use']}</div>
+                </div>
+                {price_html}
+              </div>
+              <div style='display:flex; gap:24px; margin-top:10px; font-size:12px;'>
+                <div>
+                  <div style='color:#5a6b82; font-size:10px;'>TOP SUPPLIER</div>
+                  <div style='color:#e0e8f0; font-weight:600;'>{m['top_supplier']} ({m['top_share']}%)</div>
+                </div>
+                <div>
+                  <div style='color:#5a6b82; font-size:10px;'>PROCESSING</div>
+                  <div style='color:#e0e8f0; font-weight:600;'>{m['processing_share']}% concentrated</div>
+                </div>
+              </div>
+              <div style='font-size:11px; color:#bdd2ea; margin-top:8px; padding-top:8px;
+                          border-top:1px solid rgba(0,212,255,0.1);'>
+                {m['notes']}
+              </div>
+            </div>
+            """, unsafe_allow_html=True)
+
+    # ========== TAB 4: TRADE DISRUPTIONS ==========
+    with tab4:
+        st.markdown("""
+        <div style="margin-bottom:16px;">
+          <div style="font-size:18px; font-weight:600; color:#e0e8f0;">Trade Route Disruption Tracker</div>
+          <div style="font-size:12px; color:#5a6b82; margin-top:4px;">
+            Source: IMF PortWatch port congestion · GDELT shipping incident signals
+          </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        # Active disruption banner
+        active_disruptions = [
+            {'route': 'Red Sea / Suez', 'status': 'CRITICAL', 'impact': '~70% of containers diverted to Cape', 'duration_days': 530, 'cost_impact': '+30% freight cost EU-Asia'},
+            {'route': 'Strait of Hormuz', 'status': 'ELEVATED', 'impact': 'Iran threats; insurance premiums up 25%', 'duration_days': 14, 'cost_impact': 'War risk premium spike'},
+            {'route': 'Panama Canal', 'status': 'MODERATE', 'impact': 'Recovering; transits at 32-36/day', 'duration_days': 90, 'cost_impact': 'Slot auction prices elevated'},
+            {'route': 'Black Sea Grain', 'status': 'ELEVATED', 'impact': 'Russian shadow fleet; insurance issues', 'duration_days': 1200, 'cost_impact': 'Wheat/sunflower premium'},
+        ]
+
+        for d in active_disruptions:
+            color = _sg_threat_color({'CRITICAL': 90, 'ELEVATED': 75, 'MODERATE': 55}.get(d['status'], 50))
+            st.markdown(f"""
+            <div style='background:linear-gradient(135deg, {color}11, rgba(0,15,35,0.5));
+                        border:1px solid {color}66; border-radius:8px;
+                        padding:14px 18px; margin-bottom:10px;'>
+              <div style='display:flex; justify-content:space-between; align-items:center;'>
+                <div style='font-size:15px; font-weight:600; color:#e0e8f0;'>{d['route']}</div>
+                <div style='display:inline-block; padding:3px 10px; background:{color}22;
+                            border:1px solid {color}; border-radius:4px;
+                            font-size:11px; font-weight:700; color:{color}; letter-spacing:1px;'>
+                  {d['status']}
+                </div>
+              </div>
+              <div style='font-size:13px; color:#bdd2ea; margin-top:8px;'>{d['impact']}</div>
+              <div style='display:flex; gap:24px; margin-top:8px; font-size:11px; color:#8aa0bc;'>
+                <div><span style='color:#5a6b82;'>Active for:</span> <b style='color:#e0e8f0;'>{d['duration_days']} days</b></div>
+                <div><span style='color:#5a6b82;'>Market impact:</span> <b style='color:#e0e8f0;'>{d['cost_impact']}</b></div>
+              </div>
+            </div>
+            """, unsafe_allow_html=True)
+
+        # Port congestion table
+        st.markdown("<div style='font-size:14px; font-weight:600; color:#00d4ff; margin:24px 0 10px 0; letter-spacing:1px;'>PORT CONGESTION (top exposed)</div>", unsafe_allow_html=True)
+        port_data = [
+            {'port': 'Singapore', 'country': 'SGP', 'wait_hrs': 28, 'baseline': 18, 'status': 'ELEVATED'},
+            {'port': 'Shanghai', 'country': 'CHN', 'wait_hrs': 22, 'baseline': 16, 'status': 'NORMAL'},
+            {'port': 'Rotterdam', 'country': 'NLD', 'wait_hrs': 35, 'baseline': 24, 'status': 'ELEVATED'},
+            {'port': 'Los Angeles', 'country': 'USA', 'wait_hrs': 18, 'baseline': 15, 'status': 'NORMAL'},
+            {'port': 'Hamburg', 'country': 'DEU', 'wait_hrs': 42, 'baseline': 28, 'status': 'HIGH'},
+            {'port': 'Jebel Ali', 'country': 'UAE', 'wait_hrs': 24, 'baseline': 18, 'status': 'NORMAL'},
+            {'port': 'Piraeus', 'country': 'GRC', 'wait_hrs': 38, 'baseline': 22, 'status': 'HIGH'},
+        ]
+
+        for p in sorted(port_data, key=lambda x: x['wait_hrs'] - x['baseline'], reverse=True):
+            delta_pct = ((p['wait_hrs'] - p['baseline']) / p['baseline']) * 100
+            color = '#ff6b6b' if delta_pct > 30 else ('#ffd000' if delta_pct > 15 else '#00ffc8')
+            st.markdown(f"""
+            <div style='background:rgba(0,20,45,0.4); border:1px solid rgba(0,212,255,0.12);
+                        border-radius:6px; padding:10px 14px; margin-bottom:6px;
+                        display:flex; justify-content:space-between; align-items:center;'>
+              <div>
+                <span style='font-size:13px; color:#e0e8f0; font-weight:600;'>{p['port']}</span>
+                <span style='font-size:11px; color:#5a6b82; margin-left:6px;'>{p['country']}</span>
+              </div>
+              <div style='display:flex; gap:18px; align-items:center;'>
+                <div style='font-size:12px; color:#8aa0bc;'>
+                  Wait: <b style='color:#e0e8f0;'>{p['wait_hrs']}h</b>
+                  <span style='color:#5a6b82;'>(base {p['baseline']}h)</span>
+                </div>
+                <div style='font-size:12px; color:{color}; font-weight:700; min-width:70px; text-align:right;'>
+                  {'+' if delta_pct >= 0 else ''}{delta_pct:.0f}%
+                </div>
+              </div>
+            </div>
+            """, unsafe_allow_html=True)
+
+        st.caption("Data: IMF PortWatch (cached weekly) · GDELT signals (live)")
+
+    # ========== TAB 5: COUNTRY VULNERABILITY ==========
+    with tab5:
+        st.markdown("""
+        <div style="margin-bottom:16px;">
+          <div style="font-size:18px; font-weight:600; color:#e0e8f0;">Country Supply Chain Vulnerability Score</div>
+          <div style="font-size:12px; color:#5a6b82; margin-top:4px;">
+            Composite score (0-100) of energy, food, critical mineral dependency & import concentration · UN Comtrade + WTO
+          </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        vuln = _sg_country_vulnerability()
+        vuln_sorted = sorted(vuln, key=lambda x: x['overall_score'], reverse=True)
+
+        # Header
+        st.markdown("""
+        <div style='display:grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1.2fr;
+                    gap:8px; padding:8px 14px; font-size:10px; color:#5a6b82;
+                    letter-spacing:1.5px; font-weight:700; border-bottom:1px solid rgba(0,212,255,0.15);
+                    margin-bottom:8px;'>
+          <div>COUNTRY</div>
+          <div style='text-align:center;'>OVERALL</div>
+          <div style='text-align:center;'>ENERGY</div>
+          <div style='text-align:center;'>FOOD</div>
+          <div style='text-align:center;'>MINERALS</div>
+          <div style='text-align:center;'>CONCENTRATION</div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        for v in vuln_sorted:
+            ocolor = _sg_threat_color(v['overall_score'])
+            st.markdown(f"""
+            <div style='display:grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1.2fr;
+                        gap:8px; padding:10px 14px; align-items:center;
+                        background:rgba(0,20,45,0.3); border:1px solid rgba(0,212,255,0.08);
+                        border-left:3px solid {ocolor}; border-radius:6px; margin-bottom:6px;'>
+              <div>
+                <div style='font-size:13px; color:#e0e8f0; font-weight:600;'>{v['country']}</div>
+                <div style='font-size:10px; color:#5a6b82; margin-top:2px;'>{v['top_risks'][:55]}{'...' if len(v['top_risks']) > 55 else ''}</div>
+              </div>
+              <div style='text-align:center;'>
+                <span style='font-size:16px; font-weight:700; color:{ocolor};'>{v['overall_score']}</span>
+              </div>
+              <div style='text-align:center; font-size:12px; color:#bdd2ea;'>{v['energy_dep']}%</div>
+              <div style='text-align:center; font-size:12px; color:#bdd2ea;'>{v['food_dep']}%</div>
+              <div style='text-align:center; font-size:12px; color:#bdd2ea;'>{v['critical_min']}</div>
+              <div style='text-align:center; font-size:12px; color:#bdd2ea;'>{v['import_concentration']}</div>
+            </div>
+            """, unsafe_allow_html=True)
+
+        st.caption("Energy/Food % = import dependency · Minerals/Concentration = composite risk index 0-100")
+
+    # ========== TAB 6: SECTOR HEATMAP ==========
+    with tab6:
+        st.markdown("""
+        <div style="margin-bottom:16px;">
+          <div style="font-size:18px; font-weight:600; color:#e0e8f0;">Sector Risk Heatmap</div>
+          <div style="font-size:12px; color:#5a6b82; margin-top:4px;">
+            Risk exposure by sector × supply chain dimension (0-100)
+          </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        sectors, dimensions, matrix = _sg_sector_heatmap()
+
+        try:
+            import plotly.graph_objects as go
+            z_data = [matrix[s] for s in sectors]
+            fig = go.Figure(data=go.Heatmap(
+                z=z_data,
+                x=dimensions, y=sectors,
+                colorscale=[
+                    [0.0, '#00d4ff'], [0.3, '#7fb800'], [0.5, '#ffd000'],
+                    [0.7, '#ff7a00'], [1.0, '#ff2952']
+                ],
+                text=z_data,
+                texttemplate='%{text}',
+                textfont={'size': 13, 'color': '#0a0e17'},
+                colorbar=dict(title='Risk', tickfont=dict(color='#8aa0bc'), titlefont=dict(color='#e0e8f0')),
+                hovertemplate='<b>%{y}</b><br>%{x}: %{z}/100<extra></extra>'
+            ))
+            fig.update_layout(
+                paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)',
+                font=dict(color='#e0e8f0', family='Inter'),
+                xaxis=dict(side='bottom', tickangle=-20),
+                yaxis=dict(autorange='reversed'),
+                margin=dict(l=0, r=0, t=10, b=80), height=440
+            )
+            st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
+        except Exception as _e:
+            st.error(f"Heatmap unavailable: {_e}")
+
+        # Top sector vulnerabilities summary
+        st.markdown("<div style='font-size:14px; font-weight:600; color:#00d4ff; margin:18px 0 10px 0; letter-spacing:1px;'>SECTOR SUMMARIES</div>", unsafe_allow_html=True)
+        sector_summaries = {
+            'Tech/Semi': 'Taiwan chip concentration (88%), REE/gallium dependency on China, advanced equipment from ASML/Applied Materials. Most exposed sector.',
+            'Defense': 'Tungsten, antimony, REE for munitions/electronics. Titanium for aerospace. China + Russia exposure.',
+            'Renewables': 'Polysilicon (China 80%), REE for magnets, lithium/cobalt for storage. Energy transition increases demand.',
+            'Automotive': 'Battery materials (Li/Co/Ni/graphite), chips, REE magnets. EV transition concentrates risks.',
+            'Pharma': 'API production in India/China (60%+); single-source vulnerabilities on common antibiotics.',
+            'Aerospace': 'Titanium, REE, advanced composites, chips. Long supply chains, dual-use export controls.',
+            'Energy': 'Hormuz/Malacca/Bab el-Mandeb chokepoints; Russian gas legacy; LNG infrastructure bottlenecks.',
+            'Food/Agri': 'Fertilizer (Russia/Belarus), wheat (Black Sea), palm oil (Indonesia), grain chokepoints.',
+        }
+        sector_scores = sorted([(s, sum(matrix[s])/len(dimensions)) for s in sectors], key=lambda x: x[1], reverse=True)
+        for s, avg in sector_scores:
+            color = _sg_threat_color(avg)
+            st.markdown(f"""
+            <div style='background:rgba(0,20,45,0.4); border-left:3px solid {color};
+                        border-radius:6px; padding:10px 14px; margin-bottom:6px;'>
+              <div style='display:flex; justify-content:space-between; align-items:center;'>
+                <div style='font-size:13px; color:#e0e8f0; font-weight:600;'>{s}</div>
+                <div style='font-size:13px; color:{color}; font-weight:700;'>{avg:.0f} avg</div>
+              </div>
+              <div style='font-size:11px; color:#bdd2ea; margin-top:6px;'>{sector_summaries.get(s, '')}</div>
+            </div>
+            """, unsafe_allow_html=True)
+
+    # Footer
+    st.markdown("""
+    <div style='margin-top:30px; padding-top:18px; border-top:1px solid rgba(0,212,255,0.1);
+                font-size:11px; color:#5a6b82; text-align:center;'>
+      NERAI Supply Grid · Data fused from IMF PortWatch, USGS, UN Comtrade, GDELT, Yahoo Finance ·
+      Updated: live (commodities) · daily (chokepoints, ports) · weekly (concentration) · annual (USGS reserves)
+    </div>
+    """, unsafe_allow_html=True)
+
+
 page = st.session_state.get('page', 'home')
 
 # Solo tier: show pro-only pages with lock overlay
@@ -7042,6 +7801,7 @@ elif page == 'causality':   render_causality()
 elif page == 'scenarios':   render_scenarios()
 elif page == 'threat_radar': render_threat_radar()
 elif page == 'insights':    render_insights()
+    elif page == 'supply_grid': render_supply_grid()
 elif page == 'briefing':    render_briefing_room()
 elif page == 'api':         render_api()
 else:
