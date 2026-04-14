@@ -337,9 +337,8 @@ function waitAndRender() {
       globeRadius: 100,
       globeOuterRadius: 110,
       environment: '#0a0e17',
-      baseTexture: 'https://raw.githubusercontent.com/vasturiano/three-globe/master/example/img/earth-dark.jpg',
-      heightTexture: 'https://raw.githubusercontent.com/vasturiano/three-globe/master/example/img/earth-dark.jpg',
-      shading: 'lambert',
+      shading: 'color',
+      itemStyle: { color: '#0e1a2f' },
       atmosphere: { show: true, color: '#00d4ff', glowPower: 4, innerGlowPower: 2 },
       light: {
         main: { color: '#ffffff', intensity: 1.5, shadow: false, alpha: 40, beta: 40 },
@@ -368,11 +367,11 @@ function waitAndRender() {
         if (g.type === 'Polygon') { g.coordinates.forEach(function(ring){ borderLines.push({coords: ring}); }); }
         else if (g.type === 'MultiPolygon') { g.coordinates.forEach(function(poly){ poly.forEach(function(ring){ borderLines.push({coords: ring}); }); }); }
       });
-      series.unshift({
+      series.push({
         name: 'Country Borders', type: 'lines3D', coordinateSystem: 'globe',
         data: borderLines,
-        lineStyle: { width: 0.8, color: 'rgba(0,212,255,0.55)', opacity: 0.75 },
-        silent: true
+        lineStyle: { width: 1.8, color: 'rgba(120,230,255,0.95)', opacity: 1 },
+        silent: true, blendMode: 'lighter'
       });
       chart.setOption(option);
     })
