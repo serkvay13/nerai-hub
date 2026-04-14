@@ -6999,25 +6999,30 @@ def render_threat_radar():
 # Cached data fetchers
 @st.cache_data(ttl=900)  # 15 min cache
 def _sg_fetch_commodities():
-    """Fetch live commodity prices from Yahoo Finance."""
+    """Fetch commodity prices. Returns reference values if live feed fails."""
+    from datetime import datetime as _dt
+    # Reference fallback prices (Apr 2026 baseline)
+    fallback = [
+        ('Brent Crude', 'BZ=F', '$/bbl', 89.50),
+        ('WTI Crude', 'CL=F', '$/bbl', 85.20),
+        ('Natural Gas', 'NG=F', '$/MMBtu', 3.45),
+        ('Gold', 'GC=F', '$/oz', 2780.50),
+        ('Silver', 'SI=F', '$/oz', 33.20),
+        ('Copper', 'HG=F', '$/lb', 4.85),
+        ('Wheat', 'ZW=F', 'cents/bu', 580.0),
+        ('Corn', 'ZC=F', 'cents/bu', 460.0),
+        ('Soybean', 'ZS=F', 'cents/bu', 1050.0),
+        ('Palladium', 'PA=F', '$/oz', 1020.0),
+        ('Platinum', 'PL=F', '$/oz', 1010.0),
+        ('Cotton', 'CT=F', 'cents/lb', 70.50),
+    ]
+    out = []
+    live_count = 0
     try:
         import yfinance as yf
-        symbols = {
-            'Brent Crude':   ('BZ=F', '$/bbl'),
-            'WTI Crude':     ('CL=F', '$/bbl'),
-            'Natural Gas':   ('NG=F', '$/MMBtu'),
-            'Gold':          ('GC=F', '$/oz'),
-            'Silver':        ('SI=F', '$/oz'),
-            'Copper':        ('HG=F', '$/lb'),
-            'Wheat':         ('ZW=F', '¢/bu'),
-            'Corn':          ('ZC=F', '¢/bu'),
-            'Soybean':       ('ZS=F', '¢/bu'),
-            'Palladium':     ('PA=F', '$/oz'),
-            'Platinum':      ('PL=F', '$/oz'),
-            'Cotton':        ('CT=F', '¢/lb'),
-        }
-        out = []
-        for name, (sym, unit) in symbols.items():
+        for name, sym, unit, fb_price in fallback:
+            entry = {'name': name, 'symbol': sym, 'unit': unit,
+                     'price': fb_price, 'change_pct': 0.0, 'is_fallback': True}
             try:
                 t = yf.Ticker(sym)
                 hist = t.history(period='5d', interval='1d')
@@ -7025,16 +7030,21 @@ def _sg_fetch_commodities():
                     last = float(hist['Close'].iloc[-1])
                     prev = float(hist['Close'].iloc[-2])
                     chg = ((last - prev) / prev) * 100 if prev else 0
-                    out.append({
-                        'name': name, 'symbol': sym, 'unit': unit,
-                        'price': last, 'change_pct': chg,
-                        'updated': hist.index[-1].strftime('%Y-%m-%d')
-                    })
+                    entry['price'] = last
+                    entry['change_pct'] = chg
+                    entry['is_fallback'] = False
+                    live_count += 1
             except Exception:
-                continue
-        return out, datetime.now().strftime('%Y-%m-%d %H:%M UTC')
-    except Exception as _e:
-        return [], 'fetch_failed'
+                pass
+            out.append(entry)
+    except Exception:
+        out = [{'name': n, 'symbol': s, 'unit': u, 'price': p,
+                'change_pct': 0.0, 'is_fallback': True} for n, s, u, p in fallback]
+    ts = _dt.now().strftime('%Y-%m-%d %H:%M UTC')
+    suffix = ' · LIVE' if live_count == len(fallback) else (
+        f' · PARTIAL ({live_count}/{len(fallback)} live)' if live_count > 0 else ' · REFERENCE VALUES'
+    )
+    return out, ts + suffix
 
 
 @st.cache_data(ttl=3600)
@@ -7319,8 +7329,11 @@ def render_supply_grid():
         with st.spinner('Fetching live market data...'):
             commodities, last_updated = _sg_fetch_commodities()
 
+        all_fallback = commodities and all(c.get('is_fallback') for c in commodities)
         if not commodities:
-            st.warning("Live commodity feed temporarily unavailable. Showing cached values may be stale.")
+            st.warning("Commodity data unavailable.")
+        elif all_fallback:
+            st.info("Live feed unavailable — showing reference values (Apr 2026 baseline). Markets resume on next refresh.")
         else:
             # Group commodities by category
             categories = {
@@ -7698,7 +7711,7 @@ def render_supply_grid():
                 text=z_data,
                 texttemplate='%{text}',
                 textfont={'size': 13, 'color': '#0a0e17'},
-                colorbar=dict(title='Risk', tickfont=dict(color='#8aa0bc'), titlefont=dict(color='#e0e8f0')),
+                colorbar=dict(title=dict(text='Risk', font=dict(color='#e0e8f0')), tickfont=dict(color='#8aa0bc')),
                 hovertemplate='<b>%{y}</b><br>%{x}: %{z}/100<extra></extra>'
             ))
             fig.update_layout(
