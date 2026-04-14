@@ -337,9 +337,8 @@ function waitAndRender() {
       globeRadius: 100,
       globeOuterRadius: 110,
       environment: '#0a0e17',
-      baseTexture: 'https://raw.githubusercontent.com/turban/webgl-earth/master/images/2_no_clouds_4k.jpg',
-      heightTexture: 'https://raw.githubusercontent.com/turban/webgl-earth/master/images/2_no_clouds_4k.jpg',
-      shading: 'lambert',
+      shading: 'color',
+      itemStyle: { color: '#081525' },
       atmosphere: { show: true, color: '#00d4ff', glowPower: 4, innerGlowPower: 2 },
       light: {
         main: { color: '#ffffff', intensity: 1.5, shadow: false, alpha: 40, beta: 40 },
@@ -358,7 +357,47 @@ function waitAndRender() {
     series: series
   };
 
-  chart.setOption(option);
+  // Generate political world map canvas from GeoJSON (dark filled countries + cyan borders)
+  const mapCanvas = document.createElement('canvas');
+  mapCanvas.width = 4096; mapCanvas.height = 2048;
+  const mctx = mapCanvas.getContext('2d');
+  mctx.fillStyle = '#051220';
+  mctx.fillRect(0, 0, mapCanvas.width, mapCanvas.height);
+
+  function drawMap(geo) {
+    geo.features.forEach(function(f) {
+      const g = f.geometry; if (!g) return;
+      const polys = g.type === 'Polygon' ? [g.coordinates] : (g.type === 'MultiPolygon' ? g.coordinates : []);
+      polys.forEach(function(poly) {
+        if (!poly || !poly[0]) return;
+        mctx.beginPath();
+        poly[0].forEach(function(pt, i) {
+          const x = ((pt[0] + 180) / 360) * mapCanvas.width;
+          const y = ((90 - pt[1]) / 180) * mapCanvas.height;
+          if (i === 0) mctx.moveTo(x, y); else mctx.lineTo(x, y);
+        });
+        mctx.closePath();
+        mctx.fillStyle = '#1a3352';
+        mctx.fill();
+        mctx.strokeStyle = 'rgba(0, 212, 255, 0.9)';
+        mctx.lineWidth = 2;
+        mctx.stroke();
+      });
+    });
+  }
+
+  fetch('https://cdn.jsdelivr.net/gh/johan/world.geo.json@master/countries.geo.json')
+    .then(function(r) { return r.json(); })
+    .then(function(geo) {
+      drawMap(geo);
+      option.globe.baseTexture = mapCanvas;
+      option.globe.shading = 'lambert';
+      delete option.globe.itemStyle;
+      chart.setOption(option);
+    })
+    .catch(function(e) {
+      chart.setOption(option);
+    });
   window.addEventListener('resize', function(){ chart.resize(); });
 }
 
