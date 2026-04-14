@@ -7824,6 +7824,215 @@ def _sg_ai_fallback_brief(alert):
 **4. Escalation:** {esc_by_sev.get(alert['severity'], 'Risk Manager')}"""
 
 
+
+
+# =====================================================================
+# PHASE 4: SCENARIO SIMULATOR
+# What-if disruption modeling across chokepoints, materials, countries
+# =====================================================================
+
+def _sg_scenario_library():
+    """Pre-defined disruption scenarios with cascade modeling."""
+    return {
+        'Strait of Hormuz closure (30 days)': {
+            'category': 'Chokepoint',
+            'severity': 'CATASTROPHIC',
+            'duration_days': 30,
+            'primary_impacts': {
+                'Oil supply': '-20% global transit',
+                'LNG supply': '-25% global transit',
+                'Gulf exports': 'Full interruption for Saudi/UAE/Kuwait/Qatar/Iraq/Iran',
+            },
+            'price_projections': {
+                'Brent Crude': '+50-120%',
+                'WTI Crude': '+45-110%',
+                'Natural Gas': '+80-150%',
+                'Gold (safe haven)': '+15-25%',
+                'USD Index': '+8-15%',
+            },
+            'cascade_effects': [
+                'Asian refiners (China, Japan, Korea, India) activate strategic reserves',
+                'Insurance war-risk premiums spike 10x; many tankers refuse charters',
+                'Global recession probability rises to 60-70%',
+                'EU gas storage depleted 6 weeks earlier than plan',
+                'Central banks pause rate cuts; inflation re-accelerates',
+            ],
+            'affected_countries': 'Saudi Arabia, UAE, Kuwait, Iraq, Iran, Qatar, Oman, China, Japan, S.Korea, India',
+            'mitigation_playbook': [
+                'Activate US SPR draws; coordinate IEA release',
+                'Accelerate Australia/US/Qatar LNG diversion',
+                'Saudi-UAE East-West pipeline (~5 Mbpd Red Sea bypass)',
+                'Industrial demand rationing in manufacturing sectors',
+            ],
+            'recovery_timeline': '60-90 days to normalize; 6+ months for full insurance market recovery'
+        },
+        'Taiwan Strait blockade (90 days)': {
+            'category': 'Geopolitical',
+            'severity': 'CATASTROPHIC',
+            'duration_days': 90,
+            'primary_impacts': {
+                'Advanced chips': '-88% of global leading-edge supply',
+                'TSMC capacity': '0% operational',
+                'Memory chips': '-40% (Samsung/Hynix partially exposed)',
+                'Rare earth refining': '-5% (Taiwan small share)',
+            },
+            'price_projections': {
+                'Chip prices': '+200-500% for leading-edge',
+                'Auto pricing': '+25-50% (chip shortage cascade)',
+                'Consumer electronics': '+30-60%',
+                'Server/AI hardware': '+100-300%',
+                'Industrial equipment': '+20-40%',
+            },
+            'cascade_effects': [
+                'Auto production halts globally within 4-6 weeks',
+                'AI/data center buildout freezes; cloud pricing spikes',
+                'Defense electronics supply crisis; military readiness impact',
+                'Apple, NVIDIA, AMD, Qualcomm revenue drops 40-60% for 2 quarters',
+                'Stock market correction 15-30%; tech sector leading',
+                'Emergency CHIPS Act II funding for US reshoring',
+            ],
+            'affected_countries': 'Taiwan, China, US, S.Korea, Japan, Germany, all tech-intensive economies',
+            'mitigation_playbook': [
+                'Emergency reprovisioning of Intel/Samsung/Global Foundries capacity',
+                'Defense Production Act invocation for critical chip allocation',
+                'Inventory rationing; prioritize defense, medical, safety-critical',
+                'Accelerate Japan Rapidus, Arizona fabs; relax some ITAR/EAR',
+                'Diplomatic de-escalation via multilateral mediators',
+            ],
+            'recovery_timeline': 'Chip supply: 12-24 months to pre-crisis levels; complete supply chain rework'
+        },
+        'Red Sea 6-month sustained closure': {
+            'category': 'Chokepoint',
+            'severity': 'HIGH',
+            'duration_days': 180,
+            'primary_impacts': {
+                'EU-Asia container trade': '100% diverted to Cape',
+                'Suez Canal revenue': '$9B annual loss to Egypt',
+                'Shipping lead times': '+10-14 days',
+                'Global oil transit': '-12%',
+            },
+            'price_projections': {
+                'Container rates (EU-Asia)': '+35-60%',
+                'Brent Crude': '+10-20%',
+                'Wheat (Russia exposure)': '+15-25%',
+                'Consumer goods (EU retail)': '+5-10%',
+            },
+            'cascade_effects': [
+                'Egypt fiscal crisis; potential IMF bailout',
+                'European retailers delayed fall/winter stock 3-6 weeks',
+                'Cape route ports (SA, Namibia) capacity strained',
+                'Insurance capacity exhausted for Red Sea transits',
+                'Intra-Asian and EU-India routes see capacity reshuffle',
+            ],
+            'affected_countries': 'Egypt, EU (esp Germany/Italy/France), Saudi, Yemen, coastal EU ports',
+            'mitigation_playbook': [
+                'Activate Cape of Good Hope as primary EU-Asia route',
+                'Increase ship capacity via charter extensions',
+                'Accelerate nearshoring announcements (MEX, Poland, Vietnam)',
+                'Egyptian IMF facility + bilateral support to stabilize currency',
+            ],
+            'recovery_timeline': 'Freight rates: 3-6 months post-resolution; Egypt fiscal: 12-18 months'
+        },
+        'China REE + gallium total export ban (12 months)': {
+            'category': 'Critical Material',
+            'severity': 'CRITICAL',
+            'duration_days': 365,
+            'primary_impacts': {
+                'REE (Nd/Dy/Tb)': '-70% global mining, -90% refining',
+                'Gallium': '-98% global supply',
+                'Germanium': '-60% supply',
+                'Permanent magnets': 'Ex-China supply <10% of demand',
+            },
+            'price_projections': {
+                'REE oxides': '+300-800%',
+                'Gallium': '+500-1000%',
+                'Neodymium magnets': '+200-400%',
+                'EV motor components': '+50-100%',
+                'Wind turbine gen': '+75-150%',
+            },
+            'cascade_effects': [
+                'EV production targets missed globally (~30-50% reduction)',
+                'Wind turbine installations delayed 12-18 months',
+                'Defense electronics supply crisis (radar, missile guidance)',
+                'LED/semiconductor capacity constrained by gallium shortage',
+                'Lynas (Australia) + MP Materials (US) become strategic assets',
+            ],
+            'affected_countries': 'EU, US, Japan, S.Korea, India, Turkey — all advanced manufacturing',
+            'mitigation_playbook': [
+                'Emergency REE strategic reserve release (DOE, DOD)',
+                'Fast-track Lynas Texas + MP Materials Mountain Pass Phase 2',
+                'Recycling mandate for end-of-life electronics/EVs',
+                'Substitute motor tech (induction, reluctance) where possible',
+                'Diplomatic engagement via G7/IEA framework',
+            ],
+            'recovery_timeline': 'Ex-China capacity ramp: 3-5 years for full replacement'
+        },
+        'Russian gas total cutoff to EU': {
+            'category': 'Energy',
+            'severity': 'HIGH',
+            'duration_days': 365,
+            'primary_impacts': {
+                'EU natural gas': '-15-20% (mostly replaced by LNG post-2022)',
+                'EU fertilizer': '-10-15% production',
+                'EU heavy industry': 'Selective curtailment scenarios',
+                'Gas storage': 'Winter 2026 depletion risk',
+            },
+            'price_projections': {
+                'TTF Natural Gas': '+80-150%',
+                'LNG spot': '+80-150%',
+                'LNG spot': '+60-120%',
+                'Fertilizer (urea)': '+40-80%',
+                'Steel (EU energy cost)': '+15-25%',
+                'Electricity (baseload)': '+30-50%',
+            },
+         'Germany industrial recession (chemicals, steel, auto)',
+                'Asian LNG competition drives global gas volatility',
+                'Hungary, Slovakia push for bilateral exceptions',
+                'Green hydrogen + nuclear buildouts accelerate',
+                'Food inflation via fertilizer chain',
+            ],
+            'affected_countries': 'Germany, Austria, Hungary, Slovakia, Italy (plus EU-wide markets)',
+            'mitigation_playbook': [
+                'Maximum US/Qatar/Norway LNG contracting',
+                'Demand reduction 10-15% via industrial rationing',
+                'Accelerated nuclear restart (Germany reconsideration)',
+                'Strategic gas reserve cross-border pooling',
+            ],
+            'recovery_timeline': 'Supply normalization: 18-24 months with LNG terminal buildout'
+        },
+        'Panama Canal drought re-intensifies (6 months)': {
+            'category': 'Chokepoint',
+            'severity': 'MODERATE',
+            'duration_days': 180,
+            'primary_impacts': {
+                'Panama transits': '-50% (18 vs 36 normal)',
+                'US East Coast LNG exports': 'Rerouting costs +20%',
+                'US-Asia container trade': '+3-5 days transit',
+                'Agricultural exports (US Midwest)': 'Higher logistics cost',
+            },
+            'price_projections': {
+                'Container rates (US-Asia)': '+10-20%',
+                'LNG spot': '+5-10%',
+                'Soybean export basis': '-5 to -10 cents/bu',
+            },
+            'cascade_effects': [
+                'Magellan Strait / Cape Horn rerouting (+8-12 days)',
+                'Rail and intermodal congestion US West-East',
+                'Slot auction prices reach $4M+ per transit',
+                'Accelerated Nicaragua canal speculation',
+            ],
+            'affected_countries': 'US, Panama, Chile, Argentina, China, Japan, S.Korea',
+            'mitigation_playbook': [
+                'Canal authority water management; slot auction optimization',
+                'Rail/intermodal capacity expansion via LA/LB ports',
+                'LNG contract flexibility clauses activated',
+                'Agricultural export timing adjustment',
+            ],
+            'recovery_timeline': 'Typically 3-6 months once rainfall returns to normal'
+        },
+    }
+
+
 def render_supply_grid():
     """SUPPLY GRID — Global Supply Chain Intelligence Hub."""
 
@@ -7848,7 +8057,7 @@ def render_supply_grid():
     """, unsafe_allow_html=True)
 
     # Module tabs
-    tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9 = st.tabs([
+    tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9, tab10 = st.tabs([
         "Live Indicators",
         "Chokepoints",
         "Critical Materials",
@@ -7857,7 +8066,8 @@ def render_supply_grid():
         "Sector Heatmap",
         "ESG & Compliance",
         "Alternative Sourcing",
-        "AI Risk Analyst"
+        "AI Risk Analyst",
+        "Scenario Simulator"
     ])
 
     # ========== TAB 1: LIVE INDICATORS ==========
@@ -8739,6 +8949,131 @@ def render_supply_grid():
                     """, unsafe_allow_html=True)
 
         st.caption("AI briefs are advisory. Validate critical decisions with primary sources and counsel.")
+
+
+    # ========== TAB 10: SCENARIO SIMULATOR ==========
+    with tab10:
+        st.markdown("""
+        <div style="margin-bottom:16px;">
+          <div style="font-size:18px; font-weight:600; color:#e0e8f0;">Scenario Simulator</div>
+          <div style="font-size:12px; color:#5a6b82; margin-top:4px;">
+            Model cascading impacts of supply chain disruption scenarios &middot; Price projections &middot; Affected countries &middot; Mitigation playbooks
+          </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        scenarios = _sg_scenario_library()
+        scenario_keys = list(scenarios.keys())
+        selected = st.selectbox("Select scenario to simulate",
+                                 options=scenario_keys,
+                                 key='scenario_sel')
+
+        s = scenarios[selected]
+        sev_score = {'CATASTROPHIC': 98, 'CRITICAL': 92, 'HIGH': 78, 'MODERATE': 55}.get(s['severity'], 50)
+        sev_color = _sg_threat_color(sev_score)
+
+        # Scenario header
+        st.markdown(f"""
+        <div style='background:linear-gradient(135deg, {sev_color}11, rgba(0,15,35,0.5));
+                    border:1px solid {sev_color}66; border-radius:8px;
+                    padding:16px 20px; margin-bottom:18px;'>
+          <div style='display:flex; justify-content:space-between; align-items:start; margin-bottom:8px;'>
+            <div>
+              <div style='font-size:18px; font-weight:600; color:#e0e8f0;'>{selected}</div>
+              <div style='font-size:12px; color:#8aa0bc; margin-top:4px;'>{s['category']} &middot; Duration: {s['duration_days']} days</div>
+            </div>
+            <div style='display:inline-block; padding:4px 12px; background:{sev_color}22;
+                        border:1px solid {sev_color}; border-radius:4px;
+                        font-size:11px; font-weight:700; color:{sev_color}; letter-spacing:1.5px;'>
+              {s['severity']}
+            </div>
+          </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        col1, col2 = st.columns(2)
+
+        # Primary impacts
+        with col1:
+            st.markdown("<div style='font-size:13px; color:#00d4ff; font-weight:600; letter-spacing:1px; margin-bottom:10px;'>PRIMARY IMPACTS</div>", unsafe_allow_html=True)
+            for k, v in s['primary_impacts'].items():
+                st.markdown(f"""
+                <div style='background:rgba(0,20,45,0.4); border-left:3px solid #ff7a00;
+                            border-radius:6px; padding:10px 14px; margin-bottom:6px;'>
+                  <div style='font-size:12px; color:#8aa0bc; margin-bottom:2px;'>{k}</div>
+                  <div style='font-size:13px; color:#e0e8f0; font-weight:600;'>{v}</div>
+                </div>
+                """, unsafe_allow_html=True)
+
+        # Price projections
+        with col2:
+            st.markdown("<div style='font-size:13px; color:#00d4ff; font-weight:600; letter-spacing:1px; margin-bottom:10px;'>PRICE PROJECTIONS</div>", unsafe_allow_html=True)
+            for k, v in s['price_projections'].items():
+                # Color based on magnitude
+                magnitude = 0
+                import re as _re
+                m = _re.search(r'(\d+)', v)
+                if m:
+                    magnitude = int(m.group(1))
+                pcolor = '#ff2952' if magnitude >= 100 else ('#ff7a00' if magnitude >= 30 else ('#ffd000' if magnitude >= 10 else '#00ffc8'))
+                st.markdown(f"""
+                <div style='background:rgba(0,20,45,0.4); border-left:3px solid {pcolor};
+                            border-radius:6px; padding:10px 14px; margin-bottom:6px;'>
+                  <div style='display:flex; justify-content:space-between; align-items:center;'>
+                    <div style='font-size:12px; color:#bdd2ea;'>{k}</div>
+                    <div style='font-size:13px; color:{pcolor}; font-weight:700;'>{v}</div>
+                  </div>
+                </div>
+                """, unsafe_allow_html=True)
+
+        # Cascade effects
+        st.markdown("<div style='font-size:13px; color:#00d4ff; font-weight:600; letter-spacing:1px; margin:22px 0 10px 0;'>CASCADE EFFECTS</div>", unsafe_allow_html=True)
+        for i, effect in enumerate(s['cascade_effects'], 1):
+            st.markdown(f"""
+            <div style='background:linear-gradient(90deg, rgba(0,25,55,0.5), rgba(0,15,35,0.4));
+                        border-left:3px solid #00d4ff; border-radius:6px;
+                        padding:8px 14px; margin-bottom:5px;
+                        display:flex; gap:12px; align-items:start;'>
+              <div style='width:20px; height:20px; background:rgba(0,212,255,0.15);
+                          border:1px solid rgba(0,212,255,0.4); border-radius:50%;
+                          display:flex; align-items:center; justify-content:center; flex-shrink:0;
+                          color:#00d4ff; font-weight:700; font-size:10px;'>{i}</div>
+              <div style='font-size:12px; color:#bdd2ea; line-height:1.5;'>{effect}</div>
+            </div>
+            """, unsafe_allow_html=True)
+
+        # Affected countries
+        st.markdown(f"""
+        <div style='background:rgba(0,20,45,0.4); border:1px solid rgba(0,212,255,0.12);
+                    border-radius:6px; padding:12px 16px; margin-top:16px;'>
+          <div style='font-size:11px; color:#00d4ff; font-weight:600; letter-spacing:1px; margin-bottom:4px;'>AFFECTED COUNTRIES</div>
+          <div style='font-size:12px; color:#bdd2ea;'>{s['affected_countries']}</div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        # Mitigation playbook
+        st.markdown("<div style='font-size:13px; color:#00d4ff; font-weight:600; letter-spacing:1px; margin:22px 0 10px 0;'>MITIGATION PLAYBOOK</div>", unsafe_allow_html=True)
+        for action in s['mitigation_playbook']:
+            st.markdown(f"""
+            <div style='background:linear-gradient(90deg, rgba(0,55,25,0.4), rgba(0,35,15,0.3));
+                        border-left:3px solid #00ffc8; border-radius:6px;
+                        padding:10px 14px; margin-bottom:5px;
+                        font-size:12px; color:#bdd2ea;'>
+              <span style='color:#00ffc8; font-weight:700; margin-right:8px;'>&gt;</span>{action}
+            </div>
+            """, unsafe_allow_html=True)
+
+        # Recovery timeline
+        st.markdown(f"""
+        <div style='background:linear-gradient(135deg, rgba(0,212,255,0.08), rgba(0,15,35,0.3));
+                    border:1px solid rgba(0,212,255,0.3); border-radius:8px;
+                    padding:12px 16px; margin-top:18px;'>
+          <div style='font-size:11px; color:#00d4ff; font-weight:600; letter-spacing:1.5px; margin-bottom:6px;'>RECOVERY TIMELINE</div>
+          <div style='font-size:13px; color:#e0e8f0; line-height:1.5;'>{s['recovery_timeline']}</div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        st.caption("Projections are based on historical disruption analogs (1973 oil crisis, 2011 Fukushima, 2021 Suez Ever Given, 2022 Russia sanctions) · adjusted for 2026 supply chain structure")
 
 
     # Footer
