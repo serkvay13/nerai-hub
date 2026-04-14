@@ -487,15 +487,39 @@ const deckgl = new deck.DeckGL({{
   onHover: tooltipFn,
   getTooltip: null,
   layers: [
-    // Background: dark earth sphere
-    new deck.SimpleMeshLayer({{
-      id: 'earth-sphere',
-      data: [{{position: [0, 0, 0]}}],
-      getPosition: d => d.position,
-      mesh: new deck.SphereGeometry({{radius: 6360000, nlat: 32, nlong: 32}}),
-      getColor: [10, 20, 40, 255],
-      wireframe: false,
-      material: false
+    // Background: dark earth surface (full globe polygon)
+    new deck.SolidPolygonLayer({{
+      id: 'earth-bg',
+      data: [{{polygon: [[-180, -89.9], [180, -89.9], [180, 89.9], [-180, 89.9]]}}],
+      getPolygon: d => d.polygon,
+      getFillColor: [12, 22, 42, 255],
+      stroked: false,
+      filled: true,
+      extruded: false,
+      pickable: false
+    }}),
+    // Graticule lines (lat/lon grid) for visual reference
+    new deck.PathLayer({{
+      id: 'graticule',
+      data: (() => {{
+        const lines = [];
+        for (let lat = -60; lat <= 60; lat += 30) {{
+          const path = [];
+          for (let lon = -180; lon <= 180; lon += 10) path.push([lon, lat]);
+          lines.push({{path}});
+        }}
+        for (let lon = -180; lon < 180; lon += 30) {{
+          const path = [];
+          for (let lat = -80; lat <= 80; lat += 10) path.push([lon, lat]);
+          lines.push({{path}});
+        }}
+        return lines;
+      }})(),
+      getPath: d => d.path,
+      getColor: [0, 212, 255, 35],
+      getWidth: 1,
+      widthUnits: 'pixels',
+      pickable: false
     }}),
     ...layers
   ]
