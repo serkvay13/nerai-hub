@@ -358,7 +358,25 @@ function waitAndRender() {
     series: series
   };
 
-  chart.setOption(option);
+  // Fetch country borders GeoJSON and add as lines3D overlay (cyan outlines on globe)
+  fetch('https://cdn.jsdelivr.net/gh/johan/world.geo.json@master/countries.geo.json')
+    .then(function(r){ return r.json(); })
+    .then(function(geo){
+      var borderLines = [];
+      geo.features.forEach(function(f){
+        var g = f.geometry; if (!g) return;
+        if (g.type === 'Polygon') { g.coordinates.forEach(function(ring){ borderLines.push({coords: ring}); }); }
+        else if (g.type === 'MultiPolygon') { g.coordinates.forEach(function(poly){ poly.forEach(function(ring){ borderLines.push({coords: ring}); }); }); }
+      });
+      series.unshift({
+        name: 'Country Borders', type: 'lines3D', coordinateSystem: 'globe',
+        data: borderLines,
+        lineStyle: { width: 0.8, color: 'rgba(0,212,255,0.55)', opacity: 0.75 },
+        silent: true
+      });
+      chart.setOption(option);
+    })
+    .catch(function(e){ chart.setOption(option); });
   window.addEventListener('resize', function(){ chart.resize(); });
 }
 
