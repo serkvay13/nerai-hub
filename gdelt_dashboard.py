@@ -7282,6 +7282,186 @@ def _sg_threat_label(score):
     return 'LOW'
 
 
+
+
+# =====================================================================
+# PHASE 1: ESG / COMPLIANCE SCREENING DATA FUNCTIONS
+# To be inserted BEFORE def render_supply_grid()
+# =====================================================================
+
+def _sg_sanctions_data():
+    """Key sanctioned jurisdictions — OFAC, EU, UN consolidated lists."""
+    return {
+        'sanctioned_jurisdictions': [
+            {'name': 'Russia', 'iso': 'RUS', 'regimes': ['US OFAC', 'EU 11th package', 'UK', 'Japan'],
+             'key_sectors': 'Energy, finance, defense, dual-use tech, luxury goods',
+             'severity': 'CRITICAL', 'score': 95,
+             'effect': '~$300B frozen assets; oil price cap $60/bbl; SWIFT exclusion'},
+            {'name': 'Iran', 'iso': 'IRN', 'regimes': ['US OFAC', 'EU', 'UN partial'],
+             'key_sectors': 'Oil, banking, missile/drone tech, IRGC affiliates',
+             'severity': 'CRITICAL', 'score': 92,
+             'effect': 'Comprehensive US embargo; EU drone/missile restrictions'},
+            {'name': 'North Korea', 'iso': 'PRK', 'regimes': ['US OFAC', 'EU', 'UN comprehensive'],
+             'key_sectors': 'All trade restricted; military/dual-use comprehensive ban',
+             'severity': 'CRITICAL', 'score': 98,
+             'effect': 'Total UN trade embargo; secondary sanctions for facilitators'},
+            {'name': 'Belarus', 'iso': 'BLR', 'regimes': ['US OFAC', 'EU', 'UK'],
+             'key_sectors': 'Potash (fertilizer), oil products, defense, finance',
+             'severity': 'HIGH', 'score': 80,
+             'effect': 'Linked to Russia sanctions; potash export restrictions'},
+            {'name': 'Syria', 'iso': 'SYR', 'regimes': ['US OFAC', 'EU', 'UK'],
+             'key_sectors': 'Oil, finance, construction (some easing 2025)',
+             'severity': 'HIGH', 'score': 78,
+             'effect': 'Caesar Act US sanctions; EU partial easing post-2024'},
+            {'name': 'Myanmar', 'iso': 'MMR', 'regimes': ['US OFAC', 'EU', 'UK'],
+             'key_sectors': 'Military-linked entities (MOGE), gems, timber',
+             'severity': 'HIGH', 'score': 75,
+             'effect': 'Targeted military entity sanctions'},
+            {'name': 'Venezuela', 'iso': 'VEN', 'regimes': ['US OFAC (sectoral)'],
+             'key_sectors': 'Oil/PDVSA, gold, finance',
+             'severity': 'HIGH', 'score': 72,
+             'effect': 'Oil sanctions partially lifted 2023; reapplied 2024'},
+            {'name': 'Cuba', 'iso': 'CUB', 'regimes': ['US OFAC'],
+             'key_sectors': 'US embargo (broad); third-country trade allowed',
+             'severity': 'MODERATE', 'score': 60,
+             'effect': 'Helms-Burton secondary sanctions risk'},
+        ],
+        'high_risk_entities': [
+            {'name': 'Sberbank', 'country': 'Russia', 'list': 'OFAC SDN', 'sector': 'Banking'},
+            {'name': 'Gazprom', 'country': 'Russia', 'list': 'OFAC SSI', 'sector': 'Energy'},
+            {'name': 'Rosneft', 'country': 'Russia', 'list': 'OFAC SSI', 'sector': 'Oil & Gas'},
+            {'name': 'Wagner Group', 'country': 'Russia', 'list': 'OFAC SDN', 'sector': 'PMC'},
+            {'name': 'IRGC', 'country': 'Iran', 'list': 'OFAC SDGT', 'sector': 'Military'},
+            {'name': 'Huawei', 'country': 'China', 'list': 'US Entity List', 'sector': 'Telecom/Tech'},
+            {'name': 'SMIC', 'country': 'China', 'list': 'US Entity List', 'sector': 'Semiconductors'},
+            {'name': 'Belaruskali', 'country': 'Belarus', 'list': 'EU/US Sanctions', 'sector': 'Potash'},
+        ]
+    }
+
+
+def _sg_uflpa_data():
+    """UFLPA (Uyghur Forced Labor Prevention Act) entity regions & flagged sectors."""
+    return {
+        'high_risk_regions': [
+            {'region': 'Xinjiang (XUAR)', 'country': 'China',
+             'risk_level': 'CRITICAL', 'rebuttable_presumption': True,
+             'key_commodities': 'Cotton (~85% China cotton), polysilicon (~45% global), tomatoes, PVC',
+             'guidance': 'All goods from XUAR presumed forced labor; banned from US import unless rebutted'},
+            {'region': 'Tibet (TAR)', 'country': 'China',
+             'risk_level': 'HIGH', 'rebuttable_presumption': False,
+             'key_commodities': 'Mining, manufacturing labor transfer programs',
+             'guidance': 'Increasing scrutiny under labor transfer schemes'},
+            {'region': 'North Korea', 'country': 'DPRK',
+             'risk_level': 'CRITICAL', 'rebuttable_presumption': False,
+             'key_commodities': 'Textiles, seafood, IT services (overseas DPRK workers)',
+             'guidance': 'CAATSA Section 321(b) — DPRK labor presumption'},
+        ],
+        'flagged_sectors': [
+            {'sector': 'Cotton & Textiles', 'risk': 'CRITICAL', 'origins': 'XUAR, Turkmenistan, Uzbekistan',
+             'note': 'XUAR cotton in ~20% of global apparel supply chains'},
+            {'sector': 'Polysilicon (Solar)', 'risk': 'CRITICAL', 'origins': 'XUAR (~45% global capacity)',
+             'note': 'Solar panel supply chain critically exposed'},
+            {'sector': 'Lithium-ion Batteries', 'risk': 'HIGH', 'origins': 'XUAR cathode, DRC cobalt',
+             'note': 'Battery chain — forced labor + child labor concerns'},
+            {'sector': 'Tomatoes & Processed Food', 'risk': 'HIGH', 'origins': 'XUAR (~25% global tomato paste)',
+             'note': 'Italian/Mediterranean processors often source XUAR paste'},
+            {'sector': 'Seafood', 'risk': 'HIGH', 'origins': 'China processing, DPRK labor, Thailand',
+             'note': 'Distant-water fleets, processing plants flagged'},
+            {'sector': 'Cocoa', 'risk': 'HIGH', 'origins': 'Ivory Coast, Ghana (child labor)',
+             'note': 'EUDR + child labor compliance challenges'},
+            {'sector': 'Mica', 'risk': 'HIGH', 'origins': 'India (Jharkhand/Bihar), Madagascar',
+             'note': 'Cosmetic and electronics supply chains'},
+            {'sector': 'Palm Oil', 'risk': 'MODERATE', 'origins': 'Malaysia, Indonesia',
+             'note': 'Migrant labor abuse + EUDR deforestation concerns'},
+        ]
+    }
+
+
+def _sg_eudr_commodities():
+    """EU Deforestation Regulation (EUDR) regulated commodities — Reg 2023/1115."""
+    return [
+        {'commodity': 'Palm Oil', 'risk_origins': 'Indonesia, Malaysia',
+         'global_share': 'IDN 58%, MYS 25%', 'eudr_status': 'IN SCOPE',
+         'key_buyers': 'EU food, cosmetics, biofuels', 'mitigation': 'RSPO + geolocation proof'},
+        {'commodity': 'Soy', 'risk_origins': 'Brazil (Cerrado, Amazon), Argentina, Paraguay',
+         'global_share': 'BRA 36%, USA 32%', 'eudr_status': 'IN SCOPE',
+         'key_buyers': 'EU livestock feed, food processors', 'mitigation': 'Soy Moratorium, RTRS'},
+        {'commodity': 'Cocoa', 'risk_origins': 'Ivory Coast, Ghana, Cameroon, Indonesia',
+         'global_share': 'CIV 39%, GHA 17%', 'eudr_status': 'IN SCOPE',
+         'key_buyers': 'Nestle, Ferrero, Mondelez, EU chocolate mfrs', 'mitigation': 'Rainforest Alliance, Fair Trade'},
+        {'commodity': 'Coffee', 'risk_origins': 'Brazil, Vietnam, Honduras, Indonesia',
+         'global_share': 'BRA 35%, VNM 17%', 'eudr_status': 'IN SCOPE',
+         'key_buyers': 'EU coffee roasters', 'mitigation': '4C, Rainforest Alliance'},
+        {'commodity': 'Cattle (Beef/Leather)', 'risk_origins': 'Brazil, Argentina, Paraguay',
+         'global_share': 'BRA 16% beef exports', 'eudr_status': 'IN SCOPE',
+         'key_buyers': 'EU beef, leather goods, auto interiors', 'mitigation': 'Farm-of-origin traceability'},
+        {'commodity': 'Wood/Timber', 'risk_origins': 'Russia, Ukraine, Brazil, Indonesia, DRC',
+         'global_share': 'Tropical hardwoods primary risk', 'eudr_status': 'IN SCOPE',
+         'key_buyers': 'EU furniture, paper, construction', 'mitigation': 'FSC, PEFC + DDS'},
+        {'commodity': 'Rubber', 'risk_origins': 'Indonesia, Thailand, Vietnam, Ivory Coast',
+         'global_share': 'THA 33%, IDN 28%', 'eudr_status': 'IN SCOPE',
+         'key_buyers': 'EU automotive, industrial, medical', 'mitigation': 'GPSNR, smallholder traceability'},
+    ]
+
+
+def _sg_conflict_minerals():
+    """Conflict minerals (3TG + cobalt) — Dodd-Frank 1502 + EU Regulation."""
+    return [
+        {'mineral': 'Tantalum (Coltan)', 'high_risk': 'DRC, Rwanda, Burundi', 'use': 'Capacitors, electronics',
+         'risk': 'CRITICAL', 'note': 'DRC militia control of mines documented'},
+        {'mineral': 'Tin', 'high_risk': 'DRC, Indonesia (Bangka), Myanmar', 'use': 'Solder, alloys',
+         'risk': 'HIGH', 'note': 'Myanmar tin from conflict-affected Wa State'},
+        {'mineral': 'Tungsten', 'high_risk': 'DRC (low share), China (80%)', 'use': 'Hard metals, defense',
+         'risk': 'MODERATE', 'note': 'China dominates legitimate supply'},
+        {'mineral': 'Gold (ASM)', 'high_risk': 'DRC, Sudan, Venezuela, Colombia', 'use': 'Electronics, jewelry',
+         'risk': 'CRITICAL', 'note': 'ASM funds conflicts; smuggling routes via UAE'},
+        {'mineral': 'Cobalt', 'high_risk': 'DRC (~70% global)', 'use': 'EV batteries',
+         'risk': 'CRITICAL', 'note': 'Child labor in DRC artisanal cobalt mines'},
+        {'mineral': 'Mica', 'high_risk': 'India (Jharkhand/Bihar), Madagascar', 'use': 'Electronics, cosmetics',
+         'risk': 'HIGH', 'note': 'Child labor in illegal Indian mica mines'},
+    ]
+
+
+def _sg_country_esg_scores():
+    """Country ESG composite scores (0-100, higher = more risk)."""
+    return [
+        {'country': 'North Korea', 'iso': 'PRK', 'governance': 99, 'labor': 98, 'environment': 70,
+         'sanctions_exposure': 100, 'overall': 95, 'note': 'Comprehensive sanctions, severe labor abuses'},
+        {'country': 'Russia', 'iso': 'RUS', 'governance': 88, 'labor': 70, 'environment': 75,
+         'sanctions_exposure': 95, 'overall': 85, 'note': 'Sectoral sanctions; governance decline post-2022'},
+        {'country': 'Iran', 'iso': 'IRN', 'governance': 92, 'labor': 75, 'environment': 78,
+         'sanctions_exposure': 92, 'overall': 86, 'note': 'Comprehensive US sanctions, currency controls'},
+        {'country': 'Myanmar', 'iso': 'MMR', 'governance': 92, 'labor': 88, 'environment': 80,
+         'sanctions_exposure': 75, 'overall': 84, 'note': 'Military junta, MOGE-linked sanctions'},
+        {'country': 'DRC', 'iso': 'COD', 'governance': 88, 'labor': 92, 'environment': 85,
+         'sanctions_exposure': 35, 'overall': 80, 'note': 'Conflict minerals, child labor in cobalt mining'},
+        {'country': 'Venezuela', 'iso': 'VEN', 'governance': 90, 'labor': 75, 'environment': 70,
+         'sanctions_exposure': 78, 'overall': 80, 'note': 'PDVSA sanctions, hyperinflation'},
+        {'country': 'Belarus', 'iso': 'BLR', 'governance': 85, 'labor': 70, 'environment': 65,
+         'sanctions_exposure': 85, 'overall': 79, 'note': 'EU/US sanctions, potash restrictions'},
+        {'country': 'China', 'iso': 'CHN', 'governance': 75, 'labor': 88, 'environment': 80,
+         'sanctions_exposure': 65, 'overall': 78, 'note': 'XUAR forced labor presumption; export reciprocity'},
+        {'country': 'Saudi Arabia', 'iso': 'SAU', 'governance': 70, 'labor': 75, 'environment': 60,
+         'sanctions_exposure': 25, 'overall': 60, 'note': 'Migrant worker rights, Khashoggi-related individual sanctions'},
+        {'country': 'Indonesia', 'iso': 'IDN', 'governance': 60, 'labor': 65, 'environment': 78,
+         'sanctions_exposure': 20, 'overall': 56, 'note': 'EUDR palm oil, peatland concerns'},
+        {'country': 'Türkiye', 'iso': 'TUR', 'governance': 65, 'labor': 55, 'environment': 55,
+         'sanctions_exposure': 30, 'overall': 51, 'note': 'CAATSA risk for Russia trade; press freedom'},
+        {'country': 'Brazil', 'iso': 'BRA', 'governance': 55, 'labor': 50, 'environment': 75,
+         'sanctions_exposure': 15, 'overall': 50, 'note': 'EUDR scrutiny, Amazon deforestation'},
+        {'country': 'India', 'iso': 'IND', 'governance': 50, 'labor': 65, 'environment': 70,
+         'sanctions_exposure': 15, 'overall': 50, 'note': 'Mica child labor; Russia oil sanctions risk'},
+        {'country': 'United States', 'iso': 'USA', 'governance': 22, 'labor': 25, 'environment': 40,
+         'sanctions_exposure': 8, 'overall': 24, 'note': 'UFLPA enforcement, secondary sanctions risk'},
+        {'country': 'Germany', 'iso': 'DEU', 'governance': 15, 'labor': 18, 'environment': 35,
+         'sanctions_exposure': 10, 'overall': 20, 'note': 'CSDDD enforcement, Lieferkettengesetz compliance'},
+        {'country': 'Australia', 'iso': 'AUS', 'governance': 12, 'labor': 18, 'environment': 35,
+         'sanctions_exposure': 5, 'overall': 18, 'note': 'Modern Slavery Act compliance'},
+        {'country': 'Norway', 'iso': 'NOR', 'governance': 8, 'labor': 12, 'environment': 18,
+         'sanctions_exposure': 5, 'overall': 11, 'note': 'Transparency Act, low risk'},
+    ]
+
+
 def render_supply_grid():
     """SUPPLY GRID — Global Supply Chain Intelligence Hub."""
 
@@ -7306,13 +7486,14 @@ def render_supply_grid():
     """, unsafe_allow_html=True)
 
     # Module tabs
-    tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
+    tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs([
         "Live Indicators",
         "Chokepoints",
         "Critical Materials",
         "Trade Disruptions",
         "Country Vulnerability",
-        "Sector Heatmap"
+        "Sector Heatmap",
+        "ESG & Compliance"
     ])
 
     # ========== TAB 1: LIVE INDICATORS ==========
@@ -7750,6 +7931,244 @@ def render_supply_grid():
               <div style='font-size:11px; color:#bdd2ea; margin-top:6px;'>{sector_summaries.get(s, '')}</div>
             </div>
             """, unsafe_allow_html=True)
+
+    # ========== TAB 7: ESG / COMPLIANCE ==========
+    with tab7:
+        st.markdown("""
+        <div style="margin-bottom:16px;">
+          <div style="font-size:18px; font-weight:600; color:#e0e8f0;">ESG &amp; Compliance Screening</div>
+          <div style="font-size:12px; color:#5a6b82; margin-top:4px;">
+            Sources: OFAC SDN · EU Consolidated Sanctions · UN Sanctions · US CBP UFLPA Entity List · EU Regulation 2023/1115 (EUDR) · Dodd-Frank 1502
+          </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        esg_sec = st.radio("Section", ["Sanctions", "Forced Labor (UFLPA)", "Deforestation (EUDR)", "Conflict Minerals", "Country ESG"],
+                           horizontal=True, label_visibility="collapsed", key="esg_section")
+
+        # ---- SANCTIONS SECTION ----
+        if esg_sec == "Sanctions":
+            s_data = _sg_sanctions_data()
+            st.markdown("<div style='font-size:14px; color:#00d4ff; font-weight:600; letter-spacing:1px; margin:18px 0 10px 0;'>SANCTIONED JURISDICTIONS</div>", unsafe_allow_html=True)
+            for j in sorted(s_data['sanctioned_jurisdictions'], key=lambda x: x['score'], reverse=True):
+                color = _sg_threat_color(j['score'])
+                regimes_str = ' · '.join(j['regimes'])
+                st.markdown(f"""
+                <div style='background:linear-gradient(90deg, rgba(0,25,55,0.5), rgba(0,15,35,0.4));
+                            border-left:3px solid {color}; border-radius:8px;
+                            padding:12px 16px; margin-bottom:8px;'>
+                  <div style='display:flex; justify-content:space-between; align-items:start;'>
+                    <div style='flex:1;'>
+                      <div style='display:flex; align-items:center; gap:10px;'>
+                        <div style='font-size:15px; font-weight:600; color:#e0e8f0;'>{j['name']}</div>
+                        <div style='font-size:10px; padding:2px 8px; background:{color}22; border:1px solid {color};
+                                    border-radius:3px; color:{color}; font-weight:700; letter-spacing:1px;'>
+                          {j['severity']}
+                        </div>
+                      </div>
+                      <div style='font-size:11px; color:#8aa0bc; margin-top:4px;'>{regimes_str}</div>
+                      <div style='font-size:12px; color:#bdd2ea; margin-top:6px;'>
+                        <b style='color:#00d4ff;'>Sectors:</b> {j['key_sectors']}
+                      </div>
+                      <div style='font-size:11px; color:#8aa0bc; margin-top:4px;'>
+                        <b style='color:#00d4ff;'>Effect:</b> {j['effect']}
+                      </div>
+                    </div>
+                    <div style='text-align:right;'>
+                      <div style='font-size:18px; font-weight:700; color:{color};'>{j['score']}</div>
+                      <div style='font-size:10px; color:#5a6b82;'>RISK</div>
+                    </div>
+                  </div>
+                </div>
+                """, unsafe_allow_html=True)
+
+            st.markdown("<div style='font-size:14px; color:#00d4ff; font-weight:600; letter-spacing:1px; margin:20px 0 10px 0;'>HIGH-RISK ENTITIES (illustrative)</div>", unsafe_allow_html=True)
+            for e in s_data['high_risk_entities']:
+                st.markdown(f"""
+                <div style='background:rgba(0,20,45,0.4); border:1px solid rgba(0,212,255,0.1);
+                            border-radius:6px; padding:8px 14px; margin-bottom:5px;
+                            display:flex; justify-content:space-between; align-items:center;'>
+                  <div>
+                    <span style='font-size:13px; color:#e0e8f0; font-weight:600;'>{e['name']}</span>
+                    <span style='font-size:11px; color:#8aa0bc; margin-left:8px;'>· {e['country']} · {e['sector']}</span>
+                  </div>
+                  <div style='font-size:10px; padding:2px 8px; background:rgba(255,107,107,0.12);
+                              border:1px solid #ff6b6b; border-radius:3px; color:#ff6b6b;
+                              font-weight:700; letter-spacing:0.5px;'>
+                    {e['list']}
+                  </div>
+                </div>
+                """, unsafe_allow_html=True)
+            st.caption("Not exhaustive — for comprehensive screening use OFAC SDN Search, EU Sanctions Map, or commercial tools (Refinitiv, Dow Jones)")
+
+        # ---- UFLPA / FORCED LABOR SECTION ----
+        elif esg_sec == "Forced Labor (UFLPA)":
+            u_data = _sg_uflpa_data()
+            st.markdown("<div style='font-size:14px; color:#00d4ff; font-weight:600; letter-spacing:1px; margin:18px 0 10px 0;'>HIGH-RISK REGIONS</div>", unsafe_allow_html=True)
+            for r in u_data['high_risk_regions']:
+                color = _sg_threat_color(95 if r['risk_level'] == 'CRITICAL' else 78)
+                presump = '🚨 Rebuttable Presumption Active' if r['rebuttable_presumption'] else 'Enhanced Scrutiny'
+                st.markdown(f"""
+                <div style='background:linear-gradient(135deg, {color}11, rgba(0,15,35,0.5));
+                            border:1px solid {color}66; border-radius:8px;
+                            padding:14px 18px; margin-bottom:10px;'>
+                  <div style='display:flex; justify-content:space-between; align-items:start;'>
+                    <div>
+                      <div style='font-size:15px; font-weight:600; color:#e0e8f0;'>{r['region']} · {r['country']}</div>
+                      <div style='font-size:11px; color:#ffb347; margin-top:4px;'>{presump}</div>
+                    </div>
+                    <div style='display:inline-block; padding:3px 10px; background:{color}22;
+                                border:1px solid {color}; border-radius:4px;
+                                font-size:11px; font-weight:700; color:{color}; letter-spacing:1px;'>
+                      {r['risk_level']}
+                    </div>
+                  </div>
+                  <div style='font-size:12px; color:#bdd2ea; margin-top:8px;'>
+                    <b style='color:#00d4ff;'>Commodities:</b> {r['key_commodities']}
+                  </div>
+                  <div style='font-size:11px; color:#8aa0bc; margin-top:6px;'>{r['guidance']}</div>
+                </div>
+                """, unsafe_allow_html=True)
+
+            st.markdown("<div style='font-size:14px; color:#00d4ff; font-weight:600; letter-spacing:1px; margin:20px 0 10px 0;'>FLAGGED SECTORS</div>", unsafe_allow_html=True)
+            for sec in u_data['flagged_sectors']:
+                sec_color = _sg_threat_color({'CRITICAL': 95, 'HIGH': 78, 'MODERATE': 55}.get(sec['risk'], 50))
+                st.markdown(f"""
+                <div style='background:rgba(0,20,45,0.4); border-left:3px solid {sec_color};
+                            border-radius:6px; padding:10px 14px; margin-bottom:6px;'>
+                  <div style='display:flex; justify-content:space-between; align-items:center;'>
+                    <div>
+                      <span style='font-size:13px; color:#e0e8f0; font-weight:600;'>{sec['sector']}</span>
+                      <span style='font-size:11px; color:#8aa0bc; margin-left:8px;'>· {sec['origins']}</span>
+                    </div>
+                    <div style='font-size:10px; padding:2px 8px; background:{sec_color}22;
+                                border:1px solid {sec_color}; border-radius:3px; color:{sec_color};
+                                font-weight:700; letter-spacing:1px;'>{sec['risk']}</div>
+                  </div>
+                  <div style='font-size:11px; color:#bdd2ea; margin-top:4px;'>{sec['note']}</div>
+                </div>
+                """, unsafe_allow_html=True)
+
+        # ---- EUDR / DEFORESTATION SECTION ----
+        elif esg_sec == "Deforestation (EUDR)":
+            st.markdown("""
+            <div style='background:rgba(0,212,255,0.06); border:1px solid rgba(0,212,255,0.2);
+                        border-radius:8px; padding:12px 16px; margin-bottom:16px;'>
+              <div style='font-size:12px; color:#00d4ff; font-weight:600; letter-spacing:1px; margin-bottom:6px;'>REGULATION 2023/1115 (EUDR)</div>
+              <div style='font-size:12px; color:#bdd2ea; line-height:1.5;'>
+                Requires geolocation proof for 7 commodities. Operators must prove products are
+                <b style='color:#e0e8f0;'>deforestation-free</b> after Dec 31, 2020. Enforcement: Dec 2024 (large operators), Jun 2025 (SMEs).
+                Fines up to 4% of EU turnover.
+              </div>
+            </div>
+            """, unsafe_allow_html=True)
+
+            eudr = _sg_eudr_commodities()
+            for c in eudr:
+                st.markdown(f"""
+                <div style='background:linear-gradient(90deg, rgba(0,25,55,0.5), rgba(0,15,35,0.4));
+                            border-left:3px solid #ff9800; border-radius:8px;
+                            padding:12px 16px; margin-bottom:8px;'>
+                  <div style='display:flex; justify-content:space-between; align-items:start;'>
+                    <div style='flex:1;'>
+                      <div style='font-size:15px; font-weight:600; color:#e0e8f0;'>{c['commodity']}</div>
+                      <div style='font-size:11px; color:#8aa0bc; margin-top:3px;'>{c['global_share']}</div>
+                    </div>
+                    <div style='font-size:10px; padding:2px 8px; background:rgba(255,152,0,0.15);
+                                border:1px solid #ff9800; border-radius:3px; color:#ff9800;
+                                font-weight:700; letter-spacing:1px;'>
+                      {c['eudr_status']}
+                    </div>
+                  </div>
+                  <div style='font-size:12px; color:#bdd2ea; margin-top:8px;'>
+                    <b style='color:#00d4ff;'>Risk origins:</b> {c['risk_origins']}
+                  </div>
+                  <div style='font-size:11px; color:#bdd2ea; margin-top:4px;'>
+                    <b style='color:#00d4ff;'>Buyers:</b> {c['key_buyers']}
+                  </div>
+                  <div style='font-size:11px; color:#8aa0bc; margin-top:4px;'>
+                    <b style='color:#00d4ff;'>Mitigation:</b> {c['mitigation']}
+                  </div>
+                </div>
+                """, unsafe_allow_html=True)
+
+        # ---- CONFLICT MINERALS SECTION ----
+        elif esg_sec == "Conflict Minerals":
+            st.markdown("""
+            <div style='background:rgba(0,212,255,0.06); border:1px solid rgba(0,212,255,0.2);
+                        border-radius:8px; padding:12px 16px; margin-bottom:16px;'>
+              <div style='font-size:12px; color:#00d4ff; font-weight:600; letter-spacing:1px; margin-bottom:6px;'>3TG + COBALT + MICA</div>
+              <div style='font-size:12px; color:#bdd2ea; line-height:1.5;'>
+                US Dodd-Frank Section 1502 covers tin, tantalum, tungsten, gold (3TG) from DRC and adjoining countries.
+                EU Regulation 2017/821 mandates due diligence for importers. Cobalt and mica increasingly scrutinized.
+              </div>
+            </div>
+            """, unsafe_allow_html=True)
+
+            for m in _sg_conflict_minerals():
+                color = _sg_threat_color({'CRITICAL': 92, 'HIGH': 78, 'MODERATE': 55}.get(m['risk'], 50))
+                st.markdown(f"""
+                <div style='background:linear-gradient(90deg, rgba(0,25,55,0.5), rgba(0,15,35,0.4));
+                            border-left:3px solid {color}; border-radius:8px;
+                            padding:12px 16px; margin-bottom:8px;'>
+                  <div style='display:flex; justify-content:space-between; align-items:start;'>
+                    <div style='flex:1;'>
+                      <div style='font-size:15px; font-weight:600; color:#e0e8f0;'>{m['mineral']}</div>
+                      <div style='font-size:11px; color:#8aa0bc; margin-top:3px;'>{m['use']}</div>
+                    </div>
+                    <div style='font-size:10px; padding:2px 8px; background:{color}22;
+                                border:1px solid {color}; border-radius:3px; color:{color};
+                                font-weight:700; letter-spacing:1px;'>{m['risk']}</div>
+                  </div>
+                  <div style='font-size:12px; color:#bdd2ea; margin-top:8px;'>
+                    <b style='color:#00d4ff;'>High-risk origins:</b> {m['high_risk']}
+                  </div>
+                  <div style='font-size:11px; color:#8aa0bc; margin-top:4px;'>{m['note']}</div>
+                </div>
+                """, unsafe_allow_html=True)
+
+        # ---- COUNTRY ESG SECTION ----
+        else:
+            scores = _sg_country_esg_scores()
+            scores_sorted = sorted(scores, key=lambda x: x['overall'], reverse=True)
+
+            st.markdown("""
+            <div style='display:grid; grid-template-columns: 1.8fr 0.9fr 0.8fr 0.8fr 0.9fr 1fr;
+                        gap:8px; padding:8px 14px; font-size:10px; color:#5a6b82;
+                        letter-spacing:1.5px; font-weight:700;
+                        border-bottom:1px solid rgba(0,212,255,0.15); margin-bottom:8px;'>
+              <div>COUNTRY</div>
+              <div style='text-align:center;'>OVERALL</div>
+              <div style='text-align:center;'>GOVERNANCE</div>
+              <div style='text-align:center;'>LABOR</div>
+              <div style='text-align:center;'>ENVIRONMENT</div>
+              <div style='text-align:center;'>SANCTIONS</div>
+            </div>
+            """, unsafe_allow_html=True)
+
+            for s in scores_sorted:
+                color = _sg_threat_color(s['overall'])
+                st.markdown(f"""
+                <div style='display:grid; grid-template-columns: 1.8fr 0.9fr 0.8fr 0.8fr 0.9fr 1fr;
+                            gap:8px; padding:10px 14px; align-items:center;
+                            background:rgba(0,20,45,0.3); border:1px solid rgba(0,212,255,0.08);
+                            border-left:3px solid {color}; border-radius:6px; margin-bottom:5px;'>
+                  <div>
+                    <div style='font-size:13px; color:#e0e8f0; font-weight:600;'>{s['country']}</div>
+                    <div style='font-size:10px; color:#5a6b82; margin-top:2px;'>{s['note'][:55]}{'...' if len(s['note']) > 55 else ''}</div>
+                  </div>
+                  <div style='text-align:center;'>
+                    <span style='font-size:16px; font-weight:700; color:{color};'>{s['overall']}</span>
+                  </div>
+                  <div style='text-align:center; font-size:12px; color:#bdd2ea;'>{s['governance']}</div>
+                  <div style='text-align:center; font-size:12px; color:#bdd2ea;'>{s['labor']}</div>
+                  <div style='text-align:center; font-size:12px; color:#bdd2ea;'>{s['environment']}</div>
+                  <div style='text-align:center; font-size:12px; color:#bdd2ea;'>{s['sanctions_exposure']}</div>
+                </div>
+                """, unsafe_allow_html=True)
+
+            st.caption("All scores 0-100 (higher = more risk) · Composite from WGI · Transparency Int'l · ILO · OFAC lists")
+
 
     # Footer
     st.markdown("""
