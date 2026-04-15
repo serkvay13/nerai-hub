@@ -8079,42 +8079,188 @@ def _sg_weather_ports():
     ]
 
 
-@st.cache_data(ttl=1800)
+@st.cache_data(ttl=86400, show_spinner=False)
 def _sg_fetch_nws_alerts():
-    """Fetch active NWS weather alerts for US ports. Returns (alerts_by_region, status_msg)."""
+    """Fetch live weather for major global ports via Open-Meteo (free, no key, global coverage).
+    Returns (alerts_by_region, status_msg) preserving backward-compat signature.
+    Cached 24h; cleared via Force Refresh button."""
     try:
         import urllib.request, json, ssl
-        req = urllib.request.Request(
-            'https://api.weather.gov/alerts/active?status=actual&message_type=alert',
-            headers={
-                'User-Agent': 'NERAI-SupplyGrid/1.0 supply-chain-intel@neraicorp.com',
-                'Accept': 'application/geo+json'
-            }
-        )
+        from datetime import datetime, timezone
+        ports = [
+            {"port": "Singapore", "region": "APAC", "lat": 1.27, "lon": 103.84},
+            {"port": "Shanghai", "region": "APAC", "lat": 31.24, "lon": 121.50},
+            {"port": "Busan", "region": "APAC", "lat": 35.10, "lon": 129.04},
+            {"port": "Tokyo", "region": "APAC", "lat": 35.45, "lon": 139.65},
+            {"port": "Hong Kong", "region": "APAC", "lat": 22.32, "lon": 114.17},
+            {"port": "Mumbai", "region": "APAC", "lat": 18.95, "lon": 72.83},
+            {"port": "Rotterdam", "region": "EUROPE", "lat": 51.93, "lon": 4.14},
+            {"port": "Hamburg", "region": "EUROPE", "lat": 53.55, "lon": 9.99},
+            {"port": "Antwerp", "region": "EUROPE", "lat": 51.26, "lon": 4.40},
+            {"port": "Piraeus", "region": "EUROPE", "lat": 37.94, "lon": 23.65},
+            {"port": "Ambarli (Istanbul)", "region": "EUROPE", "lat": 41.02, "lon": 28.68},
+            {"port": "Jebel Ali (Dubai)", "region": "MEA", "lat": 25.03, "lon": 55.07},
+            {"port": "Jeddah", "region": "MEA", "lat": 21.48, "lon": 39.19},
+            {"port": "Durban", "region": "MEA", "lat": -29.87, "lon": 31.02},
+            {"port": "Los Angeles", "region": "AMERICAS", "lat": 33.75, "lon": -118.20},
+            {"port": "Houston", "region": "AMERICAS", "lat": 29.74, "lon": -95.27},
+            {"port": "New York / NJ", "region": "AMERICAS", "lat": 40.67, "lon": -74.10},
+            {"port": "Santos", "region": "AMERICAS", "lat": -23.96, "lon": -46.33},
+        ]
+        alerts_by_region = {"APAC": [], "EUROPE": [], "MEA": [], "AMERICAS": []}
         ctx = ssl.create_default_context()
-        with urllib.request.urlopen(req, timeout=12, context=ctx) as resp:
-            data = json.loads(resp.read())
-        features = data.get('features', [])
-        # Extract key fields
-        out = []
-        for f in features:
-            props = f.get('properties', {})
-            event = props.get('event', '')
-            # Filter for supply-chain-relevant events
-            if any(kw in event for kw in ['Hurricane', 'Tropical', 'Storm', 'Flood', 'Winter', 'Freeze',
-                                           'Blizzard', 'Tornado', 'Wind', 'Fog', 'Marine', 'Gale', 'Heat']):
-                out.append({
-                    'event': event,
-                    'severity': props.get('severity', 'Unknown'),
-                    'urgency': props.get('urgency', 'Unknown'),
-                    'area': props.get('areaDesc', '')[:140],
-                    'headline': props.get('headline', '')[:200],
-                    'effective': props.get('effective', '')[:16].replace('T', ' '),
-                    'expires': props.get('expires', '')[:16].replace('T', ' '),
+        count = 0
+        for p in ports:
+            try:
+                url = ("https://api.open-meteo.com/v1/forecast"
+                       f"?latitude={p['lat']}&longitude={p['lon']}"
+                       "&current=temperature_2m,wind_speed_10m,wind_gusts_10m,weather_code,precipitation"
+                       "&timezone=UTC")
+                req = urllib.request.Request(url, headers={"User-Agent": "NERAI-Intelligence/1.0"})
+                with urllib.request.urlopen(req, context=ctx, timeout=5) as r:
+                    data = json.loads(r.read())
+                cur = data.get("current", {}) or {}
+                temp = cur.get("temperature_2m") or 0
+                wind = cur.get("wind_speed_10m") or 0
+                gusts = cur.get("wind_gusts_10m") or 0
+                wcode = cur.get("weather_code") or 0
+                precip = cur.get("precipitation") or 0
+                if gusts >= 75 or wcode in (95, 96, 99):
+                    sev, desc = "severe", f"Severe conditions - gusts {gusts:.0f} km/h"
+                elif gusts >= 50 or wcode in (71,73,75,77,85,86):
+                    sev, desc = "high", f"High winds / storms - gusts {gusts:.0f} km/h"
+                elif gusts >= 35 or precip >= 5:
+                    sev, desc = "moderate", f"Elevated - gusts {gusts:.0f} km/h, precip {precip:.1f}mm"
+                else:
+                    sev, desc = "normal", f"Normal - wind {wind:.0f} km/h, temp {temp:.0f}C"
+                alerts_by_region[p["region"]].append({
+                    "port": p["port"], "severity": sev, "description": desc,
+                    "wind": wind, "gusts": gusts, "temp": temp, "precip": precip, "weather_code": wcode
                 })
-        return out[:60], f'{len(out)} supply-chain-relevant alerts (of {len(features)} total)'
+                count += 1
+            except Exception:
+                pass
+        status_msg = f"{count} ports polled - Open-Meteo - updated {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')}"
+        return alerts_by_region, status_msg
     except Exception as e:
-        return [], f'NWS API unavailable: {str(e)[:80]}'
+        return ({"APAC": [], "EUROPE": [], "MEA": [], "AMERICAS": []}, f"Error fetching weather: {str(e)[:80]}")
+
+
+@st.cache_data(ttl=86400, show_spinner=False)
+def _nerai_fetch_ofac_sdn_summary():
+    """Fetch US OFAC SDN list summary from Treasury.gov. Returns dict or None."""
+    try:
+        import urllib.request, ssl, xml.etree.ElementTree as ET
+        from datetime import datetime, timezone
+        url = "https://www.treasury.gov/ofac/downloads/sdn.xml"
+        ctx = ssl.create_default_context()
+        req = urllib.request.Request(url, headers={"User-Agent": "NERAI-Intelligence/1.0"})
+        with urllib.request.urlopen(req, context=ctx, timeout=30) as r:
+            xml_data = r.read()
+        root = ET.fromstring(xml_data)
+        ns_str = root.tag.split('}')[0].lstrip('{') if '}' in root.tag else ''
+        ns = {"s": ns_str} if ns_str else {}
+        entries = root.findall("s:sdnEntry", ns) if ns else root.findall("sdnEntry")
+        programs = {}
+        types = {}
+        for e in entries:
+            type_el = e.find("s:sdnType", ns) if ns else e.find("sdnType")
+            sdn_type = (type_el.text if type_el is not None and type_el.text else "Unknown")
+            types[sdn_type] = types.get(sdn_type, 0) + 1
+            prog_list = e.find("s:programList", ns) if ns else e.find("programList")
+            if prog_list is not None:
+                for prog in (prog_list.findall("s:program", ns) if ns else prog_list.findall("program")):
+                    p = (prog.text or "").strip()
+                    if p: programs[p] = programs.get(p, 0) + 1
+        return {
+            "total_entries": len(entries),
+            "types": dict(sorted(types.items(), key=lambda x: -x[1])),
+            "programs": dict(sorted(programs.items(), key=lambda x: -x[1])[:15]),
+            "fetched_at": datetime.now(timezone.utc).isoformat(),
+            "source": "US OFAC SDN (treasury.gov)"
+        }
+    except Exception:
+        return None
+
+
+@st.cache_data(ttl=86400, show_spinner=False)
+def _nerai_fetch_uk_ofsi_summary():
+    """Fetch UK OFSI consolidated sanctions list summary (lightweight count)."""
+    try:
+        import urllib.request, ssl
+        import xml.etree.ElementTree as ET
+        from datetime import datetime, timezone
+        url = "https://ofsistorage.blob.core.windows.net/publishlive/2022format/ConList.xml"
+        ctx = ssl.create_default_context()
+        req = urllib.request.Request(url, headers={"User-Agent": "NERAI-Intelligence/1.0"})
+        with urllib.request.urlopen(req, context=ctx, timeout=30) as r:
+            data = r.read()
+        root = ET.fromstring(data)
+        regimes = {}
+        total_desig = 0
+        for elem in root.iter():
+            tag_low = elem.tag.lower().split('}')[-1]
+            if tag_low == "designation":
+                total_desig += 1
+            if tag_low in ("regime", "regimename"):
+                r_text = (elem.text or "").strip()
+                if r_text:
+                    regimes[r_text] = regimes.get(r_text, 0) + 1
+        return {
+            "total_entries": total_desig,
+            "regimes": dict(sorted(regimes.items(), key=lambda x: -x[1])[:15]),
+            "fetched_at": datetime.now(timezone.utc).isoformat(),
+            "source": "UK HM Treasury OFSI"
+        }
+    except Exception:
+        return None
+
+
+@st.cache_data(ttl=86400, show_spinner=False)
+def _nerai_fetch_eu_sanctions_summary():
+    """Return EU consolidated sanctions metadata.
+    Full list requires FSF token; returns latest known baseline."""
+    from datetime import datetime, timezone
+    return {
+        "total_entries": None,
+        "source": "EU Consolidated Financial Sanctions (FSF)",
+        "landing_page": "https://data.europa.eu/data/datasets/consolidated-list-of-persons-groups-and-entities-subject-to-eu-financial-sanctions",
+        "fetched_at": datetime.now(timezone.utc).isoformat(),
+        "note": "EU FSF requires auth token for full XML. Metadata only."
+    }
+
+
+@st.cache_data(ttl=86400, show_spinner=False)
+def _nerai_fetch_uflpa_entity_count():
+    """UFLPA Entity List summary. DHS hosts as XLSX with rotating URL per version."""
+    from datetime import datetime, timezone
+    return {
+        "total_entities": None,
+        "landing_page": "https://www.dhs.gov/uflpa-entity-list",
+        "last_major_update": "2024",
+        "fetched_at": datetime.now(timezone.utc).isoformat(),
+        "source": "DHS / CBP UFLPA Entity List",
+        "note": "Full list requires manual XLSX download from DHS landing page."
+    }
+
+
+def _nerai_freshness_banner_html(label, ttl_hours=24, source_note=""):
+    """HTML banner showing data freshness. Relies on st.cache_data TTL for actual data age."""
+    from datetime import datetime, timezone
+    ts = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+    note_html = f" &middot; <span style='color:#8aa0bc;'>{source_note}</span>" if source_note else ""
+    return (
+        f"<div style='display:flex; align-items:center; gap:10px; padding:6px 12px; "
+        f"background:rgba(0,20,45,0.35); border:1px solid rgba(0,212,255,0.15); "
+        f"border-radius:6px; font-size:10px; color:#7a8fa8; margin:6px 0 10px 0; letter-spacing:0.5px;'>"
+        f"<span style='color:#00d4ff; font-weight:700;'>{label.upper()}</span>"
+        f"<span>Auto-refresh every {ttl_hours}h</span>"
+        f"<span style='color:#5a6b82;'>|</span>"
+        f"<span>Page loaded {ts}</span>"
+        f"{note_html}"
+        f"</div>"
+    )
+
 
 
 def _sg_intl_port_weather():
