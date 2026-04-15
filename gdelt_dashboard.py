@@ -8831,6 +8831,61 @@ def render_supply_grid():
                 """, unsafe_allow_html=True)
             st.caption("Not exhaustive — for comprehensive screening use OFAC SDN Search, EU Sanctions Map, or commercial tools (Refinitiv, Dow Jones)")
 
+
+            # ---- LIVE SANCTIONS INTELLIGENCE (24h cached) ----
+            st.markdown(_nerai_freshness_banner_html("Live sanctions data", 24, "OFAC SDN + UK OFSI + EU FSF"), unsafe_allow_html=True)
+            _ofac = _nerai_fetch_ofac_sdn_summary()
+            _uk = _nerai_fetch_uk_ofsi_summary()
+            _eu = _nerai_fetch_eu_sanctions_summary()
+            _col_o, _col_k, _col_e = st.columns(3)
+            with _col_o:
+                if _ofac and _ofac.get('total_entries'):
+                    st.markdown(f"""
+                    <div style='background:rgba(0,20,45,0.5); border:1px solid rgba(0,212,255,0.2); border-radius:8px; padding:12px 14px;'>
+                      <div style='font-size:10px; color:#00d4ff; letter-spacing:1.5px; font-weight:700;'>US OFAC SDN (LIVE)</div>
+                      <div style='font-size:26px; color:#e0e8f0; font-weight:700; margin:4px 0;'>{_ofac['total_entries']:,}</div>
+                      <div style='font-size:10px; color:#8aa0bc;'>Total SDN designations</div>
+                      <div style='font-size:9px; color:#5a6b82; margin-top:4px;'>treasury.gov/ofac</div>
+                    </div>
+                    """, unsafe_allow_html=True)
+                else:
+                    st.markdown("<div style='background:rgba(0,20,45,0.3); border:1px dashed rgba(255,122,0,0.3); border-radius:8px; padding:12px 14px; font-size:11px; color:#ff9800;'>OFAC SDN live fetch unavailable. Cached baseline shown above.</div>", unsafe_allow_html=True)
+            with _col_k:
+                if _uk and _uk.get('total_entries'):
+                    st.markdown(f"""
+                    <div style='background:rgba(0,20,45,0.5); border:1px solid rgba(0,212,255,0.2); border-radius:8px; padding:12px 14px;'>
+                      <div style='font-size:10px; color:#00d4ff; letter-spacing:1.5px; font-weight:700;'>UK OFSI (LIVE)</div>
+                      <div style='font-size:26px; color:#e0e8f0; font-weight:700; margin:4px 0;'>{_uk['total_entries']:,}</div>
+                      <div style='font-size:10px; color:#8aa0bc;'>Consolidated list designations</div>
+                      <div style='font-size:9px; color:#5a6b82; margin-top:4px;'>gov.uk / HMT OFSI</div>
+                    </div>
+                    """, unsafe_allow_html=True)
+                else:
+                    st.markdown("<div style='background:rgba(0,20,45,0.3); border:1px dashed rgba(138,160,188,0.25); border-radius:8px; padding:12px 14px; font-size:11px; color:#8aa0bc;'>UK OFSI metadata unavailable.</div>", unsafe_allow_html=True)
+            with _col_e:
+                _eu_link = _eu.get('landing_page') if _eu else '#'
+                st.markdown(f"""
+                <div style='background:rgba(0,20,45,0.5); border:1px solid rgba(0,212,255,0.2); border-radius:8px; padding:12px 14px;'>
+                  <div style='font-size:10px; color:#00d4ff; letter-spacing:1.5px; font-weight:700;'>EU SANCTIONS</div>
+                  <div style='font-size:14px; color:#e0e8f0; font-weight:700; margin:6px 0;'>FSF consolidated</div>
+                  <div style='font-size:10px; color:#8aa0bc;'>Full list requires FSF access token</div>
+                  <div style='font-size:9px; margin-top:4px;'><a href='{_eu_link}' style='color:#00d4ff;' target='_blank'>EU Open Data Portal</a></div>
+                </div>
+                """, unsafe_allow_html=True)
+
+            if _ofac and _ofac.get('programs'):
+                st.markdown("<div style='font-size:11px; color:#00d4ff; font-weight:600; letter-spacing:1.5px; margin:16px 0 6px 0;'>TOP OFAC SANCTIONS PROGRAMS (LIVE)</div>", unsafe_allow_html=True)
+                _max_p = max(_ofac['programs'].values()) if _ofac['programs'] else 1
+                _prog_html = ""
+                for _pname, _pcnt in list(_ofac['programs'].items())[:10]:
+                    _pct = int((_pcnt / _max_p) * 100) if _max_p else 0
+                    _prog_html += f"<div style='display:flex; align-items:center; gap:10px; padding:5px 12px; background:rgba(0,15,35,0.4); border-left:3px solid #00d4ff; margin:3px 0; border-radius:4px; font-size:12px;'>"
+                    _prog_html += f"<div style='width:140px; color:#e0e8f0; font-weight:600;'>{_pname}</div>"
+                    _prog_html += f"<div style='flex:1; background:rgba(0,0,0,0.3); border-radius:3px; height:6px;'><div style='background:linear-gradient(90deg,#00d4ff,#00ffc8); width:{_pct}%; height:100%; border-radius:3px;'></div></div>"
+                    _prog_html += f"<div style='width:60px; text-align:right; color:#00d4ff; font-weight:700;'>{_pcnt:,}</div>"
+                    _prog_html += "</div>"
+                st.markdown(_prog_html, unsafe_allow_html=True)
+
         # ---- UFLPA / FORCED LABOR SECTION ----
         elif esg_sec == "Forced Labor (UFLPA)":
             u_data = _sg_uflpa_data()
@@ -8878,6 +8933,22 @@ def render_supply_grid():
                   <div style='font-size:11px; color:#bdd2ea; margin-top:4px;'>{sec['note']}</div>
                 </div>
                 """, unsafe_allow_html=True)
+
+            st.markdown(_nerai_freshness_banner_html("UFLPA entity list", 24, "DHS / CBP"), unsafe_allow_html=True)
+            _uflpa_meta = _nerai_fetch_uflpa_entity_count()
+            st.markdown(f"""
+            <div style='background:rgba(0,20,45,0.5); border:1px solid rgba(255,122,0,0.25); border-radius:8px; padding:14px 18px; margin:8px 0;'>
+              <div style='font-size:11px; color:#ff9800; letter-spacing:1.5px; font-weight:700; margin-bottom:6px;'>LIVE UFLPA INTELLIGENCE</div>
+              <div style='font-size:12px; color:#bdd2ea; line-height:1.6;'>
+                Source: <b style='color:#e0e8f0;'>{_uflpa_meta.get('source','')}</b><br>
+                Last major update: <b style='color:#e0e8f0;'>{_uflpa_meta.get('last_major_update','2024')}</b><br>
+                Note: {_uflpa_meta.get('note','')}
+              </div>
+              <div style='margin-top:8px; font-size:11px;'>
+                <a href='{_uflpa_meta.get('landing_page','#')}' style='color:#00d4ff; text-decoration:none;' target='_blank'>Open DHS UFLPA Entity List &rarr;</a>
+              </div>
+            </div>
+            """, unsafe_allow_html=True)
 
         # ---- EUDR / DEFORESTATION SECTION ----
         elif esg_sec == "Deforestation (EUDR)":
