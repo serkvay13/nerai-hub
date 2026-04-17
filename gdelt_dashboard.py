@@ -9438,7 +9438,7 @@ def render_supply_grid():
         # Active alerts
         if alerts:
             st.markdown("<div style='font-size:14px; color:#00d4ff; font-weight:600; letter-spacing:1px; margin:12px 0 10px 0;'>ACTIVE US ALERTS (supply-chain relevant)</div>", unsafe_allow_html=True)
-            for a in list(alerts)[:30]:
+            for a in list(alerts.values())[:30]:
                 color = _sg_weather_severity_color(a['severity'])
                 st.markdown(f"""
                 <div style='background:linear-gradient(90deg, rgba(0,25,55,0.5), rgba(0,15,35,0.4));
