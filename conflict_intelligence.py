@@ -178,7 +178,7 @@ def fetch_weather_for_zone(zone_name):
 
 
 
-#    GDELT DOC API (free, no API key required)                         
+# -- GDELT DOC API (free, no API key required) --------------------------------
 def fetch_gdelt_conflict_events(zone_name, days_back=30):
     """Fetch conflict-related news events from GDELT DOC API (free, no key needed)."""
     import urllib.request, urllib.parse, json as _json
