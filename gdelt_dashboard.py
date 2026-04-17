@@ -9619,8 +9619,7 @@ elif page == 'supply_grid': render_supply_grid()
 elif page == 'global_view': render_global_view()
 elif page == 'briefing':    render_briefing_room()
 elif page == 'api':         render_api()
-    elif page == 'conflict':
-        render_conflict_intelligence()
+elif page == 'conflict':    render_conflict_intelligence()
 else:
     st.session_state.page = 'home'
     st.rerun()

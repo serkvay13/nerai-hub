@@ -481,94 +481,94 @@ def generate_kurmay_assessment(events_df, zone_name, grid_risk, escalation, weat
     assessment_parts = []
 
     # Header
-    assessment_parts.append(f"NERAI KURMAY ISTIHBARAT DEGERLENDIRMESI")
-    assessment_parts.append(f"Catisma Bolgesi: {zone_name}")
-    assessment_parts.append(f"Tarih: {now.strftime('%d %B %Y %H:%M')} UTC")
-    assessment_parts.append(f"Kaynak: ACLED + GDELT + Open-Source Intelligence")
+    assessment_parts.append(f"NERAI STAFF INTELLIGENCE ASSESSMENT")
+    assessment_parts.append(f"Conflict Zone: {zone_name}")
+    assessment_parts.append(f"Date: {now.strftime('%d %B %Y %H:%M')} UTC")
+    assessment_parts.append(f"Sources: ACLED + GDELT + Open-Source Intelligence")
     assessment_parts.append("=" * 60)
 
     # 1. Escalation Status
-    assessment_parts.append(f"\n1. TIRMANIŞ DURUMU: {escalation['name'].upper()} (Seviye {escalation['level']}/5)")
-    assessment_parts.append(f"   Gunluk ortalama (7 gun): {escalation['daily_avg_7d']} olay")
-    assessment_parts.append(f"   Gunluk ortalama (30 gun): {escalation['daily_avg_30d']} olay")
-    trend_tr = {"escalating": "TIRMANIYOR", "de-escalating": "AZALIYOR", "stable": "STABIL"}
-    assessment_parts.append(f"   Trend: {trend_tr.get(escalation['trend'], escalation['trend'])}")
+    assessment_parts.append(f"\n1. ESCALATION STATUS: {escalation['name'].upper()} (Level {escalation['level']}/5)")
+    assessment_parts.append(f"   Daily average (7-day): {escalation['daily_avg_7d']} events")
+    assessment_parts.append(f"   Daily average (30-day): {escalation['daily_avg_30d']} events")
+    trend_en = {"escalating": "ESCALATING", "de-escalating": "DE-ESCALATING", "stable": "STABLE"}
+    assessment_parts.append(f"   Trend: {trend_en.get(escalation['trend'], escalation['trend'])}")
 
     # 2. High-risk areas
     if top_risk_cells:
-        assessment_parts.append(f"\n2. YUKSEK RISK BOLGELERI (Onumuzdeki 72 saat):")
+        assessment_parts.append(f"\n2. HIGH-RISK ZONES (Next 72 hours):")
         for idx, cell in enumerate(top_risk_cells[:5], 1):
             assessment_parts.append(
                 f"   {idx}. [{cell['lat']:.1f}N, {cell['lon']:.1f}E] - Risk: {cell['risk_score']}/100 "
-                f"| Son 7 gun: {cell['recent_7d']} olay | Trend: {'+' if cell['trend']>0 else ''}{cell['trend']*100:.0f}% "
-                f"| Baskin tip: {cell['dominant_type']}"
+                f"| Last 7 days: {cell['recent_7d']} events | Trend: {'+' if cell['trend']>0 else ''}{cell['trend']*100:.0f}% "
+                f"| Dominant type: {cell['dominant_type']}"
             )
 
     # 3. Attack pattern assessment
     if attack_patterns.get("type_distribution"):
-        assessment_parts.append(f"\n3. SALDIRI ANATOMISI:")
+        assessment_parts.append(f"\n3. ATTACK ANATOMY:")
         total = sum(attack_patterns["type_distribution"].values())
         for atype, count in sorted(attack_patterns["type_distribution"].items(), key=lambda x: -x[1])[:5]:
             pct = count / total * 100
-            assessment_parts.append(f"   - {atype}: {count} olay ({pct:.1f}%)")
+            assessment_parts.append(f"   - {atype}: {count} events ({pct:.1f}%)")
 
     # 4. Doctrine-based predictions
-    assessment_parts.append(f"\n4. DOKTRIN-TABANLI TAHMINLER:")
+    assessment_parts.append(f"\n4. DOCTRINE-BASED PREDICTIONS:")
 
     # Seasonal doctrine
     if month in [3, 4, 10, 11]:
-        assessment_parts.append("   - CAMUR SEZONU AKTIF: Zirhli birliklerin manevra kabiliyeti sinirli.")
-        assessment_parts.append("     Beklenti: Topcu ve hava saldirilari agirlikli operasyonlar.")
+        assessment_parts.append("   - MUD SEASON ACTIVE: Armored unit maneuverability severely limited.")
+        assessment_parts.append("     Forecast: Artillery and air strike-dominant operations expected.")
     elif month in [12, 1, 2]:
-        assessment_parts.append("   - KIS DONEMJ: Enerji altyapisi saldirilari yogunlasiyor.")
-        assessment_parts.append("     Beklenti: Termal santraller ve enerji nakilhatlari hedef alinacak.")
+        assessment_parts.append("   - WINTER PERIOD: Energy infrastructure attacks intensifying.")
+        assessment_parts.append("     Forecast: Thermal plants and energy transmission lines will be targeted.")
     elif month in [5, 6, 7, 8, 9]:
-        assessment_parts.append("   - OPERASYONEL SEZON: Kara harekati icin uygun kosullar.")
-        assessment_parts.append("     Beklenti: Genis capli taarruz operasyonlari olasiligi yuksek.")
+        assessment_parts.append("   - OPERATIONAL SEASON: Favorable conditions for ground operations.")
+        assessment_parts.append("     Forecast: High probability of large-scale offensive operations.")
 
     # Tempo-based prediction
     if escalation["trend"] == "escalating":
-        assessment_parts.append("   - OPERASYONEL TEMPO ARTISTA: Buyuk taarruz hazirligina isaret edebilir.")
-        assessment_parts.append("     Kesif/drone faaliyetleri ve lojistik hareketlilik izlenmeli.")
+        assessment_parts.append("   - OPERATIONAL TEMPO RISING: May indicate major offensive preparation.")
+        assessment_parts.append("     Recon/drone activity and logistics movement should be monitored.")
     elif escalation["daily_avg_7d"] > escalation["daily_avg_30d"] * 1.5:
-        assessment_parts.append("   - YOSGUNUNLASMA TESPIT EDILDI: Surdurulebilir seviyenin uzerinde.")
-        assessment_parts.append("     2-3 gun icinde operasyonel duraklama bekleniyor (ikmal ihtiyaci).")
+        assessment_parts.append("   - INTENSIFICATION DETECTED: Above sustainable operational threshold.")
+        assessment_parts.append("     Operational pause expected within 2-3 days (resupply requirement).")
 
     # Weather assessment
     if weather_data and "current" in weather_data:
         curr = weather_data["current"]
         cloud = curr.get("cloud_cover", 50)
         precip = curr.get("precipitation", 0)
-        assessment_parts.append(f"\n5. HAVA DURUMU ETKISI:")
-        assessment_parts.append(f"   Bulut: %{cloud} | Yagis: {precip}mm | Ruzgar: {curr.get('wind_speed_10m', 0)} km/s")
+        assessment_parts.append(f"\n5. WEATHER IMPACT ASSESSMENT:")
+        assessment_parts.append(f"   Cloud: {cloud}% | Precipitation: {precip}mm | Wind: {curr.get('wind_speed_10m', 0)} km/h")
         if cloud > 70:
-            assessment_parts.append("   - Yuksek bulutluluk: Drone/hassas gudumlu munityon etkinligi DUSUK")
-            assessment_parts.append("     Beklenti: Topcu atesine agirlik verilecek")
+            assessment_parts.append("   - High cloud cover: Drone/PGM effectiveness LOW")
+            assessment_parts.append("     Forecast: Emphasis on artillery fire expected")
         elif cloud < 30:
-            assessment_parts.append("   - Acik hava: Hava harekati ve drone operasyonlari icin IDEAL")
-            assessment_parts.append("     Beklenti: Hava saldirisi riski YUKSEK")
+            assessment_parts.append("   - Clear skies: IDEAL for air operations and drone strikes")
+            assessment_parts.append("     Forecast: Air strike risk HIGH")
         if precip > 5:
-            assessment_parts.append("   - Yogun yagis: Kara operasyonlari zorlasacak, lojistik aksaklik riski")
+            assessment_parts.append("   - Heavy precipitation: Ground operations degraded, logistics disruption risk")
 
     # 6. Strategic targets at risk
     if zone_name == "Ukraine-Russia":
-        assessment_parts.append(f"\n6. STRATEJIK HEDEF RISK DEGERLENDIRMESI:")
+        assessment_parts.append(f"\n6. STRATEGIC TARGET RISK ASSESSMENT:")
         for target in STRATEGIC_TARGETS_UKR[:8]:
             tv = DOCTRINE_RULES["target_value"].get(target["type"], {})
             weight = tv.get("weight", 5)
-            risk_label = "KRITIK" if weight >= 9 else "YUKSEK" if weight >= 7 else "ORTA"
+            risk_label = "CRITICAL" if weight >= 9 else "HIGH" if weight >= 7 else "MODERATE"
             assessment_parts.append(
                 f"   - {target['name']} ({target['type']}) [{target['side']}]: {risk_label} ({weight}/10)"
             )
 
     # 7. Summary recommendation
-    assessment_parts.append(f"\n7. OZET VE ONERILER:")
+    assessment_parts.append(f"\n7. SUMMARY & RECOMMENDATIONS:")
     if escalation["level"] >= 4:
-        assessment_parts.append("   UYARI: Buyuk capli operasyon gostergesi. Tum cephe hatlari izlenmeli.")
+        assessment_parts.append("   WARNING: Large-scale operation indicators detected. All frontlines must be monitored.")
     elif escalation["trend"] == "escalating":
-        assessment_parts.append("   DIKKAT: Tirmanma egilimi devam ediyor. Stratejik hedeflerde koruma artirilmali.")
+        assessment_parts.append("   CAUTION: Escalation trend continues. Increase protection on strategic targets.")
     else:
-        assessment_parts.append("   DURUM: Catisma mevcut seviyede devam ediyor. Rutin izleme yeterli.")
+        assessment_parts.append("   STATUS: Conflict continues at current level. Routine monitoring sufficient.")
 
     return "\n".join(assessment_parts)
 
