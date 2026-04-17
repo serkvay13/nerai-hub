@@ -1646,6 +1646,7 @@ with st.sidebar:
         ('briefing', '📋 BRIEFING ROOM'),
         ('global_view', '🌍 GLOBAL VIEW'),
         ('supply_grid', '🌐 SUPPLY GRID'),
+        ('conflict', '🎯 WARZONE ORACLE'),
     ]
     # Solo tier: show all pages in nav, pro-only content is locked
     _PRO_ONLY_PAGES = {'predictions', 'causality', 'insights', 'briefing', 'supply_grid', 'global_view'}
