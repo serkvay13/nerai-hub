@@ -867,7 +867,7 @@ def render_conflict_intelligence():
               WARZONE ORACLE
         </span>
         <div style="color:#8899aa;font-size:0.88rem;margin-top:6px;letter-spacing:0.5px">
-            Doctrine-Based Conflict Prediction &middot; Real-Time Attack Intelligence &middot; Kurmay AI Assessment
+            Doctrine-Based Conflict Prediction &middot; Real-Time Attack Intelligence &middot; Staff AI Assessment
         </div>
         <style>@keyframes shimmer{0%{background-position:0% center}100%{background-position:200% center}}</style>
     </div>
@@ -954,7 +954,7 @@ def render_conflict_intelligence():
 
     # ── Conflict Map ─────────────────────────────────────────
     st.markdown("""<div style="color:#00d4ff;font-size:1.1rem;font-weight:700;margin:18px 0 8px 0;
-                letter-spacing:1px">CATISMA HARITASI &amp; RISK GRID</div>""", unsafe_allow_html=True)
+                letter-spacing:1px">CONFLICT MAP &amp; RISK GRID</div>""", unsafe_allow_html=True)
 
     map_html = _build_conflict_map_html(zone_name, events_df, grid_risk, strategic_targets)
     components.html(map_html, height=730, scrolling=False)
@@ -973,30 +973,30 @@ def render_conflict_intelligence():
 
     with col_trend:
         st.markdown("""<div style="color:#00d4ff;font-size:0.95rem;font-weight:700;margin:8px 0;
-                    letter-spacing:1px">GUNLUK OLAY TRENDI</div>""", unsafe_allow_html=True)
+                    letter-spacing:1px">DAILY EVENT TREND</div>""", unsafe_allow_html=True)
         trend_html = _build_trend_chart_html(events_df, zone_name)
         components.html(trend_html, height=360, scrolling=False)
 
     with col_pattern:
         st.markdown("""<div style="color:#00d4ff;font-size:0.95rem;font-weight:700;margin:8px 0;
-                    letter-spacing:1px">SALDIRI TIPI DAGILIMI</div>""", unsafe_allow_html=True)
+                    letter-spacing:1px">ATTACK TYPE DISTRIBUTION</div>""", unsafe_allow_html=True)
         type_html = _build_attack_type_chart_html(attack_patterns)
         components.html(type_html, height=360, scrolling=False)
 
     # ── Top Risk Grid Table ──────────────────────────────────
     if grid_risk:
         st.markdown("""<div style="color:#ff6d00;font-size:0.95rem;font-weight:700;margin:18px 0 8px 0;
-                    letter-spacing:1px">YUKSEK RISK GRID HUCRELERI (72-Saat Tahmin)</div>""", unsafe_allow_html=True)
+                    letter-spacing:1px">HIGH RISK GRID CELLS (72-Hour Forecast)</div>""", unsafe_allow_html=True)
 
         top_cells = grid_risk[:15]
         table_html = """<table style="width:100%;border-collapse:collapse;font-size:0.8rem;color:#c0c8d0">
         <tr style="background:rgba(0,180,255,0.1);color:#00d4ff">
-            <th style="padding:8px;text-align:left">Konum</th>
+            <th style="padding:8px;text-align:left">Location</th>
             <th style="padding:8px;text-align:center">Risk</th>
-            <th style="padding:8px;text-align:center">Son 7 Gun</th>
+            <th style="padding:8px;text-align:center">Last 7 Days</th>
             <th style="padding:8px;text-align:center">Trend</th>
-            <th style="padding:8px;text-align:center">Kayip</th>
-            <th style="padding:8px;text-align:left">Baskin Tip</th>
+            <th style="padding:8px;text-align:center">Casualties</th>
+            <th style="padding:8px;text-align:left">Dominant Type</th>
         </tr>"""
 
         for cell in top_cells:
@@ -1017,7 +1017,7 @@ def render_conflict_intelligence():
 
     # ── Kurmay Assessment ────────────────────────────────────
     st.markdown("""<div style="color:#ff1744;font-size:1.1rem;font-weight:700;margin:24px 0 8px 0;
-                letter-spacing:1px">KURMAY AI DEGERLENDIRMESI</div>""", unsafe_allow_html=True)
+                letter-spacing:1px">STAFF AI ASSESSMENT</div>""", unsafe_allow_html=True)
 
     assessment = generate_kurmay_assessment(
         events_df, zone_name, grid_risk, escalation, weather_data, attack_patterns
@@ -1033,7 +1033,7 @@ def render_conflict_intelligence():
     # ── Weather Impact Panel ─────────────────────────────────
     if weather_data and "daily" in weather_data:
         st.markdown("""<div style="color:#00d4ff;font-size:0.95rem;font-weight:700;margin:18px 0 8px 0;
-                    letter-spacing:1px">HAVA DURUMU &amp; OPERASYONEL ETKI (3 Gunluk)</div>""", unsafe_allow_html=True)
+                    letter-spacing:1px">WEATHER &amp; OPERATIONAL IMPACT (3-Day)</div>""", unsafe_allow_html=True)
 
         daily = weather_data["daily"]
         days = daily.get("time", [])[:3]
@@ -1049,22 +1049,22 @@ def render_conflict_intelligence():
             tmax = temps_max[i] if i < len(temps_max) else 0
             tmin = temps_min[i] if i < len(temps_min) else 0
 
-            ops_impact = "IDEAL" if p < 1 and w < 30 else "KISITLI" if p > 5 or w > 50 else "ORTA"
-            ops_color = "#00e676" if ops_impact == "IDEAL" else "#ff6d00" if ops_impact == "KISITLI" else "#ffd600"
+            ops_impact = "IDEAL" if p < 1 and w < 30 else "RESTRICTED" if p > 5 or w > 50 else "MODERATE"
+            ops_color = "#00e676" if ops_impact == "IDEAL" else "#ff6d00" if ops_impact == "RESTRICTED" else "#ffd600"
 
             wcol.markdown(f"""<div style="background:rgba(10,22,40,0.7);border:1px solid #1a3352;
                 border-radius:8px;padding:12px;text-align:center">
                 <div style="color:#667;font-size:0.72rem">{day}</div>
                 <div style="color:#e0e6ed;font-size:0.9rem;margin:4px 0">{tmin:.0f} / {tmax:.0f} C</div>
-                <div style="color:#448aff;font-size:0.78rem">Yagis: {p:.1f}mm | Ruzgar: {w:.0f}km/s</div>
+                <div style="color:#448aff;font-size:0.78rem">Precip: {p:.1f}mm | Wind: {w:.0f}km/h</div>
                 <div style="color:{ops_color};font-size:0.78rem;font-weight:700;margin-top:4px">Ops: {ops_impact}</div>
             </div>""", unsafe_allow_html=True)
 
     # ── Methodology note ─────────────────────────────────────
     st.markdown("""<div style="margin-top:24px;padding:12px 16px;background:rgba(10,22,40,0.5);
                 border:1px solid #0d2137;border-radius:8px;font-size:0.72rem;color:#556677">
-                <b>Metodoloji:</b> ACLED catisma verileri + GDELT olay akisi + Open-Meteo hava durumu +
-                Askeri doktrin kurallari (lojistik menzil, operasyonel tempo, hava durumu etkisi, stratejik hedef degeri).
-                Tahminler acik kaynak istihbarata dayalidir ve taktik seviye kesinlik icermez.
-                Risk skorlari 14 gunluk ustel azalma agirlikli olay yogunluguna dayanir.
+                <b>Methodology:</b> ACLED conflict data + GDELT event stream + Open-Meteo weather +
+                Military doctrine rules (logistics range, operational tempo, weather impact, strategic target value).
+                Predictions are based on open-source intelligence and do not carry tactical-level precision.
+                Risk scores are based on 14-day exponential decay weighted event density.
                 </div>""", unsafe_allow_html=True)
