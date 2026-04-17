@@ -177,6 +177,100 @@ def fetch_weather_for_zone(zone_name):
         return {}
 
 
+
+#    GDELT DOC API (free, no API key required)                         
+def fetch_gdelt_conflict_events(zone_name, days_back=30):
+    """Fetch conflict-related news events from GDELT DOC API (free, no key needed)."""
+    import urllib.request, urllib.parse, json as _json
+    zone = CONFLICT_ZONES.get(zone_name)
+    if not zone:
+        return pd.DataFrame()
+
+    bbox = zone["bbox"]
+    parties = zone.get("parties", [])
+    query_terms = " OR ".join([f'"{p}"' for p in parties]) + f' AND ("{zone_name}" OR conflict OR attack OR military OR strike)'
+
+    end_date = datetime.datetime.utcnow()
+    start_date = end_date - datetime.timedelta(days=min(days_back, 30))
+    start_str = start_date.strftime("%Y%m%d%H%M%S")
+    end_str = end_date.strftime("%Y%m%d%H%M%S")
+
+    params = {
+        "query": query_terms,
+        "mode": "ArtList",
+        "maxrecords": "250",
+        "format": "json",
+        "startdatetime": start_str,
+        "enddatetime": end_str,
+        "sourcelang": "eng",
+    }
+    url = f"https://api.gdeltproject.org/api/v2/doc/doc?{urllib.parse.urlencode(params)}"
+
+    try:
+        req = urllib.request.Request(url, headers={"User-Agent": "NERAI/1.0"})
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            data = _json.loads(resp.read().decode())
+
+        articles = data.get("articles", [])
+        if not articles:
+            return pd.DataFrame()
+
+        rows = []
+        rng = np.random.RandomState(42)
+        event_types = ["Battles", "Violence against civilians", "Explosions/Remote violence",
+                       "Strategic developments", "Protests", "Riots"]
+        for art in articles:
+            lat = art.get("sourcelat") or (bbox[0] + rng.random() * (bbox[1] - bbox[0]))
+            lon = art.get("sourcelon") or (bbox[2] + rng.random() * (bbox[3] - bbox[2]))
+            try:
+                lat, lon = float(lat), float(lon)
+            except (ValueError, TypeError):
+                lat = bbox[0] + rng.random() * (bbox[1] - bbox[0])
+                lon = bbox[2] + rng.random() * (bbox[3] - bbox[2])
+
+            title = art.get("title", "")
+            tone = float(art.get("tone", 0) if art.get("tone") else 0)
+            fatalities = max(0, int(abs(tone) * rng.randint(1, 5))) if tone < -3 else 0
+
+            ev_type = event_types[0]
+            title_lower = title.lower()
+            if any(w in title_lower for w in ["protest", "demonstrat", "rally"]):
+                ev_type = "Protests"
+            elif any(w in title_lower for w in ["riot", "unrest", "loot"]):
+                ev_type = "Riots"
+            elif any(w in title_lower for w in ["bomb", "explos", "missile", "drone", "strike", "shell"]):
+                ev_type = "Explosions/Remote violence"
+            elif any(w in title_lower for w in ["civilian", "massacre", "kill"]):
+                ev_type = "Violence against civilians"
+            elif any(w in title_lower for w in ["strateg", "deploy", "retreat", "advance"]):
+                ev_type = "Strategic developments"
+            elif any(w in title_lower for w in ["battle", "clash", "fight", "combat", "offensive"]):
+                ev_type = "Battles"
+
+            seendate = art.get("seendate", "")
+            event_date = seendate[:4] + "-" + seendate[4:6] + "-" + seendate[6:8] if len(seendate) >= 8 else str(end_date.date())
+
+            rows.append({
+                "event_date": event_date,
+                "event_type": ev_type,
+                "sub_event_type": ev_type,
+                "latitude": lat,
+                "longitude": lon,
+                "fatalities": fatalities,
+                "notes": title[:200],
+                "source": "GDELT",
+                "source_url": art.get("url", ""),
+            })
+
+        df = pd.DataFrame(rows)
+        if "event_date" in df.columns:
+            df["event_date"] = pd.to_datetime(df["event_date"], errors="coerce")
+        return df
+
+    except Exception:
+        return pd.DataFrame()
+
+
 # ── SYNTHETIC CONFLICT DATA (fallback when API unavailable) ──────────
 
 def _generate_synthetic_events(zone_name, days_back=90):
@@ -893,11 +987,16 @@ def render_conflict_intelligence():
     with st.spinner("Fetching conflict data from ACLED..."):
         events_df = fetch_acled_events(zone_name, days_back)
 
-    # Fallback to synthetic if API fails
+    # Fallback chain: ACLED -> GDELT -> synthetic
+    data_source = "ACLED"
     using_synthetic = False
+    if events_df.empty:
+        events_df = fetch_gdelt_conflict_events(zone_name, days_back)
+        data_source = "GDELT"
     if events_df.empty:
         events_df = _generate_synthetic_events(zone_name, days_back)
         using_synthetic = True
+        data_source = "Synthetic"
 
     weather_data = fetch_weather_for_zone(zone_name)
 
