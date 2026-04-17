@@ -5,6 +5,7 @@ Multi-page: Home | Indices | Country Profile | News
 import streamlit as st
 from nerai_supply_phase67 import render_trade_flows_tab, render_lpi_tab
 from nerai_global_view import render_global_view
+from conflict_intelligence import render_conflict_intelligence
 import pandas as pd
 import numpy as np
 import plotly.graph_objects as go
@@ -9618,6 +9619,8 @@ elif page == 'supply_grid': render_supply_grid()
 elif page == 'global_view': render_global_view()
 elif page == 'briefing':    render_briefing_room()
 elif page == 'api':         render_api()
+    elif page == 'conflict':
+        render_conflict_intelligence()
 else:
     st.session_state.page = 'home'
     st.rerun()
