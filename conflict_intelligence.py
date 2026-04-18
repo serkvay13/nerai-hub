@@ -179,6 +179,7 @@ def fetch_weather_for_zone(zone_name):
 
 
 # -- GDELT DOC API (free, no API key required) --------------------------------
+@st.cache_data(ttl=1800, show_spinner=False)
 def fetch_gdelt_conflict_events(zone_name, days_back=30):
     """Fetch conflict news from GDELT DOC API as proxy for conflict events."""
     import urllib.request, urllib.parse, json as _json
@@ -192,12 +193,23 @@ def fetch_gdelt_conflict_events(zone_name, days_back=30):
     encoded = urllib.parse.quote(raw_q)
     url = (
         f"https://api.gdeltproject.org/api/v2/doc/doc?"
-        f"query={encoded}&mode=artlist&maxrecords=250&format=json"
+        f"query={encoded}&mode=artlist&maxrecords=100&format=json"
     )
     try:
+        import time as _time
         req = urllib.request.Request(url, headers={"User-Agent": "NERAI/1.0"})
-        with urllib.request.urlopen(req, timeout=20) as r:
-            raw_data = r.read().decode("utf-8")
+        for _attempt in range(3):
+            try:
+                with urllib.request.urlopen(req, timeout=20) as r:
+                    raw_data = r.read().decode("utf-8")
+                break
+            except urllib.error.HTTPError as _he:
+                if _he.code == 429 and _attempt < 2:
+                    _time.sleep(2 * (_attempt + 1))
+                    continue
+                raise
+        else:
+            return pd.DataFrame()
         data = _json.loads(raw_data)
         articles = data.get("articles", [])
         if not articles:
