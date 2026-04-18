@@ -601,16 +601,17 @@ def generate_kurmay_assessment(events_df, zone_name, grid_risk, escalation, weat
     parts.append("2. ENEMY FORCES / THREAT ASSESSMENT")
     if dominant:
         parts.append(f"   a. Primary Threat Activity: {dominant}")
-    if attack_patterns:
-        top_pattern = max(attack_patterns, key=attack_patterns.get) if isinstance(attack_patterns, dict) else str(attack_patterns)
-        pattern_count = attack_patterns.get(top_pattern, 0) if isinstance(attack_patterns, dict) else 0
-        parts.append(f"   b. Dominant Attack Pattern: {top_pattern} ({pattern_count} occurrences)")
-
-        # Tactical analysis based on attack type
-        if isinstance(attack_patterns, dict):
-            total_attacks = sum(attack_patterns.values())
+    if attack_patterns and isinstance(attack_patterns, dict):
+        type_dist = attack_patterns.get("type_distribution", {})
+        if hasattr(type_dist, "to_dict"):
+            type_dist = type_dist.to_dict()
+        if type_dist:
+            top_pattern = max(type_dist, key=type_dist.get)
+            pattern_count = type_dist[top_pattern]
+            parts.append(f"   b. Dominant Attack Pattern: {top_pattern} ({pattern_count} occurrences)")
+            total_attacks = sum(type_dist.values())
             if total_attacks > 0:
-                for pat, cnt in sorted(attack_patterns.items(), key=lambda x: -x[1])[:3]:
+                for pat, cnt in sorted(type_dist.items(), key=lambda x: -x[1])[:3]:
                     pct = cnt / total_attacks * 100
                     parts.append(f"      - {pat}: {cnt} events ({pct:.0f}%) of total hostile activity")
 
