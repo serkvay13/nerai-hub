@@ -552,111 +552,138 @@ def compute_attack_pattern_analysis(events_df, zone_name):
 
 
 def generate_kurmay_assessment(events_df, zone_name, grid_risk, escalation, weather_data, attack_patterns):
-    """Generate military staff-level (kurmay) situational assessment."""
-    zone = CONFLICT_ZONES[zone_name]
+    """Generate military staff officer (Kurmay) assessment using IPB/METT-TC doctrine framework."""
+    total = len(events_df) if not events_df.empty else 0
+    fat = int(events_df["fatalities"].sum()) if "fatalities" in events_df.columns else 0
+    dominant = ""
+    if "event_type" in events_df.columns and not events_df.empty:
+        dominant = events_df["event_type"].value_counts().idxmax()
 
-    # Build context
-    top_risk_cells = grid_risk[:5] if grid_risk else []
-    now = datetime.datetime.now()
-    month = now.month
+    high_risk = sum(1 for v in grid_risk.values() if v > 0.6) if grid_risk else 0
+    esc_idx = escalation.get("index", 0) if isinstance(escalation, dict) else 0
+    esc_trend = escalation.get("trend", "STABLE") if isinstance(escalation, dict) else "STABLE"
 
-    assessment_parts = []
-
-    # Header
-    assessment_parts.append(f"NERAI STAFF INTELLIGENCE ASSESSMENT")
-    assessment_parts.append(f"Conflict Zone: {zone_name}")
-    assessment_parts.append(f"Date: {now.strftime('%d %B %Y %H:%M')} UTC")
-    assessment_parts.append(f"Sources: GDELT + ACLED (if configured) + Open-Source Intelligence")
-    assessment_parts.append("=" * 60)
-
-    # 1. Escalation Status
-    assessment_parts.append(f"\n1. ESCALATION STATUS: {escalation['name'].upper()} (Level {escalation['level']}/5)")
-    assessment_parts.append(f"   Daily average (7-day): {escalation['daily_avg_7d']} events")
-    assessment_parts.append(f"   Daily average (30-day): {escalation['daily_avg_30d']} events")
-    trend_en = {"escalating": "ESCALATING", "de-escalating": "DE-ESCALATING", "stable": "STABLE"}
-    assessment_parts.append(f"   Trend: {trend_en.get(escalation['trend'], escalation['trend'])}")
-
-    # 2. High-risk areas
-    if top_risk_cells:
-        assessment_parts.append(f"\n2. HIGH-RISK ZONES (Next 72 hours):")
-        for idx, cell in enumerate(top_risk_cells[:5], 1):
-            assessment_parts.append(
-                f"   {idx}. [{cell['lat']:.1f}N, {cell['lon']:.1f}E] - Risk: {cell['risk_score']}/100 "
-                f"| Last 7 days: {cell['recent_7d']} events | Trend: {'+' if cell['trend']>0 else ''}{cell['trend']*100:.0f}% "
-                f"| Dominant type: {cell['dominant_type']}"
-            )
-
-    # 3. Attack pattern assessment
-    if attack_patterns.get("type_distribution"):
-        assessment_parts.append(f"\n3. ATTACK ANATOMY:")
-        total = sum(attack_patterns["type_distribution"].values())
-        for atype, count in sorted(attack_patterns["type_distribution"].items(), key=lambda x: -x[1])[:5]:
-            pct = count / total * 100
-            assessment_parts.append(f"   - {atype}: {count} events ({pct:.1f}%)")
-
-    # 4. Doctrine-based predictions
-    assessment_parts.append(f"\n4. DOCTRINE-BASED PREDICTIONS:")
-
-    # Seasonal doctrine
-    if month in [3, 4, 10, 11]:
-        assessment_parts.append("   - MUD SEASON ACTIVE: Armored unit maneuverability severely limited.")
-        assessment_parts.append("     Forecast: Artillery and air strike-dominant operations expected.")
-    elif month in [12, 1, 2]:
-        assessment_parts.append("   - WINTER PERIOD: Energy infrastructure attacks intensifying.")
-        assessment_parts.append("     Forecast: Thermal plants and energy transmission lines will be targeted.")
-    elif month in [5, 6, 7, 8, 9]:
-        assessment_parts.append("   - OPERATIONAL SEASON: Favorable conditions for ground operations.")
-        assessment_parts.append("     Forecast: High probability of large-scale offensive operations.")
-
-    # Tempo-based prediction
-    if escalation["trend"] == "escalating":
-        assessment_parts.append("   - OPERATIONAL TEMPO RISING: May indicate major offensive preparation.")
-        assessment_parts.append("     Recon/drone activity and logistics movement should be monitored.")
-    elif escalation["daily_avg_7d"] > escalation["daily_avg_30d"] * 1.5:
-        assessment_parts.append("   - INTENSIFICATION DETECTED: Above sustainable operational threshold.")
-        assessment_parts.append("     Operational pause expected within 2-3 days (resupply requirement).")
-
-    # Weather assessment
-    if weather_data and "current" in weather_data:
-        curr = weather_data["current"]
-        cloud = curr.get("cloud_cover", 50)
-        precip = curr.get("precipitation", 0)
-        assessment_parts.append(f"\n5. WEATHER IMPACT ASSESSMENT:")
-        assessment_parts.append(f"   Cloud: {cloud}% | Precipitation: {precip}mm | Wind: {curr.get('wind_speed_10m', 0)} km/h")
-        if cloud > 70:
-            assessment_parts.append("   - High cloud cover: Drone/PGM effectiveness LOW")
-            assessment_parts.append("     Forecast: Emphasis on artillery fire expected")
-        elif cloud < 30:
-            assessment_parts.append("   - Clear skies: IDEAL for air operations and drone strikes")
-            assessment_parts.append("     Forecast: Air strike risk HIGH")
-        if precip > 5:
-            assessment_parts.append("   - Heavy precipitation: Ground operations degraded, logistics disruption risk")
-
-    # 6. Strategic targets at risk
-    if zone_name == "Ukraine-Russia":
-        assessment_parts.append(f"\n6. STRATEGIC TARGET RISK ASSESSMENT:")
-        for target in STRATEGIC_TARGETS_UKR[:8]:
-            tv = DOCTRINE_RULES["target_value"].get(target["type"], {})
-            weight = tv.get("weight", 5)
-            risk_label = "CRITICAL" if weight >= 9 else "HIGH" if weight >= 7 else "MODERATE"
-            assessment_parts.append(
-                f"   - {target['name']} ({target['type']}) [{target['side']}]: {risk_label} ({weight}/10)"
-            )
-
-    # 7. Summary recommendation
-    assessment_parts.append(f"\n7. SUMMARY & RECOMMENDATIONS:")
-    if escalation["level"] >= 4:
-        assessment_parts.append("   WARNING: Large-scale operation indicators detected. All frontlines must be monitored.")
-    elif escalation["trend"] == "escalating":
-        assessment_parts.append("   CAUTION: Escalation trend continues. Increase protection on strategic targets.")
+    # --- Threat level classification (NATO standard) ---
+    if esc_idx >= 0.75:
+        threat_level = "CRITICAL"
+        threat_posture = "MAXIMUM ALERT"
+        force_posture = "FORCE PROTECTION CONDITION DELTA"
+    elif esc_idx >= 0.5:
+        threat_level = "SUBSTANTIAL"
+        threat_posture = "HIGH ALERT"
+        force_posture = "FORCE PROTECTION CONDITION CHARLIE"
+    elif esc_idx >= 0.25:
+        threat_level = "MODERATE"
+        threat_posture = "ELEVATED READINESS"
+        force_posture = "FORCE PROTECTION CONDITION BRAVO"
     else:
-        assessment_parts.append("   STATUS: Conflict continues at current level. Routine monitoring sufficient.")
+        threat_level = "LOW"
+        threat_posture = "ROUTINE SURVEILLANCE"
+        force_posture = "FORCE PROTECTION CONDITION ALPHA"
 
-    return "\n".join(assessment_parts)
+    # --- SITUATION section (IPB Step 1: Define the Battlefield Environment) ---
+    parts = []
+    parts.append(f"CLASSIFICATION: UNCLASSIFIED // FOUO")
+    parts.append(f"DTG: {datetime.datetime.utcnow().strftime('%d%H%MZ %b %Y').upper()}")
+    parts.append(f"SUBJ: OPERATIONAL INTELLIGENCE ASSESSMENT - {zone_name.upper()} AO")
+    parts.append(f"THREAT LEVEL: {threat_level} | POSTURE: {threat_posture}")
+    parts.append("")
 
+    parts.append("1. SITUATION")
+    parts.append(f"   a. Area of Operations: {zone_name} theater. {total} significant activities (SIGACTS) recorded in analysis period.")
+    parts.append(f"   b. Escalation Index: {esc_idx:.2f}/1.00 - Trend: {esc_trend}")
+    if fat > 0:
+        parts.append(f"   c. Battle Damage Assessment (BDA): {fat} confirmed casualties across all parties. Avg {fat/max(total,1):.1f} per engagement.")
+    parts.append(f"   d. {force_posture}")
+    parts.append("")
 
-# ── VISUALIZATION ────────────────────────────────────────────────────
+    # --- ENEMY FORCES (IPB Step 2: Describe the Battlefield Effects) ---
+    parts.append("2. ENEMY FORCES / THREAT ASSESSMENT")
+    if dominant:
+        parts.append(f"   a. Primary Threat Activity: {dominant}")
+    if attack_patterns:
+        top_pattern = max(attack_patterns, key=attack_patterns.get) if isinstance(attack_patterns, dict) else str(attack_patterns)
+        pattern_count = attack_patterns.get(top_pattern, 0) if isinstance(attack_patterns, dict) else 0
+        parts.append(f"   b. Dominant Attack Pattern: {top_pattern} ({pattern_count} occurrences)")
 
+        # Tactical analysis based on attack type
+        if isinstance(attack_patterns, dict):
+            total_attacks = sum(attack_patterns.values())
+            if total_attacks > 0:
+                for pat, cnt in sorted(attack_patterns.items(), key=lambda x: -x[1])[:3]:
+                    pct = cnt / total_attacks * 100
+                    parts.append(f"      - {pat}: {cnt} events ({pct:.0f}%) of total hostile activity")
+
+    if high_risk > 0:
+        parts.append(f"   c. Named Areas of Interest (NAI): {high_risk} grid sectors assessed as HIGH RISK")
+        parts.append(f"      Recommend priority ISR allocation to {high_risk} identified threat zones.")
+    parts.append("")
+
+    # --- TERRAIN & WEATHER (METT-TC) ---
+    parts.append("3. TERRAIN & WEATHER EFFECTS")
+    if weather_data and isinstance(weather_data, dict):
+        temp = weather_data.get("temperature", "N/A")
+        wind = weather_data.get("wind_speed", "N/A")
+        precip = weather_data.get("precipitation", "N/A")
+        vis = weather_data.get("visibility", "N/A")
+        parts.append(f"   a. Current Conditions: Temp {temp}, Wind {wind}, Precip {precip}")
+        wx_impact = weather_data.get("operational_impact", "")
+        if wx_impact:
+            parts.append(f"   b. Operational Impact: {wx_impact}")
+        # Weather effects on operations
+        try:
+            wind_val = float(str(wind).replace("km/h", "").strip())
+            if wind_val > 30:
+                parts.append("   c. WEATHER ADVISORY: High winds may degrade UAS/rotary-wing operations and precision munitions accuracy.")
+        except (ValueError, TypeError):
+            pass
+    else:
+        parts.append("   a. Weather data unavailable. Recommend METOC support for operational planning.")
+    parts.append("")
+
+    # --- ASSESSMENT & COURSE OF ACTION (COA) ---
+    parts.append("4. ASSESSMENT & RECOMMENDED COA")
+
+    if esc_trend == "ESCALATING":
+        parts.append("   a. Operational Tempo: INCREASING. Adversary demonstrating heightened operational tempo.")
+        parts.append("      ASSESSMENT: Indicators consistent with preparation for sustained offensive operations.")
+        parts.append("      COA 1 (RECOMMENDED): Increase ISR coverage across all NAIs. Elevate force protection posture.")
+        parts.append("      COA 2: Pre-position QRF assets within rapid deployment range of high-threat sectors.")
+    elif esc_trend == "DE-ESCALATING":
+        parts.append("   a. Operational Tempo: DECREASING. Reduction in hostile SIGACTS observed.")
+        parts.append("      ASSESSMENT: Possible operational pause, logistics reconstitution, or diplomatic engagement.")
+        parts.append("      COA 1 (RECOMMENDED): Maintain current posture. Continue ISR to confirm de-escalation is genuine.")
+        parts.append("      COA 2: Exploit operational pause for force reconstitution and infrastructure hardening.")
+    else:
+        parts.append("   a. Operational Tempo: STEADY STATE. No significant deviation from established pattern of activity.")
+        parts.append("      ASSESSMENT: Conflict dynamics remain within established parameters. No imminent escalation indicators.")
+        parts.append("      COA 1 (RECOMMENDED): Maintain current intelligence collection posture. Focus on early warning indicators.")
+
+    # Specific recommendations based on dominant threat
+    if dominant == "Explosions/Remote violence":
+        parts.append("   b. PRIORITY THREAT: Indirect fire / remote-detonated weapons. Recommend enhanced C-IED posture and counter-battery radar deployment.")
+    elif dominant == "Battles":
+        parts.append("   b. PRIORITY THREAT: Direct engagement / force-on-force. Recommend reinforcement of forward defensive positions and LOC security.")
+    elif dominant == "Violence against civilians":
+        parts.append("   b. PRIORITY THREAT: Civilian targeting indicates possible atrocity risk. Recommend activation of civilian protection protocols per R2P framework.")
+    elif dominant == "Protests":
+        parts.append("   b. NOTE: Elevated civil unrest. Recommend CIMIC coordination and graduated response protocols.")
+    parts.append("")
+
+    # --- INTELLIGENCE REQUIREMENTS ---
+    parts.append("5. PRIORITY INTELLIGENCE REQUIREMENTS (PIR)")
+    parts.append(f"   PIR 1: Adversary intent and capability for offensive operations in {zone_name} AO within 72 hours.")
+    parts.append(f"   PIR 2: Changes in adversary force disposition or logistics activity in identified NAIs.")
+    parts.append(f"   PIR 3: Indicators of external state/non-state actor involvement or force augmentation.")
+    if high_risk > 0:
+        parts.append(f"   PIR 4: Confirmation of threat activity in {high_risk} high-risk grid sectors via multi-INT collection.")
+    parts.append("")
+
+    parts.append(f"   Sources: GDELT + ACLED (if configured) + Open-Source Intelligence (OSINT)")
+    parts.append(f"   Confidence: {'HIGH' if total > 50 else 'MODERATE' if total > 20 else 'LOW'} (based on {total} SIGACTS)")
+    parts.append(f"   Next Update: {(datetime.datetime.utcnow() + datetime.timedelta(hours=6)).strftime('%d%H%MZ %b %Y').upper()}")
+
+    return "\n".join(parts)
 def _risk_color(score):
     """Return color based on risk score 0-100."""
     if score >= 80: return "#ff1744"
