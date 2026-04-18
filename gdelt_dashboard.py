@@ -5,7 +5,7 @@ Multi-page: Home | Indices | Country Profile | News
 import streamlit as st
 from nerai_supply_phase67 import render_trade_flows_tab, render_lpi_tab
 from nerai_global_view import render_global_view
-from conflict_intelligence import render_conflict_intelligence
+# from conflict_intelligence import render_conflict_intelligence  # DISABLED: Warzone temporarily removed
 import pandas as pd
 import numpy as np
 import plotly.graph_objects as go
@@ -1645,7 +1645,7 @@ with st.sidebar:
         ('insights', '🔍 INSIGHTS'),
         ('briefing', '📋 BRIEFING ROOM'),
         ('global_view', '🌍 GLOBAL VIEW'),
-        ('conflict', '🎯 WARZONE ORACLE'),
+        # ('conflict', '🎯 WARZONE ORACLE'),  # DISABLED: temporarily removed
     ]
     # Solo tier: show all pages in nav, pro-only content is locked
     _PRO_ONLY_PAGES = {'predictions', 'causality', 'insights', 'briefing', 'global_view'}
@@ -9617,7 +9617,7 @@ elif page == 'insights':    render_insights()
 elif page == 'global_view': render_global_view()
 elif page == 'briefing':    render_briefing_room()
 elif page == 'api':         render_api()
-elif page == 'conflict':    render_conflict_intelligence(gdelt_fetch_fn=fetch_gdelt_news)
+# elif page == 'conflict':    render_conflict_intelligence(gdelt_fetch_fn=fetch_gdelt_news)  # DISABLED: temporarily removed
 else:
     st.session_state.page = 'home'
     st.rerun()
