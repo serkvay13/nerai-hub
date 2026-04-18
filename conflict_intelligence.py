@@ -559,7 +559,7 @@ def generate_kurmay_assessment(events_df, zone_name, grid_risk, escalation, weat
     if "event_type" in events_df.columns and not events_df.empty:
         dominant = events_df["event_type"].value_counts().idxmax()
 
-    high_risk = sum(1 for v in grid_risk.values() if v > 0.6) if grid_risk else 0
+    high_risk = sum(1 for v in (grid_risk.values() if isinstance(grid_risk, dict) else grid_risk if isinstance(grid_risk, (list, tuple)) else []) if isinstance(v, (int, float)) and v > 0.6) if grid_risk else 0
     esc_idx = escalation.get("index", 0) if isinstance(escalation, dict) else 0
     esc_trend = escalation.get("trend", "STABLE") if isinstance(escalation, dict) else "STABLE"
 
