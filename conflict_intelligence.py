@@ -10,10 +10,10 @@ import numpy as np
 import json, datetime, math, hashlib
 from collections import defaultdict
 
-# ── ACLED API ─────────────────────────────────────────────────────────
+# ââ ACLED API âââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 
 ACLED_API = "https://api.acleddata.com/acled/read"
-ACLED_KEY = "nerai_public"          # free tier – 500 rows/call
+ACLED_KEY = "nerai_public"          # free tier â 500 rows/call
 ACLED_EMAIL = "serkvay13@gmail.com"
 
 # Active conflict zones with bounding boxes [lat_min, lat_max, lon_min, lon_max]
@@ -56,7 +56,7 @@ CONFLICT_ZONES = {
     },
 }
 
-# ── MILITARY DOCTRINE RULES ──────────────────────────────────────────
+# ââ MILITARY DOCTRINE RULES ââââââââââââââââââââââââââââââââââââââââââ
 
 DOCTRINE_RULES = {
     "supply_line_range": {
@@ -94,7 +94,7 @@ DOCTRINE_RULES = {
     ],
 }
 
-# ── STRATEGIC INFRASTRUCTURE (Ukraine focus - expandable) ────────────
+# ââ STRATEGIC INFRASTRUCTURE (Ukraine focus - expandable) ââââââââââââ
 
 STRATEGIC_TARGETS_UKR = [
     {"name": "Zaporizhzhia NPP", "lat": 47.51, "lon": 34.58, "type": "energy_infra", "side": "contested"},
@@ -115,7 +115,7 @@ STRATEGIC_TARGETS_UKR = [
 ]
 
 
-# ── DATA FETCHERS ────────────────────────────────────────────────────
+# ââ DATA FETCHERS ââââââââââââââââââââââââââââââââââââââââââââââââââââ
 
 @st.cache_data(ttl=86400, show_spinner=False)
 def fetch_acled_events(zone_name, days_back=90):
@@ -177,7 +177,7 @@ def fetch_weather_for_zone(zone_name):
         return {}
 
 
-# ── SYNTHETIC CONFLICT DATA (fallback when API unavailable) ──────────
+# ââ SYNTHETIC CONFLICT DATA (fallback when API unavailable) ââââââââââ
 
 def _generate_synthetic_events(zone_name, days_back=90):
     """Generate realistic synthetic conflict data based on known patterns."""
@@ -274,7 +274,7 @@ def _generate_synthetic_events(zone_name, days_back=90):
     return df
 
 
-# ── ANALYSIS ENGINE ──────────────────────────────────────────────────
+# ââ ANALYSIS ENGINE ââââââââââââââââââââââââââââââââââââââââââââââââââ
 
 def compute_grid_risk(events_df, zone_name):
     """Compute risk score per grid cell using events + doctrine rules."""
@@ -776,9 +776,9 @@ def generate_kurmay_assessment(events_df, zone_name, grid_risk, escalation, weat
 
     a = []  # assessment lines
 
-    # ══════════════════════════════════════════════════════════════
+    # ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
     # HEADER
-    # ══════════════════════════════════════════════════════════════
+    # ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
     a.append("=" * 64)
     a.append("  NERAI STAFF INTELLIGENCE ASSESSMENT")
     a.append("  IPB FRAMEWORK | METT-TC METHODOLOGY")
@@ -791,11 +791,11 @@ def generate_kurmay_assessment(events_df, zone_name, grid_risk, escalation, weat
     a.append(f"PERIOD   : {total_events} events analyzed | {total_fat} total fatalities")
     a.append("-" * 64)
 
-    # ══════════════════════════════════════════════════════════════
+    # ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
     # 1. SITUATION (METT-TC: Mission, Enemy, Terrain, Troops, Time, Civilians)
-    # ══════════════════════════════════════════════════════════════
+    # ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
     a.append("")
-    a.append("1. SITUATION — GENERAL ASSESSMENT")
+    a.append("1. SITUATION â GENERAL ASSESSMENT")
     a.append("=" * 64)
 
     # Escalation assessment with context
@@ -829,11 +829,11 @@ def generate_kurmay_assessment(events_df, zone_name, grid_risk, escalation, weat
     if op_patterns["pause_likely"]:
         a.append(f"   ** PAUSE FORECAST: {op_patterns.get('pause_reason', 'Post-sustained surge')}")
 
-    # ══════════════════════════════════════════════════════════════
-    # 2. ENEMY FORCES — SECTOR-BASED FORCE ANALYSIS
-    # ══════════════════════════════════════════════════════════════
+    # ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+    # 2. ENEMY FORCES â SECTOR-BASED FORCE ANALYSIS
+    # ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
     a.append("")
-    a.append("2. SECTOR-BASED FORCE ANALYSIS — FRONT INTELLIGENCE")
+    a.append("2. SECTOR-BASED FORCE ANALYSIS â FRONT INTELLIGENCE")
     a.append("=" * 64)
 
     for sec_name, sec_data in sorted(sectors.items(), key=lambda x: -x[1]["last_7d"]):
@@ -874,9 +874,9 @@ def generate_kurmay_assessment(events_df, zone_name, grid_risk, escalation, weat
                 a.append(f"   >> AIR THREAT: {air_drone/total_sec*100:.0f}% of events are air/UAV-originated.")
                 a.append(f"      Deep strike operations targeting logistics lines and rear assets.")
 
-    # ══════════════════════════════════════════════════════════════
+    # ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
     # 3. CROSS-FRONT CORRELATION
-    # ══════════════════════════════════════════════════════════════
+    # ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
     a.append("")
     a.append("3. CROSS-FRONT CORRELATION & MANEUVER INTELLIGENCE")
     a.append("=" * 64)
@@ -917,9 +917,9 @@ def generate_kurmay_assessment(events_df, zone_name, grid_risk, escalation, weat
         a.append("   No significant cross-front shifting indicators DETECTED.")
         a.append("   Positional warfare continues along current frontlines.")
 
-    # ══════════════════════════════════════════════════════════════
-    # 4. ATTACK ANATOMY — ACTOR INTENT ANALYSIS
-    # ══════════════════════════════════════════════════════════════
+    # ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+    # 4. ATTACK ANATOMY â ACTOR INTENT ANALYSIS
+    # ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
     a.append("")
     a.append("4. ATTACK ANATOMY & ACTOR INTENT ASSESSMENT")
     a.append("=" * 64)
@@ -972,12 +972,12 @@ def generate_kurmay_assessment(events_df, zone_name, grid_risk, escalation, weat
             a.append(f"   TEMPORAL PATTERN: Peak day {peak_day}, lowest {min_day}.")
             ratio = dow_data[peak_day] / max(dow_data[min_day], 1)
             if ratio > 2:
-                a.append(f"   Peak/trough ratio {ratio:.1f}x — distinct operational rhythm detected.")
+                a.append(f"   Peak/trough ratio {ratio:.1f}x â distinct operational rhythm detected.")
                 a.append(f"   Elevated readiness measures should be prioritized for {peak_day}.")
 
-    # ══════════════════════════════════════════════════════════════
-    # 5. TERRAIN & WEATHER — METT-TC
-    # ══════════════════════════════════════════════════════════════
+    # ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+    # 5. TERRAIN & WEATHER â METT-TC
+    # ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
     a.append("")
     a.append("5. TERRAIN & WEATHER IMPACT ASSESSMENT")
     a.append("=" * 64)
@@ -1024,9 +1024,9 @@ def generate_kurmay_assessment(events_df, zone_name, grid_risk, escalation, weat
             a.append(f"   >> Strong winds ({wind}km/h): UAV operations RESTRICTED.")
             a.append("      Light/tactical UAV systems ineffective. Heavy UAVs at limited capability.")
 
-    # ══════════════════════════════════════════════════════════════
-    # 6. STRATEGIC TARGETS — THREAT MATRIX
-    # ══════════════════════════════════════════════════════════════
+    # ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+    # 6. STRATEGIC TARGETS â THREAT MATRIX
+    # ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
     if target_threats:
         a.append("")
         a.append("6. STRATEGIC TARGET THREAT MATRIX")
@@ -1050,9 +1050,9 @@ def generate_kurmay_assessment(events_df, zone_name, grid_risk, escalation, weat
             if t["weather_mod"] > 1.0:
                 a.append(f"       >> WEATHER FACTOR: Clear conditions increase PGM accuracy by {t['weather_mod']:.1f}x")
 
-    # ══════════════════════════════════════════════════════════════
-    # 7. COA & PREDICTION — COURSES OF ACTION
-    # ══════════════════════════════════════════════════════════════
+    # ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+    # 7. COA & PREDICTION â COURSES OF ACTION
+    # ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
     a.append("")
     a.append("7. COURSES OF ACTION & 72-HOUR FORECAST")
     a.append("=" * 64)
@@ -1098,9 +1098,9 @@ def generate_kurmay_assessment(events_df, zone_name, grid_risk, escalation, weat
         a.append("   Current situation is relatively contained. However,")
         a.append("   risk of sudden provocation or surprise attack always exists.")
 
-    # ══════════════════════════════════════════════════════════════
-    # 8. PIR — PRIORITY INTELLIGENCE REQUIREMENTS
-    # ══════════════════════════════════════════════════════════════
+    # ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+    # 8. PIR â PRIORITY INTELLIGENCE REQUIREMENTS
+    # ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
     a.append("")
     a.append("8. PRIORITY INTELLIGENCE REQUIREMENTS (PIR)")
     a.append("=" * 64)
@@ -1132,12 +1132,12 @@ def generate_kurmay_assessment(events_df, zone_name, grid_risk, escalation, weat
     a.append(f"   PIR-{pir_num}: Do logistics route activity and ammunition shipment")
     a.append(f"           patterns indicate preparation for a major operation?")
 
-    # ══════════════════════════════════════════════════════════════
+    # ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
     # FOOTER
-    # ══════════════════════════════════════════════════════════════
+    # ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
     a.append("")
     a.append("-" * 64)
-    a.append(f"  END ASSESSMENT — NERAI STAFF INTELLIGENCE MODULE")
+    a.append(f"  END ASSESSMENT â NERAI STAFF INTELLIGENCE MODULE")
     a.append(f"  {now.strftime('%d %b %Y %H:%M UTC').upper()}")
     a.append(f"  Next update: +6 hours | Doctrine rev: IPB/METT-TC v3.2")
     a.append("=" * 64)
@@ -1145,7 +1145,7 @@ def generate_kurmay_assessment(events_df, zone_name, grid_risk, escalation, weat
     return "\n".join(a)
 
 
-# ── VISUALIZATION ────────────────────────────────────────────────────
+# ââ VISUALIZATION ââââââââââââââââââââââââââââââââââââââââââââââââââââ
 
 def _risk_color(score):
     """Return color based on risk score 0-100."""
@@ -1423,9 +1423,9 @@ window.addEventListener('resize',function(){{chart.resize()}});
     return html
 
 
-# ── MAIN RENDER FUNCTION ─────────────────────────────────────────────
+# ââ MAIN RENDER FUNCTION âââââââââââââââââââââââââââââââââââââââââââââ
 
-def render_conflict_intelligence():
+def render_conflict_intelligence(gdelt_fetch_fn=None):
     """Main render function for the Conflict Intelligence page."""
     st.markdown("""
     <div style="text-align:center;padding:22px 0 10px 0">
@@ -1489,7 +1489,7 @@ def render_conflict_intelligence():
                     Canli veri icin ACLED API erisimi gereklidir (acleddata.com).
                     </div>""", unsafe_allow_html=True)
 
-    # ── KPI Cards ────────────────────────────────────────────
+    # ââ KPI Cards ââââââââââââââââââââââââââââââââââââââââââââ
     k1, k2, k3, k4 = st.columns(4)
 
     esc_color = "#ff1744" if escalation["level"] >= 4 else "#ff6d00" if escalation["level"] >= 3 else \
@@ -1525,7 +1525,7 @@ def render_conflict_intelligence():
         </span>
     </div>""", unsafe_allow_html=True)
 
-    # ── Conflict Map ─────────────────────────────────────────
+    # ââ Conflict Map âââââââââââââââââââââââââââââââââââââââââ
     st.markdown("""<div style="color:#00d4ff;font-size:1.1rem;font-weight:700;margin:18px 0 8px 0;
                 letter-spacing:1px">CONFLICT MAP &amp; RISK GRID</div>""", unsafe_allow_html=True)
 
@@ -1541,7 +1541,7 @@ def render_conflict_intelligence():
         <span><span style="color:#ffd600">&#9670;</span> Infrastructure</span>
     </div>""", unsafe_allow_html=True)
 
-    # ── Trend & Attack Pattern ───────────────────────────────
+    # ââ Trend & Attack Pattern âââââââââââââââââââââââââââââââ
     col_trend, col_pattern = st.columns([3, 2])
 
     with col_trend:
@@ -1556,7 +1556,7 @@ def render_conflict_intelligence():
         type_html = _build_attack_type_chart_html(attack_patterns)
         components.html(type_html, height=360, scrolling=False)
 
-    # ── Top Risk Grid Table ──────────────────────────────────
+    # ââ Top Risk Grid Table ââââââââââââââââââââââââââââââââââ
     if grid_risk:
         st.markdown("""<div style="color:#ff6d00;font-size:0.95rem;font-weight:700;margin:18px 0 8px 0;
                     letter-spacing:1px">HIGH RISK GRID CELLS (72-Hour Forecast)</div>""", unsafe_allow_html=True)
@@ -1588,7 +1588,7 @@ def render_conflict_intelligence():
         table_html += "</table>"
         st.markdown(table_html, unsafe_allow_html=True)
 
-    # ── Kurmay Assessment ────────────────────────────────────
+    # ââ Kurmay Assessment ââââââââââââââââââââââââââââââââââââ
     st.markdown("""<div style="color:#ff1744;font-size:1.1rem;font-weight:700;margin:24px 0 8px 0;
                 letter-spacing:1px">STAFF AI ASSESSMENT</div>""", unsafe_allow_html=True)
 
@@ -1603,7 +1603,7 @@ def render_conflict_intelligence():
 {assessment}
     </div>""", unsafe_allow_html=True)
 
-    # ── Weather Impact Panel ─────────────────────────────────
+    # ââ Weather Impact Panel âââââââââââââââââââââââââââââââââ
     if weather_data and "daily" in weather_data:
         st.markdown("""<div style="color:#00d4ff;font-size:0.95rem;font-weight:700;margin:18px 0 8px 0;
                     letter-spacing:1px">WEATHER &amp; OPERATIONAL IMPACT (3-Day)</div>""", unsafe_allow_html=True)
@@ -1633,7 +1633,7 @@ def render_conflict_intelligence():
                 <div style="color:{ops_color};font-size:0.78rem;font-weight:700;margin-top:4px">Ops: {ops_impact}</div>
             </div>""", unsafe_allow_html=True)
 
-    # ── Methodology note ─────────────────────────────────────
+    # ââ Methodology note âââââââââââââââââââââââââââââââââââââ
     st.markdown("""<div style="margin-top:24px;padding:12px 16px;background:rgba(10,22,40,0.5);
                 border:1px solid #0d2137;border-radius:8px;font-size:0.72rem;color:#556677">
                 <b>Methodology:</b> ACLED conflict data + GDELT event stream + Open-Meteo weather +
