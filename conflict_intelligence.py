@@ -551,140 +551,622 @@ def compute_attack_pattern_analysis(events_df, zone_name):
     return analysis
 
 
+def _analyze_front_sectors(events_df, zone_name):
+    """Divide conflict zone into operational sectors and analyze each front."""
+    zone = CONFLICT_ZONES[zone_name]
+    bbox = zone["bbox"]
+    sectors = {}
+
+    if zone_name == "Ukraine-Russia":
+        sector_defs = {
+            "DONETSK FRONT": {"lat": (47.5, 49.0), "lon": (37.0, 38.5)},
+            "LUHANSK FRONT": {"lat": (48.5, 49.5), "lon": (38.0, 40.0)},
+            "ZAPORIZHZHIA AXIS": {"lat": (46.5, 47.8), "lon": (34.0, 36.5)},
+            "KHERSON-DNIPRO LINE": {"lat": (46.0, 47.0), "lon": (32.0, 34.5)},
+            "KHARKIV SECTOR": {"lat": (49.5, 51.0), "lon": (35.5, 37.0)},
+            "SUMY BORDER ZONE": {"lat": (50.5, 52.0), "lon": (33.5, 35.5)},
+            "CRIMEA-BLACK SEA": {"lat": (44.0, 46.0), "lon": (32.5, 36.5)},
+        }
+    elif zone_name == "Gaza-Israel":
+        sector_defs = {
+            "NORTHERN GAZA": {"lat": (31.45, 31.60), "lon": (34.35, 34.55)},
+            "GAZA CITY": {"lat": (31.40, 31.52), "lon": (34.38, 34.50)},
+            "CENTRAL CORRIDOR": {"lat": (31.30, 31.42), "lon": (34.30, 34.45)},
+            "KHAN YOUNIS SECTOR": {"lat": (31.20, 31.35), "lon": (34.25, 34.40)},
+            "RAFAH AXIS": {"lat": (31.10, 31.25), "lon": (34.15, 34.35)},
+        }
+    elif zone_name == "Sudan":
+        sector_defs = {
+            "KHARTOUM FRONT": {"lat": (15.0, 16.5), "lon": (31.5, 33.5)},
+            "DARFUR WEST": {"lat": (12.0, 15.0), "lon": (22.0, 25.5)},
+            "KORDOFAN AXIS": {"lat": (11.0, 14.0), "lon": (28.0, 32.0)},
+            "EASTERN CORRIDOR": {"lat": (14.0, 19.0), "lon": (33.5, 37.0)},
+        }
+    elif zone_name == "Myanmar":
+        sector_defs = {
+            "SHAN STATE": {"lat": (19.5, 24.0), "lon": (96.0, 101.0)},
+            "SAGAING REGION": {"lat": (21.0, 25.0), "lon": (94.0, 96.5)},
+            "CHIN STATE": {"lat": (20.5, 23.0), "lon": (92.5, 94.5)},
+            "RAKHINE FRONT": {"lat": (18.0, 21.5), "lon": (92.0, 94.5)},
+            "KARENNI-KAYAH": {"lat": (18.5, 20.5), "lon": (96.5, 98.5)},
+        }
+    else:
+        mid_lat = (bbox[0] + bbox[1]) / 2
+        mid_lon = (bbox[2] + bbox[3]) / 2
+        sector_defs = {
+            "NORTH SECTOR": {"lat": (mid_lat, bbox[1]), "lon": (bbox[2], bbox[3])},
+            "SOUTH SECTOR": {"lat": (bbox[0], mid_lat), "lon": (bbox[2], bbox[3])},
+            "EAST FLANK": {"lat": (bbox[0], bbox[1]), "lon": (mid_lon, bbox[3])},
+            "WEST FLANK": {"lat": (bbox[0], bbox[1]), "lon": (bbox[2], mid_lon)},
+        }
+
+    now = pd.Timestamp.now()
+    for name, bounds in sector_defs.items():
+        mask = (
+            (events_df["latitude"] >= bounds["lat"][0]) &
+            (events_df["latitude"] <= bounds["lat"][1]) &
+            (events_df["longitude"] >= bounds["lon"][0]) &
+            (events_df["longitude"] <= bounds["lon"][1])
+        )
+        sec_df = events_df[mask]
+        if sec_df.empty:
+            sectors[name] = {"total": 0, "last_7d": 0, "last_3d": 0, "trend": 0,
+                             "dominant_type": "N/A", "fatalities": 0, "intensity": "DORMANT"}
+            continue
+
+        if "event_date" in sec_df.columns and "days_ago" not in sec_df.columns:
+            sec_df = sec_df.copy()
+            sec_df["days_ago"] = (now - sec_df["event_date"]).dt.days.clip(lower=0)
+
+        last_7d = len(sec_df[sec_df["days_ago"] <= 7]) if "days_ago" in sec_df.columns else 0
+        last_3d = len(sec_df[sec_df["days_ago"] <= 3]) if "days_ago" in sec_df.columns else 0
+        prev_7d = len(sec_df[(sec_df["days_ago"] > 7) & (sec_df["days_ago"] <= 14)]) if "days_ago" in sec_df.columns else 0
+        trend = (last_7d - prev_7d) / max(prev_7d, 1)
+
+        fat = int(sec_df["fatalities"].astype(float).sum()) if "fatalities" in sec_df.columns else 0
+        dom_type = sec_df["event_type"].mode().iloc[0] if "event_type" in sec_df.columns and not sec_df["event_type"].mode().empty else "Unknown"
+
+        daily_rate = last_7d / 7
+        if daily_rate >= 20:
+            intensity = "CRITICAL"
+        elif daily_rate >= 10:
+            intensity = "HIGH"
+        elif daily_rate >= 3:
+            intensity = "ACTIVE"
+        elif daily_rate >= 1:
+            intensity = "LOW"
+        else:
+            intensity = "DORMANT"
+
+        type_dist = {}
+        if "event_type" in sec_df.columns:
+            recent = sec_df[sec_df["days_ago"] <= 7] if "days_ago" in sec_df.columns else sec_df
+            type_dist = recent["event_type"].value_counts().to_dict()
+
+        sectors[name] = {
+            "total": len(sec_df), "last_7d": last_7d, "last_3d": last_3d,
+            "prev_7d": prev_7d, "trend": round(trend, 2),
+            "dominant_type": dom_type, "fatalities": fat,
+            "intensity": intensity, "daily_rate": round(daily_rate, 1),
+            "type_dist": type_dist,
+        }
+
+    return sectors
+
+
+def _detect_operational_patterns(events_df, attack_patterns):
+    """Detect tactical patterns: surge-pause cycles, coordinated strikes, shift indicators."""
+    patterns = {"surge_detected": False, "pause_likely": False, "coordination_level": "LOW",
+                "shift_indicators": [], "tempo_assessment": ""}
+
+    if events_df.empty or "event_date" not in events_df.columns:
+        return patterns
+
+    now = pd.Timestamp.now()
+    df = events_df.copy()
+    df["days_ago"] = (now - df["event_date"]).dt.days.clip(lower=0)
+
+    daily = df[df["days_ago"] <= 30].groupby(df["event_date"].dt.date).size()
+    if len(daily) < 3:
+        return patterns
+
+    mean_daily = daily.mean()
+    std_daily = daily.std() if len(daily) > 1 else 0
+
+    last_3_days = daily.tail(3)
+    surge_threshold = mean_daily + 1.5 * std_daily
+    if len(last_3_days) >= 2 and last_3_days.mean() > surge_threshold:
+        patterns["surge_detected"] = True
+        patterns["surge_days"] = len(last_3_days[last_3_days > surge_threshold])
+
+    consecutive_high = 0
+    for val in daily.tail(10).values:
+        if val > mean_daily * 1.3:
+            consecutive_high += 1
+        else:
+            consecutive_high = 0
+    if consecutive_high >= 5:
+        patterns["pause_likely"] = True
+        patterns["pause_reason"] = f"{consecutive_high}-day sustained surge exceeds logistic resupply cycle"
+
+    if attack_patterns.get("type_distribution"):
+        dist = attack_patterns["type_distribution"]
+        if hasattr(dist, "to_dict"):
+            dist = dist.to_dict()
+        active_types = sum(1 for v in dist.values() if v > 0)
+        if active_types >= 4:
+            patterns["coordination_level"] = "HIGH"
+        elif active_types >= 3:
+            patterns["coordination_level"] = "MODERATE"
+
+    last_7 = len(df[df["days_ago"] <= 7])
+    last_30 = len(df[df["days_ago"] <= 30])
+    if last_30 > 0:
+        ratio_7_30 = (last_7 / 7) / (last_30 / 30) if last_30 > 0 else 1
+    else:
+        ratio_7_30 = 1
+
+    if ratio_7_30 > 1.5:
+        patterns["tempo_assessment"] = "ACCELERATING"
+    elif ratio_7_30 > 1.2:
+        patterns["tempo_assessment"] = "INCREASING"
+    elif ratio_7_30 < 0.6:
+        patterns["tempo_assessment"] = "DECELERATING"
+    elif ratio_7_30 < 0.8:
+        patterns["tempo_assessment"] = "DECREASING"
+    else:
+        patterns["tempo_assessment"] = "STEADY"
+
+    return patterns
+
+
+def _compute_target_threat_matrix(zone_name, grid_risk, escalation, weather_data, month):
+    """Cross-reference strategic targets with nearby grid risk to compute dynamic threat scores."""
+    if zone_name != "Ukraine-Russia":
+        return []
+
+    threats = []
+    for target in STRATEGIC_TARGETS_UKR:
+        base_weight = DOCTRINE_RULES["target_value"].get(target["type"], {}).get("weight", 5)
+
+        proximity_risk = 0
+        nearest_risk = 0
+        if grid_risk:
+            for cell in grid_risk[:20]:
+                dist = math.sqrt((cell["lat"] - target["lat"])**2 + (cell["lon"] - target["lon"])**2) * 111
+                if dist < 80:
+                    cell_contrib = cell["risk_score"] * max(0, (80 - dist) / 80)
+                    proximity_risk = max(proximity_risk, cell_contrib)
+                    if cell_contrib > nearest_risk:
+                        nearest_risk = cell_contrib
+
+        seasonal_boost = 1.0
+        ttype = target["type"]
+        if month in [12, 1, 2] and ttype == "energy_infra":
+            seasonal_boost = DOCTRINE_RULES["target_value"].get(ttype, {}).get("winter_boost", 1.0)
+        if escalation["trend"] == "escalating":
+            if ttype == "bridge":
+                seasonal_boost *= DOCTRINE_RULES["target_value"].get(ttype, {}).get("offensive_boost", 1.0)
+            if ttype == "ammunition_depot":
+                seasonal_boost *= DOCTRINE_RULES["target_value"].get(ttype, {}).get("attrition_boost", 1.0)
+
+        weather_mod = 1.0
+        if weather_data and "current" in weather_data:
+            cloud = weather_data["current"].get("cloud_cover", 50)
+            if cloud < 30 and ttype in ("energy_infra", "airbase", "command_center", "bridge"):
+                weather_mod = 1.3
+            elif cloud > 70:
+                weather_mod = 0.7
+
+        composite = (base_weight * 5 + proximity_risk * 0.3) * seasonal_boost * weather_mod
+        composite = min(100, composite)
+
+        threat_level = "CRITICAL" if composite >= 60 else "HIGH" if composite >= 40 else "ELEVATED" if composite >= 25 else "MODERATE"
+
+        threats.append({
+            "name": target["name"], "type": target["type"], "side": target.get("side", "N/A"),
+            "base_weight": base_weight, "proximity_risk": round(proximity_risk, 1),
+            "seasonal_boost": round(seasonal_boost, 2), "weather_mod": round(weather_mod, 2),
+            "composite": round(composite, 1), "threat_level": threat_level,
+            "lat": target["lat"], "lon": target["lon"],
+        })
+
+    return sorted(threats, key=lambda x: -x["composite"])
+
+
 def generate_kurmay_assessment(events_df, zone_name, grid_risk, escalation, weather_data, attack_patterns):
-    """Generate military staff officer (Kurmay) assessment using IPB/METT-TC doctrine framework."""
-    total = len(events_df) if not events_df.empty else 0
-    fat = int(events_df["fatalities"].sum()) if "fatalities" in events_df.columns else 0
-    dominant = ""
-    if "event_type" in events_df.columns and not events_df.empty:
-        dominant = events_df["event_type"].value_counts().idxmax()
+    """
+    Generate military staff-level (kurmay) situational assessment.
+    IPB Framework + METT-TC + Cross-front correlation + Actor intent analysis.
+    Derives all conclusions from actual event data.
+    """
+    zone = CONFLICT_ZONES[zone_name]
+    now = datetime.datetime.now()
+    month = now.month
+    parties = zone.get("parties", [])
 
-    high_risk = sum(1 for v in (grid_risk.values() if isinstance(grid_risk, dict) else grid_risk if isinstance(grid_risk, (list, tuple)) else []) if isinstance(v, (int, float)) and v > 0.6) if grid_risk else 0
-    esc_idx = escalation.get("index", 0) if isinstance(escalation, dict) else 0
-    esc_trend = escalation.get("trend", "STABLE") if isinstance(escalation, dict) else "STABLE"
+    sectors = _analyze_front_sectors(events_df, zone_name)
+    op_patterns = _detect_operational_patterns(events_df, attack_patterns)
+    target_threats = _compute_target_threat_matrix(zone_name, grid_risk, escalation, weather_data, month)
 
-    # --- Threat level classification (NATO standard) ---
-    if esc_idx >= 0.75:
-        threat_level = "CRITICAL"
-        threat_posture = "MAXIMUM ALERT"
-        force_posture = "FORCE PROTECTION CONDITION DELTA"
-    elif esc_idx >= 0.5:
-        threat_level = "SUBSTANTIAL"
-        threat_posture = "HIGH ALERT"
-        force_posture = "FORCE PROTECTION CONDITION CHARLIE"
-    elif esc_idx >= 0.25:
-        threat_level = "MODERATE"
-        threat_posture = "ELEVATED READINESS"
-        force_posture = "FORCE PROTECTION CONDITION BRAVO"
+    total_events = len(events_df)
+    total_fat = int(events_df["fatalities"].astype(float).sum()) if "fatalities" in events_df.columns else 0
+    top_risk_cells = grid_risk[:5] if isinstance(grid_risk, list) and grid_risk else []
+
+    type_dist = attack_patterns.get("type_distribution", {})
+    if hasattr(type_dist, "to_dict"):
+        type_dist = type_dist.to_dict()
+    total_typed = sum(type_dist.values()) if type_dist else 1
+
+    weekly_trend = attack_patterns.get("weekly_trend", {})
+    weekly_vals = list(weekly_trend.values()) if weekly_trend else []
+
+    active_sectors = sorted(
+        [(k, v) for k, v in sectors.items() if v["total"] > 0],
+        key=lambda x: -x[1]["last_7d"]
+    )
+    hottest_sector = active_sectors[0] if active_sectors else None
+    shifting_sectors = [s for s in active_sectors if s[1]["trend"] > 0.5 and s[1]["last_7d"] >= 3]
+    cooling_sectors = [s for s in active_sectors if s[1]["trend"] < -0.3 and s[1].get("prev_7d", 0) >= 5]
+
+    if escalation["level"] >= 4:
+        nato_level = "CRITICAL"
+    elif escalation["level"] >= 3:
+        nato_level = "SUBSTANTIAL"
+    elif escalation["level"] >= 2:
+        nato_level = "MODERATE"
     else:
-        threat_level = "LOW"
-        threat_posture = "ROUTINE SURVEILLANCE"
-        force_posture = "FORCE PROTECTION CONDITION ALPHA"
+        nato_level = "LOW"
 
-    # --- SITUATION section (IPB Step 1: Define the Battlefield Environment) ---
-    parts = []
-    parts.append(f"CLASSIFICATION: UNCLASSIFIED // FOUO")
-    parts.append(f"DTG: {datetime.datetime.utcnow().strftime('%d%H%MZ %b %Y').upper()}")
-    parts.append(f"SUBJ: OPERATIONAL INTELLIGENCE ASSESSMENT - {zone_name.upper()} AO")
-    parts.append(f"THREAT LEVEL: {threat_level} | POSTURE: {threat_posture}")
-    parts.append("")
-
-    parts.append("1. SITUATION")
-    parts.append(f"   a. Area of Operations: {zone_name} theater. {total} significant activities (SIGACTS) recorded in analysis period.")
-    parts.append(f"   b. Escalation Index: {esc_idx:.2f}/1.00 - Trend: {esc_trend}")
-    if fat > 0:
-        parts.append(f"   c. Battle Damage Assessment (BDA): {fat} confirmed casualties across all parties. Avg {fat/max(total,1):.1f} per engagement.")
-    parts.append(f"   d. {force_posture}")
-    parts.append("")
-
-    # --- ENEMY FORCES (IPB Step 2: Describe the Battlefield Effects) ---
-    parts.append("2. ENEMY FORCES / THREAT ASSESSMENT")
-    if dominant:
-        parts.append(f"   a. Primary Threat Activity: {dominant}")
-    if attack_patterns and isinstance(attack_patterns, dict):
-        type_dist = attack_patterns.get("type_distribution", {})
-        if hasattr(type_dist, "to_dict"):
-            type_dist = type_dist.to_dict()
-        if type_dist:
-            top_pattern = max(type_dist, key=type_dist.get)
-            pattern_count = type_dist[top_pattern]
-            parts.append(f"   b. Dominant Attack Pattern: {top_pattern} ({pattern_count} occurrences)")
-            total_attacks = sum(type_dist.values())
-            if total_attacks > 0:
-                for pat, cnt in sorted(type_dist.items(), key=lambda x: -x[1])[:3]:
-                    pct = cnt / total_attacks * 100
-                    parts.append(f"      - {pat}: {cnt} events ({pct:.0f}%) of total hostile activity")
-
-    if high_risk > 0:
-        parts.append(f"   c. Named Areas of Interest (NAI): {high_risk} grid sectors assessed as HIGH RISK")
-        parts.append(f"      Recommend priority ISR allocation to {high_risk} identified threat zones.")
-    parts.append("")
-
-    # --- TERRAIN & WEATHER (METT-TC) ---
-    parts.append("3. TERRAIN & WEATHER EFFECTS")
-    if weather_data and isinstance(weather_data, dict):
-        temp = weather_data.get("temperature", "N/A")
-        wind = weather_data.get("wind_speed", "N/A")
-        precip = weather_data.get("precipitation", "N/A")
-        vis = weather_data.get("visibility", "N/A")
-        parts.append(f"   a. Current Conditions: Temp {temp}, Wind {wind}, Precip {precip}")
-        wx_impact = weather_data.get("operational_impact", "")
-        if wx_impact:
-            parts.append(f"   b. Operational Impact: {wx_impact}")
-        # Weather effects on operations
-        try:
-            wind_val = float(str(wind).replace("km/h", "").strip())
-            if wind_val > 30:
-                parts.append("   c. WEATHER ADVISORY: High winds may degrade UAS/rotary-wing operations and precision munitions accuracy.")
-        except (ValueError, TypeError):
-            pass
+    if escalation["level"] >= 5:
+        fpcon = "DELTA"
+    elif escalation["level"] >= 4:
+        fpcon = "CHARLIE"
+    elif escalation["level"] >= 3:
+        fpcon = "BRAVO"
+    elif escalation["level"] >= 2:
+        fpcon = "ALPHA"
     else:
-        parts.append("   a. Weather data unavailable. Recommend METOC support for operational planning.")
-    parts.append("")
+        fpcon = "NORMAL"
 
-    # --- ASSESSMENT & COURSE OF ACTION (COA) ---
-    parts.append("4. ASSESSMENT & RECOMMENDED COA")
+    a = []
 
-    if esc_trend == "ESCALATING":
-        parts.append("   a. Operational Tempo: INCREASING. Adversary demonstrating heightened operational tempo.")
-        parts.append("      ASSESSMENT: Indicators consistent with preparation for sustained offensive operations.")
-        parts.append("      COA 1 (RECOMMENDED): Increase ISR coverage across all NAIs. Elevate force protection posture.")
-        parts.append("      COA 2: Pre-position QRF assets within rapid deployment range of high-threat sectors.")
-    elif esc_trend == "DE-ESCALATING":
-        parts.append("   a. Operational Tempo: DECREASING. Reduction in hostile SIGACTS observed.")
-        parts.append("      ASSESSMENT: Possible operational pause, logistics reconstitution, or diplomatic engagement.")
-        parts.append("      COA 1 (RECOMMENDED): Maintain current posture. Continue ISR to confirm de-escalation is genuine.")
-        parts.append("      COA 2: Exploit operational pause for force reconstitution and infrastructure hardening.")
+    # HEADER
+    a.append("=" * 64)
+    a.append("  NERAI KURMAY ISTIHBARAT DEGERLENDIRMESI")
+    a.append("  STAFF INTELLIGENCE ASSESSMENT -- IPB FRAMEWORK")
+    a.append("=" * 64)
+    a.append(f"DTG      : {now.strftime('%d%H%MZ %b %Y').upper()}")
+    a.append(f"AOR      : {zone_name}")
+    a.append(f"PARTIES  : {' vs '.join(parties)}")
+    a.append(f"CLASS    : NATO THREAT LEVEL {nato_level} | FPCON {fpcon}")
+    a.append(f"SOURCES  : GDELT OSINT + Open-Meteo + Doctrine Engine")
+    a.append(f"PERIOD   : {total_events} events analyzed | {total_fat} total fatalities")
+    a.append("-" * 64)
+
+    # 1. SITUATION
+    a.append("")
+    a.append("1. SITUATION -- GENEL DURUM MUHAKEMESI")
+    a.append("=" * 64)
+    a.append(f"   TEMAS SEVIYESI  : {escalation['name'].upper()} (Kademe {escalation['level']}/5)")
+    a.append(f"   7 GUNLUK ORT    : {escalation['daily_avg_7d']} olay/gun")
+    a.append(f"   30 GUNLUK ORT   : {escalation['daily_avg_30d']} olay/gun")
+
+    trend_map = {"escalating": "TIRMANMA", "de-escalating": "DUSUSTE", "stable": "SABIT"}
+    a.append(f"   GENEL EGILIM    : {trend_map.get(escalation['trend'], escalation['trend'])}")
+    a.append(f"   TEMPO           : {op_patterns['tempo_assessment']}")
+    a.append(f"   KOORDINASYON    : {op_patterns['coordination_level']}")
+
+    if escalation["daily_avg_7d"] > escalation["daily_avg_30d"] * 1.5:
+        a.append("")
+        a.append("   >> UYARI: 7 gunluk ortalama, 30 gunluk ortalamanin 1.5 katini")
+        a.append("      astiyor. Bu seviye lojistik olarak surdurulebilir degil.")
+        a.append("      Doktrine gore 48-72 saat icinde operasyonel duraksama beklenir")
+        a.append("      (ikmal, muhimmat yenileme, personel rotasyonu).")
+    elif escalation["trend"] == "escalating":
+        a.append("")
+        a.append("   >> Operasyonel tempo artis gosteriyor. Bu durum iki senaryoya")
+        a.append("      isaret edebilir: (a) buyuk taarruz hazirligi, (b) baski arttirma")
+        a.append("      yoluyla muhatabi muzakereye zorlama.")
+
+    if op_patterns["surge_detected"]:
+        a.append("")
+        a.append("   ** SURGE TESPITI: Son 3 gunde olay yogunlugu istatistiksel")
+        a.append("      ortalamanin 1.5 sigma uzerinde. Koordineli operasyon gostergesi.")
+
+    if op_patterns["pause_likely"]:
+        a.append(f"   ** DURAKLAMA ONGORUSU: {op_patterns.get('pause_reason', 'Uzun sureli surge sonrasi')}")
+
+    # 2. FRONT ANALYSIS
+    a.append("")
+    a.append("2. CEPHE BAZLI KUVVET ANALIZI -- SEKTOR ISTIHBARATI")
+    a.append("=" * 64)
+
+    for sec_name, sec_data in sorted(sectors.items(), key=lambda x: -x[1]["last_7d"]):
+        if sec_data["total"] == 0:
+            continue
+
+        trend_arrow = "+" if sec_data["trend"] > 0 else ""
+        a.append(f"")
+        a.append(f"   [{sec_data['intensity']}] {sec_name}")
+        a.append(f"   {'~' * 50}")
+        a.append(f"   Son 7 gun: {sec_data['last_7d']} olay | Son 3 gun: {sec_data['last_3d']} olay")
+        a.append(f"   Haftalik degisim: {trend_arrow}{sec_data['trend']*100:.0f}% | Zayiat: {sec_data['fatalities']}")
+        a.append(f"   Baskin saldiri tipi: {sec_data['dominant_type']}")
+
+        if sec_data["intensity"] == "CRITICAL":
+            a.append(f"   >> ANA TEMAS HATTI: Bu sektor su an en yogun catisma bolgesi.")
+            a.append(f"      Gunluk {sec_data['daily_rate']} olay orani, aktif taarruz harekatina isaret ediyor.")
+        elif sec_data["intensity"] == "HIGH" and sec_data["trend"] > 0.3:
+            a.append(f"   >> YUKSELEN TEHDIT: Olay artis orani dikkat cekici seviyede.")
+            a.append(f"      Kuvvet intikali veya yeni harekatin baslanmis olma ihtimali mevcut.")
+
+        if sec_data.get("type_dist"):
+            dist = sec_data["type_dist"]
+            total_sec = sum(dist.values()) or 1
+            art_shell = sum(v for k, v in dist.items() if "Shell" in k or "Explosion" in k or "Remote" in k)
+            battle = sum(v for k, v in dist.items() if "Battle" in k)
+            air_drone = sum(v for k, v in dist.items() if "Air" in k or "drone" in k.lower())
+
+            if art_shell / total_sec > 0.5:
+                a.append(f"   >> TOPCU BASKINLIGI: Olaylarin %{art_shell/total_sec*100:.0f}'i topcu/fuze.")
+                a.append(f"      Yipratma stratejisi uygulandigini gosterir. Cephe hatti sabitleme amacli.")
+            elif battle / total_sec > 0.4:
+                a.append(f"   >> MUHAREBE YOGUNLUGU: Olaylarin %{battle/total_sec*100:.0f}'i dogrudan catisma.")
+                a.append(f"      Arazi ele gecirme/tutma odakli aktif taarruz harekat soz konusu.")
+            if air_drone / total_sec > 0.15:
+                a.append(f"   >> HAVA TEHDITI: Olaylarin %{air_drone/total_sec*100:.0f}'i hava/IHA kaynakli.")
+                a.append(f"      Derinlik hedefleri ve lojistik hatlara yonelik uzak mesafe harekati.")
+
+    # 3. CROSS-FRONT CORRELATION
+    a.append("")
+    a.append("3. CEPHELER ARASI KORELASYON VE MANEVRA ISTIHBARATI")
+    a.append("=" * 64)
+
+    if shifting_sectors:
+        a.append("   ARTAN AKTIVITE GORULE SEKTORLER:")
+        for sec_name, sec_data in shifting_sectors:
+            a.append(f"   >> {sec_name}: +{sec_data['trend']*100:.0f}% haftalik artis")
+        a.append("")
+        a.append("   DEGERLENDIRME: Yukari yonlu sektorler kuvvet kaydirmasi veya")
+        a.append("   yeni operasyonel hat acilmasi ihtimaline isaret edebilir.")
+        a.append("   Eger bu artis diger sektorlerdeki dususle es zamanli ise,")
+        a.append("   agirlak merkezi kaydirilma kararini gosterir.")
+
+    if cooling_sectors:
+        a.append("")
+        a.append("   AZALAN AKTIVITE GORULE SEKTORLER:")
+        for sec_name, sec_data in cooling_sectors:
+            a.append(f"   >> {sec_name}: {sec_data['trend']*100:.0f}% haftalik dusus")
+        a.append("")
+        a.append("   DEGERLENDIRME: Aktivite dususu iki sekilde yorumlanabilir:")
+        a.append("   (a) Taktik basari sonucu hedef elde edilmis olabilir")
+        a.append("   (b) Kuvvetler baska cepheye kaydiriliyor olabilir")
+
+    if shifting_sectors and cooling_sectors:
+        shift_names = [s[0] for s in shifting_sectors]
+        cool_names = [s[0] for s in cooling_sectors]
+        a.append("")
+        a.append("   ** KRITIK KORELASYON TESPITI **")
+        a.append(f"   {', '.join(cool_names)} sektorlerinde dusus,")
+        a.append(f"   {', '.join(shift_names)} sektorlerinde es zamanli artis tespit edildi.")
+        a.append("   Bu patern KUVVET INTIKALI GOSTERGESIDIR.")
+        a.append("   Lojistik hat degisiklikleri ve yeni toplama bolgeleri izlenmeli.")
+
+    if not shifting_sectors and not cooling_sectors:
+        if hottest_sector:
+            a.append(f"   En yogun sektor: {hottest_sector[0]} ({hottest_sector[1]['last_7d']} olay/7gun)")
+        a.append("   Belirgin bir cepheler arasi kaydirma gostergesi TESPIT EDILMEDI.")
+        a.append("   Mevcut cephe hatlari boyunca pozisyonel catisma surduruluyor.")
+
+    # 4. ATTACK ANATOMY
+    a.append("")
+    a.append("4. SALDIRI ANATOMISI VE AKTOR NIYET DEGERLENDIRMESI")
+    a.append("=" * 64)
+
+    if type_dist:
+        a.append("   SALDIRI TIP DAGILIMI:")
+        for atype, count in sorted(type_dist.items(), key=lambda x: -x[1])[:6]:
+            pct = count / total_typed * 100
+            bar = "#" * int(pct / 3)
+            a.append(f"   {bar} {atype}: {count} ({pct:.1f}%)")
+
+        a.append("")
+        a.append("   AKTOR NIYET MUHAKEMESI:")
+
+        shell_pct = sum(v for k, v in type_dist.items() if "Shell" in k or "Explosion" in k or "Remote" in k) / total_typed * 100
+        battle_pct = sum(v for k, v in type_dist.items() if "Battle" in k) / total_typed * 100
+        air_pct = sum(v for k, v in type_dist.items() if "Air" in k or "drone" in k.lower()) / total_typed * 100
+        civ_pct = sum(v for k, v in type_dist.items() if "civilian" in k.lower()) / total_typed * 100
+
+        if shell_pct > 40:
+            a.append(f"   - Topcu/fuze saldirilari %{shell_pct:.0f} ile baskin unsur.")
+            a.append("     NIYET: Yipratma stratejisi. Dusman cephe hattini zayiflatma,")
+            a.append("     savunma mevzilerini tahrip etme ve taarruz oncesi hazirlik.")
+            if battle_pct > 20:
+                a.append("     Topcu atesi ardindan piyade taarruzu paterni gorulmekte.")
+                a.append("     Bu, KLASIK KOMBINE SILAH TAARRUZ DOKTRININE uygundur.")
+
+        if battle_pct > 35:
+            a.append(f"   - Dogrudan muharebeler %{battle_pct:.0f} oraninda.")
+            a.append("     NIYET: Arazi kontrolu ele gecirme/genisletme operasyonu.")
+            a.append("     Aktif cephe hatti hareketliligi ve mevzi degisiklikleri beklenir.")
+
+        if air_pct > 10:
+            a.append(f"   - Hava/IHA saldirilari %{air_pct:.0f} oraninda.")
+            a.append("     NIYET: Derinlik harekat. Lojistik hatlar, komuta merkezleri")
+            a.append("     ve kritik altyapi hedefleme stratejisi.")
+
+        if civ_pct > 10:
+            a.append(f"   - Sivil hedefli olaylar %{civ_pct:.0f} oraninda.")
+            a.append("     NIYET: Psikolojik baski ve nufus deplase etme stratejisi.")
+
+    dow_data = attack_patterns.get("day_of_week", {})
+    if dow_data:
+        peak_day = max(dow_data, key=dow_data.get) if dow_data else None
+        min_day = min(dow_data, key=dow_data.get) if dow_data else None
+        if peak_day and min_day:
+            a.append("")
+            a.append(f"   TEMPORAL PATERN: En yogun gun {peak_day}, en dusuk {min_day}.")
+            ratio = dow_data[peak_day] / max(dow_data[min_day], 1)
+            if ratio > 2:
+                a.append(f"   Zirve/dip orani {ratio:.1f}x -- belirgin operasyonel ritim mevcut.")
+                a.append(f"   {peak_day} gunleri icin artirilmis tedbir onceliklendirilmeli.")
+
+    # 5. TERRAIN & WEATHER
+    a.append("")
+    a.append("5. ARAZI VE HAVA KOSULLARI ETKI DEGERLENDIRMESI")
+    a.append("=" * 64)
+
+    if month in [3, 4, 10, 11]:
+        a.append("   MEVSIM     : RASPUTITSA (Camur sezonu)")
+        a.append("   ETKI       : Zirhli birliklerin manevra kabiliyeti CIDDI DERECEDE kisitli.")
+        a.append("   SONUC      : Topcu ve hava unsurlarinin onemi artiyor. Zirhli muharebe")
+        a.append("                unsurlari asfalt hatlar ve sert zemin boyunca sinirli kalir.")
+        a.append("   BEKLENTI   : Topcu/IHA baskin operasyonlar, piyade sizma hareketleri.")
+    elif month in [12, 1, 2]:
+        a.append("   MEVSIM     : KIS DONEMI")
+        a.append("   ETKI       : Enerji altyapisi saldirilari STRATEJIK ONCELIK kazaniyor.")
+        a.append("   SONUC      : Isitma altyapisi, elektrik santralleri ve enerji nakil")
+        a.append("                hatlari birincil hedef seti haline gelir.")
+        a.append("   BEKLENTI   : Sivil altyapi hedefli uzun menzil saldiri artisi.")
+    elif month in [5, 6, 7, 8, 9]:
+        a.append("   MEVSIM     : OPERASYONEL SEZON")
+        a.append("   ETKI       : Arazi kosullari zirhli manevra icin UYGUN.")
+        a.append("   SONUC      : Genis capli kara harekati icin pencere acik.")
+        a.append("   BEKLENTI   : Taarruz harekati, zirhli ilerleme, cephe hatti degisiklikleri.")
+
+    if weather_data and "current" in weather_data:
+        curr = weather_data["current"]
+        cloud = curr.get("cloud_cover", 50)
+        precip = curr.get("precipitation", 0)
+        wind = curr.get("wind_speed_10m", 0)
+        temp = curr.get("temperature_2m", 0)
+
+        a.append(f"")
+        a.append(f"   ANLIK HAVA  : Bulut %{cloud} | Yagis {precip}mm | Ruzgar {wind}km/h | {temp}C")
+
+        if cloud > 70:
+            a.append("   >> Yuksek bulutluluk: IHA/PGM etkinligi DUSUK. Uydu gozetleme kisitli.")
+            a.append("      Topcu atesine agirlik verilmesi beklenir. Sizma harekati icin uygun.")
+        elif cloud < 30:
+            a.append("   >> Acik gokyuzu: Hava harekati ve IHA operasyonlari icin IDEAL kosullar.")
+            a.append("      PGM isabetliligi YUKSEK. Hava savunma tedbir seviyesi arttirilmali.")
+        if precip > 5:
+            a.append("   >> Yogun yagis: Kara harekati KISITLI. Lojistik aksama riski yuksek.")
+            a.append("      Toprak yollar kullanim disi. Ana ikmal hatlari asfaltta sinirli.")
+        if wind > 40:
+            a.append(f"   >> Kuvvetli ruzgar ({wind}km/h): IHA operasyonlari KISITLI.")
+            a.append("      Hafif/taktik IHA sistemleri etkisiz. Agir IHA'lar sinirli etkinlikte.")
+
+    # 6. STRATEGIC TARGETS
+    if target_threats:
+        a.append("")
+        a.append("6. STRATEJIK HEDEF TEHDIT MATRISI")
+        a.append("=" * 64)
+        a.append("   Hedef degerlendirmesi: Doktrin agirligi x Yakinlik riski x")
+        a.append("   Mevsim carpani x Hava durumu etki faktoru")
+        a.append("")
+
+        for t in target_threats[:10]:
+            indicator = "!!!" if t["threat_level"] == "CRITICAL" else "!! " if t["threat_level"] == "HIGH" else "!  " if t["threat_level"] == "ELEVATED" else "   "
+            a.append(f"   {indicator} [{t['threat_level']:8s}] {t['name']}")
+            a.append(f"       Tip: {t['type']} | Kontrol: {t['side']} | Skor: {t['composite']}/100")
+
+            if t["proximity_risk"] > 30:
+                a.append(f"       >> YAKIN MESAFE TEHDITI: Cevredeki catisma yogunlugu yuksek ({t['proximity_risk']:.0f})")
+            if t["seasonal_boost"] > 1.0:
+                a.append(f"       >> MEVSIMSEL ONCELIK: Bu donemde hedef degeri {t['seasonal_boost']:.1f}x artmis")
+            if t["weather_mod"] > 1.0:
+                a.append(f"       >> HAVA DURUMU: Acik hava PGM isabetlililigini {t['weather_mod']:.1f}x artiriyor")
+
+    # 7. COA & PREDICTION
+    a.append("")
+    a.append("7. SEY-I HAREKET TEMINATLARI VE 72 SAATLIK ONGORULER")
+    a.append("=" * 64)
+
+    a.append("   EN MUHTEMEL SEY-I HAREKET (MLCOA):")
+    if escalation["trend"] == "escalating" and op_patterns["surge_detected"]:
+        a.append("   Mevcut surge paterni ve escalation gostergelerine dayanarak,")
+        if hottest_sector:
+            a.append(f"   {hottest_sector[0]} sektorunde taarruz harekatinin devam etmesi")
+            a.append("   ve derinlestirilmesi beklenmektedir.")
+        if shifting_sectors:
+            shift_names = [s[0] for s in shifting_sectors]
+            a.append(f"   Ek olarak {', '.join(shift_names)} sektorlerinde yeni temas")
+            a.append("   noktalarinin ortaya cikmasi kuvvetle muhtemeldir.")
+    elif escalation["trend"] == "stable":
+        a.append("   Cephe hatlari boyunca mevcut pozisyonel catismanin surdurmesi")
+        a.append("   beklenmektedir. Belirgin bir buyuk taarruz gostergesi yoktur.")
+        if hottest_sector:
+            a.append(f"   Ana catisma ekseni: {hottest_sector[0]}")
+    elif escalation["trend"] == "de-escalating":
+        a.append("   Operasyonel tempoda dusus gozlemlenmektedir. Muhtemel sebepler:")
+        a.append("   (a) Resmi/gayrirresmi ateskes muzakereleri")
+        a.append("   (b) Lojistik yeniden yapilanma donemi")
+        a.append("   (c) Mevsimsel operasyonel duraklama")
+
+    a.append("")
+    a.append("   EN TEHLIKELI SEY-I HAREKET (MDCOA):")
+    if escalation["level"] >= 4:
+        a.append("   Eskalasyon Kademe 4+ seviyesinde. Genis capli koordineli")
+        a.append("   taarruz harekati riski YUKSEK. Coklu cephede eszamanli harekat")
+        a.append("   ve stratejik altyapi hedeflemesi bu senaryonun ana unsurlaridir.")
+    elif escalation["level"] >= 3:
+        a.append("   Mevcut yogunlukta ani eskalasyon riski mevcuttur. Ozellikle")
+        if target_threats and target_threats[0]["threat_level"] == "CRITICAL":
+            a.append(f"   {target_threats[0]['name']} gibi kritik hedeflere yonelik")
+            a.append("   yuksek etkili saldiri, catismayi yeni bir seviyeye tasiyabilir.")
+        else:
+            a.append("   koordineli derinlik saldirilari veya yeni cephe acilmasi")
+            a.append("   senaryosu en tehlikeli seyir olarak degerlendirilmektedir.")
     else:
-        parts.append("   a. Operational Tempo: STEADY STATE. No significant deviation from established pattern of activity.")
-        parts.append("      ASSESSMENT: Conflict dynamics remain within established parameters. No imminent escalation indicators.")
-        parts.append("      COA 1 (RECOMMENDED): Maintain current intelligence collection posture. Focus on early warning indicators.")
+        a.append("   Mevcut durum goreceli olarak kontrol altindadir. Ancak")
+        a.append("   ani provokasyon veya surprise saldiri olasiligi her zaman mevcuttur.")
 
-    # Specific recommendations based on dominant threat
-    if dominant == "Explosions/Remote violence":
-        parts.append("   b. PRIORITY THREAT: Indirect fire / remote-detonated weapons. Recommend enhanced C-IED posture and counter-battery radar deployment.")
-    elif dominant == "Battles":
-        parts.append("   b. PRIORITY THREAT: Direct engagement / force-on-force. Recommend reinforcement of forward defensive positions and LOC security.")
-    elif dominant == "Violence against civilians":
-        parts.append("   b. PRIORITY THREAT: Civilian targeting indicates possible atrocity risk. Recommend activation of civilian protection protocols per R2P framework.")
-    elif dominant == "Protests":
-        parts.append("   b. NOTE: Elevated civil unrest. Recommend CIMIC coordination and graduated response protocols.")
-    parts.append("")
+    # 8. PIR
+    a.append("")
+    a.append("8. ONCELIKLI ISTIHBARAT GEREKSINIMLERI (PIR)")
+    a.append("=" * 64)
 
-    # --- INTELLIGENCE REQUIREMENTS ---
-    parts.append("5. PRIORITY INTELLIGENCE REQUIREMENTS (PIR)")
-    parts.append(f"   PIR 1: Adversary intent and capability for offensive operations in {zone_name} AO within 72 hours.")
-    parts.append(f"   PIR 2: Changes in adversary force disposition or logistics activity in identified NAIs.")
-    parts.append(f"   PIR 3: Indicators of external state/non-state actor involvement or force augmentation.")
-    if high_risk > 0:
-        parts.append(f"   PIR 4: Confirmation of threat activity in {high_risk} high-risk grid sectors via multi-INT collection.")
-    parts.append("")
+    pir_num = 1
+    if shifting_sectors:
+        for sec_name, sec_data in shifting_sectors[:3]:
+            a.append(f"   PIR-{pir_num}: {sec_name} sektorundeki aktivite artisinin")
+            a.append(f"           kaynagi nedir? Kuvvet intikali mi, yeni birlik mi?")
+            pir_num += 1
 
-    parts.append(f"   Sources: GDELT + ACLED (if configured) + Open-Source Intelligence (OSINT)")
-    parts.append(f"   Confidence: {'HIGH' if total > 50 else 'MODERATE' if total > 20 else 'LOW'} (based on {total} SIGACTS)")
-    parts.append(f"   Next Update: {(datetime.datetime.utcnow() + datetime.timedelta(hours=6)).strftime('%d%H%MZ %b %Y').upper()}")
+    if hottest_sector and hottest_sector[1]["intensity"] in ("CRITICAL", "HIGH"):
+        a.append(f"   PIR-{pir_num}: {hottest_sector[0]} sektorundeki taarruz harekatinin")
+        a.append(f"           hedef siniri ve nihai amaci nedir?")
+        pir_num += 1
 
-    return "\n".join(parts)
+    if op_patterns["surge_detected"]:
+        a.append(f"   PIR-{pir_num}: Tespit edilen surge paternininin arkasindaki")
+        a.append(f"           operasyonel planlama nedir? Sinirli mi, acik uclu mu?")
+        pir_num += 1
+
+    if target_threats:
+        critical_targets = [t for t in target_threats if t["threat_level"] == "CRITICAL"]
+        if critical_targets:
+            a.append(f"   PIR-{pir_num}: Kritik tehdit altindaki hedeflerin ({critical_targets[0]['name']})")
+            a.append(f"           mevcut savunma durumu ve hava savunma kapasitesi nedir?")
+            pir_num += 1
+
+    a.append(f"   PIR-{pir_num}: Lojistik hatlardaki hareketlilik ve muhimmat")
+    a.append(f"           sevkiyat paterni buyuk operasyon hazirligina isaret ediyor mu?")
+
+    # FOOTER
+    a.append("")
+    a.append("-" * 64)
+    a.append(f"  END ASSESSMENT -- NERAI KURMAY ZEKA MODULU")
+    a.append(f"  {now.strftime('%d %b %Y %H:%M UTC').upper()}")
+    a.append(f"  Sonraki guncelleme: +6 saat | Doktrin rev: IPB/METT-TC v3.2")
+    a.append("=" * 64)
+
+    return "\n".join(a)
+
+
 def _risk_color(score):
     """Return color based on risk score 0-100."""
     if score >= 80: return "#ff1744"
