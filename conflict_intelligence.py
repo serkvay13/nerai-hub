@@ -180,81 +180,70 @@ def fetch_weather_for_zone(zone_name):
 
 # -- GDELT DOC API (free, no API key required) --------------------------------
 def fetch_gdelt_conflict_events(zone_name, days_back=30):
-    """Fetch conflict-related news events from GDELT DOC API (free, no key needed)."""
+    """Fetch conflict news from GDELT DOC API as proxy for conflict events."""
     import urllib.request, urllib.parse, json as _json
     zone = CONFLICT_ZONES.get(zone_name)
     if not zone:
         return pd.DataFrame()
-
     bbox = zone["bbox"]
     parties = zone.get("parties", [])
-    terms = " OR ".join(parties)
-    query_raw = f"{terms} conflict OR attack OR military OR strike"
-    query_enc = urllib.parse.quote(query_raw)
-
-    url = (f"https://api.gdeltproject.org/api/v2/doc/doc?"
-           f"query={query_enc}&mode=artlist&maxrecords=250"
-           f"&format=json")
-
+    # Simple query: just zone parties
+    raw_q = " OR ".join(parties)
+    encoded = urllib.parse.quote(raw_q)
+    url = (
+        f"https://api.gdeltproject.org/api/v2/doc/doc?"
+        f"query={encoded}&mode=artlist&maxrecords=250&format=json"
+    )
     try:
         req = urllib.request.Request(url, headers={"User-Agent": "NERAI/1.0"})
-        with urllib.request.urlopen(req, timeout=20) as resp:
-            data = _json.loads(resp.read().decode("utf-8"))
-
+        with urllib.request.urlopen(req, timeout=20) as r:
+            raw_data = r.read().decode("utf-8")
+        data = _json.loads(raw_data)
         articles = data.get("articles", [])
         if not articles:
             return pd.DataFrame()
-
         rng = np.random.RandomState(42)
-        event_types = ["Battles", "Violence against civilians", "Explosions/Remote violence",
-                       "Strategic developments", "Protests", "Riots"]
+        ev_types = [
+            "Battles", "Violence against civilians",
+            "Explosions/Remote violence", "Strategic developments",
+            "Protests", "Riots",
+        ]
         rows = []
         for art in articles:
             lat = bbox[0] + rng.random() * (bbox[1] - bbox[0])
             lon = bbox[2] + rng.random() * (bbox[3] - bbox[2])
-
-            title = (art.get("title") or "")
-            ev_type = event_types[0]
+            title = str(art.get("title") or "")
             tl = title.lower()
-            if any(w in tl for w in ["protest", "demonstrat", "rally"]):
-                ev_type = "Protests"
-            elif any(w in tl for w in ["riot", "unrest", "loot"]):
-                ev_type = "Riots"
-            elif any(w in tl for w in ["bomb", "explos", "missile", "drone", "strike", "shell"]):
-                ev_type = "Explosions/Remote violence"
-            elif any(w in tl for w in ["civilian", "massacre", "kill"]):
-                ev_type = "Violence against civilians"
-            elif any(w in tl for w in ["strateg", "deploy", "retreat", "advance"]):
-                ev_type = "Strategic developments"
-            elif any(w in tl for w in ["battle", "clash", "fight", "combat", "offensive"]):
-                ev_type = "Battles"
-
-            seendate = art.get("seendate", "")
-            if len(seendate) >= 8:
-                event_date = seendate[:4] + "-" + seendate[4:6] + "-" + seendate[6:8]
+            if any(w in tl for w in ("protest", "demonstrat", "rally")):
+                et = "Protests"
+            elif any(w in tl for w in ("bomb", "explos", "missile", "drone", "strike", "shell")):
+                et = "Explosions/Remote violence"
+            elif any(w in tl for w in ("civilian", "massacre", "kill")):
+                et = "Violence against civilians"
+            elif any(w in tl for w in ("battle", "clash", "fight", "combat", "offensive")):
+                et = "Battles"
+            elif any(w in tl for w in ("strateg", "deploy", "retreat", "advance")):
+                et = "Strategic developments"
+            elif any(w in tl for w in ("riot", "unrest", "loot")):
+                et = "Riots"
             else:
-                event_date = str(datetime.datetime.utcnow().date())
-
-            fatalities = rng.randint(0, 8) if ev_type in ["Battles", "Explosions/Remote violence", "Violence against civilians"] else 0
-
+                et = rng.choice(ev_types)
+            sd = str(art.get("seendate") or "")
+            event_date = (sd[:4] + "-" + sd[4:6] + "-" + sd[6:8]) if len(sd) >= 8 else str(datetime.datetime.utcnow().date())
+            fat = rng.randint(0, 8) if et in ("Battles", "Explosions/Remote violence", "Violence against civilians") else 0
             rows.append({
-                "event_date": event_date,
-                "event_type": ev_type,
-                "sub_event_type": ev_type,
-                "latitude": lat,
-                "longitude": lon,
-                "fatalities": fatalities,
-                "notes": title[:200],
-                "source": "GDELT",
-                "source_url": art.get("url", ""),
+                "event_date": event_date, "event_type": et,
+                "sub_event_type": et, "latitude": lat, "longitude": lon,
+                "fatalities": fat, "notes": title[:200],
+                "source": "GDELT", "source_url": str(art.get("url") or ""),
             })
-
         df = pd.DataFrame(rows)
         if "event_date" in df.columns:
             df["event_date"] = pd.to_datetime(df["event_date"], errors="coerce")
         return df
-
-    except Exception:
+    except Exception as exc:
+        import traceback
+        st.session_state["_gdelt_error"] = traceback.format_exc()
         return pd.DataFrame()
 
 
@@ -1001,7 +990,10 @@ def render_conflict_intelligence():
         st.warning("\u26a0\ufe0f **Synthetic Data Mode** \u2014 Neither ACLED nor GDELT API connection could be established. Using realistic synthetic data for demonstration. For live data, ensure internet access is available.")
     else:
         st.success("\u2705 **Live Data Source: ACLED** \u2014 Real-time conflict event data from Armed Conflict Location & Event Data Project.")
-    # ── KPI Cards ────────────────────────────────────────────
+
+    if "_gdelt_error" in st.session_state:
+        with st.expander("GDELT Debug Info", expanded=False):
+            st.code(st.session_state["_gdelt_error"])    # ── KPI Cards ────────────────────────────────────────────
     k1, k2, k3, k4 = st.columns(4)
 
     esc_color = "#ff1744" if escalation["level"] >= 4 else "#ff6d00" if escalation["level"] >= 3 else \
