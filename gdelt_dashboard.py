@@ -1645,11 +1645,10 @@ with st.sidebar:
         ('insights', '🔍 INSIGHTS'),
         ('briefing', '📋 BRIEFING ROOM'),
         ('global_view', '🌍 GLOBAL VIEW'),
-        ('supply_grid', '🌐 SUPPLY GRID'),
         ('conflict', '🎯 WARZONE ORACLE'),
     ]
     # Solo tier: show all pages in nav, pro-only content is locked
-    _PRO_ONLY_PAGES = {'predictions', 'causality', 'insights', 'briefing', 'supply_grid', 'global_view'}
+    _PRO_ONLY_PAGES = {'predictions', 'causality', 'insights', 'briefing', 'global_view'}
     for page_key, page_label in nav_pages:
         active_style = 'border-color:rgba(0,180,255,0.5) !important;color:#007a99 !important;background:rgba(0,50,110,0.4) !important;' if st.session_state.page == page_key else ''
         if st.button(page_label, key=f'nav_{page_key}'):
@@ -9615,7 +9614,6 @@ elif page == 'causality':   render_causality()
 elif page == 'scenarios':   render_scenarios()
 elif page == 'threat_radar': render_threat_radar()
 elif page == 'insights':    render_insights()
-elif page == 'supply_grid': render_supply_grid()
 elif page == 'global_view': render_global_view()
 elif page == 'briefing':    render_briefing_room()
 elif page == 'api':         render_api()
