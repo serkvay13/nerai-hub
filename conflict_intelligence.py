@@ -578,7 +578,7 @@ def generate_kurmay_assessment(events_df, zone_name, grid_risk, escalation, weat
     assessment_parts.append(f"NERAI STAFF INTELLIGENCE ASSESSMENT")
     assessment_parts.append(f"Conflict Zone: {zone_name}")
     assessment_parts.append(f"Date: {now.strftime('%d %B %Y %H:%M')} UTC")
-    assessment_parts.append(f"Sources: ACLED + GDELT + Open-Source Intelligence")
+    assessment_parts.append(f"Sources: GDELT + ACLED (if configured) + Open-Source Intelligence")
     assessment_parts.append("=" * 60)
 
     # 1. Escalation Status
@@ -1008,13 +1008,12 @@ def render_conflict_intelligence():
     strategic_targets = STRATEGIC_TARGETS_UKR if zone_name == "Ukraine-Russia" else None
 
     # Data source notice
-    if using_synthetic:
-        st.markdown("""<div style="background:rgba(255,152,0,0.1);border:1px solid rgba(255,152,0,0.3);
-                    border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:0.82rem;color:#ffab00">
-                    ACLED API baglantisi kurulamadi. Gercekci sentetik veri kullaniliyor.
-                    Canli veri icin ACLED API erisimi gereklidir (acleddata.com).
-                    </div>""", unsafe_allow_html=True)
-
+    if data_source == "GDELT":
+        st.info("\u26a1 **Live Data Source: GDELT** \u2014 Real-time conflict news from GDELT Project (updated every 15 min). For higher-precision event data, configure ACLED API key.")
+    elif using_synthetic:
+        st.warning("\u26a0\ufe0f **Synthetic Data Mode** \u2014 Neither ACLED nor GDELT API connection could be established. Using realistic synthetic data for demonstration. For live data, ensure internet access is available.")
+    else:
+        st.success("\u2705 **Live Data Source: ACLED** \u2014 Real-time conflict event data from Armed Conflict Location & Event Data Project.")
     # ── KPI Cards ────────────────────────────────────────────
     k1, k2, k3, k4 = st.columns(4)
 
@@ -1162,7 +1161,7 @@ def render_conflict_intelligence():
     # ── Methodology note ─────────────────────────────────────
     st.markdown("""<div style="margin-top:24px;padding:12px 16px;background:rgba(10,22,40,0.5);
                 border:1px solid #0d2137;border-radius:8px;font-size:0.72rem;color:#556677">
-                <b>Methodology:</b> ACLED conflict data + GDELT event stream + Open-Meteo weather +
+                <b>Methodology:</b> GDELT real-time news stream + ACLED conflict data (when available) + Open-Meteo weather +
                 Military doctrine rules (logistics range, operational tempo, weather impact, strategic target value).
                 Predictions are based on open-source intelligence and do not carry tactical-level precision.
                 Risk scores are based on 14-day exponential decay weighted event density.
