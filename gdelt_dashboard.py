@@ -6098,41 +6098,6 @@ def render_briefing_room():
                 use_container_width=True,
                 key="dl_w14_risk")
 
-    with st.expander("\U0001F4C4 Week 15 | April 5 - 12, 2026", expanded=False):
-        arc1b, arc2b = st.columns(2)
-        with arc1b:
-            st.markdown(
-                "<div style='background:rgba(10,20,40,0.4);border:1px solid rgba(0,180,255,0.15);"
-                "border-radius:8px;padding:14px;margin-bottom:8px;'>"
-                "<div style='font-weight:700;color:#00b4ff;font-size:0.9rem;'>Weekly Bulletin</div>"
-                "<div style='color:#8aa8c8;font-size:0.75rem;'>Week 15 | April 5 - 12, 2026</div>"
-                "</div>", unsafe_allow_html=True)
-            with st.expander("Read Bulletin", expanded=False):
-                st.markdown(_weekly_bulletin_html(), unsafe_allow_html=True)
-            st.download_button(
-                label="\u2B07 Download W15 Bulletin PDF",
-                data=_generate_weekly_pdf(),
-                file_name="NERAI_Weekly_Bulletin_W15.pdf",
-                mime="application/pdf",
-                use_container_width=True,
-                key="dl_w15_bulletin")
-        with arc2b:
-            st.markdown(
-                "<div style='background:rgba(10,20,40,0.4);border:1px solid rgba(255,75,110,0.15);"
-                "border-radius:8px;padding:14px;margin-bottom:8px;'>"
-                "<div style='font-weight:700;color:#ff4b6e;font-size:0.9rem;'>Risk Alert</div>"
-                "<div style='color:#8aa8c8;font-size:0.75rem;'>Critical Threat Assessment | April 2026</div>"
-                "</div>", unsafe_allow_html=True)
-            with st.expander("Read Alert", expanded=False):
-                st.markdown(_risk_alert_html(), unsafe_allow_html=True)
-            st.download_button(
-                label="\u2B07 Download W15 Risk Alert PDF",
-                data=_generate_risk_pdf(),
-                file_name="NERAI_Risk_Alert_W15_Apr2026.pdf",
-                mime="application/pdf",
-                use_container_width=True,
-                key="dl_w15_risk")
-
     with st.expander("\U0001F4C4 Week 16 | April 13 - 19, 2026", expanded=False):
         arc1c, arc2c = st.columns(2)
         with arc1c:
