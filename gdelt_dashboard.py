@@ -5353,7 +5353,7 @@ def _pdf_data_box(text, styles, border_color=None):
 
 
 
-def _generate_weekly_pdf():
+def _generate_weekly_pdf_w15():
     buf = io.BytesIO()
     s = _pdf_styles()
     doc = SimpleDocTemplate(buf, pagesize=A4, topMargin=32*mm, bottomMargin=22*mm, leftMargin=20*mm, rightMargin=20*mm)
@@ -5393,7 +5393,7 @@ def _generate_weekly_pdf():
     return buf.getvalue()
 
 
-def _generate_risk_pdf():
+def _generate_risk_pdf_w15():
     buf = io.BytesIO()
     s = _pdf_styles()
     doc = SimpleDocTemplate(buf, pagesize=A4, topMargin=32*mm, bottomMargin=22*mm, leftMargin=20*mm, rightMargin=20*mm)
@@ -5540,6 +5540,411 @@ def _generate_risk_pdf_w14():
 
 
 # ── BRIEFING ROOM ─────────────────────────────────────────────────────
+
+
+# ============================================================
+# WEEK 16 REPORT FUNCTIONS — April 13-19, 2026
+# ============================================================
+
+def _weekly_bulletin_html():
+    return (
+        "<div style='color:#e0e8f0;line-height:1.75;font-size:0.88rem;'>"
+
+        "<div style='border-bottom:2px solid rgba(0,180,255,0.3);padding-bottom:14px;margin-bottom:18px;'>"
+        "<h2 style='color:#00b4ff;margin:0 0 4px;font-size:1.4em;'>NERAI WEEKLY INTELLIGENCE BULLETIN</h2>"
+        "<div style='color:#8aa8c8;font-size:0.85em;'>Week 16 | April 13 &ndash; 19, 2026</div>"
+        "</div>"
+
+        "<h3 style='color:#00b4ff;font-size:1.05em;margin:18px 0 8px;'>EXECUTIVE SUMMARY</h3>"
+        "<p style='text-align:justify;'>Week 16 was defined by a sharp escalation of the US naval blockade of Iranian "
+        "ports (Day 45&ndash;50), Iranian gunboat attacks on commercial shipping in the Strait of Hormuz, and a "
+        "failed Iranian diplomatic feint that saw Tehran announce &mdash; then reverse &mdash; a reopening of the "
+        "critical waterway within hours. NERAI&rsquo;s Military Escalation indices continue their upward trajectory, "
+        "with UAE surging <b>+132.2%</b> and Kuwait at <b>+99.5%</b>, reflecting the expanding geographic footprint "
+        "of the conflict across the Gulf. Iran&rsquo;s Military Escalation index stands at <b>0.133</b> (+47.1% rising) "
+        "while Israel holds at <b>0.324</b>, as both sides recalibrate following the failed Islamabad talks. "
+        "Oil markets remained volatile, with Brent trading between $90 and $103 before closing the week near $97.</p>"
+
+        "<h3 style='color:#ff4b6e;font-size:1.05em;margin:22px 0 8px;'>"
+        "&#9650; 1 &middot; US NAVAL BLOCKADE TIGHTENS AROUND IRANIAN PORTS</h3>"
+        "<p style='text-align:justify;'>On April 13, 2026 (Day 45 of the Middle East conflict), the US Navy formally "
+        "established a comprehensive naval blockade of Iranian ports, cutting off Tehran&rsquo;s seaborne oil exports "
+        "and restricting imports of critical goods. US Energy Secretary Chris Wright warned that oil prices would "
+        "continue to climb until meaningful ship traffic resumed through the Strait of Hormuz. The blockade represents "
+        "a significant escalation from earlier interdiction operations, effectively placing Iran under a full maritime "
+        "siege. Brent crude opened the week at $103.72/barrel before falling mid-week as diplomatic signals briefly "
+        "buoyed markets.</p>"
+
+        "<div style='padding:12px 14px;background:rgba(0,180,255,0.08);border-left:3px solid #00b4ff;"
+        "border-radius:4px;margin:12px 0;'>"
+        "<b>NERAI DATA INSIGHTS:</b> Iran&rsquo;s Military Escalation index stands at <b>0.133</b> with a "
+        "<b>+47.1% rising</b> trajectory, confirming that the blockade has materially elevated Tehran&rsquo;s "
+        "conflict posture. The Military Clash index at <b>0.098</b> (+47.5% rising) signals increasing kinetic "
+        "engagement probability. UAE&rsquo;s Military Escalation index has surged to <b>0.052</b> with an "
+        "extraordinary <b>+132.2% rising</b> trend &mdash; the fastest-accelerating escalation indicator in the "
+        "current dataset &mdash; reflecting Gulf state vulnerability to the expanding blockade theatre. Saudi "
+        "Arabia&rsquo;s Military Escalation at <b>0.073</b> (+29.3%) and Qatar at <b>0.072</b> (+48.8%) confirm "
+        "that the naval blockade&rsquo;s risk perimeter is spreading across the entire Gulf Cooperation Council.</div>"
+
+        "<div style='padding:12px 14px;background:rgba(255,215,0,0.06);border-left:3px solid #ffd700;"
+        "border-radius:4px;margin:12px 0;'>"
+        "<b>12-MONTH FORECAST:</b> NERAI models project the UAE&rsquo;s Military Escalation index reaching "
+        "<b>0.12</b> by Q3 2026 under current trajectory, representing a tripling from current levels. "
+        "A sustained blockade lasting beyond 60 days carries a <b>42% probability</b> of triggering coordinated "
+        "GCC defensive posturing that could draw Saudi and Emirati forces into direct conflict-adjacent operations. "
+        "The US blockade is forecast to remain in place for at least 30&ndash;45 additional days absent a "
+        "breakthrough diplomatic agreement.</div>"
+
+        "<h3 style='color:#ff4b6e;font-size:1.05em;margin:22px 0 8px;'>"
+        "&#9650; 2 &middot; IRANIAN GUNBOATS ATTACK COMMERCIAL SHIPPING IN HORMUZ</h3>"
+        "<p style='text-align:justify;'>On April 18, 2026, two Indian-flagged commercial vessels were targeted by "
+        "Iranian gunboats in the Strait of Hormuz, including the VLCC Sanmar Herald which came under fire despite "
+        "receiving prior transit clearance. The vessels were forced to turn back, marking the most direct Iranian "
+        "military action against third-country commercial shipping since the conflict began. The attacks signal "
+        "that Iran is willing to disrupt neutral shipping &mdash; potentially drawing India and other major maritime "
+        "powers into the crisis &mdash; even as diplomatic back-channels reportedly remain open through Pakistan.</p>"
+
+        "<div style='padding:12px 14px;background:rgba(0,180,255,0.08);border-left:3px solid #00b4ff;"
+        "border-radius:4px;margin:12px 0;'>"
+        "<b>NERAI DATA INSIGHTS:</b> Kuwait&rsquo;s Military Escalation index stands at <b>0.080</b> with a "
+        "<b>+99.5% rising</b> trend, reflecting acute Gulf state exposure to commercial shipping disruption. "
+        "Qatar&rsquo;s Military Clash index at <b>0.065</b> (+40.8% rising) captures the expanding threat to "
+        "LNG export infrastructure. Lebanon&rsquo;s Military Escalation at <b>0.285</b> (+10.8% rising) and "
+        "Military Clash at <b>0.271</b> (+18.1% rising) confirm that the multi-front conflict remains at "
+        "sustained high intensity. Iraq&rsquo;s Military Escalation at <b>0.169</b> (+29.2% rising) reflects "
+        "ongoing pressure on the northern flank.</div>"
+
+        "<div style='padding:12px 14px;background:rgba(255,215,0,0.06);border-left:3px solid #ffd700;"
+        "border-radius:4px;margin:12px 0;'>"
+        "<b>12-MONTH FORECAST:</b> Attacks on neutral third-country vessels carry a <b>37% probability</b> of "
+        "triggering a formal Indian naval response by Q2 2026, which would represent a significant widening of "
+        "the conflict coalition. NERAI projects Kuwait&rsquo;s Military Escalation index to reach <b>0.16</b> "
+        "by Q3 2026. Shipping insurance premiums for Hormuz transits are forecast to increase a further "
+        "40&ndash;60% from current elevated levels over the next 30 days, adding structural cost pressure to "
+        "global energy supply chains.</div>"
+
+        "<h3 style='color:#ff4b6e;font-size:1.05em;margin:22px 0 8px;'>"
+        "&#9650; 3 &middot; IRAN&rsquo;S HORMUZ &lsquo;OPENING&rsquo; DIPLOMATIC FEINT COLLAPSES</h3>"
+        "<p style='text-align:justify;'>On April 17, Iranian Foreign Minister Abbas Araghchi declared the Strait "
+        "of Hormuz &ldquo;completely open&rdquo; to commercial vessels for the remaining period of the ceasefire "
+        "&mdash; a move widely interpreted as a diplomatic signal ahead of a potential second round of Islamabad "
+        "talks. However, President Trump immediately stated that the US naval blockade &ldquo;will remain in full "
+        "force&rdquo; until a comprehensive peace deal is reached, rendering the Iranian announcement effectively "
+        "moot. Within hours of the White House statement, Iran reversed course, with Tehran&rsquo;s joint military "
+        "command announcing on April 19 that &ldquo;control of the Strait of Hormuz has returned to its previous "
+        "state.&rdquo; CNBC separately reported on April 15 that US and Iranian teams could reconvene in Pakistan "
+        "for a second round of negotiations, with Iran said to be studying fresh US proposals.</p>"
+
+        "<div style='padding:12px 14px;background:rgba(0,180,255,0.08);border-left:3px solid #00b4ff;"
+        "border-radius:4px;margin:12px 0;'>"
+        "<b>NERAI DATA INSIGHTS:</b> Israel&rsquo;s Military Escalation index holds at <b>0.324</b> (stable, "
+        "+4.2%) and Military Clash at <b>0.303</b> (stable, +4.2%), suggesting that the Israeli military "
+        "posture has plateaued following last week&rsquo;s peak operations. Yemen&rsquo;s Military Escalation "
+        "at <b>0.204</b> (falling, -8.7%) and Military Clash at <b>0.198</b> (falling, -6.4%) indicate "
+        "reduced Houthi operational tempo, possibly as Tehran redirects resources toward the Hormuz theatre. "
+        "US Military Escalation at <b>0.160</b> (stable, -1.3%) reflects Washington&rsquo;s deliberate "
+        "maintenance of pressure without further escalation ahead of potential talks.</div>"
+
+        "<div style='padding:12px 14px;background:rgba(255,215,0,0.06);border-left:3px solid #ffd700;"
+        "border-radius:4px;margin:12px 0;'>"
+        "<b>12-MONTH FORECAST:</b> Iran&rsquo;s diplomatic reversal follows a pattern of tactical signalling "
+        "rather than genuine de-escalation intent. NERAI models assign a <b>22% probability</b> of successful "
+        "second-round Islamabad talks producing a temporary ceasefire by end of April 2026, and a <b>61% "
+        "probability</b> of continued military standoff through Q3 2026 absent major concessions from either "
+        "side. The nuclear timeline remains the central unresolved variable: NERAI estimates Iran&rsquo;s "
+        "weapons-grade enrichment capability at 6&ndash;8 months under current conditions.</div>"
+
+        "<h3 style='color:#00b4ff;font-size:1.05em;margin:22px 0 8px;'>MARKET IMPACT</h3>"
+        "<div style='padding:12px 14px;background:rgba(10,20,40,0.5);border:1px solid rgba(0,180,255,0.15);"
+        "border-radius:4px;margin:12px 0;'>"
+        "<b>Energy Markets</b><br>"
+        "&bull; Brent Crude: <b>$97.06/barrel</b> (Apr 19) &mdash; volatile week, range $90&ndash;$103; "
+        "touched $90 briefly on Hormuz opening news before reversing<br>"
+        "&bull; WTI Crude: <b>$94.10/barrel</b> (-3.2% weekly on ceasefire noise, then partial recovery)<br><br>"
+        "<b>Safe-Haven Assets</b><br>"
+        "&bull; Gold: <b>$4,855/oz</b> (+0.8% weekly, fourth consecutive weekly gain, safe-haven demand "
+        "sustained)<br>"
+        "&bull; USD Index: 105.8 &mdash; strengthening on risk-off flows and blockade durability outlook<br><br>"
+        "<span style='color:#ffd700;'><b>Brent crude whipsawed between $90 and $103 this week as Iran&rsquo;s "
+        "Hormuz opening announcement briefly triggered a 10% selloff before Trump&rsquo;s blockade "
+        "confirmation drove a sharp recovery. The $97 close reflects the market&rsquo;s conclusion that the "
+        "conflict risk premium remains structural.</b></span>"
+        "</div>"
+
+        "<h3 style='color:#00b4ff;font-size:1.05em;margin:22px 0 8px;'>NERAI 12-MONTH OUTLOOK</h3>"
+        "<div style='padding:12px 14px;background:rgba(255,75,110,0.06);border-left:3px solid #ff4b6e;"
+        "border-radius:4px;margin:12px 0;'>"
+        "The Week 16 pattern &mdash; naval blockade tightening, commercial shipping attacks, and a failed "
+        "diplomatic feint &mdash; confirms that the conflict has entered a phase of attrition rather than "
+        "acute escalation. NERAI&rsquo;s integrated models maintain a <b>74% probability</b> of major "
+        "regional escalation event by Q4 2026. The most acute near-term risk is Indian naval involvement "
+        "following attacks on its flagged vessels (37% probability within 30 days). The UAE escalation "
+        "trajectory (+132.2%) is the dataset&rsquo;s most significant early warning signal, suggesting Gulf "
+        "state security architecture is under stress. Energy markets should continue to price in a "
+        "<b>$8&ndash;12/barrel structural risk premium</b> above pre-conflict baselines. A second-round "
+        "Islamabad agreement would provide temporary relief but NERAI assigns low durability probability "
+        "(&lt;30%) to any ceasefire not accompanied by binding nuclear verification mechanisms.</div>"
+
+        "<div style='border-top:1px solid rgba(0,180,255,0.2);margin-top:20px;padding-top:10px;"
+        "color:#8aa8c8;font-size:0.78rem;text-align:center;'>"
+        "Published by NERAI Intelligence | April 19, 2026</div>"
+        "</div>"
+    )
+
+
+def _risk_alert_html():
+    return (
+        "<div style='color:#e0e8f0;line-height:1.75;font-size:0.88rem;'>"
+
+        "<div style='border-bottom:2px solid rgba(255,75,110,0.3);padding-bottom:14px;margin-bottom:18px;'>"
+        "<h2 style='color:#ff4b6e;margin:0 0 4px;font-size:1.4em;'>NERAI RISK ALERT</h2>"
+        "<div style='color:#8aa8c8;font-size:0.85em;'>Critical Threat Assessment | Week 16 | April 2026</div>"
+        "</div>"
+
+        "<h3 style='color:#ff4b6e;font-size:1.05em;margin:18px 0 8px;'>"
+        "&#9888; ALERT 1: COMMERCIAL SHIPPING ATTACKS &mdash; HORMUZ CHOKEPOINT CRISIS</h3>"
+        "<div style='display:inline-block;background:rgba(255,75,110,0.2);color:#ff9999;padding:3px 10px;"
+        "border-radius:3px;font-weight:700;font-size:0.75rem;margin-bottom:10px;'>SEVERITY: CRITICAL</div>"
+        "<p style='text-align:justify;'>Iran&rsquo;s direct gunboat attacks on Indian-flagged commercial vessels "
+        "on April 18 represent a significant doctrinal escalation: from interdicting vessels based on flag state "
+        "or cargo to attacking pre-cleared neutral shipping. The VLCC Sanmar Herald attack &mdash; despite "
+        "holding valid transit clearance &mdash; signals that Iranian military commanders may be operating with "
+        "expanded rules of engagement independent of diplomatic channels. This creates unpredictable maritime "
+        "risk across the 21%-of-global-petroleum-transit chokepoint. The attack risks internalising a third "
+        "major naval power (India) into the conflict dynamics.</p>"
+
+        "<div style='padding:12px 14px;background:rgba(0,180,255,0.08);border-left:3px solid #00b4ff;"
+        "border-radius:4px;margin:12px 0;'>"
+        "<b>TRIGGER EVENTS:</b> Iranian gunboats fire on VLCC Sanmar Herald (Apr 18); two Indian-flagged "
+        "ships forced to turn back; Iran reopens then re-closes Hormuz within 24 hours (Apr 17&ndash;19); "
+        "US blockade of Iranian ports Day 45+ (from Apr 13); continued shipping insurance premium escalation; "
+        "IRGC naval exercises expanding in Gulf waters.</div>"
+
+        "<div style='padding:12px 14px;background:rgba(0,180,255,0.08);border-left:3px solid #00b4ff;"
+        "border-radius:4px;margin:12px 0;'>"
+        "<b>NERAI ANALYSIS:</b> UAE Military Escalation at <b>0.052</b> with a <b>+132.2% rising</b> trend "
+        "is the fastest-accelerating threat indicator in the current dataset, reflecting acute Gulf state "
+        "vulnerability. Kuwait Military Escalation at <b>0.080</b> (+99.5% rising) confirms systemic "
+        "regional threat expansion. Qatar Military Clash at <b>0.065</b> (+40.8% rising) signals LNG "
+        "export infrastructure risk. Iran Military Escalation at <b>0.133</b> (+47.1% rising) and "
+        "Military Clash at <b>0.098</b> (+47.5% rising) confirm an accelerating kinetic posture despite "
+        "diplomatic back-channel activity.</div>"
+
+        "<div style='padding:12px 14px;background:rgba(255,215,0,0.06);border-left:3px solid #ffd700;"
+        "border-radius:4px;margin:12px 0;'>"
+        "<b>FORECAST:</b> Under sustained commercial shipping attack scenario, Brent crude projected to "
+        "spike to <b>$115&ndash;130/barrel</b> within 2 weeks. If India deploys naval escorts in response "
+        "(37% probability within 30 days), risk of accidental clash with IRGC forces rises to <b>28%</b>. "
+        "Shipping insurance market may become effectively non-functional for Hormuz transits above "
+        "$100M cargo value, forcing permanent Cape of Good Hope rerouting for VLCC class vessels.</div>"
+
+        "<p style='text-align:justify;'><b>WATCH:</b> Indian Navy Eastern Fleet deployments; IRGC gunboat "
+        "patrol patterns; shipping insurance rate movements for Hormuz transits; LNG spot price divergence "
+        "Asia vs. Europe; Saudi Aramco export route shifts; UAE port congestion indicators; VHF channel 16 "
+        "intercepts for vessel distress signals in Persian Gulf.</p>"
+
+        "<h3 style='color:#ffd700;font-size:1.05em;margin:22px 0 8px;'>"
+        "&#9888; ALERT 2: GULF STATE ESCALATION CASCADE &mdash; UAE/KUWAIT THREAT SURGE</h3>"
+        "<div style='display:inline-block;background:rgba(255,215,0,0.2);color:#ffd700;padding:3px 10px;"
+        "border-radius:3px;font-weight:700;font-size:0.75rem;margin-bottom:10px;'>SEVERITY: HIGH</div>"
+        "<p style='text-align:justify;'>NERAI data identifies an accelerating escalation cascade across Gulf "
+        "Cooperation Council member states that has received insufficient attention relative to the Iran-Israel "
+        "primary theatre. UAE&rsquo;s Military Escalation index has surged +132.2% and Kuwait&rsquo;s has "
+        "nearly doubled (+99.5%) in the current measurement period &mdash; trajectories that, if sustained, "
+        "will bring these states to Israel-comparable escalation levels within 60&ndash;90 days. This pattern "
+        "suggests that the US naval blockade and Iranian retaliation are creating secondary conflict pressure "
+        "on Gulf states hosting critical US military infrastructure including Al Udeid (Qatar) and Al Dhafra "
+        "(UAE) air bases.</p>"
+
+        "<div style='padding:12px 14px;background:rgba(0,180,255,0.08);border-left:3px solid #00b4ff;"
+        "border-radius:4px;margin:12px 0;'>"
+        "<b>TRIGGER EVENTS:</b> Iranian drone strikes on UAE and Saudi energy infrastructure (from March); "
+        "US naval blockade expanding area of operations around Gulf ports; GCC emergency defence council "
+        "meetings; Iranian missile exercise targeting Gulf state coordinates; US pre-positioning additional "
+        "Patriot batteries at GCC bases.</div>"
+
+        "<div style='padding:12px 14px;background:rgba(0,180,255,0.08);border-left:3px solid #00b4ff;"
+        "border-radius:4px;margin:12px 0;'>"
+        "<b>NERAI ANALYSIS:</b> Saudi Arabia Military Escalation at <b>0.073</b> (+29.3% rising) and Qatar "
+        "Military Escalation at <b>0.072</b> (+48.8% rising) are both on upward trajectories. Combined with "
+        "UAE (+132.2%) and Kuwait (+99.5%), all four major GCC states are showing simultaneous escalation "
+        "acceleration &mdash; a pattern NERAI has not previously recorded in the dataset. Iraq Military "
+        "Escalation at <b>0.169</b> (+29.2% rising) adds northern pressure. This multi-node simultaneous "
+        "escalation significantly complicates US force protection requirements.</div>"
+
+        "<div style='padding:12px 14px;background:rgba(255,215,0,0.06);border-left:3px solid #ffd700;"
+        "border-radius:4px;margin:12px 0;'>"
+        "<b>FORECAST:</b> NERAI projects UAE Military Escalation reaching <b>0.12</b> and Kuwait reaching "
+        "<b>0.16</b> by Q3 2026 under current trajectories. A coordinated Iranian strike on a GCC military "
+        "installation hosting US forces carries a <b>19% probability</b> within 45 days, which would "
+        "trigger immediate US Article 5-equivalent response commitments and represent a fundamental "
+        "widening of the conflict. Saudi Aramco export capacity is assessed at elevated disruption risk "
+        "through Q2 2026.</div>"
+
+        "<p style='text-align:justify;'><b>WATCH:</b> GCC defence ministers joint statements; US CENTCOM "
+        "force posture updates; UAE Al Dhafra and Qatar Al Udeid alert levels; Saudi Aramco Abqaiq facility "
+        "security upgrades; Iranian medium-range missile inventory drawdown rates; Kuwait Naval Base "
+        "operational tempo.</p>"
+
+        "<h3 style='color:#ffa500;font-size:1.05em;margin:22px 0 8px;'>"
+        "&#9888; ALERT 3: SECOND-ROUND ISLAMABAD TALKS &mdash; FRAGILE DIPLOMATIC WINDOW</h3>"
+        "<div style='display:inline-block;background:rgba(255,165,0,0.2);color:#ffa500;padding:3px 10px;"
+        "border-radius:3px;font-weight:700;font-size:0.75rem;margin-bottom:10px;'>SEVERITY: ELEVATED</div>"
+        "<p style='text-align:justify;'>Reports of a potential second round of US-Iran talks in Pakistan "
+        "(per CNBC, April 15) represent the only active diplomatic off-ramp visible in the current "
+        "intelligence picture. However, the structural gaps from the first Islamabad talks remain "
+        "unbridged: the US insists on binding nuclear verification and Iran demands security guarantees "
+        "and war reparations. Iran&rsquo;s diplomatic feint on Hormuz (opening then reversing within 24 "
+        "hours) suggests Tehran is using tactical diplomatic gestures to test US resolve rather than "
+        "pursue genuine de-escalation. The window for a second-round agreement before military dynamics "
+        "become irreversible is assessed at approximately 2&ndash;3 weeks.</p>"
+
+        "<div style='padding:12px 14px;background:rgba(0,180,255,0.08);border-left:3px solid #00b4ff;"
+        "border-radius:4px;margin:12px 0;'>"
+        "<b>TRIGGER EVENTS:</b> CNBC reports US-Iran second round Islamabad talks (Apr 15); Iran studying "
+        "fresh US proposals (Irish Times, Apr 18); Iran FM Araghchi Hormuz opening statement (Apr 17) "
+        "then reversed (Apr 19); Trump confirms blockade remains; Pakistan FM Dar maintains backchannel "
+        "communications; potential new US concessions on sanctions timeline.</div>"
+
+        "<div style='padding:12px 14px;background:rgba(0,180,255,0.08);border-left:3px solid #00b4ff;"
+        "border-radius:4px;margin:12px 0;'>"
+        "<b>NERAI ANALYSIS:</b> US Military Escalation at <b>0.160</b> (stable, -1.3%) and Military Clash "
+        "at <b>0.116</b> (stable, -3.2%) indicate Washington is deliberately holding its military posture "
+        "steady to preserve negotiating leverage. Israel&rsquo;s plateau at <b>0.324</b> (stable) suggests "
+        "Jerusalem is also in a holding pattern awaiting diplomatic outcomes. Yemen Military Escalation "
+        "falling to <b>0.204</b> (-8.7%) may indicate Tehran is reducing Houthi operational tempo as a "
+        "goodwill signal to enable talks.</div>"
+
+        "<div style='padding:12px 14px;background:rgba(255,215,0,0.06);border-left:3px solid #ffd700;"
+        "border-radius:4px;margin:12px 0;'>"
+        "<b>FORECAST:</b> NERAI assigns <b>22% probability</b> of second-round Islamabad talks producing "
+        "a temporary ceasefire by end of April 2026. A successful ceasefire would produce an immediate "
+        "<b>$12&ndash;18/barrel Brent crude decline</b> and <b>$150&ndash;200/oz gold decline</b> as risk "
+        "premium is rapidly repriced. However, NERAI assigns only <b>28% durability probability</b> to "
+        "any agreement not containing binding nuclear verification, making a resumption of hostilities "
+        "within 90 days the base case scenario even under a ceasefire outcome.</div>"
+
+        "<p style='text-align:justify;'><b>WATCH:</b> Pakistan foreign ministry travel schedules; US "
+        "State Department backchannel communications; IAEA inspection access requests; Iran Supreme "
+        "National Security Council composition post-Larijani; Congressional authorization debates in "
+        "Washington; Russian and Chinese diplomatic positioning on ceasefire terms; India reaction to "
+        "shipping attacks in context of ongoing Islamabad talks.</p>"
+
+        "<div style='border-top:1px solid rgba(255,75,110,0.2);margin-top:20px;padding-top:10px;"
+        "color:#8aa8c8;font-size:0.78rem;text-align:center;'>"
+        "Published by NERAI Intelligence | April 19, 2026</div>"
+        "</div>"
+    )
+
+
+def _generate_weekly_pdf():
+    buf = io.BytesIO()
+    s = _pdf_styles()
+    doc = SimpleDocTemplate(buf, pagesize=A4, topMargin=32*mm, bottomMargin=22*mm, leftMargin=20*mm, rightMargin=20*mm)
+    def on_page(cv, d):
+        _pdf_header_footer(cv, d, 'Weekly Intelligence Bulletin | Week 16 | April 13 - 19, 2026', _PDF_GOLD, 'UNCLASSIFIED')
+    story = []
+    story.append(Paragraph('NERAI WEEKLY INTELLIGENCE BULLETIN', s['NT']))
+    story.append(Paragraph('Week 16 | April 13 - 19, 2026', s['NSub']))
+    story.append(HRFlowable(width='100%', thickness=1, color=_PDF_CYAN, spaceAfter=12))
+    story.append(Paragraph('EXECUTIVE SUMMARY', s['NH']))
+    story.append(Paragraph('Week 16 was defined by a sharp escalation of the US naval blockade of Iranian ports (Day 45-50), Iranian gunboat attacks on commercial shipping in the Strait of Hormuz, and a failed Iranian diplomatic feint that saw Tehran announce then reverse a reopening of the critical waterway within hours. NERAI Military Escalation indices continue their upward trajectory, with UAE surging +132.2% and Kuwait at +99.5%, reflecting the expanding geographic footprint of the conflict across the Gulf. Iran Military Escalation stands at 0.133 (+47.1% rising) while Israel holds at 0.324, as both sides recalibrate following the failed Islamabad talks. Oil markets remained volatile, with Brent trading between $90 and $103 before closing the week near $97.', s['NB']))
+    story.append(Spacer(1, 10))
+    story.append(Paragraph('1. US NAVAL BLOCKADE TIGHTENS AROUND IRANIAN PORTS', s['NH']))
+    story.append(Paragraph('On April 13, 2026 (Day 45 of the Middle East conflict), the US Navy formally established a comprehensive naval blockade of Iranian ports, cutting off Tehran\'s seaborne oil exports and restricting imports of critical goods. US Energy Secretary Chris Wright warned that oil prices would continue to climb until meaningful ship traffic resumed through the Strait of Hormuz. Brent crude opened the week at $103.72/barrel before falling mid-week as diplomatic signals briefly buoyed markets.', s['NB']))
+    story.append(Spacer(1, 6))
+    story.append(Paragraph('NERAI DATA INSIGHTS', s['NBI']))
+    story.append(Paragraph('Iran Military Escalation: 0.133 (+47.1% rising). Military Clash: 0.098 (+47.5% rising). UAE Military Escalation: 0.052 (+132.2% rising — fastest-accelerating in dataset). Saudi Arabia: 0.073 (+29.3%). Qatar: 0.072 (+48.8%). All four major GCC states showing simultaneous escalation acceleration.', s['NB']))
+    story.append(Spacer(1, 6))
+    story.append(Paragraph('12-MONTH FORECAST', s['NBI']))
+    story.append(Paragraph('UAE Military Escalation projected to reach 0.12 by Q3 2026. 42% probability of coordinated GCC defensive posturing triggering conflict-adjacent operations if blockade exceeds 60 days. US blockade forecast to remain in place 30-45 additional days absent diplomatic breakthrough.', s['NB']))
+    story.append(Spacer(1, 10))
+    story.append(Paragraph('2. IRANIAN GUNBOATS ATTACK COMMERCIAL SHIPPING IN HORMUZ', s['NH']))
+    story.append(Paragraph('On April 18, 2026, two Indian-flagged commercial vessels were targeted by Iranian gunboats in the Strait of Hormuz, including the VLCC Sanmar Herald which came under fire despite receiving prior transit clearance. The attacks signal that Iranian military commanders may be operating with expanded rules of engagement independent of diplomatic channels, creating unpredictable maritime risk across the 21%-of-global-petroleum-transit chokepoint.', s['NB']))
+    story.append(Spacer(1, 6))
+    story.append(Paragraph('NERAI DATA INSIGHTS', s['NBI']))
+    story.append(Paragraph('Kuwait Military Escalation: 0.080 (+99.5% rising). Qatar Military Clash: 0.065 (+40.8% rising). Lebanon Military Escalation: 0.285 (+10.8% rising). Iraq Military Escalation: 0.169 (+29.2% rising). Yemen Military Escalation: 0.204 (falling -8.7%, possible Houthi tempo reduction as diplomatic signal).', s['NB']))
+    story.append(Spacer(1, 6))
+    story.append(Paragraph('12-MONTH FORECAST', s['NBI']))
+    story.append(Paragraph('37% probability India deploys naval escorts within 30 days. Kuwait Military Escalation projected at 0.16 by Q3 2026. Shipping insurance market risks becoming non-functional for VLCC class transits through Hormuz above $100M cargo value.', s['NB']))
+    story.append(Spacer(1, 10))
+    story.append(Paragraph('3. IRAN\'S HORMUZ "OPENING" DIPLOMATIC FEINT COLLAPSES', s['NH']))
+    story.append(Paragraph('On April 17, Iranian FM Araghchi declared Hormuz "completely open" for the ceasefire period. President Trump immediately stated the US blockade "will remain in full force" until a peace deal. Within hours of the White House statement, Iran reversed course on April 19, with Tehran\'s military command announcing that "control of the Strait of Hormuz has returned to its previous state." CNBC reported on April 15 that a second round of US-Iran talks in Pakistan may be forthcoming.', s['NB']))
+    story.append(Spacer(1, 6))
+    story.append(Paragraph('NERAI DATA INSIGHTS', s['NBI']))
+    story.append(Paragraph('Israel Military Escalation: 0.324 (stable +4.2%). US Military Escalation: 0.160 (stable -1.3%). Yemen Military Escalation: 0.204 (falling -8.7%), suggesting Tehran redirecting resources to Hormuz theatre. Both US and Israeli military postures in deliberate holding pattern ahead of potential second-round talks.', s['NB']))
+    story.append(Spacer(1, 6))
+    story.append(Paragraph('12-MONTH FORECAST', s['NBI']))
+    story.append(Paragraph('22% probability second-round Islamabad talks produce temporary ceasefire by end of April 2026. Only 28% durability probability for any agreement without binding nuclear verification. 61% probability of continued military standoff through Q3 2026 absent major concessions. Nuclear timeline: 6-8 months to weapons-grade enrichment capability under current conditions.', s['NB']))
+    story.append(Spacer(1, 10))
+    story.append(Paragraph('MARKET IMPACT', s['NH']))
+    story.append(Paragraph('Energy Markets', s['NBI']))
+    story.append(Paragraph('Brent Crude: $97.06/barrel (Apr 19), volatile week range $90-$103. WTI: $94.10/barrel. Brent whipsawed on Hormuz opening news (touched $90) then recovered as Trump confirmed blockade continuity.', s['NB']))
+    story.append(Paragraph('Safe-Haven Assets', s['NBI']))
+    story.append(Paragraph('Gold: $4,855/oz (+0.8% weekly, fourth consecutive weekly gain). USD Index: 105.8 (strengthening on risk-off flows). Structural $8-12/barrel risk premium above pre-conflict baseline remains priced in.', s['NB']))
+    story.append(Spacer(1, 10))
+    story.append(Paragraph('NERAI 12-MONTH OUTLOOK', s['NH']))
+    story.append(Paragraph('Week 16 confirms the conflict has entered an attrition phase. NERAI maintains 74% probability of major regional escalation event by Q4 2026. Most acute near-term risk is Indian naval involvement (37% within 30 days). UAE escalation trajectory (+132.2%) is the dataset\'s most significant early warning signal. A second-round Islamabad agreement would provide temporary relief but NERAI assigns low durability probability (<30%) to any ceasefire without binding nuclear verification.', s['NB']))
+    story.append(Spacer(1, 16))
+    story.append(Paragraph('Published by NERAI Intelligence | April 19, 2026', s['NF']))
+    doc.build(story, onFirstPage=on_page, onLaterPages=on_page)
+    buf.seek(0)
+    return buf.getvalue()
+
+
+def _generate_risk_pdf():
+    buf = io.BytesIO()
+    s = _pdf_styles()
+    doc = SimpleDocTemplate(buf, pagesize=A4, topMargin=32*mm, bottomMargin=22*mm, leftMargin=20*mm, rightMargin=20*mm)
+    def on_page(cv, d):
+        _pdf_header_footer(cv, d, 'Risk Alert | Critical Threat Assessment | Week 16 | April 2026', _PDF_RED, 'SEVERITY: CRITICAL')
+    story = []
+    story.append(Paragraph('<font color="#ff4b6e">NERAI RISK ALERT</font>', s['NT']))
+    story.append(Paragraph('Critical Threat Assessment | Week 16 | April 13-19, 2026', s['NSub']))
+    story.append(HRFlowable(width='100%', thickness=1, color=_PDF_RED, spaceAfter=12))
+    story.append(Spacer(1, 4))
+    story.append(Paragraph('ALERT 1: COMMERCIAL SHIPPING ATTACKS — HORMUZ CHOKEPOINT CRISIS', s['NH']))
+    story.append(Paragraph('SEVERITY: CRITICAL', s['NBI']))
+    story.append(Paragraph('Iranian gunboat attacks on Indian-flagged commercial vessels on April 18 represent a doctrinal escalation: from interdicting flag-state vessels to attacking pre-cleared neutral shipping. The VLCC Sanmar Herald attack signals Iranian military commanders may be operating with expanded rules of engagement independent of diplomatic channels, creating unpredictable risk across the 21%-of-global-petroleum-transit chokepoint.', s['NB']))
+    story.append(Spacer(1, 6))
+    story.append(Paragraph('TRIGGER EVENTS', s['NBI']))
+    story.append(Paragraph('Iranian gunboats fire on VLCC Sanmar Herald (Apr 18); two Indian-flagged ships forced to turn back; Iran reopens then re-closes Hormuz within 24 hours (Apr 17-19); US blockade of Iranian ports Day 45+ (from Apr 13); continued shipping insurance premium escalation; IRGC naval exercises expanding in Gulf waters.', s['NB']))
+    story.append(Spacer(1, 6))
+    story.append(Paragraph('NERAI ANALYSIS', s['NBI']))
+    story.append(Paragraph('UAE Military Escalation: 0.052 (+132.2% rising — fastest in dataset). Kuwait: 0.080 (+99.5% rising). Qatar Military Clash: 0.065 (+40.8% rising). Iran Military Escalation: 0.133 (+47.1% rising). Iran Military Clash: 0.098 (+47.5% rising). All GCC major states showing simultaneous escalation acceleration — unprecedented in NERAI dataset.', s['NB']))
+    story.append(Spacer(1, 6))
+    story.append(Paragraph('FORECAST', s['NBI']))
+    story.append(Paragraph('Sustained shipping attack scenario: Brent projected to spike $115-130/barrel within 2 weeks. Indian naval response probability: 37% within 30 days. If India deploys escorts: 28% probability of accidental IRGC clash. Shipping insurance may become non-functional for VLCC Hormuz transits above $100M cargo value.', s['NB']))
+    story.append(Paragraph('WATCH: Indian Navy Eastern Fleet deployments; IRGC gunboat patrol patterns; shipping insurance rate movements; LNG spot price divergence Asia vs. Europe; Saudi Aramco export route shifts.', s['NB']))
+    story.append(Spacer(1, 10))
+    story.append(Paragraph('ALERT 2: GULF STATE ESCALATION CASCADE — UAE/KUWAIT THREAT SURGE', s['NH']))
+    story.append(Paragraph('SEVERITY: HIGH', s['NBI']))
+    story.append(Paragraph('NERAI data identifies an accelerating escalation cascade across GCC member states. UAE Military Escalation surged +132.2% and Kuwait nearly doubled (+99.5%) — trajectories that will bring these states to Israel-comparable escalation levels within 60-90 days. This pattern suggests the US naval blockade and Iranian retaliation are creating secondary conflict pressure on Gulf states hosting critical US military infrastructure including Al Udeid (Qatar) and Al Dhafra (UAE) air bases.', s['NB']))
+    story.append(Spacer(1, 6))
+    story.append(Paragraph('NERAI ANALYSIS', s['NBI']))
+    story.append(Paragraph('Saudi Arabia Military Escalation: 0.073 (+29.3% rising). Qatar: 0.072 (+48.8% rising). UAE: 0.052 (+132.2% rising). Kuwait: 0.080 (+99.5% rising). Iraq: 0.169 (+29.2% rising). All four major GCC states plus Iraq showing simultaneous escalation — first time recorded in NERAI dataset.', s['NB']))
+    story.append(Spacer(1, 6))
+    story.append(Paragraph('FORECAST', s['NBI']))
+    story.append(Paragraph('UAE projected at 0.12, Kuwait at 0.16 by Q3 2026. Coordinated Iranian strike on GCC installation hosting US forces: 19% probability within 45 days. Such strike would trigger immediate US response and fundamental conflict widening. Saudi Aramco export capacity at elevated disruption risk through Q2 2026.', s['NB']))
+    story.append(Paragraph('WATCH: GCC defence ministers joint statements; US CENTCOM force posture; UAE Al Dhafra and Qatar Al Udeid alert levels; Saudi Aramco Abqaiq security upgrades; Iranian medium-range missile inventory.', s['NB']))
+    story.append(Spacer(1, 10))
+    story.append(Paragraph('ALERT 3: SECOND-ROUND ISLAMABAD TALKS — FRAGILE DIPLOMATIC WINDOW', s['NH']))
+    story.append(Paragraph('SEVERITY: ELEVATED', s['NBI']))
+    story.append(Paragraph('Reports of potential second-round US-Iran Pakistan talks (CNBC, Apr 15) represent the only active diplomatic off-ramp. Structural gaps from first Islamabad talks remain unbridged. Iran\'s Hormuz feint (opening then reversing within 24 hours) suggests tactical diplomatic gestures to test US resolve rather than genuine de-escalation. The window for agreement before military dynamics become irreversible is assessed at approximately 2-3 weeks.', s['NB']))
+    story.append(Spacer(1, 6))
+    story.append(Paragraph('NERAI ANALYSIS', s['NBI']))
+    story.append(Paragraph('US Military Escalation: 0.160 (stable -1.3%) — deliberate holding posture. Israel Military Escalation: 0.324 (stable +4.2%) — plateau phase. Yemen Military Escalation: 0.204 (falling -8.7%) — possible Houthi tempo reduction as Iranian goodwill signal. Both US and Israeli military indices in holding pattern consistent with pre-negotiation positioning.', s['NB']))
+    story.append(Spacer(1, 6))
+    story.append(Paragraph('FORECAST', s['NBI']))
+    story.append(Paragraph('22% probability second-round talks produce temporary ceasefire by end-April 2026. Successful ceasefire: immediate $12-18/barrel Brent decline, $150-200/oz gold decline. Only 28% durability probability without binding nuclear verification. 61% probability of continued military standoff through Q3 2026. Nuclear timeline: 6-8 months to weapons-grade enrichment capability.', s['NB']))
+    story.append(Paragraph('WATCH: Pakistan foreign ministry travel schedules; IAEA inspection access requests; Iran Supreme National Security Council decisions; Congressional authorization debates; Russian and Chinese diplomatic positioning; India reaction to shipping attacks in context of Islamabad talks.', s['NB']))
+    story.append(Spacer(1, 16))
+    story.append(Paragraph('Published by NERAI Intelligence | April 19, 2026', s['NF']))
+    doc.build(story, onFirstPage=on_page, onLaterPages=on_page)
+    buf.seek(0)
+    return buf.getvalue()
+
+
 def render_briefing_room():
     nerai_premium_css.inject_page_header(
         title="Briefing Room",
@@ -5567,7 +5972,7 @@ def render_briefing_room():
             "<div style='display:flex;align-items:center;gap:10px;margin-bottom:12px;'>"
             "<div style='font-size:1.8rem;'>&#128200;</div>"
             "<div><div style='font-size:1.05rem;font-weight:700;color:#00b4ff;'>NERAI Weekly Bulletin</div>"
-            "<div style='font-size:0.75rem;color:#8aa8c8;'>Week 15 | April 5 - 11, 2026</div></div>"
+            "<div style='font-size:0.75rem;color:#8aa8c8;'>Week 16 | April 13 - 19, 2026</div></div>"
             "</div>"
             "<div style='display:inline-block;background:#ffd700;color:#000;padding:3px 10px;"
             "border-radius:3px;font-weight:700;font-size:0.7rem;letter-spacing:0.05em;'>UNCLASSIFIED</div>"
@@ -5579,7 +5984,7 @@ def render_briefing_room():
         st.download_button(
             label="\u2B07 Download PDF",
             data=_generate_weekly_pdf(),
-            file_name="NERAI_Weekly_Bulletin_W15.pdf",
+            file_name="NERAI_Weekly_Bulletin_W16.pdf",
             mime="application/pdf",
             use_container_width=True)
 
@@ -5590,7 +5995,7 @@ def render_briefing_room():
             "<div style='display:flex;align-items:center;gap:10px;margin-bottom:12px;'>"
             "<div style='font-size:1.8rem;'>&#9888;</div>"
             "<div><div style='font-size:1.05rem;font-weight:700;color:#ff4b6e;'>NERAI Risk Alert</div>"
-            "<div style='font-size:0.75rem;color:#8aa8c8;'>Critical Threat Assessment | Week 15 | April 2026</div></div>"
+            "<div style='font-size:0.75rem;color:#8aa8c8;'>Critical Threat Assessment | Week 16 | April 2026</div></div>"
             "</div>"
             "<div style='display:inline-block;background:#ff4b6e;color:#fff;padding:3px 10px;"
             "border-radius:3px;font-weight:700;font-size:0.7rem;letter-spacing:0.05em;'>SEVERITY: CRITICAL</div>"
@@ -5602,7 +6007,7 @@ def render_briefing_room():
         st.download_button(
             label="\u2B07 Download PDF",
             data=_generate_risk_pdf(),
-            file_name="NERAI_Risk_Alert_W15_Apr2026.pdf",
+            file_name="NERAI_Risk_Alert_W16_Apr2026.pdf",
             mime="application/pdf",
             use_container_width=True)
 
@@ -5622,7 +6027,42 @@ def render_briefing_room():
         "<div class='sec-hdr' style='margin:0;'>Report Archive</div>"
         "</div>", unsafe_allow_html=True)
 
-    with st.expander("\U0001F4C4 Week 14 | March 28 - April 4, 2026", expanded=False):
+    with     with st.expander("\U0001F4C4 Week 15 | April 5 - 11, 2026", expanded=False):
+        arc1, arc2 = st.columns(2)
+        with arc1:
+            st.markdown(
+                "<div style='background:rgba(10,20,40,0.4);border:1px solid rgba(0,180,255,0.15);"
+                "border-radius:8px;padding:14px;margin-bottom:8px;'>"
+                "<div style='font-weight:700;color:#00b4ff;font-size:0.9rem;'>Weekly Bulletin</div>"
+                "<div style='color:#8aa8c8;font-size:0.75rem;'>Week 15 | April 5 - 11, 2026</div>"
+                "</div>", unsafe_allow_html=True)
+            with st.expander("Read Bulletin", expanded=False):
+                st.markdown(_weekly_bulletin_w15_html(), unsafe_allow_html=True)
+            st.download_button(
+                label="\u2B07 Download W15 Bulletin PDF",
+                data=_generate_weekly_pdf_w15(),
+                file_name="NERAI_Weekly_Bulletin_W15.pdf",
+                mime="application/pdf",
+                use_container_width=True,
+                key="dl_w15_bulletin")
+        with arc2:
+            st.markdown(
+                "<div style='background:rgba(10,20,40,0.4);border:1px solid rgba(255,75,110,0.15);"
+                "border-radius:8px;padding:14px;margin-bottom:8px;'>"
+                "<div style='font-weight:700;color:#ff4b6e;font-size:0.9rem;'>Risk Alert</div>"
+                "<div style='color:#8aa8c8;font-size:0.75rem;'>Critical Threat Assessment | April 2026</div>"
+                "</div>", unsafe_allow_html=True)
+            with st.expander("Read Alert", expanded=False):
+                st.markdown(_risk_alert_w15_html(), unsafe_allow_html=True)
+            st.download_button(
+                label="\u2B07 Download W15 Risk Alert PDF",
+                data=_generate_risk_pdf_w15(),
+                file_name="NERAI_Risk_Alert_W15_Apr2026.pdf",
+                mime="application/pdf",
+                use_container_width=True,
+                key="dl_w15_risk")
+
+    st.expander("\U0001F4C4 Week 14 | March 28 - April 4, 2026", expanded=False):
         arc1, arc2 = st.columns(2)
         with arc1:
             st.markdown(
@@ -5693,7 +6133,7 @@ def render_briefing_room():
 
 
 
-def _weekly_bulletin_html():
+def _weekly_bulletin_w15_html():
     return (
         "<div style='color:#e0e8f0;line-height:1.75;font-size:0.88rem;'>"
 
@@ -5809,7 +6249,7 @@ def _weekly_bulletin_html():
     )
 
 
-def _risk_alert_html():
+def _risk_alert_w15_html():
     return (
         "<div style='color:#e0e8f0;line-height:1.75;font-size:0.88rem;'>"
 
