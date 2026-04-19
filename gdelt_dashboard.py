@@ -5305,6 +5305,7 @@ def _pdf_styles():
     s.add(ParagraphStyle('NB', parent=s['Normal'], fontSize=9.5, leading=14, textColor=black, alignment=TA_JUSTIFY, spaceAfter=8, fontName='Helvetica'))
     s.add(ParagraphStyle('ND', parent=s['Normal'], fontSize=9, leading=13, textColor=HexColor('#1a2a3a'), alignment=TA_LEFT, spaceAfter=4, fontName='Helvetica', leftIndent=8, borderPadding=6))
     s.add(ParagraphStyle('NF', parent=s['Normal'], fontSize=8, leading=10, textColor=_PDF_MID, alignment=TA_CENTER, spaceBefore=20, fontName='Helvetica'))
+    s.add(ParagraphStyle('NBI', parent=s['Heading3'], fontSize=11, leading=14, textColor=_PDF_CYAN, spaceBefore=12, spaceAfter=4, fontName='Helvetica-Bold'))
     return s
 
 
