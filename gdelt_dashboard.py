@@ -6027,7 +6027,7 @@ def render_briefing_room():
         "<div class='sec-hdr' style='margin:0;'>Report Archive</div>"
         "</div>", unsafe_allow_html=True)
 
-    with     with st.expander("\U0001F4C4 Week 15 | April 5 - 11, 2026", expanded=False):
+    with st.expander("\U0001F4C4 Week 15 | April 5 - 11, 2026", expanded=False):
         arc1, arc2 = st.columns(2)
         with arc1:
             st.markdown(
@@ -6062,7 +6062,7 @@ def render_briefing_room():
                 use_container_width=True,
                 key="dl_w15_risk")
 
-    st.expander("\U0001F4C4 Week 14 | March 28 - April 4, 2026", expanded=False):
+    with st.expander("\U0001F4C4 Week 14 | March 28 - April 4, 2026", expanded=False):
         arc1, arc2 = st.columns(2)
         with arc1:
             st.markdown(
