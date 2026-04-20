@@ -102,6 +102,7 @@ _VALID_CODES = {
     'NERAI-PRO-26':   'pro',
     'NERAI-2026':     'pro',
     'NERAI-PRO-DEMO': 'pro',
+    'NERAI-PRO-W17':  'pro',
 }
 
 # Time-limited access codes  {code: expiry_date}
@@ -109,6 +110,7 @@ from datetime import datetime as _dt
 _TIMED_CODES = {
     'NERAI-SOLO-26': _dt(2026, 4, 14),   # expires 14 April 2026
     'NERAI-PRO-DEMO': _dt(2026, 4, 19),   # 1-week Pro trial, expires 19 April 2026
+    'NERAI-PRO-W17':  _dt(2026, 4, 27),    # 1-week Pro access, expires 27 April 2026
 }
 
 if 'access_tier' not in st.session_state:
@@ -5305,7 +5307,6 @@ def _pdf_styles():
     s.add(ParagraphStyle('NB', parent=s['Normal'], fontSize=9.5, leading=14, textColor=black, alignment=TA_JUSTIFY, spaceAfter=8, fontName='Helvetica'))
     s.add(ParagraphStyle('ND', parent=s['Normal'], fontSize=9, leading=13, textColor=HexColor('#1a2a3a'), alignment=TA_LEFT, spaceAfter=4, fontName='Helvetica', leftIndent=8, borderPadding=6))
     s.add(ParagraphStyle('NF', parent=s['Normal'], fontSize=8, leading=10, textColor=_PDF_MID, alignment=TA_CENTER, spaceBefore=20, fontName='Helvetica'))
-    s.add(ParagraphStyle('NBI', parent=s['Heading3'], fontSize=11, leading=14, textColor=_PDF_CYAN, spaceBefore=12, spaceAfter=4, fontName='Helvetica-Bold'))
     return s
 
 
@@ -6098,41 +6099,6 @@ def render_briefing_room():
                 use_container_width=True,
                 key="dl_w14_risk")
 
-    with st.expander("\U0001F4C4 Week 16 | April 13 - 19, 2026", expanded=False):
-        arc1c, arc2c = st.columns(2)
-        with arc1c:
-            st.markdown(
-                "<div style='background:rgba(10,20,40,0.4);border:1px solid rgba(0,180,255,0.15);"
-                "border-radius:8px;padding:14px;margin-bottom:8px;'>"
-                "<div style='font-weight:700;color:#00b4ff;font-size:0.9rem;'>Weekly Bulletin</div>"
-                "<div style='color:#8aa8c8;font-size:0.75rem;'>Week 16 | April 13 - 19, 2026</div>"
-                "</div>", unsafe_allow_html=True)
-            with st.expander("Read Bulletin", expanded=False):
-                st.markdown(_weekly_bulletin_w16_html(), unsafe_allow_html=True)
-            st.download_button(
-                label="\u2B07 Download W16 Bulletin PDF",
-                data=_generate_weekly_pdf_w16(),
-                file_name="NERAI_Weekly_Bulletin_W16.pdf",
-                mime="application/pdf",
-                use_container_width=True,
-                key="dl_w16_bulletin")
-        with arc2c:
-            st.markdown(
-                "<div style='background:rgba(10,20,40,0.4);border:1px solid rgba(255,75,110,0.15);"
-                "border-radius:8px;padding:14px;margin-bottom:8px;'>"
-                "<div style='font-weight:700;color:#ff4b6e;font-size:0.9rem;'>Risk Alert</div>"
-                "<div style='color:#8aa8c8;font-size:0.75rem;'>Nigeria CRITICAL | April 2026</div>"
-                "</div>", unsafe_allow_html=True)
-            with st.expander("Read Alert", expanded=False):
-                st.markdown(_risk_alert_w16_html(), unsafe_allow_html=True)
-            st.download_button(
-                label="\u2B07 Download W16 Risk Alert PDF",
-                data=_generate_risk_pdf_w16(),
-                file_name="NERAI_Risk_Alert_W16_Apr2026.pdf",
-                mime="application/pdf",
-                use_container_width=True,
-                key="dl_w16_risk")
-
     # === FAZ 4d: LLM-powered Narrative Generation ===
     st.markdown('<div class="h-div" style="margin:24px 0 16px"></div>', unsafe_allow_html=True)
     st.markdown('<div class="sec-hdr">AI Risk Narrative</div>', unsafe_allow_html=True)
@@ -6584,127 +6550,6 @@ def _risk_alert_w14_html():
         "Published by NERAI Intelligence | April 4, 2026</div>"
         "</div>"
     )
-
-
-def _weekly_bulletin_w16_html():
-    return (
-        "<div style='color:#e0e8f0;line-height:1.75;font-size:0.88rem;'>"
-        "<div style='border-bottom:2px solid rgba(0,180,255,0.3);padding-bottom:14px;margin-bottom:18px;'>"
-        "<h2 style='color:#00b4ff;margin:0 0 4px;font-size:1.4em;'>NERAI WEEKLY INTELLIGENCE BULLETIN</h2>"
-        "<div style='color:#8aa8c8;font-size:0.85em;'>Week 16 | April 13 - 19, 2026</div>"
-        "</div>"
-        "<h3 style='color:#00b4ff;font-size:1.05em;margin:18px 0 8px;'>&#9650; NIGERIA: CRITICAL THRESHOLD BREACHED</h3>"
-        "<p style='text-align:justify;'>Nigeria's Military Escalation index reached <b>0.784</b> on April 12 — the "
-        "highest reading in the current dataset and a crossing of NERAI's CRITICAL threshold (&gt;0.600). "
-        "One week prior the index stood at 0.115. The +0.669 point absolute change in seven days is the largest "
-        "single-week movement in any country-topic pair this week. On April 9, Brigadier General Oseni Omoh Braimah "
-        "was killed alongside 17 soldiers in a coordinated ISWAP assault on the 29 Task Force Brigade HQ in Benisheikh, "
-        "Borno State — confirming what NERAI's data had already signalled.</p>"
-        "<div style='padding:12px 14px;background:rgba(0,180,255,0.08);border-left:3px solid #00b4ff;"
-        "border-radius:4px;margin:12px 0;'>"
-        "<b>NERAI DATA:</b> Military Escalation 0.784 (+582% w/w). Military Clash 0.743 (+1,188% w/w). "
-        "Coup Risk 0.330. Ethnic/Religious Violence 0.330. 12-month forecast average: 0.370 — 212% above global mean.</div>"
-        "<h3 style='color:#00b4ff;font-size:1.05em;margin:18px 0 8px;'>&#9650; WEST AFRICA: REGIONAL CONTAGION RISK</h3>"
-        "<p style='text-align:justify;'>Ghana's Military Escalation index rose 174.4% in the same 7-day window. "
-        "Niger recorded a 163.6% spike in its Military Crisis index. The simultaneous multi-node pressure across "
-        "West Africa suggests a deteriorating regional security architecture, not isolated country events.</p>"
-        "<h3 style='color:#00b4ff;font-size:1.05em;margin:18px 0 8px;'>&#9650; GLOBAL CONTEXT</h3>"
-        "<p style='text-align:justify;'>Nigeria's crisis is developing in a media vacuum — US-Iran tensions in the "
-        "Strait of Hormuz have absorbed global diplomatic bandwidth. Historically, escalation compounds fastest "
-        "when absent from the international headline cycle. Nigeria is Africa's largest oil producer; "
-        "sustained military deterioration carries cascading implications for energy markets and trade routes.</p>"
-        "<div style='border-top:1px solid rgba(0,180,255,0.3);margin-top:20px;padding-top:10px;"
-        "color:#8aa8c8;font-size:0.78rem;text-align:center;'>"
-        "Published by NERAI Intelligence | April 19, 2026</div>"
-        "</div>"
-    )
-
-
-def _risk_alert_w16_html():
-    return (
-        "<div style='color:#e0e8f0;line-height:1.75;font-size:0.88rem;'>"
-        "<div style='border-bottom:2px solid rgba(255,75,110,0.3);padding-bottom:14px;margin-bottom:18px;'>"
-        "<h2 style='color:#ff4b6e;margin:0 0 4px;font-size:1.4em;'>NERAI RISK ALERT</h2>"
-        "<div style='color:#8aa8c8;font-size:0.85em;'>Critical Threat Assessment | Week 16 | April 2026</div>"
-        "</div>"
-        "<h3 style='color:#ff4b6e;font-size:1.05em;margin:18px 0 8px;'>"
-        "&#9888; NIGERIA &mdash; MILITARY ESCALATION CRITICAL: 0.784</h3>"
-        "<div style='display:inline-block;background:rgba(255,75,110,0.2);color:#ff9999;padding:3px 10px;"
-        "border-radius:3px;font-weight:700;font-size:0.75rem;margin-bottom:10px;'>SEVERITY: CRITICAL</div>"
-        "<p style='text-align:justify;'>Nigeria's Military Escalation index reached <b>0.784</b> — up +582% in "
-        "seven days. Military Clash at 0.743, up +1,188%. Both indices have breached NERAI's CRITICAL threshold "
-        "simultaneously. On April 9, ISWAP killed Brigadier General Braimah in a multi-front coordinated assault "
-        "— the first confirmed killing of a Nigerian Army general by insurgents in years, signalling a deliberate "
-        "command-targeting doctrine shift.</p>"
-        "<div style='padding:12px 14px;background:rgba(0,180,255,0.08);border-left:3px solid #00b4ff;"
-        "border-radius:4px;margin:12px 0;'>"
-        "<b>KEY METRICS:</b> Military Escalation 0.784 | Military Clash 0.743 | Coup Risk 0.330 | "
-        "Ethnic/Religious Violence 0.330 | Political Instability 0.331 | 12-month forecast max: 1.049</div>"
-        "<div style='padding:12px 14px;background:rgba(255,215,0,0.06);border-left:3px solid #ffd700;"
-        "border-radius:4px;margin:12px 0;'>"
-        "<b>WATCH:</b> Military Crisis index (currently 0.042 — move above 0.015 indicates national crisis). "
-        "Second general-level casualty within 30 days. Ghana and Niger spillover indicators.</div>"
-        "<div style='border-top:1px solid rgba(255,75,110,0.3);margin-top:20px;padding-top:10px;"
-        "color:#8aa8c8;font-size:0.78rem;text-align:center;'>"
-        "Published by NERAI Intelligence | April 19, 2026</div>"
-        "</div>"
-    )
-
-
-def _generate_weekly_pdf_w16():
-    try:
-        buf = io.BytesIO()
-        s = _pdf_styles()
-        doc = SimpleDocTemplate(buf, pagesize=A4, topMargin=32*mm, bottomMargin=22*mm, leftMargin=20*mm, rightMargin=20*mm)
-        def on_page(cv, d):
-            _pdf_header_footer(cv, d, 'Weekly Intelligence Bulletin | Week 16 | April 13 - 19, 2026', _PDF_GOLD, 'UNCLASSIFIED')
-        story = []
-        story.append(Paragraph('NERAI WEEKLY INTELLIGENCE BULLETIN', s['NT']))
-        story.append(Paragraph('Week 16 | April 13 - 19, 2026', s['NSub']))
-        story.append(HRFlowable(width='100%', thickness=1, color=_PDF_CYAN, spaceAfter=12))
-        story.append(Paragraph('EXECUTIVE SUMMARY', s['NH']))
-        story.append(Paragraph("Nigeria's Military Escalation index reached 0.784 on April 12 — the highest reading in the current dataset and NERAI's CRITICAL threshold. The April 9 ISWAP assault killed Brigadier General Braimah alongside 17 soldiers, confirming a command-targeting doctrine shift. Ghana (+174.4%) and Niger (+163.6%) show simultaneous West Africa pressure. The region is developing a multi-node escalation pattern absent from the global headline cycle.", s['NB']))
-        story.append(Paragraph('<font color="#ff4b6e">&#9650;</font> 1. NIGERIA — CRITICAL THRESHOLD BREACHED', s['NHR']))
-        story.append(Paragraph("Nigeria's Military Escalation index stood at 0.115 one week prior and reached 0.784 by April 12 — a +0.669 point absolute change. Military Clash at 0.743 confirms active kinetic activity. Coup Risk 0.330, Ethnic/Religious Violence 0.330, Political Instability 0.331 — five independent index categories registering simultaneous deterioration.", s['NB']))
-        story.append(_pdf_data_box('<b>NERAI DATA:</b> Military Escalation 0.784 (+582% w/w) | Military Clash 0.743 (+1,188% w/w) | Coup Risk 0.330 | 12-month forecast average 0.370 — 212% above global mean of 0.174.', s, _PDF_RED))
-        story.append(Paragraph('<font color="#ff4b6e">&#9650;</font> 2. WEST AFRICA: REGIONAL CONTAGION SIGNAL', s['NHR']))
-        story.append(Paragraph("Ghana's Military Escalation rose 174.4% in the same 7-day window. Niger's Military Crisis index spiked 163.6%. The three-node simultaneous pressure pattern — Nigeria, Ghana, Niger — reflects deteriorating ECOWAS security architecture, not isolated country events.", s['NB']))
-        story.append(Paragraph('NERAI 12-MONTH OUTLOOK', s['NH']))
-        story.append(_pdf_data_box("Nigeria Military Escalation forecast average: 0.370 — 212% above global average. Maximum scenario: 1.049. Military Clash forecast: 0.331 — 223% above global average. Three scenarios: Sustained Localized Escalation (60%), Cascade to National Crisis (25%), Partial De-escalation (10%), Regional Spillover (5%).", s, _PDF_RED))
-        story.append(Spacer(1, 16))
-        story.append(Paragraph('Published by NERAI Intelligence | April 19, 2026', s['NF']))
-        doc.build(story, onFirstPage=on_page, onLaterPages=on_page)
-        buf.seek(0)
-        return buf.getvalue()
-    except Exception:
-        return b''
-
-
-def _generate_risk_pdf_w16():
-    try:
-        buf = io.BytesIO()
-        s = _pdf_styles()
-        doc = SimpleDocTemplate(buf, pagesize=A4, topMargin=32*mm, bottomMargin=22*mm, leftMargin=20*mm, rightMargin=20*mm)
-        def on_page(cv, d):
-            _pdf_header_footer(cv, d, 'Risk Alert | Critical Threat Assessment | Week 16 | April 2026', _PDF_RED, 'SEVERITY: CRITICAL')
-        story = []
-        story.append(Paragraph('NERAI RISK ALERT', s['NT']))
-        story.append(Paragraph('Nigeria: Military CRITICAL | April 19, 2026', s['NSub']))
-        story.append(HRFlowable(width='100%', thickness=1, color=_PDF_RED, spaceAfter=12))
-        story.append(Paragraph('CRITICAL ALERT: NIGERIA MILITARY ESCALATION 0.784', s['NHR']))
-        story.append(Paragraph("Nigeria's Military Escalation index reached 0.784 — up +582% in seven days. Military Clash 0.743 (+1,188%). Both indices have simultaneously breached CRITICAL threshold (>0.600). On April 9, ISWAP killed Brigadier General Oseni Omoh Braimah alongside 17 soldiers in a coordinated multi-front assault on the 29 Task Force Brigade HQ, Benisheikh — the first confirmed killing of a Nigerian Army general by insurgents in years.", s['NB']))
-        story.append(_pdf_data_box('<b>CRITICAL METRICS:</b> Military Escalation 0.784 | Military Clash 0.743 | Coup Risk 0.330 | Ethnic/Religious Violence 0.330 | Political Instability 0.331 | 12-month forecast max 1.049', s, _PDF_RED))
-        story.append(Paragraph('THREE THINGS TO WATCH', s['NH']))
-        story.append(Paragraph('1. Military Crisis index (currently 0.042) — movement above 0.015 indicates national-level crisis transition.', s['NB']))
-        story.append(Paragraph('2. ISWAP command-targeting frequency — a second general-level casualty within 30 days confirms deliberate doctrine shift.', s['NB']))
-        story.append(Paragraph('3. Ghana and Niger spillover — simultaneous West Africa multi-country alert is the current tail-risk scenario.', s['NB']))
-        story.append(Spacer(1, 16))
-        story.append(Paragraph('Published by NERAI Intelligence | April 19, 2026', s['NF']))
-        doc.build(story, onFirstPage=on_page, onLaterPages=on_page)
-        buf.seek(0)
-        return buf.getvalue()
-    except Exception:
-        return b''
 
 
 SCENARIO_TEMPLATES = {
