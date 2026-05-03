@@ -2022,12 +2022,14 @@ def render_home():
 
     # === FAZ 4e: Alert/Notification System ===
     try:
-        _instab_alert = df.xs("instability", level="topic", drop_level=True) if "instability" in df.index.get_level_values("topic") else None
-        if _instab_alert is not None and len(df.columns) >= 2:
-            _al_latest = df.columns[-1]
-            _al_prev = df.columns[-2]
-            _al_chg = ((_instab_alert[_al_latest] - _instab_alert[_al_prev]) / _instab_alert[_al_prev].replace(0, np.nan) * 100).dropna()
-            _spikes = _al_chg[_al_chg > 20].sort_values(ascending=False)
+        _instab_raw = df.xs("instability", level="topic", drop_level=True) if "instability" in df.index.get_level_values('topic') else None
+        _instab_alert = apply_norm(_instab_raw, "Score (0\u2013100)") if _instab_raw is not None else None
+        if _instab_alert is not None and len(df.columns) >= 14:
+            _al_recent7 = _instab_alert[df.columns[-7:]].mean(axis=1)
+            _al_prev7   = _instab_alert[df.columns[-14:-7]].mean(axis=1)
+            _al_chg = ((_al_recent7 - _al_prev7) / _al_prev7.replace(0, np.nan).clip(lower=1.0) * 100).dropna()
+            _al_chg = _al_chg.clip(-500, 500)
+            _spikes = _al_chg[_al_chg > 15].sort_values(ascending=False)
             if not _spikes.empty:
                 for _ac, _av in _spikes.head(3).items():
                     st.toast(f"Alert: {COUNTRY_NAMES.get(_ac, _ac)} instability surged {_av:.0f}%", icon="\U0001f6a8")
@@ -4037,7 +4039,7 @@ def _call_claude_for_qa(question, df_raw, trend_df, pred_df, insights_df):
                             if tp_data is not None and not tp_data.empty:
                                 avg_recent = tp_data[cols_7d].mean(axis=1)
                                 avg_old = tp_data[cols_30d].mean(axis=1)
-                                pct_chg = ((avg_recent - avg_old) / avg_old.clip(lower=0.0001) * 100).dropna()
+                                pct_chg = ((avg_recent - avg_old) / avg_old.clip(lower=0.01) * 100).clip(-500, 500).dropna()
                                 if len(pct_chg) > 0:
                                     top_rise = pct_chg.nlargest(3)
                                     lbl = TOPIC_LABELS.get(tp, tp.replace('_', ' ').title())
