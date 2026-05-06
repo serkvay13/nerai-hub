@@ -6323,7 +6323,9 @@ def render_briefing_room():
                         )
                     except Exception as _pdf_err:
                         st.caption(f"PDF generation unavailable: {_pdf_err}")
-                except Exception as _tte:
+                else:
+                    st.warning("Could not generate report. Please check your API key configuration.")
+            except Exception as _tte:
                 st.error(f"Report generation failed: {_tte}")
     elif _tt_generate and not _tt_topic:
         st.warning("Please enter a research topic.")
