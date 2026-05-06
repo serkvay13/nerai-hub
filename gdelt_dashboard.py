@@ -6037,6 +6037,7 @@ Generate the full report following the structure specified. The report is author
             messages=[{'role': 'user', 'content': user_msg}]
         )
         report_text = msg.content[0].text.strip()
+        st.session_state['_tt_raw_text'] = report_text
 
         # Format as styled HTML
         formatted = report_text.replace('\n', '<br>')
@@ -6273,80 +6274,57 @@ def render_briefing_room():
                 _tt_report = _generate_think_tank_report(_tt_topic, df)
                 if _tt_report:
                     st.markdown(_tt_report, unsafe_allow_html=True)
-                    # --- PDF Download via ReportLab ---
+                    # --- PDF Download ---
                     try:
                         import re as _re
-                        from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, HRFlowable
+                        from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, HRFlowable
                         from reportlab.lib.styles import ParagraphStyle
-                        from reportlab.lib.enums import TA_LEFT, TA_CENTER, TA_JUSTIFY
-                        _pdf_io = io.BytesIO()
-                        _doc = SimpleDocTemplate(_pdf_io, pagesize=A4, topMargin=30*mm, bottomMargin=20*mm, leftMargin=20*mm, rightMargin=20*mm)
-                        _cyan = HexColor('#00d4ff')
-                        _dark = HexColor('#0a1628')
-                        _light = HexColor('#e2e8f0')
-                        _styles_pdf = {
-                            'title': ParagraphStyle('TTTitle', fontSize=18, leading=22, textColor=_cyan, fontName='Helvetica-Bold', spaceAfter=12, alignment=TA_CENTER),
-                            'h2': ParagraphStyle('TTH2', fontSize=13, leading=16, textColor=_cyan, fontName='Helvetica-Bold', spaceBefore=16, spaceAfter=6),
-                            'h3': ParagraphStyle('TTH3', fontSize=11, leading=14, textColor=HexColor('#7dd3fc'), fontName='Helvetica-Bold', spaceBefore=10, spaceAfter=4),
-                            'body': ParagraphStyle('TTBody', fontSize=9.5, leading=13, textColor=HexColor('#334155'), fontName='Helvetica', spaceAfter=6, alignment=TA_JUSTIFY),
-                            'bullet': ParagraphStyle('TTBullet', fontSize=9.5, leading=13, textColor=HexColor('#334155'), fontName='Helvetica', leftIndent=18, spaceAfter=3, bulletIndent=6, bulletFontSize=9),
-                            'meta': ParagraphStyle('TTMeta', fontSize=8, leading=10, textColor=HexColor('#64748b'), fontName='Helvetica-Oblique', spaceAfter=4, alignment=TA_CENTER),
-                        }
-                        _story = []
-                        # Parse HTML to extract text content
-                        _clean = _tt_report.replace('\n', ' ')
-                        # Extract title
-                        _tm = _re.search(r'<h1[^>]*>(.*?)</h1>', _clean, _re.DOTALL)
-                        if _tm:
-                            _story.append(Paragraph(_re.sub(r'<[^>]+>', '', _tm.group(1)).strip(), _styles_pdf['title']))
-                        _story.append(Spacer(1, 4))
-                        _story.append(HRFlowable(width="100%", thickness=1, color=_cyan, spaceAfter=10))
-                        # Extract author/date meta
-                        _meta_matches = _re.findall(r'<(?:span|div)[^>]*style[^>]*(?:64748b|94a3b8)[^>]*>(.*?)</(?:span|div)>', _clean, _re.DOTALL)
-                        for _mm in _meta_matches[:3]:
-                            _mt = _re.sub(r'<[^>]+>', '', _mm).strip()
-                            if _mt:
-                                _story.append(Paragraph(_mt, _styles_pdf['meta']))
-                        # Process sections
-                        _sections = _re.split(r'<h2[^>]*>', _clean)
-                        for _sec in _sections[1:]:
-                            _h2m = _re.match(r'(.*?)</h2>', _sec, _re.DOTALL)
-                            if _h2m:
-                                _story.append(Paragraph(_re.sub(r'<[^>]+>', '', _h2m.group(1)).strip(), _styles_pdf['h2']))
-                            _sec_body = _re.sub(r'^.*?</h2>', '', _sec, flags=_re.DOTALL)
-                            # Split by h3
-                            _h3parts = _re.split(r'<h3[^>]*>', _sec_body)
-                            for _h3i, _h3p in enumerate(_h3parts):
-                                if _h3i > 0:
-                                    _h3m = _re.match(r'(.*?)</h3>', _h3p, _re.DOTALL)
-                                    if _h3m:
-                                        _story.append(Paragraph(_re.sub(r'<[^>]+>', '', _h3m.group(1)).strip(), _styles_pdf['h3']))
-                                    _h3p = _re.sub(r'^.*?</h3>', '', _h3p, flags=_re.DOTALL)
-                                # Extract list items
-                                _lis = _re.findall(r'<li[^>]*>(.*?)</li>', _h3p, _re.DOTALL)
-                                _paras = _re.split(r'<(?:p|div)[^>]*>', _h3p)
-                                for _pp in _paras:
-                                    _pt = _re.sub(r'<[^>]+>', '', _pp).strip()
-                                    if _pt and len(_pt) > 5:
-                                        _story.append(Paragraph(_pt, _styles_pdf['body']))
-                                for _li in _lis:
-                                    _lt = _re.sub(r'<[^>]+>', '', _li).strip()
-                                    if _lt:
-                                        _story.append(Paragraph(f"\u2022 {_lt}", _styles_pdf['bullet']))
-                        # Footer
-                        _story.append(Spacer(1, 20))
-                        _story.append(HRFlowable(width="100%", thickness=0.5, color=HexColor('#1a3a5c'), spaceAfter=6))
-                        _story.append(Paragraph("NERAI Intelligence Hub \u2014 Strategic Analysis Lab", _styles_pdf['meta']))
-                        _doc.build(_story)
-                        _pdf_io.seek(0)
-                        _safe_fn = "".join(c if c.isalnum() or c in " -_" else "" for c in _tt_topic)[:50].strip().replace(" ", "_")
-                        st.download_button(
-                            label="📥 Download PDF Report",
-                            data=_pdf_io.getvalue(),
-                            file_name=f"NERAI_Report_{_safe_fn}.pdf",
-                            mime="application/pdf",
-                            key="tt_pdf_dl"
-                        )
+                        from reportlab.lib.enums import TA_CENTER, TA_JUSTIFY
+                        _raw = st.session_state.get("_tt_raw_text", "")
+                        if _raw:
+                            _pdf_io = io.BytesIO()
+                            _doc = SimpleDocTemplate(_pdf_io, pagesize=A4, topMargin=30*mm, bottomMargin=20*mm, leftMargin=20*mm, rightMargin=20*mm)
+                            _cyan = HexColor("#00d4ff")
+                            _st = {
+                                "t": ParagraphStyle("T", fontSize=18, leading=22, textColor=_cyan, fontName="Helvetica-Bold", spaceAfter=12, alignment=TA_CENTER),
+                                "h2": ParagraphStyle("H2", fontSize=13, leading=16, textColor=_cyan, fontName="Helvetica-Bold", spaceBefore=14, spaceAfter=6),
+                                "h3": ParagraphStyle("H3", fontSize=11, leading=14, textColor=HexColor("#7dd3fc"), fontName="Helvetica-Bold", spaceBefore=10, spaceAfter=4),
+                                "b": ParagraphStyle("B", fontSize=9.5, leading=13, textColor=HexColor("#334155"), fontName="Helvetica", spaceAfter=6, alignment=TA_JUSTIFY),
+                                "bl": ParagraphStyle("BL", fontSize=9.5, leading=13, textColor=HexColor("#334155"), fontName="Helvetica", leftIndent=18, spaceAfter=3),
+                                "m": ParagraphStyle("M", fontSize=8, leading=10, textColor=HexColor("#64748b"), fontName="Helvetica-Oblique", spaceAfter=4, alignment=TA_CENTER),
+                            }
+                            _story = []
+                            for _line in _raw.split("\n"):
+                                _sl = _line.strip()
+                                if not _sl:
+                                    _story.append(Spacer(1, 6))
+                                elif _sl.startswith("# "):
+                                    _story.append(Paragraph(_sl[2:], _st["t"]))
+                                    _story.append(HRFlowable(width="100%", thickness=1, color=_cyan, spaceAfter=8))
+                                elif _sl.startswith("## "):
+                                    _story.append(Paragraph(_sl[3:], _st["h2"]))
+                                elif _sl.startswith("### "):
+                                    _story.append(Paragraph(_sl[4:], _st["h3"]))
+                                elif _sl.startswith("- ") or _sl.startswith("* "):
+                                    _story.append(Paragraph("\u2022 " + _re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", _sl[2:]), _st["bl"]))
+                                elif _sl.startswith("**") and _sl.endswith("**"):
+                                    _story.append(Paragraph(_sl.strip("*"), _st["h3"]))
+                                else:
+                                    _cl = _re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", _sl)
+                                    _story.append(Paragraph(_cl, _st["b"]))
+                            _story.append(Spacer(1, 20))
+                            _story.append(HRFlowable(width="100%", thickness=0.5, color=HexColor("#1a3a5c"), spaceAfter=6))
+                            _story.append(Paragraph("NERAI Intelligence Hub \u2014 Strategic Analysis Lab", _st["m"]))
+                            _doc.build(_story)
+                            _pdf_io.seek(0)
+                            _sfn = "".join(c if c.isalnum() or c in " -_" else "" for c in _tt_topic)[:50].strip().replace(" ", "_")
+                            st.download_button(
+                                label="📥 Download PDF Report",
+                                data=_pdf_io.getvalue(),
+                                file_name=f"NERAI_Report_{_sfn}.pdf",
+                                mime="application/pdf",
+                                key="tt_pdf_dl"
+                            )
                     except Exception as _pdf_err:
                         st.caption(f"PDF generation unavailable: {_pdf_err}")
                 else:
