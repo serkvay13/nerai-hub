@@ -1,5 +1,5 @@
 """
-NERAI INTELLIGENCE HUB â Dashboard v3.0
+NERAI INTELLIGENCE HUB Ã¢ÂÂ Dashboard v3.0
 Multi-page: Home | Indices | Country Profile | News
 """
 import streamlit as st
@@ -69,7 +69,7 @@ _MOBILE_CSS = """
 
 st.set_page_config(
     page_title="NERAI Intelligence Hub",
-    page_icon="ð",
+    page_icon="Ã°ÂÂÂ",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -181,7 +181,7 @@ if st.session_state.access_tier is None:
     border: 1px solid rgba(0,212,255,0.2) !important;
 }
 
-/* ââ Fix sidebar slider contrast ââ */
+/* Ã¢ÂÂÃ¢ÂÂ Fix sidebar slider contrast Ã¢ÂÂÃ¢ÂÂ */
 [data-testid="stSidebar"] .stSlider [data-baseweb="slider"] [role="slider"] {
     background: #00526e !important;
     border: 2px solid #00d4ff !important;
@@ -259,9 +259,9 @@ _IS_PRO = st.session_state.access_tier == 'pro'
 _IS_SOLO = st.session_state.access_tier == 'solo'
 
 
-# âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+# Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 # CSS
-# âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+# Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=DM+Serif+Display&family=JetBrains+Mono:wght@400;500&display=swap');
@@ -290,7 +290,7 @@ st.markdown("""
   --mild: #a29bfe;
 }
 
-/* ââ Global dark background ââ */
+/* Ã¢ÂÂÃ¢ÂÂ Global dark background Ã¢ÂÂÃ¢ÂÂ */
 .stApp, .main, [data-testid="stAppViewContainer"] {
   background: var(--bg-primary) !important;
   color: var(--text-primary) !important;
@@ -298,7 +298,7 @@ st.markdown("""
 [data-testid="stHeader"] { background: transparent !important; }
         #MainMenu {visibility: hidden !important;} footer {visibility: hidden !important;} [data-testid="stDeployButton"] {display: none !important;} [data-testid="stToolbar"] {display: none !important;} header[data-testid="stHeader"] {display: none !important;} [data-testid="manage-app-button"] {display: none !important;} [data-testid="stStatusWidget"] {display: none !important;} [data-testid="stAppViewBlockContainer"] > div:last-child {visibility: visible;} .reportview-container .main footer {display: none !important;} div[data-testid="stBottomBlockContainer"] {display: none !important;} #stStreamlitDialog {display: none !important;} .stApp > footer {display: none !important;} div.viewerBadge_container__r5tak {display: none !important;} div.viewerBadge_link__qRIco {display: none !important;} a[href*="streamlit.io"] {display: none !important;} div[class*="StatusWidget"] {display: none !important;} .stApp > header button[kind="header"] { display: none !important; } div[class*="stToolbar"] {display: none !important;} .styles_viewerBadge {display: none !important;} ._container_gzau3 {display: none !important;} ._profileContainer {display: none !important;}
 
-/* ââ Sidebar dark glass ââ */
+/* Ã¢ÂÂÃ¢ÂÂ Sidebar dark glass Ã¢ÂÂÃ¢ÂÂ */
 [data-testid="stSidebar"] {
   background: linear-gradient(180deg, #0d1220 0%, #0a0e17 100%) !important;
   border-right: 1px solid var(--border) !important;
@@ -327,14 +327,14 @@ st.markdown("""
   margin: 12px 0 !important;
 }
 
-/* ââ Typography ââ */
+/* Ã¢ÂÂÃ¢ÂÂ Typography Ã¢ÂÂÃ¢ÂÂ */
 h1, h2, h3, h4, h5, h6, .stMarkdown h1, .stMarkdown h2, .stMarkdown h3 {
   color: var(--text-primary) !important;
   font-family: 'Inter', sans-serif !important;
 }
 p, span, label, .stMarkdown p { color: var(--text-secondary) !important; }
 
-/* ââ KPI Cards (futuristic glow) ââ */
+/* Ã¢ÂÂÃ¢ÂÂ KPI Cards (futuristic glow) Ã¢ÂÂÃ¢ÂÂ */
 .kpi-card, [data-testid="stMetric"] {
   background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-secondary) 100%) !important;
   border: 1px solid var(--border) !important;
@@ -372,7 +372,7 @@ p, span, label, .stMarkdown p { color: var(--text-secondary) !important; }
 [data-testid="stMetricDelta"] svg { fill: var(--accent2) !important; }
 [data-testid="stMetricDelta"] div { color: var(--accent2) !important; }
 
-/* ââ Signal/News Cards ââ */
+/* Ã¢ÂÂÃ¢ÂÂ Signal/News Cards Ã¢ÂÂÃ¢ÂÂ */
 .signal-card, .news-card {
   background: var(--bg-card) !important;
   border: 1px solid var(--border) !important;
@@ -386,7 +386,7 @@ p, span, label, .stMarkdown p { color: var(--text-secondary) !important; }
   box-shadow: 0 0 15px rgba(0,212,255,0.12) !important;
 }
 
-/* ââ Tabs ââ */
+/* Ã¢ÂÂÃ¢ÂÂ Tabs Ã¢ÂÂÃ¢ÂÂ */
 .stTabs [data-baseweb="tab-list"] {
   background: var(--bg-secondary) !important;
   border-radius: 10px !important;
@@ -409,7 +409,7 @@ p, span, label, .stMarkdown p { color: var(--text-secondary) !important; }
 .stTabs [data-baseweb="tab-border"] { display: none !important; }
 .stTabs [data-baseweb="tab-highlight"] { background: var(--accent) !important; }
 
-/* ââ Expander ââ */
+/* Ã¢ÂÂÃ¢ÂÂ Expander Ã¢ÂÂÃ¢ÂÂ */
 [data-testid="stExpander"] {
   background: var(--bg-card) !important;
   border: 1px solid var(--border) !important;
@@ -418,7 +418,7 @@ p, span, label, .stMarkdown p { color: var(--text-secondary) !important; }
 [data-testid="stExpander"] summary { color: var(--text-primary) !important; }
 [data-testid="stExpander"] summary:hover { color: var(--accent) !important; }
 
-/* ââ Selectbox / Multiselect ââ */
+/* Ã¢ÂÂÃ¢ÂÂ Selectbox / Multiselect Ã¢ÂÂÃ¢ÂÂ */
 [data-testid="stSelectbox"], [data-testid="stMultiSelect"] {
   background: var(--bg-card) !important;
 }
@@ -434,19 +434,19 @@ p, span, label, .stMarkdown p { color: var(--text-secondary) !important; }
 [data-baseweb="popover"] li { color: var(--text-primary) !important; }
 [data-baseweb="popover"] li:hover { background: rgba(0,212,255,0.1) !important; }
 
-/* ââ DataFrame / Tables ââ */
+/* Ã¢ÂÂÃ¢ÂÂ DataFrame / Tables Ã¢ÂÂÃ¢ÂÂ */
 [data-testid="stDataFrame"], .stDataFrame {
   background: var(--bg-card) !important;
   border: 1px solid var(--border) !important;
   border-radius: 10px !important;
 }
 
-/* ââ Slider ââ */
+/* Ã¢ÂÂÃ¢ÂÂ Slider Ã¢ÂÂÃ¢ÂÂ */
 [data-testid="stSlider"] [data-baseweb="slider"] div {
   background: var(--accent) !important;
 }
 
-/* ââ Hero Section ââ */
+/* Ã¢ÂÂÃ¢ÂÂ Hero Section Ã¢ÂÂÃ¢ÂÂ */
 .hero-section {
   background: linear-gradient(135deg, #0d1220 0%, #111827 50%, #0d1220 100%) !important;
   border: 1px solid var(--border) !important;
@@ -468,7 +468,7 @@ p, span, label, .stMarkdown p { color: var(--text-secondary) !important; }
   50% { transform: translate(20px, -20px); }
 }
 
-/* ââ Badge styling ââ */
+/* Ã¢ÂÂÃ¢ÂÂ Badge styling Ã¢ÂÂÃ¢ÂÂ */
 .badge, .tier-badge {
   background: rgba(0,212,255,0.12) !important;
   color: var(--accent) !important;
@@ -481,7 +481,7 @@ p, span, label, .stMarkdown p { color: var(--text-secondary) !important; }
   text-shadow: 0 0 8px rgba(0,212,255,0.3) !important;
 }
 
-/* ââ Scrollbar ââ */
+/* Ã¢ÂÂÃ¢ÂÂ Scrollbar Ã¢ÂÂÃ¢ÂÂ */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: var(--bg-primary); }
 ::-webkit-scrollbar-thumb {
@@ -490,7 +490,7 @@ p, span, label, .stMarkdown p { color: var(--text-secondary) !important; }
 }
 ::-webkit-scrollbar-thumb:hover { background: rgba(0,212,255,0.4); }
 
-/* ââ Animations ââ */
+/* Ã¢ÂÂÃ¢ÂÂ Animations Ã¢ÂÂÃ¢ÂÂ */
 @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
 @keyframes glowPulse {
   0%, 100% { box-shadow: 0 0 5px rgba(0,212,255,0.2); }
@@ -503,7 +503,7 @@ p, span, label, .stMarkdown p { color: var(--text-secondary) !important; }
 .glow-animate { animation: glowPulse 3s ease-in-out infinite; }
 .border-animate { animation: borderGlow 4s ease-in-out infinite; }
 
-/* ââ Profile section ââ */
+/* Ã¢ÂÂÃ¢ÂÂ Profile section Ã¢ÂÂÃ¢ÂÂ */
 .profile-header {
   background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-secondary) 100%) !important;
   border: 1px solid var(--border) !important;
@@ -511,13 +511,13 @@ p, span, label, .stMarkdown p { color: var(--text-secondary) !important; }
   padding: 24px !important;
 }
 
-/* ââ Plotly chart container ââ */
+/* Ã¢ÂÂÃ¢ÂÂ Plotly chart container Ã¢ÂÂÃ¢ÂÂ */
 .js-plotly-plot, .plotly {
   border-radius: 10px !important;
   overflow: hidden !important;
 }
 
-/* ââ Streamlit elements ââ */
+/* Ã¢ÂÂÃ¢ÂÂ Streamlit elements Ã¢ÂÂÃ¢ÂÂ */
 .stAlert {
   background: var(--bg-card) !important;
   border-color: var(--border) !important;
@@ -528,7 +528,7 @@ p, span, label, .stMarkdown p { color: var(--text-secondary) !important; }
 }
 .stSpinner > div { border-color: var(--accent) transparent transparent !important; }
 
-/* ââ Heatmap overrides ââ */
+/* Ã¢ÂÂÃ¢ÂÂ Heatmap overrides Ã¢ÂÂÃ¢ÂÂ */
 .heatmap-container {
   background: var(--bg-card) !important;
   border: 1px solid var(--border) !important;
@@ -536,10 +536,10 @@ p, span, label, .stMarkdown p { color: var(--text-secondary) !important; }
   padding: 16px !important;
 }
 
-/* ââ Column gap fix ââ */
+/* Ã¢ÂÂÃ¢ÂÂ Column gap fix Ã¢ÂÂÃ¢ÂÂ */
 [data-testid="column"] { padding: 0 8px !important; }
 
-/* ââ Login page override ââ */
+/* Ã¢ÂÂÃ¢ÂÂ Login page override Ã¢ÂÂÃ¢ÂÂ */
 .login-container {
   background: var(--bg-card) !important;
   border: 1px solid var(--border-glow) !important;
@@ -547,14 +547,14 @@ p, span, label, .stMarkdown p { color: var(--text-secondary) !important; }
 </style>
 """, unsafe_allow_html=True)
 
-# âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+# Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 # NERAI LOGO (transparent PNG, base64)
-# âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+# Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 NERAI_LOGO_B64 = ""
 
-# âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+# Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 # CONSTANTS
-# âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+# Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 COUNTRY_NAMES = {
     'AF':'Afghanistan','AR':'Argentina','AM':'Armenia','AS':'Australia',
     'BE':'Belgium','BR':'Brazil','CA':'Canada','CH':'China','CO':'Colombia',
@@ -679,9 +679,9 @@ BASE_THEME = dict(
 )
 
 
-# âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+# Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 # DATA LOAD
-# âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+# Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 @st.cache_data(ttl=3600)
 def load_data(filepath='./indices.csv'):
     if os.path.exists(filepath):
@@ -740,7 +740,7 @@ def apply_norm(df_topic,method):
         if row_clean.notna().sum() >= 2:
             row_clean = row_clean.interpolate(method='linear', limit_direction='both')
         row = row_clean.ffill().bfill().fillna(0)
-        if method=='Score (0â100)':
+        if method=='Score (0Ã¢ÂÂ100)':
             # Use 2nd-98th percentile for robust normalization
             vals = row[row > 0]
             if len(vals) > 2:
@@ -760,11 +760,11 @@ def apply_norm(df_topic,method):
 
 def fmt(val,method):
     if method=='Raw': return f'{val:.5f}'
-    if method=='Score (0â100)': return f'{val:.1f}'
-    return f'{val:+.2f}Ï'
+    if method=='Score (0Ã¢ÂÂ100)': return f'{val:.1f}'
+    return f'{val:+.2f}ÃÂ'
 
 def risk_badge(val,method):
-    if method=='Score (0â100)':
+    if method=='Score (0Ã¢ÂÂ100)':
         if val>=75: return '<span class="badge-crit">CRITICAL</span>'
         if val>=50: return '<span class="badge-high">HIGH</span>'
         if val>=25: return '<span class="badge-med">MEDIUM</span>'
@@ -776,11 +776,11 @@ def risk_badge(val,method):
         return '<span class="badge-neu" style="color:#556">NORMAL</span>'
     return ''
 
-# âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+# Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 # CHART FUNCTIONS
-# âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+# Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 def find_top_peaks(series, n=3, window=7):
-    """Zaman serisindeki en yÃ¼ksek local peak tarihlerini dÃ¶ner."""
+    """Zaman serisindeki en yÃÂ¼ksek local peak tarihlerini dÃÂ¶ner."""
     vals = series.values
     peaks = []
     half = window // 2
@@ -798,7 +798,7 @@ def find_top_peaks(series, n=3, window=7):
 def chart_timeseries_with_peaks(df_n, countries, title, method, show_peaks=True):
     """Time series chart with peak annotation markers."""
     fig = go.Figure()
-    y_label = {'Raw':'Raw Index','Score (0â100)':'Risk Score (0â100)','Z-Score':'Z-Score (Ï)'}[method]
+    y_label = {'Raw':'Raw Index','Score (0Ã¢ÂÂ100)':'Risk Score (0Ã¢ÂÂ100)','Z-Score':'Z-Score (ÃÂ)'}[method]
     peak_info = {}
     for i, c in enumerate(countries):
         if c not in df_n.index: continue
@@ -824,18 +824,18 @@ def chart_timeseries_with_peaks(df_n, countries, title, method, show_peaks=True)
                     marker=dict(size=10, color=col, symbol='star',
                                 line=dict(color='#0d1220',width=1.5)),
                     name=f'{COUNTRY_NAMES.get(c,c)} peak',
-                    hovertemplate=f'<b>â¡ PEAK â {COUNTRY_NAMES.get(c,c)}</b><br>'
+                    hovertemplate=f'<b>Ã¢ÂÂ¡ PEAK Ã¢ÂÂ {COUNTRY_NAMES.get(c,c)}</b><br>'
                                   f'{pk.strftime("%d %b %Y")}<br>'
                                   f'{y_label}: {pk_val:.3f}<br>'
-                                  f'<i>Click "ð° Peak News" below to see headlines</i>'
+                                  f'<i>Click "Ã°ÂÂÂ° Peak News" below to see headlines</i>'
                                   f'<extra></extra>',
                     showlegend=False
                 ))
     if method=='Z-Score':
         fig.add_hline(y=2,line_dash='dot',line_color='rgba(224,80,96,0.5)',
-                      annotation_text='Alert (+2Ï)',annotation_font_size=9)
+                      annotation_text='Alert (+2ÃÂ)',annotation_font_size=9)
         fig.add_hline(y=-2,line_dash='dot',line_color='rgba(0,184,212,0.4)',
-                      annotation_text='-2Ï',annotation_font_size=9)
+                      annotation_text='-2ÃÂ',annotation_font_size=9)
     t = {**BASE_THEME}
     t['yaxis'] = {**t['yaxis'],'title':y_label,'title_font':dict(size=10)}
     fig.update_layout(**t, height=340,
@@ -876,7 +876,7 @@ def chart_heatmap(df_n, top_n, method):
                       tickfont=dict(size=8,color='#5a6b82'),gridcolor='rgba(0,0,0,0)')
     t['yaxis'] = dict(tickfont=dict(size=9,color='#8aa0bc'),gridcolor='rgba(0,0,0,0)')
     fig.update_layout(**t,height=460,
-        title=dict(text=f'Top {top_n} Countries â Heatmap',
+        title=dict(text=f'Top {top_n} Countries Ã¢ÂÂ Heatmap',
                    font=dict(size=12,color='#0077a8'),x=0.01))
     return fig
 
@@ -991,7 +991,7 @@ def chart_world(df_n,date_col):
     ))
     t = {**BASE_THEME}
     fig.update_layout(**t,height=420,
-        title=dict(text=f'Global Risk Map â {pd.Timestamp(date_col).strftime("%d %b %Y")}',
+        title=dict(text=f'Global Risk Map Ã¢ÂÂ {pd.Timestamp(date_col).strftime("%d %b %Y")}',
                    font=dict(size=12,color='#0077a8'),x=0.01),
         geo=dict(bgcolor='rgba(0,0,0,0)',showframe=False,showcoastlines=True,
                  coastlinecolor='rgba(0,212,255,0.15)',showland=True,
@@ -1112,12 +1112,12 @@ def gauge_chart(value,title,color,height=210):
                       height=height,margin=dict(l=15,r=15,t=45,b=5))
     return fig
 
-# âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
-# BILATERAL FUNCTIONS  â FIXED (geometric mean approach)
-# âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+# Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
+# BILATERAL FUNCTIONS  Ã¢ÂÂ FIXED (geometric mean approach)
+# Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 @st.cache_data(ttl=3600)
 def compute_bilateral_base(_df_raw):
-    """AÄÄ±rlÄ±klÄ± TENSION ve COOPERATION zaman serisi â global 99p normalize."""
+    """AÃÂÃÂ±rlÃÂ±klÃÂ± TENSION ve COOPERATION zaman serisi Ã¢ÂÂ global 99p normalize."""
     available = set(_df_raw.index.get_level_values('topic').unique())
     countries  = _df_raw.index.get_level_values('country').unique()
     cols       = _df_raw.columns
@@ -1152,8 +1152,8 @@ def compute_bilateral_base(_df_raw):
 def _get_bilateral_specific_norm(_df_raw):
     """
     'deteriorating_bilateral_relations' ve 'increasing_bilateral_relations'
-    topic'lerini baÄÄ±msÄ±z olarak 0-100 normalize et.
-    Her Ã¼lkenin bu konulardaki Ã¶zgÃ¼l skorunu dÃ¶ner.
+    topic'lerini baÃÂÃÂ±msÃÂ±z olarak 0-100 normalize et.
+    Her ÃÂ¼lkenin bu konulardaki ÃÂ¶zgÃÂ¼l skorunu dÃÂ¶ner.
     """
     available = set(_df_raw.index.get_level_values('topic').unique())
     countries = _df_raw.index.get_level_values('country').unique()
@@ -1186,17 +1186,17 @@ def get_bilateral_series(t_norm, c_norm, c1, c2, n_days=60):
 
 
 def relation_status(net_score,trend_7d):
-    if   net_score>=80: st_,col_,ico = 'CRISIS',     '#ff0033','ð¨'
-    elif net_score>=65: st_,col_,ico = 'HOSTILE',    '#e05060','â ï¸'
-    elif net_score>=45: st_,col_,ico = 'TENSE',      '#e06030','ð'
-    elif net_score>=25: st_,col_,ico = 'CAUTIOUS',   '#f59e0b','ð'
-    elif net_score>=10: st_,col_,ico = 'STABLE',     '#00b4d8','ð'
-    else:               st_,col_,ico = 'COOPERATIVE','#00B8D4','ð¤'
-    if   trend_7d> 5: tr_txt,tr_col = 'â² DETERIORATING','#e06030'
-    elif trend_7d> 1: tr_txt,tr_col = 'â WORSENING',    '#f59e0b'
-    elif trend_7d<-5: tr_txt,tr_col = 'â¼ IMPROVING',    '#00B8D4'
-    elif trend_7d<-1: tr_txt,tr_col = 'â EASING',       '#00b4d8'
-    else:             tr_txt,tr_col = 'â STABLE',        '#7a9ab8'
+    if   net_score>=80: st_,col_,ico = 'CRISIS',     '#ff0033','Ã°ÂÂÂ¨'
+    elif net_score>=65: st_,col_,ico = 'HOSTILE',    '#e05060','Ã¢ÂÂ Ã¯Â¸Â'
+    elif net_score>=45: st_,col_,ico = 'TENSE',      '#e06030','Ã°ÂÂÂ'
+    elif net_score>=25: st_,col_,ico = 'CAUTIOUS',   '#f59e0b','Ã°ÂÂÂ'
+    elif net_score>=10: st_,col_,ico = 'STABLE',     '#00b4d8','Ã°ÂÂÂ'
+    else:               st_,col_,ico = 'COOPERATIVE','#00B8D4','Ã°ÂÂ¤Â'
+    if   trend_7d> 5: tr_txt,tr_col = 'Ã¢ÂÂ² DETERIORATING','#e06030'
+    elif trend_7d> 1: tr_txt,tr_col = 'Ã¢ÂÂ WORSENING',    '#f59e0b'
+    elif trend_7d<-5: tr_txt,tr_col = 'Ã¢ÂÂ¼ IMPROVING',    '#00B8D4'
+    elif trend_7d<-1: tr_txt,tr_col = 'Ã¢ÂÂ EASING',       '#00b4d8'
+    else:             tr_txt,tr_col = 'Ã¢ÂÂ STABLE',        '#7a9ab8'
     return st_,col_,ico,tr_txt,tr_col
 
 
@@ -1246,7 +1246,7 @@ def compute_country_bilateral_profile(_t_norm, _c_norm, _deteri_norm, _incr_norm
     """
     FIXED: Uses geometric mean of bilateral-specific topic scores.
     A country only ranks as 'worst relation' if BOTH countries have high
-    deteriorating_bilateral_relations scores â not just one of them.
+    deteriorating_bilateral_relations scores Ã¢ÂÂ not just one of them.
     Also requires minimum volume threshold to filter out low-coverage pairs.
     """
     if country not in _t_norm.index:
@@ -1302,9 +1302,9 @@ def compute_country_bilateral_profile(_t_norm, _c_norm, _deteri_norm, _incr_norm
     return worst, best
 
 
-# âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+# Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 # COUNTRY PROFILE FUNCTIONS
-# âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+# Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 @st.cache_data(ttl=3600)
 def compute_country_top_indices(_df_raw, country, top_n=6):
     if country not in _df_raw.index.get_level_values('country'):
@@ -1357,10 +1357,10 @@ def compute_country_alarms(_df_raw, country, top_n=5):
     return alarms[:top_n]
 
 
-# âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+# Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 # GDELT NEWS FUNCTIONS
-# âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
-# ââ Global Media RSS Feeds ââââââââââââââââââââââââââââââââââââââââââââââââââ
+# Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
+# Ã¢ÂÂÃ¢ÂÂ Global Media RSS Feeds Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 _GLOBAL_RSS_FEEDS = {
     'BBC World': 'http://feeds.bbci.co.uk/news/world/rss.xml',
     'Al Jazeera': 'https://www.aljazeera.com/xml/rss/all.xml',
@@ -1409,7 +1409,7 @@ def fetch_gdelt_news(query_str, max_records=8):
     """Fetch news via Google News RSS (primary) + GDELT fallback. Filters last 2 days."""
     import xml.etree.ElementTree as ET
 
-    # Son 2 gÃ¼nlÃ¼k filtre
+    # Son 2 gÃÂ¼nlÃÂ¼k filtre
     two_days_ago = (datetime.date.today() - datetime.timedelta(days=2)).strftime('%Y-%m-%d')
     query_filtered = f"{query_str} after:{two_days_ago}"
 
@@ -1438,7 +1438,7 @@ def fetch_gdelt_news(query_str, max_records=8):
                     source = urllib.parse.urlparse(link).netloc.replace('www.', '')
                 except Exception:
                     source = 'News'
-            # Google News appends " - Source" to title â strip it
+            # Google News appends " - Source" to title Ã¢ÂÂ strip it
             title = raw_title
             if source and title.endswith(f' - {source}'):
                 title = title[:-(len(source) + 3)]
@@ -1544,9 +1544,9 @@ def fetch_peak_news(country, topic, peak_date_str, days_window=3):
     except Exception:
         return []
 
-# âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+# Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 # DATA LOAD & SESSION STATE
-# âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+# Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 df, is_demo = load_data()
 date_cols   = df.columns
 
@@ -1563,7 +1563,7 @@ all_countries = sorted(df.index.get_level_values('country').unique().tolist())
 tension_norm, coop_norm = compute_bilateral_base(df)
 deteri_norm, incr_norm  = _get_bilateral_specific_norm(df)
 
-# ââ Load pre-computed predictions (if available) âââââââââââââ
+# Ã¢ÂÂÃ¢ÂÂ Load pre-computed predictions (if available) Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 @st.cache_data(ttl=3600)
 def load_predictions():
     pred_file = './predictions.csv'
@@ -1609,9 +1609,9 @@ has_predictions   = pred_df is not None and len(pred_df) > 0
 if 'page' not in st.session_state:
     st.session_state.page = 'home'
 
-# âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+# Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 # SIDEBAR
-# âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+# Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 with st.sidebar:
     st.markdown("""
     <div style='text-align:center;padding:16px 0 20px 0;'>
@@ -1632,22 +1632,22 @@ with st.sidebar:
     </div>
     """, unsafe_allow_html=True)
 
-    # ââ Navigation ââââââââââââââââââââââââââââââââââââââââââ
+    # Ã¢ÂÂÃ¢ÂÂ Navigation Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
     st.markdown('<div class="sec-hdr">Navigation</div>', unsafe_allow_html=True)
 
     nav_pages = [
-        ('home', 'ð  COMMAND CENTER'),
-        ('indices', 'ð RISK MATRIX'),
-        ('profile', 'ð COUNTRY INTEL'),
-        ('news', 'ð° SIGNAL FEED'),
-        ('predictions', 'ð® FORECAST ENGINE'),
-        ('causality', 'ð¸ï¸ CAUSAL NETWORK'),
-        ('scenarios', 'â¡ WHAT-IF SCENARIOS'),
-        ('threat_radar', 'ð´ THREAT RADAR'),
-        ('insights', 'ð INSIGHTS'),
-        ('briefing', 'ð BRIEFING ROOM'),
-        ('global_view', 'ð GLOBAL VIEW'),
-        # ('conflict', 'ð¯ WARZONE ORACLE'),  # DISABLED: temporarily removed
+        ('home', 'Ã°ÂÂÂ  COMMAND CENTER'),
+        ('indices', 'Ã°ÂÂÂ RISK MATRIX'),
+        ('profile', 'Ã°ÂÂÂ COUNTRY INTEL'),
+        ('news', 'Ã°ÂÂÂ° SIGNAL FEED'),
+        ('predictions', 'Ã°ÂÂÂ® FORECAST ENGINE'),
+        ('causality', 'Ã°ÂÂÂ¸Ã¯Â¸Â CAUSAL NETWORK'),
+        ('scenarios', 'Ã¢ÂÂ¡ WHAT-IF SCENARIOS'),
+        ('threat_radar', 'Ã°ÂÂÂ´ THREAT RADAR'),
+        ('insights', 'Ã°ÂÂÂ INSIGHTS'),
+        ('briefing', 'Ã°ÂÂÂ BRIEFING ROOM'),
+        ('global_view', 'Ã°ÂÂÂ GLOBAL VIEW'),
+        # ('conflict', 'Ã°ÂÂÂ¯ WARZONE ORACLE'),  # DISABLED: temporarily removed
     ]
     # Solo tier: show all pages in nav, pro-only content is locked
     _PRO_ONLY_PAGES = {'predictions', 'causality', 'insights', 'briefing', 'global_view'}
@@ -1659,7 +1659,7 @@ with st.sidebar:
 
     st.markdown('<div class="h-div" style="margin:14px 0;"></div>', unsafe_allow_html=True)
 
-    # ââ Data Pipeline ââââââââââââââââââââââââââââââââââââââââ
+    # Ã¢ÂÂÃ¢ÂÂ Data Pipeline Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
     st.markdown('<div class="sec-hdr">Data Pipeline</div>', unsafe_allow_html=True)
 
     import subprocess, sys as _sys
@@ -1674,25 +1674,25 @@ with st.sidebar:
     st.markdown(f"""
     <div style='font-size:0.62rem;color:rgba(0,180,255,0.5);font-family:monospace;
          padding:6px 4px;line-height:1.8;'>
-      {'â ' + indices_age if indices_age else 'â  No data yet'}
+      {'Ã¢ÂÂ ' + indices_age if indices_age else 'Ã¢ÂÂ  No data yet'}
     </div>""", unsafe_allow_html=True)
     # [MOVED TO INLINE] 
-    # [MOVED TO INLINE] if st.button('ð Refresh Indices', use_container_width=True,
+    # [MOVED TO INLINE] if st.button('Ã°ÂÂÂ Refresh Indices', use_container_width=True,
     # [MOVED TO INLINE] help='Run gdelt_indices.py to fetch latest GDELT data'):
-    # [MOVED TO INLINE] with st.spinner('Fetching GDELT dataâ¦'):
+    # [MOVED TO INLINE] with st.spinner('Fetching GDELT dataÃ¢ÂÂ¦'):
     # [MOVED TO INLINE] r = subprocess.run([_sys.executable, './gdelt_indices.py'],
     # [MOVED TO INLINE] capture_output=True, text=True, cwd='.')
     # [MOVED TO INLINE] if r.returncode == 0:
-    # [MOVED TO INLINE] st.success('â Indices updated!')
+    # [MOVED TO INLINE] st.success('Ã¢ÂÂ Indices updated!')
     # [MOVED TO INLINE] st.cache_data.clear(); st.rerun()
     # [MOVED TO INLINE] else:
     # [MOVED TO INLINE] st.error(r.stderr[-600:] or 'Failed')
     # [MOVED TO INLINE] 
     # [MOVED TO INLINE] _max_s = st.slider('Max Series (causality)', 50, 500, 200, 50,
-    # [MOVED TO INLINE] help='Fewer = faster. 200 â 5-8 min. 500 â 30+ min.')
-    # [MOVED TO INLINE] if st.button('ð¸ Run Causal Analysis', use_container_width=True,
-    # [MOVED TO INLINE] help='Run gdelt_causality.py â top-variance series only'):
-    # [MOVED TO INLINE] with st.spinner(f'Computing causality for top {_max_s} seriesâ¦ (~5-8 min)'):
+    # [MOVED TO INLINE] help='Fewer = faster. 200 Ã¢ÂÂ 5-8 min. 500 Ã¢ÂÂ 30+ min.')
+    # [MOVED TO INLINE] if st.button('Ã°ÂÂÂ¸ Run Causal Analysis', use_container_width=True,
+    # [MOVED TO INLINE] help='Run gdelt_causality.py Ã¢ÂÂ top-variance series only'):
+    # [MOVED TO INLINE] with st.spinner(f'Computing causality for top {_max_s} seriesÃ¢ÂÂ¦ (~5-8 min)'):
     # [MOVED TO INLINE] r = subprocess.run(
     # [MOVED TO INLINE] [_sys.executable, './gdelt_causality.py', '--max-series', str(_max_s)],
     # [MOVED TO INLINE] capture_output=True, text=True, cwd='.')
@@ -1700,23 +1700,23 @@ with st.sidebar:
     # [MOVED TO INLINE] out = (r.stdout or '').strip()
     # [MOVED TO INLINE] # Check if any edges were actually found
     # [MOVED TO INLINE] if 'edges found' in out.lower() and '0 edges' in out.lower():
-    # [MOVED TO INLINE] st.warning('â ï¸ 0 significant relationships found â threshold values may be too strict. Try again or increase Max Series.')
+    # [MOVED TO INLINE] st.warning('Ã¢ÂÂ Ã¯Â¸Â 0 significant relationships found Ã¢ÂÂ threshold values may be too strict. Try again or increase Max Series.')
     # [MOVED TO INLINE] else:
-    # [MOVED TO INLINE] st.success('â Causal network ready!')
-    # [MOVED TO INLINE] with st.expander('ð Script output', expanded=False):
+    # [MOVED TO INLINE] st.success('Ã¢ÂÂ Causal network ready!')
+    # [MOVED TO INLINE] with st.expander('Ã°ÂÂÂ Script output', expanded=False):
     # [MOVED TO INLINE] st.code(out[-1200:] or '(no output)')
     # [MOVED TO INLINE] st.cache_data.clear(); st.rerun()
     # [MOVED TO INLINE] else:
     # [MOVED TO INLINE] st.error('Script error:\n' + (r.stderr[-800:] or r.stdout[-400:] or 'Unknown error'))
 
-    if st.button('â¡ Refresh All Data', use_container_width=True, type='primary',
-                 help='Run full pipeline: indices â causality â forecast'):
+    if st.button('Ã¢ÂÂ¡ Refresh All Data', use_container_width=True, type='primary',
+                 help='Run full pipeline: indices Ã¢ÂÂ causality Ã¢ÂÂ forecast'):
         scripts = ['gdelt_indices.py', 'gdelt_causality.py', 'gdelt_forecast_numpy.py']
         all_ok = True
         for script in scripts:
             if not os.path.exists(f'./{script}'):
                 continue
-            with st.spinner(f'Running {script}â¦'):
+            with st.spinner(f'Running {script}Ã¢ÂÂ¦'):
                 r = subprocess.run([_sys.executable, f'./{script}'],
                                    capture_output=True, text=True, cwd='.')
             if r.returncode != 0:
@@ -1724,13 +1724,13 @@ with st.sidebar:
                 all_ok = False
                 break
         if all_ok:
-            st.success('â All data refreshed!')
+            st.success('Ã¢ÂÂ All data refreshed!')
             st.cache_data.clear(); st.rerun()
 
     st.markdown('<div class="h-div" style="margin:14px 0;"></div>', unsafe_allow_html=True)
 
-    # ââ Page-specific controls âââââââââââââââââââââââââââââââ
-    # ââ Normalization Setting ââ
+    # Ã¢ÂÂÃ¢ÂÂ Page-specific controls Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
+    # Ã¢ÂÂÃ¢ÂÂ Normalization Setting Ã¢ÂÂÃ¢ÂÂ
     st.markdown("---")
     norm_method = st.radio(
         "Normalization",
@@ -1763,7 +1763,7 @@ with st.sidebar:
     if st.session_state.page not in ('profile',):
         profile_country = 'US'
         bi_a = 'US'; bi_b = 'RS'; bi_days = 60
-    # ââ NERAI watermark overlay ââ
+    # Ã¢ÂÂÃ¢ÂÂ NERAI watermark overlay Ã¢ÂÂÃ¢ÂÂ
     st.markdown("""<div style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-35deg);pointer-events:none;z-index:1;display:flex;align-items:center;gap:15px;opacity:0.03;"><div style="width:80px;height:80px;background:radial-gradient(circle,rgba(0,212,255,1) 28%,transparent 30%);background-size:16px 16px;"></div><span style="font-size:110px;font-weight:900;letter-spacing:5px;white-space:nowrap;font-family:Arial Black,Impact,sans-serif;color:#00d4ff;">NERAI</span></div>""", unsafe_allow_html=True)
 
     if st.session_state.page not in ('predictions',):
@@ -1772,9 +1772,9 @@ with st.sidebar:
         pred_hist_months = 24
 
 
-# ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
-# STRATEGIC ANALYSIS ENGINE â Insight Layer
-# ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+# Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
+# STRATEGIC ANALYSIS ENGINE Ã¢ÂÂ Insight Layer
+# Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 
 _ANALYSIS_CSS = """<style>
 .nerai-sa{background:linear-gradient(135deg,rgba(0,212,255,.06) 0%,rgba(0,40,60,.15) 100%);border-left:3px solid #00d4ff;border-radius:0 8px 8px 0;padding:16px 20px;margin:12px 0 20px 0;font-size:14px;line-height:1.65;color:#c8d6e5}
@@ -2008,14 +2008,14 @@ def _threat_radar_analysis(df_recent, sel_topic, COUNTRY_NAMES):
     items.append(f"<strong>{stable_count} countries</strong> in stable zone \u2014 normal operational environment. Standard risk posture appropriate.")
     return _es_box(items[:4])
 
-# âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+# Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 # PAGE: HOME
-# âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+# Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 def render_home():
-    """Home page â Premium world-class hero + KPIs + module navigation."""
+    """Home page Ã¢ÂÂ Premium world-class hero + KPIs + module navigation."""
 
-    # ââ 1. HERO: AI + Geopolitical Network Visualization ââ
-    # (from nerai_premium_css.py â replaces old Three.js globe)
+    # Ã¢ÂÂÃ¢ÂÂ 1. HERO: AI + Geopolitical Network Visualization Ã¢ÂÂÃ¢ÂÂ
+    # (from nerai_premium_css.py Ã¢ÂÂ replaces old Three.js globe)
     nerai_premium_css.inject_home_hero()
     nerai_premium_css.inject_global_premium_css()
     st.markdown(_MOBILE_CSS, unsafe_allow_html=True)
@@ -2036,7 +2036,7 @@ def render_home():
     except Exception:
         pass
 
-    # ââ 2. PREMIUM KPI SECTION ââ
+    # Ã¢ÂÂÃ¢ÂÂ 2. PREMIUM KPI SECTION Ã¢ÂÂÃ¢ÂÂ
     st.markdown("""
     <div style="
         display: grid;
@@ -2104,7 +2104,7 @@ def render_home():
     </div>
     """, unsafe_allow_html=True)
 
-    # ââ Status bar ââ
+    # Ã¢ÂÂÃ¢ÂÂ Status bar Ã¢ÂÂÃ¢ÂÂ
     st.markdown("""
     <div style="
         display: flex;
@@ -2122,17 +2122,17 @@ def render_home():
         letter-spacing: 1.5px;
         color: #6b7f99;
     ">
-        <span style="color:#00e676;font-weight:600;">â LIVE</span>
-        <span style="color:rgba(0,212,255,0.15);">â</span>
+        <span style="color:#00e676;font-weight:600;">Ã¢ÂÂ LIVE</span>
+        <span style="color:rgba(0,212,255,0.15);">Ã¢ÂÂ</span>
         <span>GDELT PROJECT</span>
-        <span style="color:rgba(0,212,255,0.15);">â</span>
+        <span style="color:rgba(0,212,255,0.15);">Ã¢ÂÂ</span>
         <span>LAST UPDATE: RECENT</span>
-        <span style="color:rgba(0,212,255,0.15);">â</span>
-        <span style="color:#00e676;">â ONLINE</span>
+        <span style="color:rgba(0,212,255,0.15);">Ã¢ÂÂ</span>
+        <span style="color:#00e676;">Ã¢ÂÂ ONLINE</span>
     </div>
     """, unsafe_allow_html=True)
 
-    # ââ 3. MODULE NAVIGATION SECTION ââ
+    # Ã¢ÂÂÃ¢ÂÂ 3. MODULE NAVIGATION SECTION Ã¢ÂÂÃ¢ÂÂ
     st.markdown("""
     <div style="
         display: flex;
@@ -2159,7 +2159,7 @@ def render_home():
     with m1:
         st.markdown("""
         <div style="text-align:center;padding:8px 0;">
-            <div style="font-size:1.6rem;margin-bottom:10px;">ð</div>
+            <div style="font-size:1.6rem;margin-bottom:10px;">Ã°ÂÂÂ</div>
             <div style="font-family:'Inter',sans-serif;font-size:1rem;font-weight:700;color:#e8edf4;margin-bottom:6px;">Risk Matrix</div>
             <div style="font-family:'Inter',sans-serif;font-size:0.75rem;color:#6b7f99;line-height:1.5;">
                 Topic-based geopolitical risk indices across 60 countries.<br>
@@ -2167,55 +2167,55 @@ def render_home():
             </div>
         </div>
         """, unsafe_allow_html=True)
-        if st.button("â Open Risk Matrix", key="home_to_indices", use_container_width=True):
+        if st.button("Ã¢ÂÂ Open Risk Matrix", key="home_to_indices", use_container_width=True):
             st.session_state.page = "indices"
             st.rerun()
 
     with m2:
         st.markdown("""
         <div style="text-align:center;padding:8px 0;">
-            <div style="font-size:1.6rem;margin-bottom:10px;">ð¯</div>
+            <div style="font-size:1.6rem;margin-bottom:10px;">Ã°ÂÂÂ¯</div>
             <div style="font-family:'Inter',sans-serif;font-size:1rem;font-weight:700;color:#e8edf4;margin-bottom:6px;">Country Intel</div>
             <div style="font-family:'Inter',sans-serif;font-size:0.75rem;color:#6b7f99;line-height:1.5;">
                 Deep-dive into any country: top risk scores, active alarms, bilateral relations worst & best partners.
             </div>
         </div>
         """, unsafe_allow_html=True)
-        if st.button("â Open Country Intel", key="home_to_profile", use_container_width=True):
+        if st.button("Ã¢ÂÂ Open Country Intel", key="home_to_profile", use_container_width=True):
             st.session_state.page = "profile"
             st.rerun()
 
     with m3:
         st.markdown("""
         <div style="text-align:center;padding:8px 0;">
-            <div style="font-size:1.6rem;margin-bottom:10px;">ð°</div>
+            <div style="font-size:1.6rem;margin-bottom:10px;">Ã°ÂÂÂ°</div>
             <div style="font-family:'Inter',sans-serif;font-size:1rem;font-weight:700;color:#e8edf4;margin-bottom:6px;">Signal Feed</div>
             <div style="font-family:'Inter',sans-serif;font-size:0.75rem;color:#6b7f99;line-height:1.5;">
-                Multi-source global intelligence â GDELT + BBC + Al Jazeera + Guardian + DW + NPR.<br>
+                Multi-source global intelligence Ã¢ÂÂ GDELT + BBC + Al Jazeera + Guardian + DW + NPR.<br>
                 Real-time global news intelligence feed.
             </div>
         </div>
         """, unsafe_allow_html=True)
-        if st.button("â Open Signal Feed", key="home_to_news", use_container_width=True):
+        if st.button("Ã¢ÂÂ Open Signal Feed", key="home_to_news", use_container_width=True):
             st.session_state.page = "news"
             st.rerun()
 
     with m4:
         st.markdown("""
         <div style="text-align:center;padding:8px 0;">
-            <div style="font-size:1.6rem;margin-bottom:10px;">ð®</div>
+            <div style="font-size:1.6rem;margin-bottom:10px;">Ã°ÂÂÂ®</div>
             <div style="font-family:'Inter',sans-serif;font-size:1rem;font-weight:700;color:#e8edf4;margin-bottom:6px;">Forecast Engine</div>
             <div style="font-family:'Inter',sans-serif;font-size:0.75rem;color:#6b7f99;line-height:1.5;">
                 N-HiTS deep learning 12-month forecasts<br>
-                for 2,400 topic Ã country risk series.
+                for 2,400 topic ÃÂ country risk series.
             </div>
         </div>
         """, unsafe_allow_html=True)
-        if st.button("â Open Forecast Engine", key="home_to_predictions", use_container_width=True):
+        if st.button("Ã¢ÂÂ Open Forecast Engine", key="home_to_predictions", use_container_width=True):
             st.session_state.page = "predictions"
             st.rerun()
 
-    # ââ Footer tagline ââ
+    # Ã¢ÂÂÃ¢ÂÂ Footer tagline Ã¢ÂÂÃ¢ÂÂ
     st.markdown("""
     <div style="
         text-align: center;
@@ -2252,7 +2252,7 @@ def render_home():
 def render_indices():
     import streamlit.components.v1 as _stc
 
-    # ââ Premium Page Header
+    # Ã¢ÂÂÃ¢ÂÂ Premium Page Header
     nerai_premium_css.inject_page_header(
         title="Risk Matrix",
         subtitle="Topic-based geopolitical risk indices across 60 countries",
@@ -2262,7 +2262,7 @@ def render_indices():
     nerai_premium_css.inject_global_premium_css()
     nerai_premium_css.inject_filter_bar_css()
 
-    # ââ INLINE FILTER BAR ââ
+    # Ã¢ÂÂÃ¢ÂÂ INLINE FILTER BAR Ã¢ÂÂÃ¢ÂÂ
 
     topic_display = {t: TOPIC_LABELS.get(t, t.replace('_',' ').title()) for t in all_topics}
 
@@ -2307,7 +2307,7 @@ def render_indices():
 
     norm_method = st.session_state.get('sidebar_norm', 'Score (0\u2013100)')
 
-    # ââ DATA PREP ââ
+    # Ã¢ÂÂÃ¢ÂÂ DATA PREP Ã¢ÂÂÃ¢ÂÂ
     if sel_topic in df.index.get_level_values('topic'):
         df_topic_raw = df.xs(sel_topic, level='topic')
     else:
@@ -2331,13 +2331,13 @@ def render_indices():
     sel_label = TOPIC_LABELS.get(sel_topic, sel_topic.replace('_',' ').title())
 
     st.markdown(_ANALYSIS_CSS, unsafe_allow_html=True)
-    # ââ Strategic Executive Assessment ââ
+    # Ã¢ÂÂÃ¢ÂÂ Strategic Executive Assessment Ã¢ÂÂÃ¢ÂÂ
     try:
         _exec_html = _indices_exec_analysis(df_recent, sel_topic, COUNTRY_NAMES)
         if _exec_html: st.markdown(_exec_html, unsafe_allow_html=True)
     except: pass
 
-    # ââ KPI CARDS ââ
+    # Ã¢ÂÂÃ¢ÂÂ KPI CARDS Ã¢ÂÂÃ¢ÂÂ
     nerai_premium_css.inject_section_header("Key Risk Indicators", icon="")
     st.markdown("""
     <div style='padding:10px 16px;background:rgba(0,119,168,0.06);border-left:3px solid #0077a8;
@@ -2372,8 +2372,8 @@ def render_indices():
                 except Exception:
                     pass
 
-    # ââ INDICES TIME SERIES CHART ââ
-    nerai_premium_css.inject_section_header(f"Risk Trend â {sel_label}", icon="")
+    # Ã¢ÂÂÃ¢ÂÂ INDICES TIME SERIES CHART Ã¢ÂÂÃ¢ÂÂ
+    nerai_premium_css.inject_section_header(f"Risk Trend Ã¢ÂÂ {sel_label}", icon="")
     if sel_countries and len(df_recent.columns) > 1:
         try:
             _idx_fig = go.Figure()
@@ -2406,15 +2406,15 @@ def render_indices():
         except Exception:
             pass
 
-    # ââ Strategic: 7-Day Trend Assessment ââ
+    # Ã¢ÂÂÃ¢ÂÂ Strategic: 7-Day Trend Assessment Ã¢ÂÂÃ¢ÂÂ
     try:
         _ts_html = _indices_ts_analysis(df_recent, sel_topic, sel_countries, COUNTRY_NAMES)
         if _ts_html: st.markdown(_ts_html, unsafe_allow_html=True)
     except: pass
 
-    # ââ DAILY INDICES TABLE ââ
+    # Ã¢ÂÂÃ¢ÂÂ DAILY INDICES TABLE Ã¢ÂÂÃ¢ÂÂ
     if sel_countries:
-        nerai_premium_css.inject_section_header(f"Daily Indices â {sel_label}", icon="")
+        nerai_premium_css.inject_section_header(f"Daily Indices Ã¢ÂÂ {sel_label}", icon="")
         rows = []
         for c in sel_countries:
             if c in df_recent.index:
@@ -2433,8 +2433,8 @@ def render_indices():
                 use_container_width=True
             )
 
-    # ââ ANIMATED HEATMAP ââ
-    nerai_premium_css.inject_section_header("Risk Heatmap â Top Countries", icon="")
+    # Ã¢ÂÂÃ¢ÂÂ ANIMATED HEATMAP Ã¢ÂÂÃ¢ÂÂ
+    nerai_premium_css.inject_section_header("Risk Heatmap Ã¢ÂÂ Top Countries", icon="")
     try:
         _hm_html = heatmap_glow_html(df_norm, heatmap_n, norm_method, topic_label=sel_label)
         _stc.html(_hm_html, height=520, scrolling=False)
@@ -2446,7 +2446,7 @@ def render_indices():
         except Exception:
             pass
 
-    # ââ ANIMATED GLOBE ââ
+    # Ã¢ÂÂÃ¢ÂÂ ANIMATED GLOBE Ã¢ÂÂÃ¢ÂÂ
     nerai_premium_css.inject_section_header("Global Risk Map", icon="")
     try:
         _gl_html = risk_globe_html(df_norm, map_date)
@@ -2460,13 +2460,13 @@ def render_indices():
             pass
 
 
-    # ââ Strategic: Regional Heat Distribution ââ
+    # Ã¢ÂÂÃ¢ÂÂ Strategic: Regional Heat Distribution Ã¢ÂÂÃ¢ÂÂ
     try:
         _hm_html = _indices_heatmap_analysis(df_norm, sel_topic, COUNTRY_NAMES)
         if _hm_html: st.markdown(_hm_html, unsafe_allow_html=True)
     except: pass
 
-    # Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂ FAZ 3b: Risk Correlation Matrix Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂ
+    # ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ FAZ 3b: Risk Correlation Matrix ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ
     st.markdown('<div class="h-div" style="margin:24px 0 16px"></div>', unsafe_allow_html=True)
     st.markdown('<div class="sec-hdr">&#x1F517; Risk Dimension Correlation Matrix</div>', unsafe_allow_html=True)
     try:
@@ -2502,7 +2502,7 @@ def render_indices():
     except Exception as _e:
         st.caption(f"Correlation matrix unavailable: {_e}")
 
-    # Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂ FAZ 3f: Commodity-Risk Scatter Plot Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂ
+    # ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ FAZ 3f: Commodity-Risk Scatter Plot ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ
     st.markdown('<div class="h-div" style="margin:24px 0 16px"></div>', unsafe_allow_html=True)
     st.markdown('<div class="sec-hdr">&#x1F4B9; Commodity vs Risk Scatter</div>', unsafe_allow_html=True)
     try:
@@ -2553,7 +2553,7 @@ def render_indices():
             st.caption("Commodity data not available.")
     except Exception as _e:
         st.caption(f"Commodity-Risk scatter unavailable: {_e}")
-    # ââ Strategic: Cross-Country Linkages ââ
+    # Ã¢ÂÂÃ¢ÂÂ Strategic: Cross-Country Linkages Ã¢ÂÂÃ¢ÂÂ
     try:
         _corr_html = _indices_corr_analysis(df_norm, sel_countries, COUNTRY_NAMES)
         if _corr_html: st.markdown(_corr_html, unsafe_allow_html=True)
@@ -2617,10 +2617,10 @@ def render_profile():
     _prof_badge = ''
     if profile_country in tension_norm.index:
         _prof_score = float(tension_norm.loc[profile_country].iloc[-7:].mean())
-        _prof_badge = risk_badge(_prof_score, 'Score (0â100)')
+        _prof_badge = risk_badge(_prof_score, 'Score (0Ã¢ÂÂ100)')
 
     st.markdown(_ANALYSIS_CSS, unsafe_allow_html=True)
-    # ââ Strategic Executive Assessment ââ
+    # Ã¢ÂÂÃ¢ÂÂ Strategic Executive Assessment Ã¢ÂÂÃ¢ÂÂ
     try:
         _prof_exec = _profile_exec_analysis(profile_country, cur_t, cur_c, cur_net, trend_bi, prof_alarms, bi_a, bi_b, COUNTRY_NAMES)
         if _prof_exec: st.markdown(_prof_exec, unsafe_allow_html=True)
@@ -2631,7 +2631,7 @@ def render_profile():
     <div style='padding:6px 0 2px;'>
       <div class='hero-title'>Country Intelligence Profile</div>
       <div class='hero-sub'><span class='live-dot'></span>
-        Deep-dive analysis &nbsp;Â·&nbsp; GDELT Data
+        Deep-dive analysis &nbsp;ÃÂ·&nbsp; GDELT Data
       </div>
     </div>""", unsafe_allow_html=True)
     st.markdown('<div class="h-div"></div>', unsafe_allow_html=True)
@@ -2646,13 +2646,13 @@ def render_profile():
       <b>Alarms</b> trigger when a country's risk score exceeds 2 standard deviations above its 90-day rolling mean.
     </div>""", unsafe_allow_html=True)
 
-    # \u2500\u2500 Profile Header ââââââââââââââââââââââââââââââââââââââââ
+    # \u2500\u2500 Profile Header Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
     _pc = '#e05060' if _prof_score>=60 else ('#f59e0b' if _prof_score>=35 else '#00b4d8')
     st.markdown(f"""
     <div class="prof-header">
       <div>
         <div class="prof-country">{prof_name}</div>
-        <div class="prof-sub">COUNTRY INTELLIGENCE PROFILE &nbsp;Â·&nbsp; LAST 7-DAY AVERAGE</div>
+        <div class="prof-sub">COUNTRY INTELLIGENCE PROFILE &nbsp;ÃÂ·&nbsp; LAST 7-DAY AVERAGE</div>
       </div>
       <div style="text-align:right;">
         <div style="font-size:1.6rem;font-weight:700;color:{_pc};
@@ -2661,11 +2661,11 @@ def render_profile():
       </div>
     </div>""", unsafe_allow_html=True)
 
-    # ââ 3-column profile ââââââââââââââââââââââââââââââââââââââ
+    # Ã¢ÂÂÃ¢ÂÂ 3-column profile Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
     pc1, pc2, pc3 = st.columns([4,4,4])
 
     with pc1:
-        st.markdown('<div class="prof-section-title">ð Top Index Scores</div>', unsafe_allow_html=True)
+        st.markdown('<div class="prof-section-title">Ã°ÂÂÂ Top Index Scores</div>', unsafe_allow_html=True)
         if prof_indices:
             for idx in prof_indices:
                 s   = idx['score']
@@ -2686,7 +2686,7 @@ def render_profile():
             st.markdown('<div style="color:rgba(100,150,180,0.4);font-size:0.72rem;">No data</div>', unsafe_allow_html=True)
 
     with pc2:
-        st.markdown('<div class="prof-section-title">â ï¸ Active Alarms</div>', unsafe_allow_html=True)
+        st.markdown('<div class="prof-section-title">Ã¢ÂÂ Ã¯Â¸Â Active Alarms</div>', unsafe_allow_html=True)
         if prof_alarms:
             for alm in prof_alarms:
                 z = alm['z']; pct = alm['pct']
@@ -2695,12 +2695,12 @@ def render_profile():
                 elif z>=0.8:  alm_col,alm_lbl = '#f59e0b','ELEVATED'
                 elif z<=-1.5: alm_col,alm_lbl = '#00B8D4','SUPPRESSED'
                 else:         alm_col,alm_lbl = '#00b4d8','NORMAL'
-                sym = 'â²' if pct>0 else 'â¼'
+                sym = 'Ã¢ÂÂ²' if pct>0 else 'Ã¢ÂÂ¼'
                 st.markdown(f"""
                 <div class="alarm-row" style="border-color:{alm_col}28;">
                   <div>
                     <div class="alarm-label">{alm['label']}</div>
-                    <div class="alarm-meta">z={z:+.2f}Ï &nbsp;Â·&nbsp;
+                    <div class="alarm-meta">z={z:+.2f}ÃÂ &nbsp;ÃÂ·&nbsp;
                       <span style="color:{alm_col};">{sym}{abs(pct):.0f}%</span> vs 7d
                     </div>
                   </div>
@@ -2712,12 +2712,12 @@ def render_profile():
             st.markdown('<div style="color:rgba(100,150,180,0.4);font-size:0.72rem;">No alarms</div>', unsafe_allow_html=True)
 
     with pc3:
-        st.markdown('<div class="prof-section-title">ð Bilateral Relations</div>', unsafe_allow_html=True)
+        st.markdown('<div class="prof-section-title">Ã°ÂÂÂ Bilateral Relations</div>', unsafe_allow_html=True)
         st.markdown("""<div style="font-size:0.6rem;color:#ff6b35;letter-spacing:0.15em;
-            margin-bottom:5px;">â¼ WORST 3 RELATIONS</div>""", unsafe_allow_html=True)
+            margin-bottom:5px;">Ã¢ÂÂ¼ WORST 3 RELATIONS</div>""", unsafe_allow_html=True)
         if prof_worst:
             for rel in prof_worst:
-                t_sym = 'â²' if rel['trend']>0.5 else ('â¼' if rel['trend']<-0.5 else 'â')
+                t_sym = 'Ã¢ÂÂ²' if rel['trend']>0.5 else ('Ã¢ÂÂ¼' if rel['trend']<-0.5 else 'Ã¢ÂÂ')
                 st.markdown(f"""
                 <div class="rel-compact" style="border-left-color:{rel['color']};">
                   <div>
@@ -2741,10 +2741,10 @@ def render_profile():
             st.markdown('<div style="color:rgba(100,150,180,0.4);font-size:0.72rem;padding:8px 0;">Insufficient data</div>', unsafe_allow_html=True)
 
         st.markdown("""<div style="font-size:0.6rem;color:#00B8D4;letter-spacing:0.15em;
-            margin:8px 0 5px;">â² BEST 3 RELATIONS</div>""", unsafe_allow_html=True)
+            margin:8px 0 5px;">Ã¢ÂÂ² BEST 3 RELATIONS</div>""", unsafe_allow_html=True)
         if prof_best:
             for rel in prof_best:
-                t_sym = 'â²' if rel['trend']>0.5 else ('â¼' if rel['trend']<-0.5 else 'â')
+                t_sym = 'Ã¢ÂÂ²' if rel['trend']>0.5 else ('Ã¢ÂÂ¼' if rel['trend']<-0.5 else 'Ã¢ÂÂ')
                 st.markdown(f"""
                 <div class="rel-compact" style="border-left-color:{rel['color']};">
                   <div>
@@ -2767,10 +2767,10 @@ def render_profile():
 
     st.markdown('<div class="h-div" style="margin:20px 0;"></div>', unsafe_allow_html=True)
 
-    nerai_premium_css.inject_section_header("Bilateral Relations Analyzer", icon="ð¤")
+    nerai_premium_css.inject_section_header("Bilateral Relations Analyzer", icon="Ã°ÂÂ¤Â")
 
-    # ââ Bilateral Analyzer ââââââââââââââââââââââââââââââââââââ
-    st.markdown('<div class="sec-hdr">ð Bilateral Relation Analyzer</div>', unsafe_allow_html=True)
+    # Ã¢ÂÂÃ¢ÂÂ Bilateral Analyzer Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
+    st.markdown('<div class="sec-hdr">Ã°ÂÂÂ Bilateral Relation Analyzer</div>', unsafe_allow_html=True)
 
     bi_t_ser, bi_c_ser, bi_net_ser = get_bilateral_series(
         tension_norm, coop_norm, bi_a, bi_b, bi_days)
@@ -2801,10 +2801,10 @@ def render_profile():
           <div style="height:1px;background:linear-gradient(90deg,transparent,{st_col}40,transparent);margin:8px 0;"></div>
           <div style="font-size:0.78rem;font-weight:600;color:{tr_col};font-family:'Share Tech Mono',monospace;">{tr_txt}</div>
           <div style="font-size:0.6rem;color:rgba(100,150,200,0.45);margin-top:5px;font-family:monospace;">
-            Net Tension: {cur_net:.1f} / 100 &nbsp;Â·&nbsp; Î7d: {trend_bi:+.1f}
+            Net Tension: {cur_net:.1f} / 100 &nbsp;ÃÂ·&nbsp; ÃÂ7d: {trend_bi:+.1f}
           </div>
           <div style="font-size:0.62rem;color:rgba(0,180,255,0.3);margin-top:3px;font-family:monospace;">
-            {name_a} &nbsp;â&nbsp; {name_b}
+            {name_a} &nbsp;Ã¢ÂÂ&nbsp; {name_b}
           </div>
         </div>""", unsafe_allow_html=True)
     with g3:
@@ -2837,7 +2837,7 @@ def render_profile():
               <div style="background:rgba(0,0,0,0.3);border-radius:3px;height:3px;margin:6px 0 5px;">
                 <div style="background:{color};width:{_safe_pct(avg_v):.0f}%;height:3px;border-radius:3px;box-shadow:0 0 6px {color}70;"></div>
               </div>
-              <div style="font-size:0.56rem;color:rgba(150,180,200,0.4);font-family:monospace;">{name_a} Â· {name_b}</div>
+              <div style="font-size:0.56rem;color:rgba(150,180,200,0.4);font-family:monospace;">{name_a} ÃÂ· {name_b}</div>
             </div>""", unsafe_allow_html=True)
 
     # Bilateral trend chart
@@ -2855,15 +2855,15 @@ def render_profile():
         mode='lines',line=dict(width=2.5,color='#0077a8'),
         hovertemplate='Net Tension: %{y:.1f}<extra></extra>'))
     t_bi = {**BASE_THEME}
-    t_bi['yaxis'] = {**t_bi['yaxis'],'title':'Score (0â100)','title_font':dict(size=10)}
+    t_bi['yaxis'] = {**t_bi['yaxis'],'title':'Score (0Ã¢ÂÂ100)','title_font':dict(size=10)}
     fig_bi.update_layout(**t_bi,height=290,
-        title=dict(text=f'{name_a}  â  {name_b} â Bilateral Tension Trend',
+        title=dict(text=f'{name_a}  Ã¢ÂÂ  {name_b} Ã¢ÂÂ Bilateral Tension Trend',
                    font=dict(size=12,color='#6a9ab8'),x=0.01),
         legend=dict(bgcolor='rgba(255,255,255,0.85)',bordercolor='rgba(0,119,168,0.25)',
                     borderwidth=1,font=dict(size=10,color='#8aa0bc')),hovermode='x unified')
     st.plotly_chart(fig_bi, use_container_width=True, config={'displayModeBar':False})
 
-    # Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂ FAZ 3c: Country Radar Chart Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂ
+    # ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ FAZ 3c: Country Radar Chart ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ
     st.markdown('<div class="h-div" style="margin:24px 0 16px"></div>', unsafe_allow_html=True)
     st.markdown('<div class="sec-hdr">&#x1F3AF; Country Risk Radar</div>', unsafe_allow_html=True)
     try:
@@ -2914,7 +2914,7 @@ def render_profile():
             st.caption("Not enough risk dimensions for radar chart.")
     except Exception as _e:
         st.caption(f"Radar chart unavailable: {_e}")
-    # ââ Strategic: Conflict-Cooperation Balance ââ
+    # Ã¢ÂÂÃ¢ÂÂ Strategic: Conflict-Cooperation Balance Ã¢ÂÂÃ¢ÂÂ
     try:
         _gauge_html = _profile_gauge_analysis(cur_t, cur_c, cur_net, profile_country, COUNTRY_NAMES)
         if _gauge_html: st.markdown(_gauge_html, unsafe_allow_html=True)
@@ -2923,15 +2923,15 @@ def render_profile():
     _render_footer()
 
 
-# âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+# Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 # PAGE: NEWS
-# âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+# Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 def render_news():
     nerai_premium_css.inject_page_header(
         title="Signal Feed",
-        subtitle="Live GDELT headlines across 28 topic categories â real-time intelligence",
+        subtitle="Live GDELT headlines across 28 topic categories Ã¢ÂÂ real-time intelligence",
         badge="LIVE",
-        icon="ð°"
+        icon="Ã°ÂÂÂ°"
     )
     nerai_premium_css.inject_global_premium_css()
 
@@ -2945,7 +2945,7 @@ def render_news():
     <div style='padding:6px 0 10px;'>
       <div class='hero-title'>Global News Intelligence</div>
       <div class='hero-sub'><span class='live-dot'></span>
-        Multi-Source Intelligence &nbsp;Â·&nbsp; GDELT + Global Media RSS
+        Multi-Source Intelligence &nbsp;ÃÂ·&nbsp; GDELT + Global Media RSS
       </div>
     </div>""", unsafe_allow_html=True)
     st.markdown('<div class="h-div"></div>', unsafe_allow_html=True)
@@ -2985,8 +2985,8 @@ def render_news():
           </div>
         </div>""", unsafe_allow_html=True)
 
-        # ââ Source selector ââ
-        _src_mode = st.radio("Source", ["ð All Sources", "ð¡ GDELT + Google", "ð° Global Media RSS"],
+        # Ã¢ÂÂÃ¢ÂÂ Source selector Ã¢ÂÂÃ¢ÂÂ
+        _src_mode = st.radio("Source", ["Ã°ÂÂÂ All Sources", "Ã°ÂÂÂ¡ GDELT + Google", "Ã°ÂÂÂ° Global Media RSS"],
                              index=0, horizontal=True, label_visibility='collapsed', key='news_src_mode')
         st.markdown('<div style="height:4px"></div>', unsafe_allow_html=True)
 
@@ -2995,11 +2995,11 @@ def render_news():
             search_q = cat_q_kw + (f' {_news_country_name}' if _news_country_name else '')
 
             gdelt_arts, rss_arts = [], []
-            if 'ð' in _src_mode or 'GDELT' in _src_mode:
+            if 'Ã°ÂÂÂ' in _src_mode or 'GDELT' in _src_mode:
                 gdelt_arts = fetch_gdelt_news(search_q, max_records=10)
                 for a in gdelt_arts:
                     a['_src'] = a.get('_src', 'GDELT')
-            if 'ð' in _src_mode or 'RSS' in _src_mode:
+            if 'Ã°ÂÂÂ' in _src_mode or 'RSS' in _src_mode:
                 rss_arts = fetch_global_media_rss(search_q, max_per_feed=3)
 
             articles = gdelt_arts + rss_arts
@@ -3020,9 +3020,9 @@ def render_news():
         _gdelt_c = sum(1 for a in articles if a.get('_src') != 'RSS')
         _rss_c = sum(1 for a in articles if a.get('_src') == 'RSS')
         st.markdown(f"""<div style="display:flex;gap:12px;margin-bottom:10px;font-size:0.6rem;font-family:monospace;color:rgba(0,200,255,0.4);">
-            <span>ð¡ GDELT/Google: {_gdelt_c}</span>
-            <span>ð° Global RSS: {_rss_c}</span>
-            <span>â Total: {len(articles)}</span>
+            <span>Ã°ÂÂÂ¡ GDELT/Google: {_gdelt_c}</span>
+            <span>Ã°ÂÂÂ° Global RSS: {_rss_c}</span>
+            <span>Ã¢ÂÂ Total: {len(articles)}</span>
         </div>""", unsafe_allow_html=True)
 
         if articles:
@@ -3040,7 +3040,7 @@ def render_news():
                     except:
                         pass
                 src_badge_color = 'rgba(0,200,255,0.15)' if src_type == 'RSS' else 'rgba(255,180,0,0.15)'
-                src_badge_text = 'ð° RSS' if src_type == 'RSS' else 'ð¡ GDELT'
+                src_badge_text = 'Ã°ÂÂÂ° RSS' if src_type == 'RSS' else 'Ã°ÂÂÂ¡ GDELT'
                 st.markdown(f"""
                 <div class="news-card">
                     <div class="news-title">
@@ -3050,30 +3050,30 @@ def render_news():
                     </div>
                     <div style="display:flex;gap:14px;margin-top:6px;align-items:center;flex-wrap:wrap;">
                         <div style="font-size:0.58rem;color:rgba(0,180,255,0.6);background:{src_badge_color};padding:2px 8px;border-radius:4px;font-family:monospace;">{src_badge_text}</div>
-                        <div class="news-source">ð {source}</div>
-                        <div class="news-date">ð {date_disp}</div>
+                        <div class="news-source">Ã°ÂÂÂ {source}</div>
+                        <div class="news-date">Ã°ÂÂÂ {date_disp}</div>
                         {'<div style="font-size:0.58rem;color:rgba(100,180,255,0.3);font-family:monospace;border:1px solid rgba(0,150,255,0.15);border-radius:4px;padding:2px 8px;">LANG: '+language.upper()+'</div>' if language else ''}
                     </div>
                 </div>""", unsafe_allow_html=True)
         else:
             st.markdown(f"""
             <div style="text-align:center;padding:40px;color:rgba(100,150,200,0.4);font-family:monospace;font-size:0.8rem;">
-                <div style="font-size:2rem;margin-bottom:12px;">ð¡</div>
+                <div style="font-size:2rem;margin-bottom:12px;">Ã°ÂÂÂ¡</div>
                 No articles found for "{sel_cat}".<br>
                 <span style="font-size:0.65rem;">Sources may be temporarily unavailable.</span>
             </div>""", unsafe_allow_html=True)
     _render_footer()
 
 
-# âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+# Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 # PAGE: PREDICTIONS
-# âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+# Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 def render_predictions():
     nerai_premium_css.inject_page_header(
         title="Forecast Engine",
         subtitle="N-HiTS deep learning 12-month forecasts for 2,400 risk series",
         badge="AI",
-        icon="ð®"
+        icon="Ã°ÂÂÂ®"
     )
     nerai_premium_css.inject_global_premium_css()
 
@@ -3113,7 +3113,7 @@ def render_predictions():
       <div class='hero-title'>12-Month Risk Forecasts</div>
       <div class='hero-sub'>
         <span class='live-dot'></span>
-        N-HiTS Deep Learning Model &nbsp;Â·&nbsp; 2,400 Topic Ã Country Series
+        N-HiTS Deep Learning Model &nbsp;ÃÂ·&nbsp; 2,400 Topic ÃÂ Country Series
       </div>
     </div>""", unsafe_allow_html=True)
     st.markdown('<div class="h-div"></div>', unsafe_allow_html=True)
@@ -3124,7 +3124,7 @@ def render_predictions():
         <div style='text-align:center;padding:40px 20px;
              background:rgba(0,12,32,0.6);border:1px solid rgba(0,150,255,0.12);
              border-radius:12px;margin:20px 0;'>
-          <div style='font-size:3rem;margin-bottom:16px;'>ð®</div>
+          <div style='font-size:3rem;margin-bottom:16px;'>Ã°ÂÂÂ®</div>
           <div style='font-size:1.1rem;font-weight:700;color:#007a99;
                letter-spacing:0.08em;margin-bottom:10px;'>
             Predictions Not Yet Generated
@@ -3139,52 +3139,52 @@ def render_predictions():
                font-family:monospace;font-size:0.78rem;
                color:rgba(0,230,255,0.7);text-align:left;
                display:inline-block;'>
-            # Fast option â pure NumPy, runs in ~30 sec<br>
+            # Fast option Ã¢ÂÂ pure NumPy, runs in ~30 sec<br>
             python gdelt_forecast_numpy.py<br><br>
-            # Full option â N-HiTS deep learning (~2 hrs history download)<br>
+            # Full option Ã¢ÂÂ N-HiTS deep learning (~2 hrs history download)<br>
             python gdelt_bulk_history.py &amp;&amp; python gdelt_forecast.py
           </div>
         </div>""", unsafe_allow_html=True)
 
-        # ââ Auto-generate button ââââââââââââââââââââââââââââââââââ
+        # Ã¢ÂÂÃ¢ÂÂ Auto-generate button Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
         col_l, col_c, col_r = st.columns([2,3,2])
         with col_c:
             indices_ok = os.path.exists('./indices.csv')
             numpy_script = os.path.exists('./gdelt_forecast_numpy.py')
             if indices_ok and numpy_script:
-                if st.button('â¡ Generate Predictions Now (Holt-Winters)',
+                if st.button('Ã¢ÂÂ¡ Generate Predictions Now (Holt-Winters)',
                              use_container_width=True, type='primary'):
-                    with st.spinner('Running Holt-Winters forecast engine (~30 sec)â¦'):
+                    with st.spinner('Running Holt-Winters forecast engine (~30 sec)Ã¢ÂÂ¦'):
                         result = subprocess.run(
                             [sys.executable, './gdelt_forecast_numpy.py'],
                             capture_output=True, text=True, cwd='.'
                         )
                     if result.returncode == 0:
-                        st.success('â Predictions generated! Reloadingâ¦')
+                        st.success('Ã¢ÂÂ Predictions generated! ReloadingÃ¢ÂÂ¦')
                         st.cache_data.clear()
                         st.rerun()
                     else:
                         st.error(f'Forecast failed:\n{result.stderr[-800:]}')
             elif not indices_ok:
-                st.info('ð¥ Run `python gdelt_indices.py` first to collect GDELT data.')
+                st.info('Ã°ÂÂÂ¥ Run `python gdelt_indices.py` first to collect GDELT data.')
             else:
-                st.info('ð Place `gdelt_forecast_numpy.py` in the same folder to enable auto-generation.')
+                st.info('Ã°ÂÂÂ Place `gdelt_forecast_numpy.py` in the same folder to enable auto-generation.')
         _render_footer()
         return
 
-    # ââ Normalise predictions to score 0-100 for display âââââ
+    # Ã¢ÂÂÃ¢ÂÂ Normalise predictions to score 0-100 for display Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
     # Use the same max as historical indices for comparability
     def _norm_pred_series(topic, country, yhat_vals):
         return yhat_vals  # Already normalized at load time
 
-    # ââ Main chart â historical + forecast âââââââââââââââââââ
+    # Ã¢ÂÂÃ¢ÂÂ Main chart Ã¢ÂÂ historical + forecast Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
     col_left, col_right = st.columns([4, 2])
 
     with col_left:
         topic_lbl = TOPIC_LABELS.get(sel_pred_topic,
                                       sel_pred_topic.replace('_',' ').title())
         cname     = COUNTRY_NAMES.get(sel_pred_country, sel_pred_country)
-        st.markdown(f'<div class="sec-hdr">{topic_lbl} â {cname} Â· 12-Month Forecast</div>',
+        st.markdown(f'<div class="sec-hdr">{topic_lbl} Ã¢ÂÂ {cname} ÃÂ· 12-Month Forecast</div>',
                     unsafe_allow_html=True)
 
         # Historical monthly series from indices.csv
@@ -3218,7 +3218,7 @@ def render_predictions():
         fig_fc = go.Figure()
         current_val, fc_end_val = None, None
 
-        # Historical â teal solid line with markers
+        # Historical Ã¢ÂÂ teal solid line with markers
         if hist_series is not None and len(hist_series) > 0:
             current_val = round(float(hist_series.iloc[-1]), 1)
             fig_fc.add_trace(go.Scatter(
@@ -3264,7 +3264,7 @@ def render_predictions():
                     line=dict(color='rgba(245,158,11,0.3)', width=0.5),
                     name='80% Confidence', hoverinfo='skip',
                 ))
-            # Forecast â orange/amber
+            # Forecast Ã¢ÂÂ orange/amber
             fig_fc.add_trace(go.Scatter(
                 x=fc['ds'], y=yhat,
                 name='12-Month Forecast',
@@ -3290,7 +3290,7 @@ def render_predictions():
             height=420, hovermode='x unified',
             margin=dict(l=50, r=20, t=55, b=40),
             xaxis=dict(gridcolor='rgba(0,119,168,0.06)', tickfont=dict(size=10, color='#5a6b82'), showgrid=False),
-            yaxis=dict(title='Risk Score (0â100)', title_font=dict(size=10, color='#5a6b82'),
+            yaxis=dict(title='Risk Score (0Ã¢ÂÂ100)', title_font=dict(size=10, color='#5a6b82'),
                        gridcolor='rgba(0,212,255,0.06)', tickfont=dict(size=10, color='#5a6b82'), zeroline=False),
             legend=dict(
                 bgcolor='rgba(255,255,255,0.92)', bordercolor='rgba(0,119,168,0.2)',
@@ -3304,19 +3304,19 @@ def render_predictions():
         if current_val is not None and fc_end_val is not None:
             delta = max(-100, min(100, fc_end_val - current_val))
             d_col = '#e05060' if delta > 0 else '#00B8D4'
-            arrow = 'â²' if delta > 0 else 'â¼'
+            arrow = 'Ã¢ÂÂ²' if delta > 0 else 'Ã¢ÂÂ¼'
             k1, k2, k3, k4 = st.columns(4)
             k1.markdown(f"<div class='kpi-card'><div class='kpi-label'>Current Score</div><div class='kpi-value'>{current_val:.0f}</div></div>", unsafe_allow_html=True)
             k2.markdown(f"<div class='kpi-card'><div class='kpi-label'>12-Month Forecast</div><div class='kpi-value' style='color:#f59e0b'>{fc_end_val:.0f}</div></div>", unsafe_allow_html=True)
             k3.markdown(f"<div class='kpi-card'><div class='kpi-label'>Expected Change</div><div class='kpi-value' style='color:{d_col}'>{arrow} {abs(delta):.1f}</div></div>", unsafe_allow_html=True)
-            k4.markdown(f"<div class='kpi-card'><div class='kpi-label'>Trend Direction</div><div class='kpi-value' style='color:{d_col};font-size:1rem;'>{'â Rising Risk' if delta > 0 else 'â Falling Risk'}</div></div>", unsafe_allow_html=True)
+            k4.markdown(f"<div class='kpi-card'><div class='kpi-label'>Trend Direction</div><div class='kpi-value' style='color:{d_col};font-size:1rem;'>{'Ã¢ÂÂ Rising Risk' if delta > 0 else 'Ã¢ÂÂ Falling Risk'}</div></div>", unsafe_allow_html=True)
 
     with col_right:
-        st.markdown('<div class="sec-hdr">Trend Summary â All Topics</div>',
+        st.markdown('<div class="sec-hdr">Trend Summary Ã¢ÂÂ All Topics</div>',
                     unsafe_allow_html=True)
         st.markdown("""<div style='font-size:0.68rem;color:#6a8aaa;margin-bottom:10px;line-height:1.5;'>
           Topics with <span style='color:#8a8a8a;'>gray</span> indicators have minimal baseline activity for this country
-          â large % changes from a near-zero base may not indicate meaningful risk shifts.
+          Ã¢ÂÂ large % changes from a near-zero base may not indicate meaningful risk shifts.
         </div>""", unsafe_allow_html=True)
         if trend_df is not None:
             country_trends = trend_df[trend_df['country'] == sel_pred_country].copy()
@@ -3328,7 +3328,7 @@ def render_predictions():
                 pct   = row['trend_pct']
                 dirn  = row['direction']
                 _abs_ctx = ' (low base)' if abs(pct) > 100 else ''
-                arrow = 'â²' if dirn == 'rising' else ('â¼' if dirn == 'falling' else 'â')
+                arrow = 'Ã¢ÂÂ²' if dirn == 'rising' else ('Ã¢ÂÂ¼' if dirn == 'falling' else 'Ã¢ÂÂ')
                 col_d = ('#e05060' if dirn == 'rising'
                          else '#00B8D4' if dirn == 'falling' else '#7a9ab8')
                 bar_w = min(abs(pct) / 3, 100)
@@ -3355,7 +3355,7 @@ def render_predictions():
 
 
     st.markdown(_ANALYSIS_CSS, unsafe_allow_html=True)
-    # ââ Strategic: Forecast Intelligence ââ
+    # Ã¢ÂÂÃ¢ÂÂ Strategic: Forecast Intelligence Ã¢ÂÂÃ¢ÂÂ
     try:
         _fc_html = _forecast_exec_analysis(sel_pred_topic, sel_pred_country, current_val, fc_end_val, fc, COUNTRY_NAMES)
         if _fc_html: st.markdown(_fc_html, unsafe_allow_html=True)
@@ -3364,9 +3364,9 @@ def render_predictions():
     _render_footer()
 
 
-# âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
-# INSIGHTS â Country Risk Intelligence + Q&A
-# âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+# Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
+# INSIGHTS Ã¢ÂÂ Country Risk Intelligence + Q&A
+# Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 
 @st.cache_data(ttl=3600)
 def _compute_country_insights(_df_raw, _trend_df):
@@ -3380,7 +3380,7 @@ def _compute_country_insights(_df_raw, _trend_df):
         past_cols   = date_cols[-14:-7] if len(date_cols) >= 14 else date_cols[:7]
         countries   = _df_raw.index.get_level_values('country').unique().tolist()
 
-        # ââ Step 1: raw means per country ââââââââââââââââââââââ
+        # Ã¢ÂÂÃ¢ÂÂ Step 1: raw means per country Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
         raw_means   = {}
         change_pcts = {}
         for country in countries:
@@ -3394,7 +3394,7 @@ def _compute_country_insights(_df_raw, _trend_df):
                 raw_means[country]   = 0.0
                 change_pcts[country] = 0.0
 
-        # ââ Step 2: normalize risk score to 0-100 ââââââââââââââ
+        # Ã¢ÂÂÃ¢ÂÂ Step 2: normalize risk score to 0-100 Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
         vals       = list(raw_means.values())
         global_p95 = float(sorted(vals)[int(len(vals) * 0.95)]) if vals else 1.0
         if global_p95 == 0:
@@ -3405,7 +3405,7 @@ def _compute_country_insights(_df_raw, _trend_df):
             risk_score = min(raw_means[country] / global_p95 * 100, 100)
             change     = change_pcts[country]
 
-            # ââ Trend data for this country âââââââââââââââââââââ
+            # Ã¢ÂÂÃ¢ÂÂ Trend data for this country Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
             if _trend_df is not None:
                 ct = _trend_df[_trend_df['country'] == country].dropna(subset=['trend_pct'])
                 ct = ct.copy(); ct['trend_pct'] = ct['trend_pct'].clip(-500, 500)
@@ -3417,7 +3417,7 @@ def _compute_country_insights(_df_raw, _trend_df):
 
             forecast_dir = ('rising' if avg_fc > 8 else 'falling' if avg_fc < -8 else 'stable')
 
-            # ââ Criticality: blend risk level + volatility ââââââ
+            # Ã¢ÂÂÃ¢ÂÂ Criticality: blend risk level + volatility Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
             criticality = risk_score * 0.45 + abs(change) * 0.35 + abs(avg_fc) * 0.20
 
             rows.append({
@@ -3438,7 +3438,7 @@ def _risk_narrative(top_rising, top_falling, forecast_dir, avg_fc, country_name)
     parts = []
     r_keys = [r[0] for r in top_rising]
 
-    # ââ Specific dangerous combinations ââââââââââââââââââââââââ
+    # Ã¢ÂÂÃ¢ÂÂ Specific dangerous combinations Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
     if 'coup' in r_keys and 'political_instability' in r_keys:
         parts.append(f"Coup risk and political instability are simultaneously escalating in {country_name}")
     elif 'military_escalation' in r_keys and 'international_crisis' in r_keys:
@@ -3458,7 +3458,7 @@ def _risk_narrative(top_rising, top_falling, forecast_dir, avg_fc, country_name)
             lbl2 = TOPIC_LABELS.get(t2, t2.replace('_', ' ').title())
             parts.append(f"compounded by rising {lbl2} ({p2:+.1f}%)")
 
-    # ââ Forecast qualifier ââââââââââââââââââââââââââââââââââââââ
+    # Ã¢ÂÂÃ¢ÂÂ Forecast qualifier Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
     if forecast_dir == 'rising' and avg_fc > 25:
         parts.append(f"12-month models project significant escalation (avg +{avg_fc:.0f}%)")
     elif forecast_dir == 'rising':
@@ -3484,14 +3484,14 @@ def _render_country_card(col, row):
 
     # Colour scheme
     chg_col   = '#e05060' if change > 10 else '#00B8D4' if change < -10 else '#7a9ab8'
-    chg_arrow = 'â²' if change > 10 else 'â¼' if change < -10 else 'â'
+    chg_arrow = 'Ã¢ÂÂ²' if change > 10 else 'Ã¢ÂÂ¼' if change < -10 else 'Ã¢ÂÂ'
     risk_col  = '#e05060' if risk > 65 else '#f59e0b' if risk > 35 else '#00B8D4'
     fc_col    = '#e05060' if fc_dir == 'rising' else '#00B8D4' if fc_dir == 'falling' else '#7a9ab8'
-    fc_arrow  = 'â²' if fc_dir == 'rising' else 'â¼' if fc_dir == 'falling' else 'â'
+    fc_arrow  = 'Ã¢ÂÂ²' if fc_dir == 'rising' else 'Ã¢ÂÂ¼' if fc_dir == 'falling' else 'Ã¢ÂÂ'
 
     def topic_rows(items, color):
         if not items:
-            return "<div style='color:rgba(120,150,190,0.35);font-size:0.62rem;'>â</div>"
+            return "<div style='color:rgba(120,150,190,0.35);font-size:0.62rem;'>Ã¢ÂÂ</div>"
         html = ""
         for t, p in items[:3]:
             lbl = TOPIC_LABELS.get(t, t.replace('_', ' ').title())
@@ -3517,7 +3517,7 @@ def _render_country_card(col, row):
       <div style='font-size:0.98rem;font-weight:700;color:#0d3464;
            letter-spacing:0.03em;'>{cname}</div>
       <div style='font-size:0.57rem;color:rgba(0,180,255,0.35);
-           font-family:monospace;letter-spacing:0.12em;'>{country} Â· GDELT INDEX</div>
+           font-family:monospace;letter-spacing:0.12em;'>{country} ÃÂ· GDELT INDEX</div>
     </div>
     <div style='text-align:right;'>
       <div style='font-size:1.15rem;font-weight:800;color:{risk_col};
@@ -3532,12 +3532,12 @@ def _render_country_card(col, row):
   <div style='display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;'>
     <div>
       <div style='font-size:0.56rem;color:rgba(255,75,110,0.55);
-           font-family:monospace;letter-spacing:0.1em;margin-bottom:5px;'>â² RISING</div>
+           font-family:monospace;letter-spacing:0.1em;margin-bottom:5px;'>Ã¢ÂÂ² RISING</div>
       {topic_rows(tr, '#e05060')}
     </div>
     <div>
       <div style='font-size:0.56rem;color:rgba(0,255,157,0.55);
-           font-family:monospace;letter-spacing:0.1em;margin-bottom:5px;'>â¼ FALLING</div>
+           font-family:monospace;letter-spacing:0.1em;margin-bottom:5px;'>Ã¢ÂÂ¼ FALLING</div>
       {topic_rows(tf, '#00B8D4')}
     </div>
   </div>
@@ -3547,7 +3547,7 @@ def _render_country_card(col, row):
     <div style='font-size:0.56rem;color:rgba(140,175,215,0.45);
          font-family:monospace;letter-spacing:0.1em;margin-bottom:2px;'>12-MONTH FORECAST</div>
     <div style='font-size:0.69rem;color:{fc_col};font-weight:600;'>
-      {fc_arrow} {fc_dir.title()} &nbsp;Â·&nbsp; {avg_fc:+.1f}% avg predicted change
+      {fc_arrow} {fc_dir.title()} &nbsp;ÃÂ·&nbsp; {avg_fc:+.1f}% avg predicted change
     </div>
   </div>
 
@@ -3559,13 +3559,13 @@ def _render_country_card(col, row):
 </div>""", unsafe_allow_html=True)
 
 
-# ââ Q&A helpers ââââââââââââââââââââââââââââââââââââââââââââââââ
+# Ã¢ÂÂÃ¢ÂÂ Q&A helpers Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 
 _QUESTION_KEYWORDS = {
     'war':        ['military_escalation','military_crisis','international_crisis','military_clash'],
-    'savaÅ':      ['military_escalation','military_crisis','international_crisis','military_clash'],
+    'savaÃÂ':      ['military_escalation','military_crisis','international_crisis','military_clash'],
     'conflict':   ['military_escalation','military_crisis','military_clash'],
-    'Ã§atÄ±Åma':    ['military_escalation','military_crisis'],
+    'ÃÂ§atÃÂ±ÃÂma':    ['military_escalation','military_crisis'],
     'coup':       ['coup','regime_instability','government_instability'],
     'darbe':      ['coup','regime_instability','government_instability'],
     'terror':     ['terrorism','domestic_violence'],
@@ -3573,14 +3573,14 @@ _QUESTION_KEYWORDS = {
     'rights':     ['human_rights_abuses','torture','political_repression'],
     'hak':        ['human_rights_abuses','political_repression'],
     'election':   ['leadership_change','political_instability','democratization'],
-    'seÃ§im':      ['leadership_change','democratization'],
+    'seÃÂ§im':      ['leadership_change','democratization'],
     'protest':    ['protest','political_dissent','opposition_activeness'],
     'stabili':    ['political_stability','institutional_strength','dispute_settlement'],
     'istikrar':   ['political_stability','political_instability','government_instability'],
     'sanction':   ['international_crisis','deteriorating_bilateral_relations'],
-    'yaptÄ±rÄ±m':   ['international_crisis','deteriorating_bilateral_relations'],
+    'yaptÃÂ±rÃÂ±m':   ['international_crisis','deteriorating_bilateral_relations'],
     'nuclear':    ['military_escalation','international_crisis','threaten_in_international_relations'],
-    'nÃ¼kleer':    ['military_escalation','international_crisis','threaten_in_international_relations'],
+    'nÃÂ¼kleer':    ['military_escalation','international_crisis','threaten_in_international_relations'],
     'crisis':     ['international_crisis','political_crisis','military_crisis'],
     'kriz':       ['international_crisis','political_crisis','military_crisis'],
     'human':      ['human_rights_abuses','torture','mass_expulsion'],
@@ -3598,25 +3598,25 @@ _QUESTION_KEYWORDS = {
 _COUNTRY_ALIASES = {
     'iran': 'IR', 'irak': 'IZ', 'iraq': 'IZ', 'usa': 'US', 'america': 'US',
     'amerik': 'US', 'abd': 'US', 'states': 'US', 'united states': 'US',
-    'russia': 'RS', 'rusya': 'RS', 'tÃ¼rk': 'TU', 'turkey': 'TU', 'tÃ¼rkiye': 'TU',
-    'china': 'CH', 'Ã§in': 'CH', 'israel': 'IS', 'israil': 'IS', 'isra': 'IS',
+    'russia': 'RS', 'rusya': 'RS', 'tÃÂ¼rk': 'TU', 'turkey': 'TU', 'tÃÂ¼rkiye': 'TU',
+    'china': 'CH', 'ÃÂ§in': 'CH', 'israel': 'IS', 'israil': 'IS', 'isra': 'IS',
     'ukraine': 'UP', 'ukrain': 'UP', 'ukrayna': 'UP', 'pakistan': 'PK',
     'india': 'IN', 'hindistan': 'IN', 'syria': 'SY', 'suriye': 'SY',
-    'saudi': 'SA', 'suudi': 'SA', 'lebanon': 'LE', 'lÃ¼bnan': 'LE', 'libn': 'LE',
-    'egypt': 'EG', 'mÄ±sÄ±r': 'EG', 'france': 'FR', 'fransa': 'FR',
+    'saudi': 'SA', 'suudi': 'SA', 'lebanon': 'LE', 'lÃÂ¼bnan': 'LE', 'libn': 'LE',
+    'egypt': 'EG', 'mÃÂ±sÃÂ±r': 'EG', 'france': 'FR', 'fransa': 'FR',
     'germany': 'GM', 'almanya': 'GM', 'uk': 'UK', 'britain': 'UK',
     'japan': 'JA', 'japonya': 'JA', 'brazil': 'BR', 'brezilya': 'BR',
     'north korea': 'KN', 'kuzey kore': 'KN', 'korea': 'KS', 'south korea': 'KS',
     'afg': 'AF', 'afghanistan': 'AF', 'afganistan': 'AF',
-    'yemen': 'YM', 'jordan': 'JO', 'Ã¼rdÃ¼n': 'JO', 'kuwait': 'KU', 'kuvey': 'KU',
+    'yemen': 'YM', 'jordan': 'JO', 'ÃÂ¼rdÃÂ¼n': 'JO', 'kuwait': 'KU', 'kuvey': 'KU',
     'qatar': 'QA', 'katar': 'QA', 'nigeri': 'NI', 'ethiopia': 'ET', 'etyopya': 'ET',
     'somalia': 'SO', 'somali': 'SO', 'kenya': 'KE', 'ghana': 'GH',
     'spain': 'SP', 'ispanya': 'SP', 'italy': 'IT', 'italya': 'IT',
     'greece': 'GR', 'yunanis': 'GR', 'mexico': 'MX', 'meksika': 'MX',
     'colombia': 'CO', 'kolombiya': 'CO', 'indonesia': 'ID', 'endonezya': 'ID',
     'malaysia': 'MY', 'filipin': 'RP', 'philippine': 'RP',
-    'kazak': 'KZ', 'kazakhst': 'KZ', 'kyrgyz': 'KG', 'kÄ±rgÄ±z': 'KG',
-    'norwa': 'NO', 'norveÃ§': 'NO', 'sweden': 'SW', 'isveÃ§': 'SW',
+    'kazak': 'KZ', 'kazakhst': 'KZ', 'kyrgyz': 'KG', 'kÃÂ±rgÃÂ±z': 'KG',
+    'norwa': 'NO', 'norveÃÂ§': 'NO', 'sweden': 'SW', 'isveÃÂ§': 'SW',
 }
 
 
@@ -3624,7 +3624,7 @@ def _parse_question(question):
     """Extract country codes and relevant topics from a natural-language question."""
     q_low = question.lower()
 
-    # ââ Countries âââââââââââââââââââââââââââââââââââââââââââââââ
+    # Ã¢ÂÂÃ¢ÂÂ Countries Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
     found_countries = set()
     # Check alias map first (longer phrases first)
     for alias in sorted(_COUNTRY_ALIASES.keys(), key=len, reverse=True):
@@ -3635,7 +3635,7 @@ def _parse_question(question):
         if name.lower() in q_low:
             found_countries.add(code)
 
-    # ââ Topics ââââââââââââââââââââââââââââââââââââââââââââââââââ
+    # Ã¢ÂÂÃ¢ÂÂ Topics Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
     found_topics = set()
     for kw, topics in _QUESTION_KEYWORDS.items():
         if kw in q_low:
@@ -3666,10 +3666,10 @@ def _answer_question(question, df_raw, trend_df, pred_df, insights_df):
     if not countries:
         if insights_df is not None and len(insights_df):
             countries = insights_df['country'].head(3).tolist()
-            fallback_note = "No specific country detected â showing top-risk countries."
+            fallback_note = "No specific country detected Ã¢ÂÂ showing top-risk countries."
         elif trend_df is not None and len(trend_df):
             countries = trend_df.sort_values('trend_pct', ascending=False)['country'].unique()[:3].tolist()
-            fallback_note = "No specific country detected â showing top trending countries."
+            fallback_note = "No specific country detected Ã¢ÂÂ showing top trending countries."
 
     # Fallback topics
     if not topics:
@@ -3689,7 +3689,7 @@ def _answer_question(question, df_raw, trend_df, pred_df, insights_df):
     for country in countries[:4]:
         cname = COUNTRY_NAMES.get(country, country)
 
-        # ââ SECTION 1: Recent 7-day trend ââââââââââââââââââââââââââ
+        # Ã¢ÂÂÃ¢ÂÂ SECTION 1: Recent 7-day trend Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
         trend_items = []
         try:
             c_df = df_raw.xs(country, level='country')
@@ -3711,7 +3711,7 @@ def _answer_question(question, df_raw, trend_df, pred_df, insights_df):
                 lbl = TOPIC_LABELS.get(topic, topic.replace('_', ' ').title())
                 direction = "rose" if pct > 0 else "eased"
                 color = "#ff6b6b" if pct > 15 else "#ffa94d" if pct > 5 else "#1a5a99" if pct < -5 else "#a9e34b"
-                arrow = "â²" if pct > 0 else "â¼"
+                arrow = "Ã¢ÂÂ²" if pct > 0 else "Ã¢ÂÂ¼"
                 trend_items.append((abs(pct), pct,
                     f"<span style='color:{color};'><b>{arrow} {lbl}</b> {direction} <b>{pct:+.1f}%</b></span>"))
         except Exception:
@@ -3732,7 +3732,7 @@ def _answer_question(question, df_raw, trend_df, pred_df, insights_df):
                 f"No significant 7-day movement detected for <b>{cname}</b> across the queried topics.</p>"
             )
 
-        # ââ SECTION 2: 12-month predictions ââââââââââââââââââââââââ
+        # Ã¢ÂÂÃ¢ÂÂ SECTION 2: 12-month predictions Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
         pred_items = []
         if pred_df is not None:
             c_pred = pred_df[pred_df['country'] == country]
@@ -3780,7 +3780,7 @@ def _answer_question(question, df_raw, trend_df, pred_df, insights_df):
                 f"No model forecast available for <b>{cname}</b> on the queried topics.</p>"
             )
 
-        # ââ SECTION 3: Assessment âââââââââââââââââââââââââââââââââââ
+        # Ã¢ÂÂÃ¢ÂÂ SECTION 3: Assessment Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
         net_trend = (sum(p for _, p, _ in trend_items) / len(trend_items)) if trend_items else 0.0
         net_pred  = (sum(p for _, p, _ in pred_items)  / len(pred_items))  if pred_items  else 0.0
 
@@ -3829,17 +3829,17 @@ def _answer_question(question, df_raw, trend_df, pred_df, insights_df):
      border-radius:8px;padding:14px 16px;margin-bottom:12px;'>
   <div style='font-size:0.82rem;font-weight:700;color:#0d3464;letter-spacing:0.04em;
        margin-bottom:10px;padding-bottom:7px;border-bottom:1px solid rgba(0,100,180,0.15);'>
-    ð {cname}
+    Ã°ÂÂÂ {cname}
     <span style='font-size:0.55rem;color:rgba(0,180,255,0.35);font-family:monospace;margin-left:6px;'>{country}</span>
   </div>
   <div style='font-size:0.6rem;color:rgba(0,200,255,0.5);font-family:monospace;
-       letter-spacing:0.1em;margin-bottom:5px;'>â  RECENT ACTIVITY â 7-DAY WINDOW</div>
+       letter-spacing:0.1em;margin-bottom:5px;'>Ã¢ÂÂ  RECENT ACTIVITY Ã¢ÂÂ 7-DAY WINDOW</div>
   {section1_html}
   <div style='font-size:0.6rem;color:rgba(0,200,255,0.5);font-family:monospace;
-       letter-spacing:0.1em;margin:10px 0 5px;'>â  FORWARD PROJECTIONS â 12-MONTH MODEL</div>
+       letter-spacing:0.1em;margin:10px 0 5px;'>Ã¢ÂÂ  FORWARD PROJECTIONS Ã¢ÂÂ 12-MONTH MODEL</div>
   {section2_html}
   <div style='font-size:0.6rem;color:rgba(0,200,255,0.5);font-family:monospace;
-       letter-spacing:0.1em;margin:10px 0 5px;'>ð¯ ASSESSMENT</div>
+       letter-spacing:0.1em;margin:10px 0 5px;'>Ã°ÂÂÂ¯ ASSESSMENT</div>
   <p style='color:#2d4a6a;font-size:0.73rem;line-height:1.75;margin:0;'>{assess_text}</p>
 </div>""")
 
@@ -3850,7 +3850,7 @@ def _answer_question(question, df_raw, trend_df, pred_df, insights_df):
 
     topic_labels_used = ", ".join([TOPIC_LABELS.get(t, t.replace('_', ' ').title()) for t in topics[:6]])
     header_note_html  = (f"<div style='font-size:0.62rem;color:rgba(255,200,100,0.55);"
-                         f"font-family:monospace;margin-bottom:10px;'>â  {fallback_note}</div>"
+                         f"font-family:monospace;margin-bottom:10px;'>Ã¢ÂÂ  {fallback_note}</div>"
                          if fallback_note else "")
 
     return f"""
@@ -3863,7 +3863,7 @@ def _answer_question(question, df_raw, trend_df, pred_df, insights_df):
   {''.join(country_blocks)}
   <div style='font-size:0.58rem;color:rgba(100,140,180,0.35);font-family:monospace;
        margin-top:6px;border-top:1px solid rgba(0,80,160,0.1);padding-top:6px;'>
-    SOURCE: GDELT PROJECT Â· INDICES WINDOW TO {last_date.upper()} Â· PROPHET 12-MONTH FORECAST
+    SOURCE: GDELT PROJECT ÃÂ· INDICES WINDOW TO {last_date.upper()} ÃÂ· PROPHET 12-MONTH FORECAST
   </div>
 </div>"""
 
@@ -4249,29 +4249,29 @@ def render_insights():
         title="AI Insights",
         subtitle="Machine-generated intelligence briefings & natural language Q&A",
         badge="AI",
-        icon="ð§ "
+        icon="Ã°ÂÂ§Â "
     )
     nerai_premium_css.inject_global_premium_css()
 
-    # ââ Page header âââââââââââââââââââââââââââââââââââââââââââââ
+    # Ã¢ÂÂÃ¢ÂÂ Page header Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
     st.markdown("""
 <div style='padding:10px 0 6px;'>
   <div style='font-size:1.55rem;font-weight:800;color:#0d3464;letter-spacing:0.04em;'>
-    ð Intelligence Insights
+    Ã°ÂÂÂ Intelligence Insights
   </div>
   <div style='font-size:0.65rem;color:rgba(0,180,255,0.45);font-family:monospace;
        letter-spacing:0.12em;margin-top:3px;'>
-    DATA-DRIVEN COUNTRY RISK ANALYSIS &nbsp;Â·&nbsp; 7-DAY WINDOW + 12-MONTH FORECAST
+    DATA-DRIVEN COUNTRY RISK ANALYSIS &nbsp;ÃÂ·&nbsp; 7-DAY WINDOW + 12-MONTH FORECAST
   </div>
 </div>""", unsafe_allow_html=True)
 
     _indices_ok = df is not None and len(df) > 0
     if not _indices_ok:
-        st.info("ð¥ No indices data available. Run `python gdelt_indices.py` first.")
+        st.info("Ã°ÂÂÂ¥ No indices data available. Run `python gdelt_indices.py` first.")
 
-    # âââ FAZ 4b: Diebold-Yilmaz Spillover Index âââ
+    # Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂ FAZ 4b: Diebold-Yilmaz Spillover Index Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂ
     st.markdown('<div class="h-div" style="margin:24px 0 16px"></div>', unsafe_allow_html=True)
-    st.markdown('<div class="sec-hdr">ð  Spillover Index (Diebold-Yilmaz)</div>', unsafe_allow_html=True)
+    st.markdown('<div class="sec-hdr">Ã°ÂÂÂ  Spillover Index (Diebold-Yilmaz)</div>', unsafe_allow_html=True)
     try:
         _topics_spill = df.index.get_level_values("topic").unique()[:8]
         _last_n = min(60, len(df.columns))
@@ -4326,33 +4326,33 @@ def render_insights():
     except Exception as _e:
         st.caption(f"Spillover index unavailable: {_e}")
 
-    # ââ Compute insights ââââââââââââââââââââââââââââââââââââââââ
-    with st.spinner("Analysing countries Ã risk topicsâ¦"):
+    # Ã¢ÂÂÃ¢ÂÂ Compute insights Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
+    with st.spinner("Analysing countries ÃÂ risk topicsÃ¢ÂÂ¦"):
         insights_df = _compute_country_insights(df, trend_df)
 
-    # ââ Summary KPIs (if available) âââââââââââââââââââââââââââââ
+    # Ã¢ÂÂÃ¢ÂÂ Summary KPIs (if available) Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
     if insights_df is not None and len(insights_df) > 0:
         rising_n  = int((insights_df['forecast_dir'] == 'rising').sum())
         falling_n = int((insights_df['forecast_dir'] == 'falling').sum())
         top1_c    = COUNTRY_NAMES.get(insights_df.iloc[0]['country'], insights_df.iloc[0]['country'])
         k1, k2, k3, k4 = st.columns(4)
         k1.metric("Countries Monitored", len(insights_df))
-        k2.metric("ð Rising Trend",  f"{rising_n} countries")
-        k3.metric("ð Falling Trend", f"{falling_n} countries")
-        k4.metric("ð´ Highest Risk",  top1_c)
+        k2.metric("Ã°ÂÂÂ Rising Trend",  f"{rising_n} countries")
+        k3.metric("Ã°ÂÂÂ Falling Trend", f"{falling_n} countries")
+        k4.metric("Ã°ÂÂÂ´ Highest Risk",  top1_c)
         st.markdown('<div class="h-div" style="margin:16px 0 12px;"></div>', unsafe_allow_html=True)
 
-    # âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
-    # Q&A SECTION â always shown
-    # âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+    # Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
+    # Q&A SECTION Ã¢ÂÂ always shown
+    # Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
     st.markdown("""
 <div style='background:rgba(0,30,70,0.5);border:1px solid rgba(0,150,255,0.2);
      border-radius:10px;padding:16px 18px;margin-bottom:20px;'>
   <div style='font-size:0.95rem;font-weight:700;color:#1a4a8a;margin-bottom:4px;'>
-    ð¬ Ask the Data
+    Ã°ÂÂÂ¬ Ask the Data
   </div>
   <div style='font-size:0.65rem;color:rgba(100,170,230,0.55);font-family:monospace;'>
-    Ask any geopolitical question â the system will analyse indices, trends and forecasts to answer.
+    Ask any geopolitical question Ã¢ÂÂ the system will analyse indices, trends and forecasts to answer.
   </div>
 </div>""", unsafe_allow_html=True)
 
@@ -4363,12 +4363,12 @@ def render_insights():
         key='insights_question'
     )
 
-    qa_submitted = st.button('ð Ask', use_container_width=True, type='primary', key='qa_btn')
+    qa_submitted = st.button('Ã°ÂÂÂ Ask', use_container_width=True, type='primary', key='qa_btn')
     if (qa_submitted or st.session_state.get('_qa_last')) and qa_question and qa_question.strip():
         if qa_submitted:
             st.session_state['_qa_last'] = qa_question.strip()
         _q = st.session_state.get('_qa_last', qa_question.strip())
-        with st.spinner("Analysing dataâ¦"):
+        with st.spinner("Analysing dataÃ¢ÂÂ¦"):
             try:
                 answer_html = _answer_question(
                     _q, df, trend_df, pred_df, insights_df)
@@ -4383,26 +4383,26 @@ def render_insights():
         if 'claude_html' in dir() and claude_html:
             st.markdown(claude_html, unsafe_allow_html=True)
         if not answer_html or len(answer_html.strip()) <= 10:
-            st.info('â¹ï¸ No data found for this question. Try mentioning a country name (e.g. Turkey, Germany) or topic (e.g. military, protest).')
+            st.info('Ã¢ÂÂ¹Ã¯Â¸Â No data found for this question. Try mentioning a country name (e.g. Turkey, Germany) or topic (e.g. military, protest).')
     elif qa_submitted:
-        st.warning('â ï¸ Please type a question first.')
+        st.warning('Ã¢ÂÂ Ã¯Â¸Â Please type a question first.')
         st.markdown('<div class="h-div" style="margin:16px 0 12px;"></div>', unsafe_allow_html=True)
     else:
         st.markdown("""
 <div style='font-size:0.62rem;color:rgba(100,150,200,0.4);font-family:monospace;
      text-align:center;padding:8px;'>
-  â Type a question above to get a data-driven analysis
+  Ã¢ÂÂ Type a question above to get a data-driven analysis
 </div>""", unsafe_allow_html=True)
         st.markdown('<div class="h-div" style="margin:10px 0 16px;"></div>', unsafe_allow_html=True)
 
-    # âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+    # Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
     # COUNTRY RISK CARDS
-    # âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+    # Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
     if insights_df is not None and len(insights_df) > 0:
         st.markdown("""
 <div style='font-size:0.6rem;color:rgba(0,180,255,0.4);font-family:monospace;
      letter-spacing:0.15em;margin-bottom:14px;'>
-  TOP 20 MOST CRITICAL COUNTRIES &nbsp;Â·&nbsp; RANKED BY RISK LEVEL + RATE OF CHANGE
+  TOP 20 MOST CRITICAL COUNTRIES &nbsp;ÃÂ·&nbsp; RANKED BY RISK LEVEL + RATE OF CHANGE
 </div>""", unsafe_allow_html=True)
         top20 = insights_df.head(20).to_dict('records')
         for i in range(0, len(top20), 2):
@@ -4415,17 +4415,17 @@ def render_insights():
         st.markdown("""
 <div style='font-size:0.6rem;color:rgba(0,180,255,0.4);font-family:monospace;
      letter-spacing:0.15em;margin-bottom:14px;'>
-  TOP RISK MOVEMENTS &nbsp;Â·&nbsp; 12-MONTH FORECAST TREND
+  TOP RISK MOVEMENTS &nbsp;ÃÂ·&nbsp; 12-MONTH FORECAST TREND
 </div>""", unsafe_allow_html=True)
         cf1, cf2 = st.columns(2)
         with cf1:
-            st.markdown("<div style='font-size:0.62rem;color:rgba(255,75,110,0.7);font-family:monospace;margin-bottom:8px;'>â² HIGHEST RISING</div>", unsafe_allow_html=True)
+            st.markdown("<div style='font-size:0.62rem;color:rgba(255,75,110,0.7);font-family:monospace;margin-bottom:8px;'>Ã¢ÂÂ² HIGHEST RISING</div>", unsafe_allow_html=True)
             for _, r in trend_df.nlargest(15, 'trend_pct').iterrows():
                 lbl = TOPIC_LABELS.get(r['topic'], str(r['topic']).replace('_',' ').title())
                 cnt = COUNTRY_NAMES.get(r['country'], r['country'])
                 st.markdown(f"<div style='display:flex;justify-content:space-between;padding:4px 8px;margin-bottom:3px;background:rgba(255,75,110,0.05);border:1px solid rgba(255,75,110,0.12);border-radius:5px;'><div><div style='font-size:0.72rem;color:#2a4060;'>{lbl}</div><div style='font-size:0.58rem;color:rgba(0,150,255,0.5);font-family:monospace;'>{cnt}</div></div><div style='font-size:0.82rem;font-weight:700;color:#e05060;font-family:monospace;'>+{_safe_pct(r['trend_pct']):.1f}%</div></div>", unsafe_allow_html=True)
         with cf2:
-            st.markdown("<div style='font-size:0.62rem;color:rgba(0,255,157,0.7);font-family:monospace;margin-bottom:8px;'>â¼ HIGHEST FALLING</div>", unsafe_allow_html=True)
+            st.markdown("<div style='font-size:0.62rem;color:rgba(0,255,157,0.7);font-family:monospace;margin-bottom:8px;'>Ã¢ÂÂ¼ HIGHEST FALLING</div>", unsafe_allow_html=True)
             for _, r in trend_df.nsmallest(15, 'trend_pct').iterrows():
                 lbl = TOPIC_LABELS.get(r['topic'], str(r['topic']).replace('_',' ').title())
                 cnt = COUNTRY_NAMES.get(r['country'], r['country'])
@@ -4434,21 +4434,21 @@ def render_insights():
     _render_footer()
 
 
-# âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+# Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 # FOOTER
-# âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+# Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 def _render_footer():
     st.markdown("""
     <div style='margin-top:40px;padding:16px;text-align:center;
          border-top:1px solid rgba(0,150,255,0.08);
          font-size:0.6rem;color:rgba(0,150,255,0.2);font-family:monospace;letter-spacing:0.1em;'>
-      NERAI INTELLIGENCE HUB &nbsp;Â·&nbsp; DATA: GDELT PROJECT &nbsp;Â·&nbsp; v3.0
+      NERAI INTELLIGENCE HUB &nbsp;ÃÂ·&nbsp; DATA: GDELT PROJECT &nbsp;ÃÂ·&nbsp; v3.0
     </div>""", unsafe_allow_html=True)
 
 
-# âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+# Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 # CAUSAL NETWORK PAGE
-# âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+# Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 @st.cache_data(ttl=3600)
 def load_causality():
     path = './causality_network.csv'
@@ -4471,7 +4471,7 @@ def load_scenario_results():
 
 
 def _node_label(node):
-    """'political_instability_RU' â ('Political Instability', 'RU')"""
+    """'political_instability_RU' Ã¢ÂÂ ('Political Instability', 'RU')"""
     parts = node.rsplit('_', 1)
     if len(parts) == 2:
         return parts[0].replace('_', ' ').title(), parts[1]
@@ -4879,7 +4879,7 @@ def render_causality():
         title="Causal Network",
         subtitle="Discover causal links between geopolitical risk factors",
         badge="NETWORK",
-        icon="ð"
+        icon="Ã°ÂÂÂ"
     )
     nerai_premium_css.inject_global_premium_css()
     nerai_premium_css.inject_filter_bar_css()
@@ -4887,12 +4887,12 @@ def render_causality():
     # --- Inline Data Pipeline Controls ---
     _pipe_cols = st.columns([2, 3, 3, 2])
     with _pipe_cols[0]:
-        _max_s = st.slider('âï¸ Max Series', 50, 500, 200, 50,
-                    help='Fewer = faster. 200 â 5-8 min. 500 â 30+ min.',
+        _max_s = st.slider('Ã¢ÂÂÃ¯Â¸Â Max Series', 50, 500, 200, 50,
+                    help='Fewer = faster. 200 Ã¢ÂÂ 5-8 min. 500 Ã¢ÂÂ 30+ min.',
                     key='inline_causal_max_series')
     with _pipe_cols[1]:
-        if st.button('âï¸ Run Causal Analysis', use_container_width=True,
-                help='Run gdelt_causality.py â top-variance series only',
+        if st.button('Ã¢ÂÂÃ¯Â¸Â Run Causal Analysis', use_container_width=True,
+                help='Run gdelt_causality.py Ã¢ÂÂ top-variance series only',
                 key='inline_run_causal'):
             with st.spinner(f'Computing causality for top {_max_s} series... (~5-8 min)'):
                 import subprocess, sys as _sys
@@ -4902,16 +4902,16 @@ def render_causality():
                 if r.returncode == 0:
                     out = (r.stdout or '').strip()
                     if 'edges found' in out.lower() and '0 edges' in out.lower():
-                        st.warning('â ï¸ 0 significant relationships found â threshold values may be too strict. Try again or increase Max Series.')
+                        st.warning('Ã¢ÂÂ Ã¯Â¸Â 0 significant relationships found Ã¢ÂÂ threshold values may be too strict. Try again or increase Max Series.')
                     else:
-                        st.success('â Causal network ready!')
-                        with st.expander('ð Script output', expanded=False):
+                        st.success('Ã¢ÂÂ Causal network ready!')
+                        with st.expander('Ã°ÂÂÂ Script output', expanded=False):
                             st.code(out[-1200:] or '(no output)')
                     st.cache_data.clear(); st.rerun()
                 else:
                     st.error('Script error:\n' + (r.stderr[-800:] or r.stdout[-400:] or 'Unknown error'))
     with _pipe_cols[2]:
-        if st.button('ð Refresh Indices', use_container_width=True,
+        if st.button('Ã°ÂÂÂ Refresh Indices', use_container_width=True,
                 help='Run gdelt_indices.py to fetch latest GDELT data',
                 key='inline_refresh_indices'):
             with st.spinner('Fetching GDELT data...'):
@@ -4919,13 +4919,13 @@ def render_causality():
                 r = subprocess.run([_sys.executable, './gdelt_indices.py'],
                         capture_output=True, text=True, cwd='.')
                 if r.returncode == 0:
-                    st.success('â Indices updated!')
+                    st.success('Ã¢ÂÂ Indices updated!')
                     st.cache_data.clear(); st.rerun()
                 else:
                     st.error(r.stderr[-600:] or 'Failed')
     with _pipe_cols[3]:
-        if st.button('â¡ Refresh All Data', use_container_width=True,
-                help='Run full pipeline: indices â causality â forecast',
+        if st.button('Ã¢ÂÂ¡ Refresh All Data', use_container_width=True,
+                help='Run full pipeline: indices Ã¢ÂÂ causality Ã¢ÂÂ forecast',
                 key='inline_refresh_all'):
             scripts = ['gdelt_indices.py', 'gdelt_causality.py', 'gdelt_forecast_numpy.py']
             all_ok = True
@@ -4939,7 +4939,7 @@ def render_causality():
                         st.error(f'{script} failed:\n{r.stderr[-400:]}')
                         all_ok = False; break
             if all_ok:
-                st.success('â All data refreshed!')
+                st.success('Ã¢ÂÂ All data refreshed!')
                 st.cache_data.clear(); st.rerun()
 
 
@@ -5095,7 +5095,7 @@ def render_causality():
         _net_title = f'Causal Network: {sel_topic_label} - All Countries'
     elif sel_country != 'All':
         _net_title = f'Causal Network: {sel_country_label} - All Topics'
-    nerai_premium_css.inject_section_header(_net_title, icon="ð¸ï¸")
+    nerai_premium_css.inject_section_header(_net_title, icon="Ã°ÂÂÂ¸Ã¯Â¸Â")
     st.caption('Granger causality network diagram. Arrows show causality direction (A\u2192B: Changes in event A predict event B). Node size reflects the number of connections.')
     if scenario_nodes:
         st.caption('Orange nodes/edges = series touched by the most recent scenario run')
@@ -5126,14 +5126,14 @@ def render_causality():
 
     # -- Top Influencers bar chart --
     if sel_topic != 'All' and sel_country != 'All':
-        _inf_title = f'Top Causal Influencers â {sel_topic_label} Â· {sel_country_label}'
+        _inf_title = f'Top Causal Influencers Ã¢ÂÂ {sel_topic_label} ÃÂ· {sel_country_label}'
     elif sel_topic != 'All':
-        _inf_title = f'Top Causal Influencers â {sel_topic_label}'
+        _inf_title = f'Top Causal Influencers Ã¢ÂÂ {sel_topic_label}'
     elif sel_country != 'All':
-        _inf_title = f'Top Causal Influencers â {sel_country_label}'
+        _inf_title = f'Top Causal Influencers Ã¢ÂÂ {sel_country_label}'
     else:
-        _inf_title = 'Top Causal Influencers â All Topics & Countries'
-    nerai_premium_css.inject_section_header(_inf_title, icon="ð")
+        _inf_title = 'Top Causal Influencers Ã¢ÂÂ All Topics & Countries'
+    nerai_premium_css.inject_section_header(_inf_title, icon="Ã°ÂÂÂ")
     st.caption('Event-country pairs with the highest cumulative F-Statistic. These are the events with the strongest predictive (causal) influence over other events.')
     influence = filtered.groupby('source')['max_f_stat'].sum().sort_values(ascending=False).head(15)
     if len(influence) > 0:
@@ -5189,7 +5189,7 @@ def render_causality():
     st.markdown("<div style='background:rgba(10,20,50,0.4);border:1px solid rgba(0,180,255,0.15);border-radius:8px;padding:14px 18px;margin:15px 0;font-size:0.75rem;color:#8ab4d8;line-height:1.7;'><b style=\'color:#00d4ff;\'>How to Interpret?</b><br>F-Statistic: The higher the value, the stronger the causal relationship. F &gt; 10 = strong, F &gt; 50 = very strong relationship.<br>Lag (Delay): The time delay between events (months). Lag=1 means a change in one event affects another 1 month later.<br>p-value: Values below 0.05 indicate statistically significant relationships.</div>", unsafe_allow_html=True)
 
     # -- News Evidence Section --
-    nerai_premium_css.inject_section_header("Recent News Evidence", icon="ð°")
+    nerai_premium_css.inject_section_header("Recent News Evidence", icon="Ã°ÂÂÂ°")
     st.caption("Real-world news articles that may explain or confirm the detected causal relationships.")
 
     top_sources = filtered.groupby("source")["max_f_stat"].sum().sort_values(ascending=False).head(5)
@@ -5208,7 +5208,7 @@ def render_causality():
                 tl, tc = _node_label(row["target"])
                 target_names.append(f"{tl} ({tc})")
             targets_str = ", ".join(target_names) if target_names else "related factors"
-            with st.expander(f"Evidence: {label} ({cc}) â {targets_str}", expanded=False):
+            with st.expander(f"Evidence: {label} ({cc}) Ã¢ÂÂ {targets_str}", expanded=False):
                 for art in articles:
                     date_str = art["date"] if art["date"] else "Recent"
                     source_str = art["source"] if art["source"] else "Unknown"
@@ -5240,9 +5240,9 @@ def render_causality():
 
 
 
-    # âââ FAZ 4c: Network Centrality Dashboard âââ
+    # Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂ FAZ 4c: Network Centrality Dashboard Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂ
     st.markdown('<div class="h-div" style="margin:24px 0 16px"></div>', unsafe_allow_html=True)
-    st.markdown('<div class="sec-hdr">ð¸ï¸  Network Centrality Analysis</div>', unsafe_allow_html=True)
+    st.markdown('<div class="sec-hdr">Ã°ÂÂÂ¸Ã¯Â¸Â  Network Centrality Analysis</div>', unsafe_allow_html=True)
     try:
         if causality_df is not None and not causality_df.empty:
             # Build adjacency from causality edges
@@ -5288,7 +5288,7 @@ def render_causality():
             st.caption("Run causality analysis first to see network centrality.")
     except Exception as _e:
         st.caption(f"Network centrality unavailable: {_e}")
-# ââ PDF GENERATION HELPERS ââââââââââââââââââââââââââââââââââââââââââââ
+# Ã¢ÂÂÃ¢ÂÂ PDF GENERATION HELPERS Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 _PDF_NAVY  = HexColor('#0a1428')
 _PDF_CYAN  = HexColor('#00b4ff')
 _PDF_RED   = HexColor('#ff4b6e')
@@ -5544,11 +5544,11 @@ def _generate_risk_pdf_w14():
     return buf.getvalue()
 
 
-# ââ BRIEFING ROOM âââââââââââââââââââââââââââââââââââââââââââââââââââââ
+# Ã¢ÂÂÃ¢ÂÂ BRIEFING ROOM Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 
 
 # ============================================================
-# WEEK 16 REPORT FUNCTIONS â April 13-19, 2026
+# WEEK 16 REPORT FUNCTIONS Ã¢ÂÂ April 13-19, 2026
 # ============================================================
 
 def _weekly_bulletin_html():
@@ -5859,7 +5859,7 @@ def _generate_weekly_pdf():
     story.append(Paragraph('On April 13, 2026 (Day 45 of the Middle East conflict), the US Navy formally established a comprehensive naval blockade of Iranian ports, cutting off Tehran\'s seaborne oil exports and restricting imports of critical goods. US Energy Secretary Chris Wright warned that oil prices would continue to climb until meaningful ship traffic resumed through the Strait of Hormuz. Brent crude opened the week at $103.72/barrel before falling mid-week as diplomatic signals briefly buoyed markets.', s['NB']))
     story.append(Spacer(1, 6))
     story.append(Paragraph('NERAI DATA INSIGHTS', s['NBI']))
-    story.append(Paragraph('Iran Military Escalation: 0.133 (+47.1% rising). Military Clash: 0.098 (+47.5% rising). UAE Military Escalation: 0.052 (+132.2% rising â fastest-accelerating in dataset). Saudi Arabia: 0.073 (+29.3%). Qatar: 0.072 (+48.8%). All four major GCC states showing simultaneous escalation acceleration.', s['NB']))
+    story.append(Paragraph('Iran Military Escalation: 0.133 (+47.1% rising). Military Clash: 0.098 (+47.5% rising). UAE Military Escalation: 0.052 (+132.2% rising Ã¢ÂÂ fastest-accelerating in dataset). Saudi Arabia: 0.073 (+29.3%). Qatar: 0.072 (+48.8%). All four major GCC states showing simultaneous escalation acceleration.', s['NB']))
     story.append(Spacer(1, 6))
     story.append(Paragraph('12-MONTH FORECAST', s['NBI']))
     story.append(Paragraph('UAE Military Escalation projected to reach 0.12 by Q3 2026. 42% probability of coordinated GCC defensive posturing triggering conflict-adjacent operations if blockade exceeds 60 days. US blockade forecast to remain in place 30-45 additional days absent diplomatic breakthrough.', s['NB']))
@@ -5908,7 +5908,7 @@ def _generate_risk_pdf():
     story.append(Paragraph('Critical Threat Assessment | Week 16 | April 13-19, 2026', s['NSub']))
     story.append(HRFlowable(width='100%', thickness=1, color=_PDF_RED, spaceAfter=12))
     story.append(Spacer(1, 4))
-    story.append(Paragraph('ALERT 1: COMMERCIAL SHIPPING ATTACKS â HORMUZ CHOKEPOINT CRISIS', s['NH']))
+    story.append(Paragraph('ALERT 1: COMMERCIAL SHIPPING ATTACKS Ã¢ÂÂ HORMUZ CHOKEPOINT CRISIS', s['NH']))
     story.append(Paragraph('SEVERITY: CRITICAL', s['NBI']))
     story.append(Paragraph('Iranian gunboat attacks on Indian-flagged commercial vessels on April 18 represent a doctrinal escalation: from interdicting flag-state vessels to attacking pre-cleared neutral shipping. The VLCC Sanmar Herald attack signals Iranian military commanders may be operating with expanded rules of engagement independent of diplomatic channels, creating unpredictable risk across the 21%-of-global-petroleum-transit chokepoint.', s['NB']))
     story.append(Spacer(1, 6))
@@ -5916,29 +5916,29 @@ def _generate_risk_pdf():
     story.append(Paragraph('Iranian gunboats fire on VLCC Sanmar Herald (Apr 18); two Indian-flagged ships forced to turn back; Iran reopens then re-closes Hormuz within 24 hours (Apr 17-19); US blockade of Iranian ports Day 45+ (from Apr 13); continued shipping insurance premium escalation; IRGC naval exercises expanding in Gulf waters.', s['NB']))
     story.append(Spacer(1, 6))
     story.append(Paragraph('NERAI ANALYSIS', s['NBI']))
-    story.append(Paragraph('UAE Military Escalation: 0.052 (+132.2% rising â fastest in dataset). Kuwait: 0.080 (+99.5% rising). Qatar Military Clash: 0.065 (+40.8% rising). Iran Military Escalation: 0.133 (+47.1% rising). Iran Military Clash: 0.098 (+47.5% rising). All GCC major states showing simultaneous escalation acceleration â unprecedented in NERAI dataset.', s['NB']))
+    story.append(Paragraph('UAE Military Escalation: 0.052 (+132.2% rising Ã¢ÂÂ fastest in dataset). Kuwait: 0.080 (+99.5% rising). Qatar Military Clash: 0.065 (+40.8% rising). Iran Military Escalation: 0.133 (+47.1% rising). Iran Military Clash: 0.098 (+47.5% rising). All GCC major states showing simultaneous escalation acceleration Ã¢ÂÂ unprecedented in NERAI dataset.', s['NB']))
     story.append(Spacer(1, 6))
     story.append(Paragraph('FORECAST', s['NBI']))
     story.append(Paragraph('Sustained shipping attack scenario: Brent projected to spike $115-130/barrel within 2 weeks. Indian naval response probability: 37% within 30 days. If India deploys escorts: 28% probability of accidental IRGC clash. Shipping insurance may become non-functional for VLCC Hormuz transits above $100M cargo value.', s['NB']))
     story.append(Paragraph('WATCH: Indian Navy Eastern Fleet deployments; IRGC gunboat patrol patterns; shipping insurance rate movements; LNG spot price divergence Asia vs. Europe; Saudi Aramco export route shifts.', s['NB']))
     story.append(Spacer(1, 10))
-    story.append(Paragraph('ALERT 2: GULF STATE ESCALATION CASCADE â UAE/KUWAIT THREAT SURGE', s['NH']))
+    story.append(Paragraph('ALERT 2: GULF STATE ESCALATION CASCADE Ã¢ÂÂ UAE/KUWAIT THREAT SURGE', s['NH']))
     story.append(Paragraph('SEVERITY: HIGH', s['NBI']))
-    story.append(Paragraph('NERAI data identifies an accelerating escalation cascade across GCC member states. UAE Military Escalation surged +132.2% and Kuwait nearly doubled (+99.5%) â trajectories that will bring these states to Israel-comparable escalation levels within 60-90 days. This pattern suggests the US naval blockade and Iranian retaliation are creating secondary conflict pressure on Gulf states hosting critical US military infrastructure including Al Udeid (Qatar) and Al Dhafra (UAE) air bases.', s['NB']))
+    story.append(Paragraph('NERAI data identifies an accelerating escalation cascade across GCC member states. UAE Military Escalation surged +132.2% and Kuwait nearly doubled (+99.5%) Ã¢ÂÂ trajectories that will bring these states to Israel-comparable escalation levels within 60-90 days. This pattern suggests the US naval blockade and Iranian retaliation are creating secondary conflict pressure on Gulf states hosting critical US military infrastructure including Al Udeid (Qatar) and Al Dhafra (UAE) air bases.', s['NB']))
     story.append(Spacer(1, 6))
     story.append(Paragraph('NERAI ANALYSIS', s['NBI']))
-    story.append(Paragraph('Saudi Arabia Military Escalation: 0.073 (+29.3% rising). Qatar: 0.072 (+48.8% rising). UAE: 0.052 (+132.2% rising). Kuwait: 0.080 (+99.5% rising). Iraq: 0.169 (+29.2% rising). All four major GCC states plus Iraq showing simultaneous escalation â first time recorded in NERAI dataset.', s['NB']))
+    story.append(Paragraph('Saudi Arabia Military Escalation: 0.073 (+29.3% rising). Qatar: 0.072 (+48.8% rising). UAE: 0.052 (+132.2% rising). Kuwait: 0.080 (+99.5% rising). Iraq: 0.169 (+29.2% rising). All four major GCC states plus Iraq showing simultaneous escalation Ã¢ÂÂ first time recorded in NERAI dataset.', s['NB']))
     story.append(Spacer(1, 6))
     story.append(Paragraph('FORECAST', s['NBI']))
     story.append(Paragraph('UAE projected at 0.12, Kuwait at 0.16 by Q3 2026. Coordinated Iranian strike on GCC installation hosting US forces: 19% probability within 45 days. Such strike would trigger immediate US response and fundamental conflict widening. Saudi Aramco export capacity at elevated disruption risk through Q2 2026.', s['NB']))
     story.append(Paragraph('WATCH: GCC defence ministers joint statements; US CENTCOM force posture; UAE Al Dhafra and Qatar Al Udeid alert levels; Saudi Aramco Abqaiq security upgrades; Iranian medium-range missile inventory.', s['NB']))
     story.append(Spacer(1, 10))
-    story.append(Paragraph('ALERT 3: SECOND-ROUND ISLAMABAD TALKS â FRAGILE DIPLOMATIC WINDOW', s['NH']))
+    story.append(Paragraph('ALERT 3: SECOND-ROUND ISLAMABAD TALKS Ã¢ÂÂ FRAGILE DIPLOMATIC WINDOW', s['NH']))
     story.append(Paragraph('SEVERITY: ELEVATED', s['NBI']))
     story.append(Paragraph('Reports of potential second-round US-Iran Pakistan talks (CNBC, Apr 15) represent the only active diplomatic off-ramp. Structural gaps from first Islamabad talks remain unbridged. Iran\'s Hormuz feint (opening then reversing within 24 hours) suggests tactical diplomatic gestures to test US resolve rather than genuine de-escalation. The window for agreement before military dynamics become irreversible is assessed at approximately 2-3 weeks.', s['NB']))
     story.append(Spacer(1, 6))
     story.append(Paragraph('NERAI ANALYSIS', s['NBI']))
-    story.append(Paragraph('US Military Escalation: 0.160 (stable -1.3%) â deliberate holding posture. Israel Military Escalation: 0.324 (stable +4.2%) â plateau phase. Yemen Military Escalation: 0.204 (falling -8.7%) â possible Houthi tempo reduction as Iranian goodwill signal. Both US and Israeli military indices in holding pattern consistent with pre-negotiation positioning.', s['NB']))
+    story.append(Paragraph('US Military Escalation: 0.160 (stable -1.3%) Ã¢ÂÂ deliberate holding posture. Israel Military Escalation: 0.324 (stable +4.2%) Ã¢ÂÂ plateau phase. Yemen Military Escalation: 0.204 (falling -8.7%) Ã¢ÂÂ possible Houthi tempo reduction as Iranian goodwill signal. Both US and Israeli military indices in holding pattern consistent with pre-negotiation positioning.', s['NB']))
     story.append(Spacer(1, 6))
     story.append(Paragraph('FORECAST', s['NBI']))
     story.append(Paragraph('22% probability second-round talks produce temporary ceasefire by end-April 2026. Successful ceasefire: immediate $12-18/barrel Brent decline, $150-200/oz gold decline. Only 28% durability probability without binding nuclear verification. 61% probability of continued military standoff through Q3 2026. Nuclear timeline: 6-8 months to weapons-grade enrichment capability.', s['NB']))
@@ -6229,7 +6229,7 @@ def render_briefing_room():
 
     # === THINK TANK REPORT GENERATOR ===
     st.markdown('<div class="h-div" style="margin:24px 0 16px"></div>', unsafe_allow_html=True)
-    st.markdown('<div class="sec-hdr">ðï¸ NERAI Strategic Analysis Lab</div>', unsafe_allow_html=True)
+    st.markdown('<div class="sec-hdr">Ã°ÂÂÂÃ¯Â¸Â NERAI Strategic Analysis Lab</div>', unsafe_allow_html=True)
     st.markdown("""
     <p style="color:#8a9bb5;font-size:0.9rem;margin-bottom:16px">
     Generate CFR/RAND-caliber research reports on any geopolitical topic. NERAI cross-references
@@ -6246,7 +6246,7 @@ def render_briefing_room():
 
     _tt_col1, _tt_col2 = st.columns([3, 1])
     with _tt_col2:
-        _tt_generate = st.button("ð Generate Report", type="primary", use_container_width=True, key="tt_gen_btn")
+        _tt_generate = st.button("Ã°ÂÂÂ Generate Report", type="primary", use_container_width=True, key="tt_gen_btn")
 
     if _tt_generate and _tt_topic:
         with st.spinner("Scanning think tank databases, NERAI indices, and academic sources..."):
@@ -6681,20 +6681,20 @@ def _risk_alert_w14_html():
 
 
 SCENARIO_TEMPLATES = {
-    'iran_nuclear_crisis': {'label': 'â¢ï¸ Iran Nuclear Crisis', 'icon': 'â¢ï¸',
+    'iran_nuclear_crisis': {'label': 'Ã¢ÂÂ¢Ã¯Â¸Â Iran Nuclear Crisis', 'icon': 'Ã¢ÂÂ¢Ã¯Â¸Â',
         'desc': 'Simulates escalation in Iran nuclear tensions and regional spillover'},
-    'russia_escalation': {'label': 'âï¸ Russia Escalation', 'icon': 'âï¸',
+    'russia_escalation': {'label': 'Ã¢ÂÂÃ¯Â¸Â Russia Escalation', 'icon': 'Ã¢ÂÂÃ¯Â¸Â',
         'desc': 'Models further Russian military escalation in Eastern Europe'},
-    'china_taiwan_tension': {'label': 'ð China-Taiwan Tension', 'icon': 'ð',
+    'china_taiwan_tension': {'label': 'Ã°ÂÂÂ China-Taiwan Tension', 'icon': 'Ã°ÂÂÂ',
         'desc': 'Simulates increased military posturing in Taiwan Strait'},
-    'middle_east_oil_crisis': {'label': 'ð¢ï¸ Middle East Oil Crisis', 'icon': 'ð¢ï¸',
+    'middle_east_oil_crisis': {'label': 'Ã°ÂÂÂ¢Ã¯Â¸Â Middle East Oil Crisis', 'icon': 'Ã°ÂÂÂ¢Ã¯Â¸Â',
         'desc': 'Models oil supply disruption from Middle East instability'},
-    'global_democratic_backsliding': {'label': 'ð³ï¸ Democratic Backsliding', 'icon': 'ð³ï¸',
+    'global_democratic_backsliding': {'label': 'Ã°ÂÂÂ³Ã¯Â¸Â Democratic Backsliding', 'icon': 'Ã°ÂÂÂ³Ã¯Â¸Â',
         'desc': 'Simulates coordinated erosion of democratic institutions globally'},
 }
 
 
-# ââ Geopolitical context per scenario ââââââââââââââââââââââââââââââ
+# Ã¢ÂÂÃ¢ÂÂ Geopolitical context per scenario Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 SCENARIO_GEO_CONTEXT = {
     'iran_nuclear_crisis': (
         "In real-world terms, Iranian nuclear escalation would immediately pressure global oil markets "
@@ -6797,7 +6797,7 @@ def render_scenarios():
         title="What-If Scenarios",
         subtitle="Simulate geopolitical shocks and analyze cascading risk impacts",
         badge="SIM",
-        icon="â¡"
+        icon="Ã¢ÂÂ¡"
     )
     nerai_premium_css.inject_global_premium_css()
     nerai_premium_css.inject_filter_bar_css()
@@ -6807,14 +6807,14 @@ def render_scenarios():
       <div class='hero-title'>What-If Scenario Engine</div>
       <div class='hero-sub'>
         <span class='live-dot'></span>
-        Shock Simulation &nbsp;Â·&nbsp; ARIMA Re-Forecast &nbsp;Â·&nbsp; Spillover Propagation
+        Shock Simulation &nbsp;ÃÂ·&nbsp; ARIMA Re-Forecast &nbsp;ÃÂ·&nbsp; Spillover Propagation
       </div>
     </div>""", unsafe_allow_html=True)
     st.markdown('<div class="h-div"></div>', unsafe_allow_html=True)
 
     sdf = load_scenario_results()
 
-    nerai_premium_css.inject_section_header("Pre-Built Scenarios", icon="ð¦")
+    nerai_premium_css.inject_section_header("Pre-Built Scenarios", icon="Ã°ÂÂÂ¦")
     row1 = list(SCENARIO_TEMPLATES.items())[:2]
     row2 = list(SCENARIO_TEMPLATES.items())[2:]
 
@@ -6823,7 +6823,7 @@ def render_scenarios():
         with cols1[i]:
             has_result = sdf is not None and key in sdf.get('scenario', pd.Series()).values if sdf is not None else False
             s_col = '#1a8a3a' if has_result else 'rgba(120,120,130,0.5)'
-            s_txt = 'â Completed' if has_result else 'â³ Not run yet'
+            s_txt = 'Ã¢ÂÂ Completed' if has_result else 'Ã¢ÂÂ³ Not run yet'
             st.markdown(f"""
             <div style='background:#f0f6fc;border:1px solid rgba(0,119,168,0.18);
                  border-radius:10px;padding:20px;margin-bottom:12px;min-height:130px;'>
@@ -6838,7 +6838,7 @@ def render_scenarios():
         with cols2[i]:
             has_result = sdf is not None and key in sdf.get('scenario', pd.Series()).values if sdf is not None else False
             s_col = '#1a8a3a' if has_result else 'rgba(120,120,130,0.5)'
-            s_txt = 'â Completed' if has_result else 'â³ Not run yet'
+            s_txt = 'Ã¢ÂÂ Completed' if has_result else 'Ã¢ÂÂ³ Not run yet'
             st.markdown(f"""
             <div style='background:#f0f6fc;border:1px solid rgba(0,119,168,0.18);
                  border-radius:10px;padding:20px;margin-bottom:12px;min-height:130px;'>
@@ -6848,7 +6848,7 @@ def render_scenarios():
               <div style='font-size:0.7rem;color:{s_col};font-weight:600;'>{s_txt}</div>
             </div>""", unsafe_allow_html=True)
 
-    # ââ Methodology & Assumptions âââââââââââ
+    # Ã¢ÂÂÃ¢ÂÂ Methodology & Assumptions Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
     with st.expander("\U0001f4d0 Methodology, Assumptions & Parameters", expanded=False):
         st.markdown("""
         <div style='font-size:0.82rem;color:#1a3a5c;line-height:1.8;'>
@@ -6893,30 +6893,30 @@ def render_scenarios():
     import subprocess, sys as _sys
     st.markdown('<div class="h-div" style="margin:24px 0;"></div>', unsafe_allow_html=True)
 
-    # \u2500\u2500 Run Pre-Built Scenario ââââââââââââââââââââââââââââââââââ
-    nerai_premium_css.inject_section_header("Run Pre-Built Scenario", icon="â¶ï¸")
+    # \u2500\u2500 Run Pre-Built Scenario Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
+    nerai_premium_css.inject_section_header("Run Pre-Built Scenario", icon="Ã¢ÂÂ¶Ã¯Â¸Â")
     sel_scenario = st.selectbox('Select Scenario', list(SCENARIO_TEMPLATES.keys()),
                                 format_func=lambda k: SCENARIO_TEMPLATES[k]['label'])
-    if st.button('â¶ï¸ Run Selected Scenario', type='primary'):
+    if st.button('Ã¢ÂÂ¶Ã¯Â¸Â Run Selected Scenario', type='primary'):
         if not os.path.exists('./gdelt_scenarios.py'):
             st.error('gdelt_scenarios.py not found in working directory.')
         else:
-            with st.spinner(f'Running {SCENARIO_TEMPLATES[sel_scenario]["label"]}â¦'):
+            with st.spinner(f'Running {SCENARIO_TEMPLATES[sel_scenario]["label"]}Ã¢ÂÂ¦'):
                 r = subprocess.run([_sys.executable, './gdelt_scenarios.py', '--scenario', sel_scenario],
                                    capture_output=True, text=True, cwd='.')
             if r.returncode == 0:
-                st.success('â Scenario complete!')
+                st.success('Ã¢ÂÂ Scenario complete!')
                 st.cache_data.clear(); st.rerun()
             else:
                 st.error(r.stderr[-600:] or 'Failed')
 
     st.markdown('<div class="h-div" style="margin:24px 0;"></div>', unsafe_allow_html=True)
 
-    # ââ Custom Scenario Builder âââââââââââââââââââââââââââââââââ
-    nerai_premium_css.inject_section_header("Build a Custom Scenario", icon="ð§")
+    # Ã¢ÂÂÃ¢ÂÂ Custom Scenario Builder Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
+    nerai_premium_css.inject_section_header("Build a Custom Scenario", icon="Ã°ÂÂÂ§")
     st.markdown("""
     <div style='font-size:0.82rem;color:#0077a8;margin-bottom:16px;font-weight:500;'>
-    Define your own scenario: select a country, topic, shock intensity and duration â then run the simulation.
+    Define your own scenario: select a country, topic, shock intensity and duration Ã¢ÂÂ then run the simulation.
     </div>""", unsafe_allow_html=True)
 
     c1, c2 = st.columns(2)
@@ -6930,24 +6930,24 @@ def render_scenarios():
                                      help='1.0 = same size as current level. 2.0 = doubles it.')
         custom_duration  = st.slider('Duration (months)', 1, 12, 6)
 
-    if st.button('â¡ Run Custom Scenario', type='secondary'):
+    if st.button('Ã¢ÂÂ¡ Run Custom Scenario', type='secondary'):
         if not os.path.exists('./gdelt_scenarios.py'):
             st.error('gdelt_scenarios.py not found in working directory.')
         else:
             cmd = [_sys.executable, './gdelt_scenarios.py', '--custom-shock',
                    f'{custom_topic},{custom_country},{custom_magnitude},{custom_duration}']
-            with st.spinner('Running custom scenarioâ¦'):
+            with st.spinner('Running custom scenarioÃ¢ÂÂ¦'):
                 r = subprocess.run(cmd, capture_output=True, text=True, cwd='.')
             if r.returncode == 0:
-                st.success('â Custom scenario complete!')
+                st.success('Ã¢ÂÂ Custom scenario complete!')
                 st.cache_data.clear(); st.rerun()
             else:
                 st.error(r.stderr[-600:] or 'Failed')
 
-    # ââ Results + Analysis ââââââââââââââââââââââââââââââââââââââ
+    # Ã¢ÂÂÃ¢ÂÂ Results + Analysis Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
     if sdf is not None and not sdf.empty:
         st.markdown('<div class="h-div" style="margin:20px 0;"></div>', unsafe_allow_html=True)
-        nerai_premium_css.inject_section_header("Scenario Results", icon="ð")
+        nerai_premium_css.inject_section_header("Scenario Results", icon="Ã°ÂÂÂ")
         scenarios_run = sdf['scenario'].unique() if 'scenario' in sdf.columns else []
         sel_result = st.selectbox('View Results For', scenarios_run,
                                   format_func=lambda k: SCENARIO_TEMPLATES.get(k, {}).get('label', k))
@@ -6956,19 +6956,19 @@ def render_scenarios():
         if not result_df.empty:
             val_col_list = [c for c in result_df.columns if c not in ('scenario','series_id','topic','country')]
             if val_col_list:
-                # ââ Pick best value column âââââââââââââââââââââââ
+                # Ã¢ÂÂÃ¢ÂÂ Pick best value column Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
                 y_col = next((c for c in ['delta_pct', 'delta', 'shocked_avg'] if c in result_df.columns), val_col_list[0])
-                # ââ Build series_id if missing ââââââââââââââââââââ
+                # Ã¢ÂÂÃ¢ÂÂ Build series_id if missing Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
                 rdf = result_df.copy()
                 if 'series_id' not in rdf.columns and 'topic' in rdf.columns and 'country' in rdf.columns:
                     rdf['series_id'] = rdf['topic'] + '_' + rdf['country']
                 x_src = rdf['series_id'] if 'series_id' in rdf.columns else rdf.index.astype(str)
                 y_vals = rdf[y_col]
-                # ââ Top-40 by absolute impact âââââââââââââââââââââ
+                # Ã¢ÂÂÃ¢ÂÂ Top-40 by absolute impact Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
                 impact_df = pd.DataFrame({'sid': x_src.values, 'val': y_vals.values})
                 impact_df['abs'] = impact_df['val'].abs()
                 impact_df = impact_df.nlargest(15, 'abs').sort_values('val', ascending=False)
-                # ââ Human-readable labels âââââââââââââââââââââââââ
+                # Ã¢ÂÂÃ¢ÂÂ Human-readable labels Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
                 def _sid_label(sid):
                     parts = str(sid).rsplit('_', 1)
                     if len(parts) == 2:
@@ -6977,7 +6977,7 @@ def render_scenarios():
                         return f"{t}<br>({c})"
                     return str(sid)
                 impact_df['label'] = impact_df['sid'].apply(_sid_label)
-                y_title = 'Î Risk (% vs baseline)' if y_col == 'delta_pct' else 'Î Risk Index (vs baseline)'
+                y_title = 'ÃÂ Risk (% vs baseline)' if y_col == 'delta_pct' else 'ÃÂ Risk Index (vs baseline)'
                 bar_colors = ['rgba(220,60,60,0.82)' if v >= 0 else 'rgba(0,140,220,0.82)' for v in impact_df['val']]
                 scen_lbl = SCENARIO_TEMPLATES.get(str(sel_result), {}).get('label', str(sel_result).replace('_',' ').title())
                 fig = go.Figure(go.Bar(
@@ -6988,13 +6988,13 @@ def render_scenarios():
                     hovertemplate='<b>%{x}</b><br>Impact: %{y:.5f}<extra></extra>'
                 ))
                 fig.update_layout(
-                    title=dict(text=f'Top 15 Most Impacted Series â {scen_lbl}',
+                    title=dict(text=f'Top 15 Most Impacted Series Ã¢ÂÂ {scen_lbl}',
                                font=dict(size=12, color='#1a2a3a'), x=0.5, xanchor='center'),
                     height=440,
                     paper_bgcolor='rgba(0,0,0,0)',
                     plot_bgcolor='rgba(232,240,252,0.45)',
                     xaxis=dict(tickangle=-40, color='#3a5a7a', tickfont=dict(size=8),
-                               title=dict(text='Risk Series (Topic Â· Country)', font=dict(size=10, color='#5a7a9a'))),
+                               title=dict(text='Risk Series (Topic ÃÂ· Country)', font=dict(size=10, color='#5a7a9a'))),
                     yaxis=dict(title=y_title, color='#3a5a7a',
                                gridcolor='rgba(0,80,160,0.1)', zeroline=True,
                                zerolinecolor='rgba(0,80,160,0.3)', zerolinewidth=1.5),
@@ -7003,13 +7003,13 @@ def render_scenarios():
                 st.plotly_chart(fig, use_container_width=True)
                 st.markdown("""<div style='font-size:0.72rem;color:#4a6a8a;line-height:1.6;padding:8px 12px;
                      background:rgba(0,80,160,0.04);border-radius:6px;margin-bottom:8px;'>
-                  <b>How to read:</b> Each bar = one risk dimension Ã country pair.
+                  <b>How to read:</b> Each bar = one risk dimension ÃÂ country pair.
                   <span style='color:#dc3c3c;font-weight:700;'>Red</span> = risk rises above baseline after shock.
                   <span style='color:#008cdc;font-weight:700;'>Blue</span> = risk falls below baseline.
                   Only the 15 most impacted series are shown, sorted by impact magnitude.
                 </div>""", unsafe_allow_html=True)
 
-            # ââ Plain-English Analysis ââââââââââââââââââââââââââ
+            # Ã¢ÂÂÃ¢ÂÂ Plain-English Analysis Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
             narr3 = scenario_narrative(result_df, sel_result)
             if narr3 and narr3[0]:
                 p1, p2, p3 = narr3
@@ -7046,19 +7046,19 @@ def render_scenarios():
                     </div>""", unsafe_allow_html=True)
 
             # Raw data table (collapsible)
-            with st.expander("ð¢ Raw Results Table", expanded=False):
+            with st.expander("Ã°ÂÂÂ¢ Raw Results Table", expanded=False):
                 st.table(result_df)
 
 
-# âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+# Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 # PAGE: API ACCESS (Pro only)
-# âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+# Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 def render_api():
     nerai_premium_css.inject_page_header(
         title="API Access",
         subtitle="Programmatic access to NERAI risk data & intelligence feeds",
         badge="DEV",
-        icon="ð"
+        icon="Ã°ÂÂÂ"
     )
     nerai_premium_css.inject_global_premium_css()
 
@@ -7077,7 +7077,7 @@ def render_api():
              border-radius:10px;padding:28px;text-align:center;margin:24px 0;'>
           <div style='font-size:22px;margin-bottom:10px;'>U0001f512 Pro Feature</div>
           <div style='color:#5a6b82;font-size:0.88rem;line-height:1.8;'>
-            API access is included in the <b>NERAI Pro</b> plan (â¬39/month).<br>
+            API access is included in the <b>NERAI Pro</b> plan (Ã¢ÂÂ¬39/month).<br>
             Upgrade at <a href='https://neraicorp.com' target='_blank'
             style='color:#0077a8;'>neraicorp.com</a> or contact
             <a href='mailto:info@neraicorp.com' style='color:#0077a8;'>info@neraicorp.com</a>.
@@ -7097,10 +7097,10 @@ def render_api():
         <code style='background:rgba(0,0,0,0.06);padding:2px 6px;border-radius:4px;'>
           https://nerai-intelligence.streamlit.app
         </code><br>
-        <b>Datasets:</b> indices.csv Â· forecast_predictions.csv Â· causality_network.csv<br>
-        <b>Format:</b> CSV â downloadable from Indices &amp; Predictions pages<br>
+        <b>Datasets:</b> indices.csv ÃÂ· forecast_predictions.csv ÃÂ· causality_network.csv<br>
+        <b>Format:</b> CSV Ã¢ÂÂ downloadable from Indices &amp; Predictions pages<br>
         <b>Update cadence:</b> Daily automated pipeline<br>
-        <b>Coverage:</b> 18 risk dimensions Ã 195 countries Â· 2,400+ series
+        <b>Coverage:</b> 18 risk dimensions ÃÂ 195 countries ÃÂ· 2,400+ series
       </div>
     </div>""", unsafe_allow_html=True)
 
@@ -7114,7 +7114,7 @@ def render_api():
           <div style='font-size:0.78rem;color:#5a6b82;line-height:1.9;'>
             Source: GDELT Event Database<br>
             Aggregation: P90 monthly<br>
-            Dimensions: 18 topics Ã 195 countries<br>
+            Dimensions: 18 topics ÃÂ 195 countries<br>
             File: <code>indices.csv</code>
           </div>
         </div>""", unsafe_allow_html=True)
@@ -7144,9 +7144,9 @@ def render_api():
     _render_footer()
 
 
-# âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+# Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 # ROUTING
-# âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+# Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 
 # === NAV GLOW + METRIC HOVER CSS ===
 st.markdown("""
@@ -7159,23 +7159,23 @@ div[data-testid="stMetric"]:hover{box-shadow:0 0 20px rgba(0,255,200,0.2),0 0 40
 """, unsafe_allow_html=True)
 
 
-# âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+# Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 # PAGE: THREAT RADAR
-# âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+# Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 def render_threat_radar():
     nerai_premium_css.inject_page_header(
         title="Threat Radar",
         subtitle="Real-time anomaly detection & risk escalation monitoring",
         badge="ALERT",
-        icon="ð¯"
+        icon="Ã°ÂÂÂ¯"
     )
     nerai_premium_css.inject_global_premium_css()
 
 
-    st.markdown('<div class="sec-hdr">ð´  Live Threat Overview</div>', unsafe_allow_html=True)
+    st.markdown('<div class="sec-hdr">Ã°ÂÂÂ´  Live Threat Overview</div>', unsafe_allow_html=True)
 
-    # ââ Live Top Tension Pairs ââ
-    st.markdown('<div class="sec-hdr">â¡  Live Top Tension Pairs</div>', unsafe_allow_html=True)
+    # Ã¢ÂÂÃ¢ÂÂ Live Top Tension Pairs Ã¢ÂÂÃ¢ÂÂ
+    st.markdown('<div class="sec-hdr">Ã¢ÂÂ¡  Live Top Tension Pairs</div>', unsafe_allow_html=True)
     top_pairs = compute_top_tensions(tension_norm, coop_norm, deteri_norm)
     if top_pairs:
         cols_tp = st.columns(len(top_pairs))
@@ -7190,7 +7190,7 @@ def render_threat_radar():
                     border-radius:10px;padding:14px 10px;text-align:center;
                     border-top:2px solid {clr}">
                   <div style="font-size:0.78rem;color:#8aa0bc">{n1}</div>
-                  <div style="font-size:0.55rem;color:{clr};letter-spacing:0.2em;margin:2px 0">â VS â</div>
+                  <div style="font-size:0.55rem;color:{clr};letter-spacing:0.2em;margin:2px 0">Ã¢ÂÂ VS Ã¢ÂÂ</div>
                   <div style="font-size:0.78rem;color:#8aa0bc">{n2}</div>
                   <div style="font-size:1.5rem;font-weight:800;color:{clr};
                       text-shadow:0 0 12px {clr}40;margin:4px 0">{net:.0f}</div>
@@ -7201,8 +7201,8 @@ def render_threat_radar():
 
     st.markdown('<div class="h-div" style="margin:24px 0 16px"></div>', unsafe_allow_html=True)
 
-    # ââ Top Risk Countries ââ
-    st.markdown('<div class="sec-hdr">ð´  Top Risk Countries â All Topics</div>', unsafe_allow_html=True)
+    # Ã¢ÂÂÃ¢ÂÂ Top Risk Countries Ã¢ÂÂÃ¢ÂÂ
+    st.markdown('<div class="sec-hdr">Ã°ÂÂÂ´  Top Risk Countries Ã¢ÂÂ All Topics</div>', unsafe_allow_html=True)
     avg_all = tension_norm.mean(axis=1).nlargest(8)
     cols_r  = st.columns(8)
     for col_el, (country, val) in zip(cols_r, avg_all.items()):
@@ -7218,11 +7218,11 @@ def render_threat_radar():
 
     st.markdown('<div class="h-div" style="margin:24px 0"></div>', unsafe_allow_html=True)
 
-    # ââ Anomaly Detection / Top Signals ââ
-    with st.expander("â¡  Top Signals â Biggest Movers (Last 7 Days)", expanded=True):
+    # Ã¢ÂÂÃ¢ÂÂ Anomaly Detection / Top Signals Ã¢ÂÂÃ¢ÂÂ
+    with st.expander("Ã¢ÂÂ¡  Top Signals Ã¢ÂÂ Biggest Movers (Last 7 Days)", expanded=True):
         st.markdown('<div class="sec-hdr">Anomaly Detection</div>', unsafe_allow_html=True)
         # Use raw data with Score normalization for anomaly detection
-        df_all_norm = apply_norm(df.groupby(level='country').mean(), 'Score (0â100)')
+        df_all_norm = apply_norm(df.groupby(level='country').mean(), 'Score (0Ã¢ÂÂ100)')
         if len(df_all_norm.columns) > 7:
             last    = df_all_norm.iloc[:,-1]
             prev    = df_all_norm.iloc[:,-8]
@@ -7231,7 +7231,7 @@ def render_threat_radar():
             top_dn  = changes.nsmallest(3)
             sig_c1, sig_c2 = st.columns(2)
             with sig_c1:
-                st.markdown('<div style="font-size:0.65rem;color:#ff6b35;letter-spacing:0.15em;margin-bottom:8px">â² RISING RISK</div>',
+                st.markdown('<div style="font-size:0.65rem;color:#ff6b35;letter-spacing:0.15em;margin-bottom:8px">Ã¢ÂÂ² RISING RISK</div>',
                             unsafe_allow_html=True)
                 for c,pct in top_up.items():
                     cname = COUNTRY_NAMES.get(c, c)
@@ -7247,11 +7247,11 @@ def render_threat_radar():
                         <div style="font-size:0.95rem;font-weight:700;color:{clr}">{last[c]:.1f}</div>
                       </div>
                       <div style="font-size:0.8rem;font-weight:700;color:{clr}">
-                        â² {'+' if pct>0 else ''}{pct:.1f}%
+                        Ã¢ÂÂ² {'+' if pct>0 else ''}{pct:.1f}%
                       </div>
                     </div>""", unsafe_allow_html=True)
             with sig_c2:
-                st.markdown('<div style="font-size:0.65rem;color:#00c9a7;letter-spacing:0.15em;margin-bottom:8px">â¼ DECLINING RISK</div>',
+                st.markdown('<div style="font-size:0.65rem;color:#00c9a7;letter-spacing:0.15em;margin-bottom:8px">Ã¢ÂÂ¼ DECLINING RISK</div>',
                             unsafe_allow_html=True)
                 for c,pct in top_dn.items():
                     cname = COUNTRY_NAMES.get(c, c)
@@ -7274,9 +7274,9 @@ def render_threat_radar():
 
     st.markdown('<div class="h-div" style="margin:16px 0"></div>', unsafe_allow_html=True)
 
-    # ââ Top 5 Bilateral Tension Alerts ââ
-    with st.expander("ð¨  Top 5 Bilateral Tension Alerts â Auto-Detected", expanded=True):
-        st.markdown('<div class="sec-hdr">Highest Risk Country Pairs Â· Last 7 Days</div>', unsafe_allow_html=True)
+    # Ã¢ÂÂÃ¢ÂÂ Top 5 Bilateral Tension Alerts Ã¢ÂÂÃ¢ÂÂ
+    with st.expander("Ã°ÂÂÂ¨  Top 5 Bilateral Tension Alerts Ã¢ÂÂ Auto-Detected", expanded=True):
+        st.markdown('<div class="sec-hdr">Highest Risk Country Pairs ÃÂ· Last 7 Days</div>', unsafe_allow_html=True)
         top_pairs_bi = compute_top_tensions(tension_norm, coop_norm, deteri_norm)
         for rank, pair in enumerate(top_pairs_bi, 1):
             n1  = COUNTRY_NAMES.get(pair['c1'],pair['c1'])
@@ -7287,11 +7287,11 @@ def render_threat_radar():
             elif net>=25: badge_cls,badge_txt,bar_col = 'badge-med','ELEVATED','#f59e0b'
             else:         badge_cls,badge_txt,bar_col = 'badge-low','MODERATE','#00b4d8'
             pct = min(net, 100)
-            arrow = 'â²' if trnd>=0 else 'â¼'
+            arrow = 'Ã¢ÂÂ²' if trnd>=0 else 'Ã¢ÂÂ¼'
             st.markdown(f"""
             <div style="margin-bottom:14px">
               <div style="font-size:0.62rem;color:#5a7a9a;font-family:monospace;margin-bottom:2px">#{rank}</div>
-              <div style="font-size:0.78rem;color:{bar_col}">{n1} â {n2}</div>
+              <div style="font-size:0.78rem;color:{bar_col}">{n1} Ã¢ÂÂ {n2}</div>
               <div style="background:rgba(0,10,28,0.6);border-radius:6px;height:8px;margin:6px 0;overflow:hidden">
                 <div style="width:{pct}%;height:100%;background:{bar_col};border-radius:6px"></div>
               </div>
@@ -7304,9 +7304,9 @@ def render_threat_radar():
 
     st.markdown('<div class="h-div" style="margin:16px 0"></div>', unsafe_allow_html=True)
 
-    # ââ Global Top Movers (from predictions) ââ
+    # Ã¢ÂÂÃ¢ÂÂ Global Top Movers (from predictions) Ã¢ÂÂÃ¢ÂÂ
     if trend_df is not None:
-        st.markdown('<div class="sec-hdr">ð  Global Top Movers â Next 12 Months</div>',
+        st.markdown('<div class="sec-hdr">Ã°ÂÂÂ  Global Top Movers Ã¢ÂÂ Next 12 Months</div>',
                     unsafe_allow_html=True)
         col_rise, col_fall = st.columns(2)
 
@@ -7314,7 +7314,7 @@ def render_threat_radar():
             st.markdown(
             '<div style="font-size:0.62rem;color:rgba(255,75,110,0.6);'
             'font-family:monospace;letter-spacing:0.18em;'
-            'margin-bottom:8px">â² HIGHEST RISING RISKS</div>',
+            'margin-bottom:8px">Ã¢ÂÂ² HIGHEST RISING RISKS</div>',
                     unsafe_allow_html=True)
             top_rise = trend_df.nlargest(10, 'trend_pct')
             for _, r in top_rise.iterrows():
@@ -7339,7 +7339,7 @@ def render_threat_radar():
             st.markdown(
             '<div style="font-size:0.62rem;color:rgba(0,255,157,0.5);'
             'font-family:monospace;letter-spacing:0.18em;'
-            'margin-bottom:8px">â¼ HIGHEST FALLING RISKS</div>',
+            'margin-bottom:8px">Ã¢ÂÂ¼ HIGHEST FALLING RISKS</div>',
                     unsafe_allow_html=True)
             top_fall = trend_df.nsmallest(10, 'trend_pct')
             for _, r in top_fall.iterrows():
@@ -7362,14 +7362,14 @@ def render_threat_radar():
 
     st.markdown('<div class="h-div" style="margin:24px 0"></div>', unsafe_allow_html=True)
 
-    # ââ Breaking News ââ
-    st.markdown('<div class="sec-hdr">ð¡  Breaking News â Live Feed</div>', unsafe_allow_html=True)
+    # Ã¢ÂÂÃ¢ÂÂ Breaking News Ã¢ÂÂÃ¢ÂÂ
+    st.markdown('<div class="sec-hdr">Ã°ÂÂÂ¡  Breaking News Ã¢ÂÂ Live Feed</div>', unsafe_allow_html=True)
     _bn_queries = [
-        ('ð¥ Conflict & War', 'war conflict military attack troops'),
-        ('â ï¸ Political Crisis', 'coup sanctions political crisis emergency'),
-        ('ð¥ Terrorism', 'terrorism attack bombing explosion'),
-        ('ð Natural Disaster', 'earthquake hurricane flood disaster tsunami'),
-        ('ð Economic Crisis', 'recession inflation economic crisis default'),
+        ('Ã°ÂÂÂ¥ Conflict & War', 'war conflict military attack troops'),
+        ('Ã¢ÂÂ Ã¯Â¸Â Political Crisis', 'coup sanctions political crisis emergency'),
+        ('Ã°ÂÂÂ¥ Terrorism', 'terrorism attack bombing explosion'),
+        ('Ã°ÂÂÂ Natural Disaster', 'earthquake hurricane flood disaster tsunami'),
+        ('Ã°ÂÂÂ Economic Crisis', 'recession inflation economic crisis default'),
     ]
     bn_tabs = st.tabs([q[0] for q in _bn_queries])
     for tab, (label, query) in zip(bn_tabs, _bn_queries):
@@ -7402,7 +7402,7 @@ def render_threat_radar():
                 st.caption('No recent articles found.')
 
 
-    # Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂ FAZ 3a: Global Risk Heatmap (Choropleth) Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂ
+    # ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ FAZ 3a: Global Risk Heatmap (Choropleth) ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ
     st.markdown('<div class="h-div" style="margin:24px 0 16px"></div>', unsafe_allow_html=True)
     st.markdown('<div class="sec-hdr">&#x1F5FA;&#xFE0F; GLOBAL RISK HEATMAP</div>', unsafe_allow_html=True)
     try:
@@ -7437,7 +7437,7 @@ def render_threat_radar():
     except Exception as _e:
         st.caption(f"Heatmap unavailable: {_e}")
 
-    # Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂ FAZ 3d: Top Movers Daily Table Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂ
+    # ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ FAZ 3d: Top Movers Daily Table ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ
     st.markdown('<div class="h-div" style="margin:24px 0 16px"></div>', unsafe_allow_html=True)
     st.markdown('<div class="sec-hdr">&#x1F4CA; TOP DAILY MOVERS</div>', unsafe_allow_html=True)
     try:
@@ -7471,7 +7471,7 @@ def render_threat_radar():
     except Exception as _e:
         st.caption(f"Top movers unavailable: {_e}")
 
-    # Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂ FAZ 3e: Volatility Trend Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂ
+    # ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ FAZ 3e: Volatility Trend ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ
     st.markdown('<div class="h-div" style="margin:24px 0 16px"></div>', unsafe_allow_html=True)
     st.markdown('<div class="sec-hdr">&#x1F4C8; INSTABILITY VOLATILITY TREND</div>', unsafe_allow_html=True)
     try:
@@ -7489,7 +7489,7 @@ def render_threat_radar():
             fig_vol.update_layout(
                 **_PLOTLY_THEME,
                 height=320,
-                yaxis_title="Volatility (Ï)",
+                yaxis_title="Volatility (ÃÂ)",
                 xaxis_title="",
             )
             st.plotly_chart(fig_vol, use_container_width=True)
@@ -7498,9 +7498,9 @@ def render_threat_radar():
     except Exception as _e:
             st.caption(f"Volatility trend unavailable: {_e}")
 
-    # âââ FAZ 4a: DTW-based Early Warning System âââ
+    # Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂ FAZ 4a: DTW-based Early Warning System Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂ
     st.markdown('<div class="h-div" style="margin:24px 0 16px"></div>', unsafe_allow_html=True)
-    st.markdown('<div class="sec-hdr">â ï¸  Early Warning Signals (DTW Pattern Match)</div>', unsafe_allow_html=True)
+    st.markdown('<div class="sec-hdr">Ã¢ÂÂ Ã¯Â¸Â  Early Warning Signals (DTW Pattern Match)</div>', unsafe_allow_html=True)
     try:
         from scipy.spatial.distance import euclidean
         _instab = df.xs("instability", level="topic", drop_level=True) if "instability" in df.index.get_level_values("topic") else None
@@ -7547,14 +7547,14 @@ def render_threat_radar():
             if _alerts:
                 st.table(pd.DataFrame(_alerts))
             else:
-                st.success("â No elevated early warning signals detected.")
+                st.success("Ã¢ÂÂ No elevated early warning signals detected.")
         else:
             st.caption("Insufficient data for DTW analysis.")
     except Exception as _e:
         st.caption(f"Early warning unavailable: {_e}")
         st.caption(f"Volatility trend unavailable: {_e}")
     st.markdown(_ANALYSIS_CSS, unsafe_allow_html=True)
-    # ââ Strategic: Threat Radar Assessment ââ
+    # Ã¢ÂÂÃ¢ÂÂ Strategic: Threat Radar Assessment Ã¢ÂÂÃ¢ÂÂ
     try:
         _tr_html = _threat_radar_analysis(df_recent, sel_topic, COUNTRY_NAMES)
         if _tr_html: st.markdown(_tr_html, unsafe_allow_html=True)
@@ -7566,7 +7566,7 @@ def render_threat_radar():
 
 
 # =====================================================================
-# SUPPLY GRID â Global Supply Chain Intelligence
+# SUPPLY GRID Ã¢ÂÂ Global Supply Chain Intelligence
 # =====================================================================
 
 # Cached data fetchers
@@ -7614,8 +7614,8 @@ def _sg_fetch_commodities():
         out = [{'name': n, 'symbol': s, 'unit': u, 'price': p,
                 'change_pct': 0.0, 'is_fallback': True} for n, s, u, p in fallback]
     ts = _dt.now().strftime('%Y-%m-%d %H:%M UTC')
-    suffix = ' Â· LIVE' if live_count == len(fallback) else (
-        f' Â· PARTIAL ({live_count}/{len(fallback)} live)' if live_count > 0 else ' Â· REFERENCE VALUES'
+    suffix = ' ÃÂ· LIVE' if live_count == len(fallback) else (
+        f' ÃÂ· PARTIAL ({live_count}/{len(fallback)} live)' if live_count > 0 else ' ÃÂ· REFERENCE VALUES'
     )
     return out, ts + suffix
 
@@ -7641,7 +7641,7 @@ def _sg_fetch_freight_index():
 
 
 def _sg_chokepoints_data():
-    """Critical maritime chokepoints â based on IMF PortWatch & UNCTAD data."""
+    """Critical maritime chokepoints Ã¢ÂÂ based on IMF PortWatch & UNCTAD data."""
     # Source: IMF PortWatch (https://portwatch.imf.org/), UNCTAD Review of Maritime Transport 2024
     return [
         {
@@ -7720,7 +7720,7 @@ def _sg_chokepoints_data():
 
 
 def _sg_critical_materials():
-    """Critical materials & supply concentration â USGS Mineral Commodity Summaries 2024."""
+    """Critical materials & supply concentration Ã¢ÂÂ USGS Mineral Commodity Summaries 2024."""
     return [
         {'material': 'Rare Earth Elements (REE)', 'top_supplier': 'China', 'top_share': 70, 'processing_share': 90,
          'use': 'Magnets, EVs, defense, electronics', 'risk_score': 95, 'symbol_proxy': None,
@@ -7771,7 +7771,7 @@ def _sg_critical_materials():
 
 
 def _sg_country_vulnerability():
-    """Country supply chain vulnerability scores â based on UN Comtrade & WTO data."""
+    """Country supply chain vulnerability scores Ã¢ÂÂ based on UN Comtrade & WTO data."""
     return [
         {'country': 'Germany', 'iso': 'DEU', 'energy_dep': 89, 'food_dep': 35, 'critical_min': 95,
          'import_concentration': 62, 'overall_score': 70,
@@ -7794,7 +7794,7 @@ def _sg_country_vulnerability():
         {'country': 'United States', 'iso': 'USA', 'energy_dep': 5, 'food_dep': 5, 'critical_min': 78,
          'import_concentration': 38, 'overall_score': 31,
          'top_risks': 'REE/processing, antibiotics, advanced chips (Taiwan)'},
-        {'country': 'TÃ¼rkiye', 'iso': 'TUR', 'energy_dep': 75, 'food_dep': 40, 'critical_min': 65,
+        {'country': 'TÃÂ¼rkiye', 'iso': 'TUR', 'energy_dep': 75, 'food_dep': 40, 'critical_min': 65,
          'import_concentration': 58, 'overall_score': 60,
          'top_risks': 'Russian gas, oil imports (Hormuz/Bosphorus)'},
         {'country': 'France', 'iso': 'FRA', 'energy_dep': 50, 'food_dep': 20, 'critical_min': 90,
@@ -7863,7 +7863,7 @@ def _sg_threat_label(score):
 # =====================================================================
 
 def _sg_sanctions_data():
-    """Key sanctioned jurisdictions â OFAC, EU, UN consolidated lists."""
+    """Key sanctioned jurisdictions Ã¢ÂÂ OFAC, EU, UN consolidated lists."""
     return {
         'sanctioned_jurisdictions': [
             {'name': 'Russia', 'iso': 'RUS', 'regimes': ['US OFAC', 'EU 11th package', 'UK', 'Japan'],
@@ -7927,7 +7927,7 @@ def _sg_uflpa_data():
             {'region': 'North Korea', 'country': 'DPRK',
              'risk_level': 'CRITICAL', 'rebuttable_presumption': False,
              'key_commodities': 'Textiles, seafood, IT services (overseas DPRK workers)',
-             'guidance': 'CAATSA Section 321(b) â DPRK labor presumption'},
+             'guidance': 'CAATSA Section 321(b) Ã¢ÂÂ DPRK labor presumption'},
         ],
         'flagged_sectors': [
             {'sector': 'Cotton & Textiles', 'risk': 'CRITICAL', 'origins': 'XUAR, Turkmenistan, Uzbekistan',
@@ -7935,7 +7935,7 @@ def _sg_uflpa_data():
             {'sector': 'Polysilicon (Solar)', 'risk': 'CRITICAL', 'origins': 'XUAR (~45% global capacity)',
              'note': 'Solar panel supply chain critically exposed'},
             {'sector': 'Lithium-ion Batteries', 'risk': 'HIGH', 'origins': 'XUAR cathode, DRC cobalt',
-             'note': 'Battery chain â forced labor + child labor concerns'},
+             'note': 'Battery chain Ã¢ÂÂ forced labor + child labor concerns'},
             {'sector': 'Tomatoes & Processed Food', 'risk': 'HIGH', 'origins': 'XUAR (~25% global tomato paste)',
              'note': 'Italian/Mediterranean processors often source XUAR paste'},
             {'sector': 'Seafood', 'risk': 'HIGH', 'origins': 'China processing, DPRK labor, Thailand',
@@ -7951,7 +7951,7 @@ def _sg_uflpa_data():
 
 
 def _sg_eudr_commodities():
-    """EU Deforestation Regulation (EUDR) regulated commodities â Reg 2023/1115."""
+    """EU Deforestation Regulation (EUDR) regulated commodities Ã¢ÂÂ Reg 2023/1115."""
     return [
         {'commodity': 'Palm Oil', 'risk_origins': 'Indonesia, Malaysia',
          'global_share': 'IDN 58%, MYS 25%', 'eudr_status': 'IN SCOPE',
@@ -7978,7 +7978,7 @@ def _sg_eudr_commodities():
 
 
 def _sg_conflict_minerals():
-    """Conflict minerals (3TG + cobalt) â Dodd-Frank 1502 + EU Regulation."""
+    """Conflict minerals (3TG + cobalt) Ã¢ÂÂ Dodd-Frank 1502 + EU Regulation."""
     return [
         {'mineral': 'Tantalum (Coltan)', 'high_risk': 'DRC, Rwanda, Burundi', 'use': 'Capacitors, electronics',
          'risk': 'CRITICAL', 'note': 'DRC militia control of mines documented'},
@@ -8018,7 +8018,7 @@ def _sg_country_esg_scores():
          'sanctions_exposure': 25, 'overall': 60, 'note': 'Migrant worker rights, Khashoggi-related individual sanctions'},
         {'country': 'Indonesia', 'iso': 'IDN', 'governance': 60, 'labor': 65, 'environment': 78,
          'sanctions_exposure': 20, 'overall': 56, 'note': 'EUDR palm oil, peatland concerns'},
-        {'country': 'TÃ¼rkiye', 'iso': 'TUR', 'governance': 65, 'labor': 55, 'environment': 55,
+        {'country': 'TÃÂ¼rkiye', 'iso': 'TUR', 'governance': 65, 'labor': 55, 'environment': 55,
          'sanctions_exposure': 30, 'overall': 51, 'note': 'CAATSA risk for Russia trade; press freedom'},
         {'country': 'Brazil', 'iso': 'BRA', 'governance': 55, 'labor': 50, 'environment': 75,
          'sanctions_exposure': 15, 'overall': 50, 'note': 'EUDR scrutiny, Amazon deforestation'},
@@ -8051,9 +8051,9 @@ def _sg_alt_sourcing_data():
             'urgency': 'CRITICAL',
             'alternatives': [
                 {'country': 'Australia', 'share': 14, 'lead_time': '+2-3 months', 'cost_delta': '+15%',
-                 'compliance': 'EXCELLENT', 'notes': 'Lynas â Mt Weld mine; only non-China REE processor at scale'},
+                 'compliance': 'EXCELLENT', 'notes': 'Lynas Ã¢ÂÂ Mt Weld mine; only non-China REE processor at scale'},
                 {'country': 'United States', 'share': 9, 'lead_time': '+3-4 months', 'cost_delta': '+25%',
-                 'compliance': 'EXCELLENT', 'notes': 'MP Materials â Mountain Pass; Phase 2 processing ramping 2025'},
+                 'compliance': 'EXCELLENT', 'notes': 'MP Materials Ã¢ÂÂ Mountain Pass; Phase 2 processing ramping 2025'},
                 {'country': 'Vietnam', 'share': 3, 'lead_time': '+1-2 months', 'cost_delta': '+8%',
                  'compliance': 'GOOD', 'notes': '2nd largest reserves globally; emerging processing capacity'},
                 {'country': 'Brazil', 'share': 2, 'lead_time': '+2-3 months', 'cost_delta': '+12%',
@@ -8067,7 +8067,7 @@ def _sg_alt_sourcing_data():
             'urgency': 'CRITICAL',
             'alternatives': [
                 {'country': 'Japan', 'share': 1, 'lead_time': '+6 months', 'cost_delta': '+40%',
-                 'compliance': 'EXCELLENT', 'notes': 'Dowa Holdings â recycling + small primary production'},
+                 'compliance': 'EXCELLENT', 'notes': 'Dowa Holdings Ã¢ÂÂ recycling + small primary production'},
                 {'country': 'South Korea', 'share': 1, 'lead_time': '+4 months', 'cost_delta': '+35%',
                  'compliance': 'EXCELLENT', 'notes': 'Recycled gallium from LED/semiconductor waste'},
                 {'country': 'Russia', 'share': 0.5, 'lead_time': 'N/A', 'cost_delta': 'Sanctions block',
@@ -8089,7 +8089,7 @@ def _sg_alt_sourcing_data():
                 {'country': 'Philippines', 'share': 3, 'lead_time': '+1-2 months', 'cost_delta': '+6%',
                  'compliance': 'GOOD', 'notes': 'Nickel-cobalt byproduct'},
                 {'country': 'Cuba', 'share': 2, 'lead_time': 'N/A', 'cost_delta': 'US sanctions block',
-                 'compliance': 'BLOCKED', 'notes': 'Moa Joint Venture (Sherritt Canada) â OFAC restrictions'},
+                 'compliance': 'BLOCKED', 'notes': 'Moa Joint Venture (Sherritt Canada) Ã¢ÂÂ OFAC restrictions'},
             ]
         },
         'Lithium': {
@@ -8097,7 +8097,7 @@ def _sg_alt_sourcing_data():
             'urgency': 'MEDIUM',
             'alternatives': [
                 {'country': 'Chile', 'share': 24, 'lead_time': '+1-2 months', 'cost_delta': '+5%',
-                 'compliance': 'EXCELLENT', 'notes': 'SQM, Albemarle â Salar de Atacama brine'},
+                 'compliance': 'EXCELLENT', 'notes': 'SQM, Albemarle Ã¢ÂÂ Salar de Atacama brine'},
                 {'country': 'Argentina', 'share': 6, 'lead_time': '+2-3 months', 'cost_delta': '+7%',
                  'compliance': 'GOOD', 'notes': 'Lithium Triangle; fast-growing production'},
                 {'country': 'United States', 'share': 3, 'lead_time': '+3-4 months', 'cost_delta': '+15%',
@@ -8105,7 +8105,7 @@ def _sg_alt_sourcing_data():
                 {'country': 'Canada', 'share': 2, 'lead_time': '+3-4 months', 'cost_delta': '+14%',
                  'compliance': 'EXCELLENT', 'notes': 'Nemaska Lithium; IRA-compliant refining'},
                 {'country': 'Brazil', 'share': 2, 'lead_time': '+2-3 months', 'cost_delta': '+10%',
-                 'compliance': 'GOOD', 'notes': 'Sigma Lithium â hard-rock spodumene'},
+                 'compliance': 'GOOD', 'notes': 'Sigma Lithium Ã¢ÂÂ hard-rock spodumene'},
             ]
         },
         'Semiconductors (advanced)': {
@@ -8113,9 +8113,9 @@ def _sg_alt_sourcing_data():
             'urgency': 'CRITICAL',
             'alternatives': [
                 {'country': 'South Korea', 'share': 19, 'lead_time': '+3-6 months', 'cost_delta': '+20%',
-                 'compliance': 'EXCELLENT', 'notes': 'Samsung â advanced nodes, memory leadership'},
+                 'compliance': 'EXCELLENT', 'notes': 'Samsung Ã¢ÂÂ advanced nodes, memory leadership'},
                 {'country': 'United States', 'share': 12, 'lead_time': '+12-18 months', 'cost_delta': '+35%',
-                 'compliance': 'EXCELLENT', 'notes': 'Intel, TSMC Arizona, Samsung Texas â CHIPS Act funded'},
+                 'compliance': 'EXCELLENT', 'notes': 'Intel, TSMC Arizona, Samsung Texas Ã¢ÂÂ CHIPS Act funded'},
                 {'country': 'Japan', 'share': 6, 'lead_time': '+6-9 months', 'cost_delta': '+25%',
                  'compliance': 'EXCELLENT', 'notes': 'Rapidus (2nm target), Kioxia, Renesas'},
                 {'country': 'Germany', 'share': 4, 'lead_time': '+9-12 months', 'cost_delta': '+30%',
@@ -8133,7 +8133,7 @@ def _sg_alt_sourcing_data():
                 {'country': 'Qatar', 'share': 20, 'lead_time': 'Via Hormuz (risk)', 'cost_delta': 'Chokepoint exposure',
                  'compliance': 'EXCELLENT', 'notes': 'North Field expansion; Hormuz transit required'},
                 {'country': 'Australia', 'share': 19, 'lead_time': '+2-3 months', 'cost_delta': '+15%',
-                 'compliance': 'EXCELLENT', 'notes': 'NWS, Gorgon, Wheatstone â no chokepoint risk'},
+                 'compliance': 'EXCELLENT', 'notes': 'NWS, Gorgon, Wheatstone Ã¢ÂÂ no chokepoint risk'},
                 {'country': 'Norway (pipeline)', 'share': 3, 'lead_time': 'Immediate', 'cost_delta': '+8%',
                  'compliance': 'EXCELLENT', 'notes': 'Baltic/North Sea; largest EU pipeline supplier'},
                 {'country': 'Nigeria', 'share': 4, 'lead_time': '+2 months', 'cost_delta': '+12%',
@@ -8145,7 +8145,7 @@ def _sg_alt_sourcing_data():
             'urgency': 'HIGH',
             'alternatives': [
                 {'country': 'Germany', 'share': 6, 'lead_time': '+2-3 months', 'cost_delta': '+30%',
-                 'compliance': 'EXCELLENT', 'notes': 'BASF, Boehringer â high-quality GMP'},
+                 'compliance': 'EXCELLENT', 'notes': 'BASF, Boehringer Ã¢ÂÂ high-quality GMP'},
                 {'country': 'Italy', 'share': 4, 'lead_time': '+2 months', 'cost_delta': '+25%',
                  'compliance': 'EXCELLENT', 'notes': 'Italian API cluster; fermentation expertise'},
                 {'country': 'United States', 'share': 3, 'lead_time': '+3-4 months', 'cost_delta': '+40%',
@@ -8153,7 +8153,7 @@ def _sg_alt_sourcing_data():
                 {'country': 'Japan', 'share': 2, 'lead_time': '+3 months', 'cost_delta': '+35%',
                  'compliance': 'EXCELLENT', 'notes': 'Specialty APIs; high regulatory standards'},
                 {'country': 'Switzerland', 'share': 2, 'lead_time': '+2-3 months', 'cost_delta': '+35%',
-                 'compliance': 'EXCELLENT', 'notes': 'Lonza, Siegfried â complex biologics'},
+                 'compliance': 'EXCELLENT', 'notes': 'Lonza, Siegfried Ã¢ÂÂ complex biologics'},
             ]
         },
         'Wheat (Export)': {
@@ -8177,15 +8177,15 @@ def _sg_alt_sourcing_data():
             'urgency': 'HIGH',
             'alternatives': [
                 {'country': 'Canada', 'share': 15, 'lead_time': '+3-6 months', 'cost_delta': '+10%',
-                 'compliance': 'EXCELLENT', 'notes': 'Cameco â McArthur River, Cigar Lake'},
+                 'compliance': 'EXCELLENT', 'notes': 'Cameco Ã¢ÂÂ McArthur River, Cigar Lake'},
                 {'country': 'Australia', 'share': 8, 'lead_time': '+3-4 months', 'cost_delta': '+8%',
                  'compliance': 'EXCELLENT', 'notes': 'Olympic Dam, Ranger; strong allied supply'},
                 {'country': 'Namibia', 'share': 11, 'lead_time': '+2-3 months', 'cost_delta': '+5%',
-                 'compliance': 'GOOD', 'notes': 'Rossing, Husab â Chinese stakes but stable jurisdiction'},
+                 'compliance': 'GOOD', 'notes': 'Rossing, Husab Ã¢ÂÂ Chinese stakes but stable jurisdiction'},
                 {'country': 'Niger', 'share': 4, 'lead_time': 'Political risk', 'cost_delta': 'Volatile',
                  'compliance': 'AT RISK', 'notes': '2023 coup disrupted Orano supply; ongoing uncertainty'},
                 {'country': 'United States', 'share': 1, 'lead_time': '+6-12 months', 'cost_delta': '+20%',
-                 'compliance': 'EXCELLENT', 'notes': 'Energy Fuels â domestic HALEU push'},
+                 'compliance': 'EXCELLENT', 'notes': 'Energy Fuels Ã¢ÂÂ domestic HALEU push'},
             ]
         },
     }
@@ -8343,7 +8343,7 @@ def _sg_ai_call_claude(prompt, max_tokens=800):
 
 
 def _sg_ai_fallback_brief(alert):
-    """Structured fallback brief when AI is unavailable â rules-based."""
+    """Structured fallback brief when AI is unavailable Ã¢ÂÂ rules-based."""
     sev_impact = {
         'CRITICAL': ('CONFIRMED', 'Severe impact expected', '30-60%', '+50-100%'),
         'HIGH':     ('LIKELY',    'Material impact expected', '15-30%', '+20-50%'),
@@ -8372,7 +8372,7 @@ def _sg_ai_fallback_brief(alert):
             'STRATEGIC (Q): Maintain intelligence posture; pre-qualify alternates'
         ],
         'MODERATE': [
-            'IMMEDIATE (24h): Informational â log to risk register',
+            'IMMEDIATE (24h): Informational Ã¢ÂÂ log to risk register',
             'SHORT-TERM (2w): Normal operations; monthly review',
             'STRATEGIC (Q): Annual diversification review'
         ],
@@ -8530,7 +8530,7 @@ def _sg_scenario_library():
                 'LED/semiconductor capacity constrained by gallium shortage',
                 'Lynas (Australia) + MP Materials (US) become strategic assets',
             ],
-            'affected_countries': 'EU, US, Japan, S.Korea, India, Turkey â all advanced manufacturing',
+            'affected_countries': 'EU, US, Japan, S.Korea, India, Turkey Ã¢ÂÂ all advanced manufacturing',
             'mitigation_playbook': [
                 'Emergency REE strategic reserve release (DOE, DOD)',
                 'Fast-track Lynas Texas + MP Materials Mountain Pass Phase 2',
@@ -8616,7 +8616,7 @@ def _sg_scenario_library():
 def _sg_weather_ports():
     """Major global ports with coordinates for weather monitoring."""
     return [
-        # US ports â live NWS data
+        # US ports Ã¢ÂÂ live NWS data
         {'port': 'Los Angeles / Long Beach', 'country': 'USA', 'region': 'us', 'lat': 33.75, 'lon': -118.2,
          'tz': 'US West', 'trade_rank': 1, 'key_cargo': 'Containers, autos (Pacific trade)'},
         {'port': 'New York / New Jersey', 'country': 'USA', 'region': 'us', 'lat': 40.67, 'lon': -74.1,
@@ -8629,7 +8629,7 @@ def _sg_weather_ports():
          'tz': 'US West', 'trade_rank': 8, 'key_cargo': 'Containers (Alaska, Asia)'},
         {'port': 'Norfolk / Hampton Roads', 'country': 'USA', 'region': 'us', 'lat': 36.93, 'lon': -76.32,
          'tz': 'US East', 'trade_rank': 10, 'key_cargo': 'Containers, coal'},
-        # International ports â curated snapshot
+        # International ports Ã¢ÂÂ curated snapshot
         {'port': 'Shanghai', 'country': 'CHN', 'region': 'intl', 'lat': 31.24, 'lon': 121.50,
          'tz': 'Asia', 'trade_rank': 'Global #1', 'key_cargo': 'Containers (world largest)'},
         {'port': 'Singapore', 'country': 'SGP', 'region': 'intl', 'lat': 1.27, 'lon': 103.84,
@@ -8857,14 +8857,14 @@ def _sg_weather_severity_color(severity):
 
 
 def render_supply_grid():
-    """SUPPLY GRID â Global Supply Chain Intelligence Hub."""
+    """SUPPLY GRID Ã¢ÂÂ Global Supply Chain Intelligence Hub."""
 
     # Header
     st.markdown("""
     <div style="margin: 8px 0 24px 0;">
       <div style="display:flex; align-items:center; gap:12px; margin-bottom:8px;">
         <div style="font-size:11px; letter-spacing:3px; color:#00d4ff; font-weight:700; text-transform:uppercase;">
-          NERAI Â· Supply Grid
+          NERAI ÃÂ· Supply Grid
         </div>
         <div style="height:1px; flex:1; background:linear-gradient(90deg, rgba(0,212,255,0.4), transparent);"></div>
         <div style="font-size:10px; color:#5a6b82; letter-spacing:1.5px;">GLOBAL SUPPLY CHAIN INTELLIGENCE</div>
@@ -8902,7 +8902,7 @@ def render_supply_grid():
         <div style="margin-bottom:16px;">
           <div style="font-size:18px; font-weight:600; color:#e0e8f0;">Real-time Commodity & Freight Markers</div>
           <div style="font-size:12px; color:#5a6b82; margin-top:4px;">
-            Source: Yahoo Finance Â· 15-min delayed Â· Updated every 15 minutes
+            Source: Yahoo Finance ÃÂ· 15-min delayed ÃÂ· Updated every 15 minutes
           </div>
         </div>
         """, unsafe_allow_html=True)
@@ -8914,7 +8914,7 @@ def render_supply_grid():
         if not commodities:
             st.warning("Commodity data unavailable.")
         elif all_fallback:
-            st.info("Live feed unavailable â showing reference values (Apr 2026 baseline). Markets resume on next refresh.")
+            st.info("Live feed unavailable Ã¢ÂÂ showing reference values (Apr 2026 baseline). Markets resume on next refresh.")
         else:
             # Group commodities by category
             categories = {
@@ -8932,7 +8932,7 @@ def render_supply_grid():
                     with cols[i]:
                         if item:
                             chg = item['change_pct']
-                            arrow = 'â²' if chg >= 0 else 'â¼'
+                            arrow = 'Ã¢ÂÂ²' if chg >= 0 else 'Ã¢ÂÂ¼'
                             color = '#00ffc8' if chg >= 0 else '#ff6b6b'
                             st.markdown(f"""
                             <div style='background:linear-gradient(135deg, rgba(0,30,60,0.5), rgba(0,15,35,0.7));
@@ -8953,7 +8953,7 @@ def render_supply_grid():
                             <div style='background:rgba(0,15,35,0.4); border:1px dashed rgba(0,212,255,0.15);
                                         border-radius:10px; padding:14px; min-height:100px;'>
                               <div style='font-size:11px; color:#5a6b82;'>{item_name}</div>
-                              <div style='font-size:14px; color:#5a6b82; margin-top:30px;'>â</div>
+                              <div style='font-size:14px; color:#5a6b82; margin-top:30px;'>Ã¢ÂÂ</div>
                             </div>
                             """, unsafe_allow_html=True)
 
@@ -8961,7 +8961,7 @@ def render_supply_grid():
             freight = _sg_fetch_freight_index()
             if freight:
                 st.markdown(f"<div style='font-size:12px; letter-spacing:2px; color:#00d4ff; font-weight:600; margin:24px 0 10px 0;'>FREIGHT</div>", unsafe_allow_html=True)
-                arrow = 'â²' if freight['change_30d'] >= 0 else 'â¼'
+                arrow = 'Ã¢ÂÂ²' if freight['change_30d'] >= 0 else 'Ã¢ÂÂ¼'
                 color = '#00ffc8' if freight['change_30d'] >= 0 else '#ff6b6b'
                 st.markdown(f"""
                 <div style='background:linear-gradient(135deg, rgba(0,30,60,0.5), rgba(0,15,35,0.7));
@@ -8977,7 +8977,7 @@ def render_supply_grid():
                 </div>
                 """, unsafe_allow_html=True)
 
-            st.caption(f"Last refresh: {last_updated} Â· Auto-refresh every 15 minutes")
+            st.caption(f"Last refresh: {last_updated} ÃÂ· Auto-refresh every 15 minutes")
 
     # ========== TAB 2: CHOKEPOINTS ==========
     with tab2:
@@ -8985,7 +8985,7 @@ def render_supply_grid():
         <div style="margin-bottom:16px;">
           <div style="font-size:18px; font-weight:600; color:#e0e8f0;">Critical Maritime Chokepoints</div>
           <div style="font-size:12px; color:#5a6b82; margin-top:4px;">
-            Source: IMF PortWatch Â· UNCTAD Maritime Transport Â· Threat overlay from GDELT signals
+            Source: IMF PortWatch ÃÂ· UNCTAD Maritime Transport ÃÂ· Threat overlay from GDELT signals
           </div>
         </div>
         """, unsafe_allow_html=True)
@@ -9078,7 +9078,7 @@ def render_supply_grid():
         <div style="margin-bottom:16px;">
           <div style="font-size:18px; font-weight:600; color:#e0e8f0;">Critical Materials Concentration Index</div>
           <div style="font-size:12px; color:#5a6b82; margin-top:4px;">
-            Source: USGS Mineral Commodity Summaries 2024 Â· Live prices from Yahoo Finance
+            Source: USGS Mineral Commodity Summaries 2024 ÃÂ· Live prices from Yahoo Finance
           </div>
         </div>
         """, unsafe_allow_html=True)
@@ -9095,7 +9095,7 @@ def render_supply_grid():
             price_html = ''
             if m.get('symbol_proxy') and m['symbol_proxy'] in price_lookup:
                 p = price_lookup[m['symbol_proxy']]
-                arrow = 'â²' if p['change_pct'] >= 0 else 'â¼'
+                arrow = 'Ã¢ÂÂ²' if p['change_pct'] >= 0 else 'Ã¢ÂÂ¼'
                 pcolor = '#00ffc8' if p['change_pct'] >= 0 else '#ff6b6b'
                 price_html = f"""<div style='text-align:right;'>
                   <div style='font-size:13px; color:#e0e8f0; font-weight:600;'>{p['price']:,.2f} {p['unit']}</div>
@@ -9142,7 +9142,7 @@ def render_supply_grid():
         <div style="margin-bottom:16px;">
           <div style="font-size:18px; font-weight:600; color:#e0e8f0;">Trade Route Disruption Tracker</div>
           <div style="font-size:12px; color:#5a6b82; margin-top:4px;">
-            Source: IMF PortWatch port congestion Â· GDELT shipping incident signals
+            Source: IMF PortWatch port congestion ÃÂ· GDELT shipping incident signals
           </div>
         </div>
         """, unsafe_allow_html=True)
@@ -9212,7 +9212,7 @@ def render_supply_grid():
             </div>
             """, unsafe_allow_html=True)
 
-        st.caption("Data: IMF PortWatch (cached weekly) Â· GDELT signals (live)")
+        st.caption("Data: IMF PortWatch (cached weekly) ÃÂ· GDELT signals (live)")
 
     # ========== TAB 5: COUNTRY VULNERABILITY ==========
     with tab5:
@@ -9220,7 +9220,7 @@ def render_supply_grid():
         <div style="margin-bottom:16px;">
           <div style="font-size:18px; font-weight:600; color:#e0e8f0;">Country Supply Chain Vulnerability Score</div>
           <div style="font-size:12px; color:#5a6b82; margin-top:4px;">
-            Composite score (0-100) of energy, food, critical mineral dependency & import concentration Â· UN Comtrade + WTO
+            Composite score (0-100) of energy, food, critical mineral dependency & import concentration ÃÂ· UN Comtrade + WTO
           </div>
         </div>
         """, unsafe_allow_html=True)
@@ -9264,7 +9264,7 @@ def render_supply_grid():
             </div>
             """, unsafe_allow_html=True)
 
-        st.caption("Energy/Food % = import dependency Â· Minerals/Concentration = composite risk index 0-100")
+        st.caption("Energy/Food % = import dependency ÃÂ· Minerals/Concentration = composite risk index 0-100")
 
     # ========== TAB 6: SECTOR HEATMAP ==========
     with tab6:
@@ -9272,7 +9272,7 @@ def render_supply_grid():
         <div style="margin-bottom:16px;">
           <div style="font-size:18px; font-weight:600; color:#e0e8f0;">Sector Risk Heatmap</div>
           <div style="font-size:12px; color:#5a6b82; margin-top:4px;">
-            Risk exposure by sector Ã supply chain dimension (0-100)
+            Risk exposure by sector ÃÂ supply chain dimension (0-100)
           </div>
         </div>
         """, unsafe_allow_html=True)
@@ -9338,7 +9338,7 @@ def render_supply_grid():
         <div style="margin-bottom:16px;">
           <div style="font-size:18px; font-weight:600; color:#e0e8f0;">ESG &amp; Compliance Screening</div>
           <div style="font-size:12px; color:#5a6b82; margin-top:4px;">
-            Sources: OFAC SDN Â· EU Consolidated Sanctions Â· UN Sanctions Â· US CBP UFLPA Entity List Â· EU Regulation 2023/1115 (EUDR) Â· Dodd-Frank 1502
+            Sources: OFAC SDN ÃÂ· EU Consolidated Sanctions ÃÂ· UN Sanctions ÃÂ· US CBP UFLPA Entity List ÃÂ· EU Regulation 2023/1115 (EUDR) ÃÂ· Dodd-Frank 1502
           </div>
         </div>
         """, unsafe_allow_html=True)
@@ -9352,7 +9352,7 @@ def render_supply_grid():
             st.markdown("<div style='font-size:14px; color:#00d4ff; font-weight:600; letter-spacing:1px; margin:18px 0 10px 0;'>SANCTIONED JURISDICTIONS</div>", unsafe_allow_html=True)
             for j in sorted(s_data['sanctioned_jurisdictions'], key=lambda x: x['score'], reverse=True):
                 color = _sg_threat_color(j['score'])
-                regimes_str = ' Â· '.join(j['regimes'])
+                regimes_str = ' ÃÂ· '.join(j['regimes'])
                 st.markdown(f"""
                 <div style='background:linear-gradient(90deg, rgba(0,25,55,0.5), rgba(0,15,35,0.4));
                             border-left:3px solid {color}; border-radius:8px;
@@ -9390,7 +9390,7 @@ def render_supply_grid():
                             display:flex; justify-content:space-between; align-items:center;'>
                   <div>
                     <span style='font-size:13px; color:#e0e8f0; font-weight:600;'>{e['name']}</span>
-                    <span style='font-size:11px; color:#8aa0bc; margin-left:8px;'>Â· {e['country']} Â· {e['sector']}</span>
+                    <span style='font-size:11px; color:#8aa0bc; margin-left:8px;'>ÃÂ· {e['country']} ÃÂ· {e['sector']}</span>
                   </div>
                   <div style='font-size:10px; padding:2px 8px; background:rgba(255,107,107,0.12);
                               border:1px solid #ff6b6b; border-radius:3px; color:#ff6b6b;
@@ -9399,7 +9399,7 @@ def render_supply_grid():
                   </div>
                 </div>
                 """, unsafe_allow_html=True)
-            st.caption("Not exhaustive â for comprehensive screening use OFAC SDN Search, EU Sanctions Map, or commercial tools (Refinitiv, Dow Jones)")
+            st.caption("Not exhaustive Ã¢ÂÂ for comprehensive screening use OFAC SDN Search, EU Sanctions Map, or commercial tools (Refinitiv, Dow Jones)")
 
 
             # ---- LIVE SANCTIONS INTELLIGENCE (24h cached) ----
@@ -9462,14 +9462,14 @@ def render_supply_grid():
             st.markdown("<div style='font-size:14px; color:#00d4ff; font-weight:600; letter-spacing:1px; margin:18px 0 10px 0;'>HIGH-RISK REGIONS</div>", unsafe_allow_html=True)
             for r in u_data['high_risk_regions']:
                 color = _sg_threat_color(95 if r['risk_level'] == 'CRITICAL' else 78)
-                presump = 'ð¨ Rebuttable Presumption Active' if r['rebuttable_presumption'] else 'Enhanced Scrutiny'
+                presump = 'Ã°ÂÂÂ¨ Rebuttable Presumption Active' if r['rebuttable_presumption'] else 'Enhanced Scrutiny'
                 st.markdown(f"""
                 <div style='background:linear-gradient(135deg, {color}11, rgba(0,15,35,0.5));
                             border:1px solid {color}66; border-radius:8px;
                             padding:14px 18px; margin-bottom:10px;'>
                   <div style='display:flex; justify-content:space-between; align-items:start;'>
                     <div>
-                      <div style='font-size:15px; font-weight:600; color:#e0e8f0;'>{r['region']} Â· {r['country']}</div>
+                      <div style='font-size:15px; font-weight:600; color:#e0e8f0;'>{r['region']} ÃÂ· {r['country']}</div>
                       <div style='font-size:11px; color:#ffb347; margin-top:4px;'>{presump}</div>
                     </div>
                     <div style='display:inline-block; padding:3px 10px; background:{color}22;
@@ -9494,7 +9494,7 @@ def render_supply_grid():
                   <div style='display:flex; justify-content:space-between; align-items:center;'>
                     <div>
                       <span style='font-size:13px; color:#e0e8f0; font-weight:600;'>{sec['sector']}</span>
-                      <span style='font-size:11px; color:#8aa0bc; margin-left:8px;'>Â· {sec['origins']}</span>
+                      <span style='font-size:11px; color:#8aa0bc; margin-left:8px;'>ÃÂ· {sec['origins']}</span>
                     </div>
                     <div style='font-size:10px; padding:2px 8px; background:{sec_color}22;
                                 border:1px solid {sec_color}; border-radius:3px; color:{sec_color};
@@ -9638,7 +9638,7 @@ def render_supply_grid():
                 </div>
                 """, unsafe_allow_html=True)
 
-            st.caption("All scores 0-100 (higher = more risk) Â· Composite from WGI Â· Transparency Int'l Â· ILO Â· OFAC lists")
+            st.caption("All scores 0-100 (higher = more risk) ÃÂ· Composite from WGI ÃÂ· Transparency Int'l ÃÂ· ILO ÃÂ· OFAC lists")
 
 
     # ========== TAB 8: ALTERNATIVE SOURCING ==========
@@ -9647,7 +9647,7 @@ def render_supply_grid():
         <div style="margin-bottom:16px;">
           <div style="font-size:18px; font-weight:600; color:#e0e8f0;">Alternative Sourcing Intelligence</div>
           <div style="font-size:12px; color:#5a6b82; margin-top:4px;">
-            Mitigation pathways for critical materials &amp; sectors Â· UN Comtrade flows Â· USGS production Â· Diversification scoring
+            Mitigation pathways for critical materials &amp; sectors ÃÂ· UN Comtrade flows ÃÂ· USGS production ÃÂ· Diversification scoring
           </div>
         </div>
         """, unsafe_allow_html=True)
@@ -9742,7 +9742,7 @@ def render_supply_grid():
                 </div>
                 """, unsafe_allow_html=True)
 
-        st.caption("Lead times and cost deltas are estimates based on public trade data â verify with supplier-specific RFQs")
+        st.caption("Lead times and cost deltas are estimates based on public trade data Ã¢ÂÂ verify with supplier-specific RFQs")
 
 
     # ========== TAB 9: AI RISK ANALYST ==========
@@ -9800,7 +9800,7 @@ def render_supply_grid():
         """, unsafe_allow_html=True)
 
         # User context
-        user_ctx = st.text_area("Add your context (optional â industry, suppliers, specific exposure):",
+        user_ctx = st.text_area("Add your context (optional Ã¢ÂÂ industry, suppliers, specific exposure):",
                                  placeholder="e.g., We import Brent through the Gulf; Q3 contracts with Saudi Aramco.",
                                  height=80, key='ai_user_ctx')
 
@@ -9808,10 +9808,10 @@ def render_supply_grid():
         with col_a:
             run_btn = st.button('Run AI Analyst', type='primary', use_container_width=True, key='ai_run_btn')
         with col_b:
-            st.markdown("<div style='font-size:11px; color:#5a6b82; padding-top:8px;'>Response uses Claude API Â· ~5-10 seconds Â· falls back to structured analysis if offline</div>", unsafe_allow_html=True)
+            st.markdown("<div style='font-size:11px; color:#5a6b82; padding-top:8px;'>Response uses Claude API ÃÂ· ~5-10 seconds ÃÂ· falls back to structured analysis if offline</div>", unsafe_allow_html=True)
 
         if run_btn:
-            with st.spinner('AI analyst validating signals and drafting briefâ¦'):
+            with st.spinner('AI analyst validating signals and drafting briefÃ¢ÂÂ¦'):
                 prompt = _sg_ai_build_prompt(alert, user_ctx)
                 ok, text = _sg_ai_call_claude(prompt)
                 if ok:
@@ -9821,7 +9821,7 @@ def render_supply_grid():
                                 padding:16px 20px; margin-top:12px;'>
                       <div style='display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;'>
                         <div style='font-size:12px; color:#00d4ff; font-weight:600; letter-spacing:1.5px;'>AI ANALYST BRIEF</div>
-                        <div style='font-size:10px; color:#00ffc8; letter-spacing:1px;'>â LIVE Â· CLAUDE</div>
+                        <div style='font-size:10px; color:#00ffc8; letter-spacing:1px;'>Ã¢ÂÂ LIVE ÃÂ· CLAUDE</div>
                       </div>
                       <div style='font-size:13px; color:#e0e8f0; line-height:1.7;'>{text}</div>
                     </div>
@@ -9835,7 +9835,7 @@ def render_supply_grid():
                                 padding:16px 20px; margin-top:12px;'>
                       <div style='display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;'>
                         <div style='font-size:12px; color:#ff9800; font-weight:600; letter-spacing:1.5px;'>STRUCTURED BRIEF (OFFLINE MODE)</div>
-                        <div style='font-size:10px; color:#ffb347; letter-spacing:1px;'>â RULES-BASED</div>
+                        <div style='font-size:10px; color:#ffb347; letter-spacing:1px;'>Ã¢ÂÂ RULES-BASED</div>
                       </div>
                       <div style='font-size:13px; color:#e0e8f0; line-height:1.7;'>{fb}</div>
                       <div style='font-size:11px; color:#8aa0bc; margin-top:12px; padding-top:10px;
@@ -9970,7 +9970,7 @@ def render_supply_grid():
         </div>
         """, unsafe_allow_html=True)
 
-        st.caption("Projections are based on historical disruption analogs (1973 oil crisis, 2011 Fukushima, 2021 Suez Ever Given, 2022 Russia sanctions) Â· adjusted for 2026 supply chain structure")
+        st.caption("Projections are based on historical disruption analogs (1973 oil crisis, 2011 Fukushima, 2021 Suez Ever Given, 2022 Russia sanctions) ÃÂ· adjusted for 2026 supply chain structure")
 
 
     # ========== TAB 11: WEATHER & PORT DISRUPTION ==========
@@ -9985,7 +9985,7 @@ def render_supply_grid():
         """, unsafe_allow_html=True)
 
         # Fetch live NWS alerts
-        with st.spinner('Fetching live NOAA/NWS alertsâ¦'):
+        with st.spinner('Fetching live NOAA/NWS alertsÃ¢ÂÂ¦'):
             alerts, nws_status = _sg_fetch_nws_alerts()
 
         # Banner showing fetch status
@@ -10043,7 +10043,7 @@ def render_supply_grid():
         ports = _sg_weather_ports()
         intl_weather = _sg_intl_port_weather()
 
-        # US ports â derive status from NWS alerts matching the state
+        # US ports Ã¢ÂÂ derive status from NWS alerts matching the state
         us_alert_areas = ' | '.join([a.get('area', '') for a in alerts])
 
         for p in ports:
@@ -10065,12 +10065,12 @@ def render_supply_grid():
                         break
                 status = 'MONITORING' if state_match else 'NORMAL'
                 note = 'Active NWS alerts in port region' if state_match else 'No active NWS alerts'
-                live_label = 'â LIVE'
+                live_label = 'Ã¢ÂÂ LIVE'
             else:
                 w = intl_weather.get(p['port'], {'status': 'NORMAL', 'note': 'No current advisories'})
                 status = w['status']
                 note = w['note']
-                live_label = 'â CURATED'
+                live_label = 'Ã¢ÂÂ CURATED'
 
             color = _sg_weather_severity_color(status)
             st.markdown(f"""
@@ -10111,8 +10111,8 @@ def render_supply_grid():
     st.markdown("""
     <div style='margin-top:30px; padding-top:18px; border-top:1px solid rgba(0,212,255,0.1);
                 font-size:11px; color:#5a6b82; text-align:center;'>
-      NERAI Supply Grid Â· Data fused from IMF PortWatch, USGS, UN Comtrade, GDELT, Yahoo Finance Â·
-      Updated: live (commodities) Â· daily (chokepoints, ports) Â· weekly (concentration) Â· annual (USGS reserves)
+      NERAI Supply Grid ÃÂ· Data fused from IMF PortWatch, USGS, UN Comtrade, GDELT, Yahoo Finance ÃÂ·
+      Updated: live (commodities) ÃÂ· daily (chokepoints, ports) ÃÂ· weekly (concentration) ÃÂ· annual (USGS reserves)
     </div>
     """, unsafe_allow_html=True)
 
@@ -10162,7 +10162,7 @@ _stc.html("""
 if _SOLO_LOCKED:
     st.markdown("""
     <div style="text-align:center; padding:80px 20px;">
-        <div style="font-size:64px; margin-bottom:16px;">ð</div>
+        <div style="font-size:64px; margin-bottom:16px;">Ã°ÂÂÂ</div>
         <h2 style="color:#00d4ff; margin-bottom:12px;">PRO Feature</h2>
         <p style="color:#8899aa; font-size:16px; max-width:500px; margin:0 auto;">
             This section is available on the <b style="color:#00d4ff;">Pro plan</b>.<br>
