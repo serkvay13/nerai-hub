@@ -6020,7 +6020,7 @@ Writing style requirements:
     except Exception:
         pass
 
-        user_msg = f"""Write a comprehensive research report on the following topic:
+    user_msg = f"""Write a comprehensive research report on the following topic:
 
 TOPIC: {topic}
 
