@@ -6003,7 +6003,13 @@ Writing style requirements:
 - Write with authentic regional expertise and local context knowledge for the countries involved
 - Use precise geopolitical terminology
 - Include forward-looking assessments with confidence levels
-- Total length: 2000-3000 words"""
+- Total length: 2000-3000 words
+
+FORMAT: Output in MARKDOWN format. Use # for the report title, ## for main sections, ### for subsections. Use - for bullet points. Use **bold** for emphasis. This is critical for PDF generation.
+
+CONSISTENCY: Your thesis MUST be grounded in verifiable economic data, established geopolitical theories, and documented historical patterns. Do NOT speculate or hypothesize without evidence. The same topic analyzed with the same data should always yield the same core conclusion. Be deterministic and objective. NERAI data should reinforce your evidence-based thesis, not the other way around.
+
+OBJECTIVITY: Present all sides of the argument with their supporting evidence, then state which position the data most strongly supports. Avoid ideological framing. Cite specific numbers, dates, and sources."""
 
     # --- Fetch current news/data via web search ---
     web_context = ""
@@ -6273,6 +6279,8 @@ def render_briefing_room():
             try:
                 _tt_report = _generate_think_tank_report(_tt_topic, df)
                 if _tt_report:
+                    st.session_state["_tt_cached_report"] = _tt_report
+                    st.session_state["_tt_cached_topic"] = _tt_topic
                     st.markdown(_tt_report, unsafe_allow_html=True)
                     # --- PDF Download ---
                     try:
@@ -6331,6 +6339,49 @@ def render_briefing_room():
                     st.warning("Could not generate report. Please check your API key configuration.")
             except Exception as _tte:
                 st.error(f"Report generation failed: {_tte}")
+    # Show cached report if it exists (persists across Streamlit reruns)
+    if not _tt_generate and "_tt_cached_report" in st.session_state:
+        st.markdown(st.session_state["_tt_cached_report"], unsafe_allow_html=True)
+        # PDF download for cached report
+        _raw_cached = st.session_state.get("_tt_raw_text", "")
+        _topic_cached = st.session_state.get("_tt_cached_topic", "report")
+        if _raw_cached:
+            try:
+                import re as _re2
+                from reportlab.platypus import SimpleDocTemplate as SD2, Paragraph as P2, Spacer as Sp2, HRFlowable as HR2
+                from reportlab.lib.styles import ParagraphStyle as PS2
+                from reportlab.lib.enums import TA_CENTER as C2, TA_JUSTIFY as J2
+                _pio2 = io.BytesIO()
+                _d2 = SD2(_pio2, pagesize=A4, topMargin=30*mm, bottomMargin=20*mm, leftMargin=20*mm, rightMargin=20*mm)
+                _cy2 = HexColor("#00d4ff")
+                _ps2 = {
+                    "t": PS2("CT", fontSize=18, leading=22, textColor=_cy2, fontName="Helvetica-Bold", spaceAfter=12, alignment=C2),
+                    "h2": PS2("CH2", fontSize=13, leading=16, textColor=_cy2, fontName="Helvetica-Bold", spaceBefore=14, spaceAfter=6),
+                    "h3": PS2("CH3", fontSize=11, leading=14, textColor=HexColor("#7dd3fc"), fontName="Helvetica-Bold", spaceBefore=10, spaceAfter=4),
+                    "b": PS2("CB", fontSize=9.5, leading=13, textColor=HexColor("#334155"), fontName="Helvetica", spaceAfter=6, alignment=J2),
+                    "bl": PS2("CBL", fontSize=9.5, leading=13, textColor=HexColor("#334155"), fontName="Helvetica", leftIndent=18, spaceAfter=3),
+                    "m": PS2("CM", fontSize=8, leading=10, textColor=HexColor("#64748b"), fontName="Helvetica-Oblique", spaceAfter=4, alignment=C2),
+                }
+                _sy2 = []
+                for _ln in _raw_cached.split("\n"):
+                    _s = _ln.strip()
+                    if not _s: _sy2.append(Sp2(1, 6))
+                    elif _s.startswith("# "): _sy2.append(P2(_s[2:], _ps2["t"])); _sy2.append(HR2(width="100%", thickness=1, color=_cy2, spaceAfter=8))
+                    elif _s.startswith("## "): _sy2.append(P2(_s[3:], _ps2["h2"]))
+                    elif _s.startswith("### "): _sy2.append(P2(_s[4:], _ps2["h3"]))
+                    elif _s.startswith("- ") or _s.startswith("* "): _sy2.append(P2("\u2022 " + _re2.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", _s[2:]), _ps2["bl"]))
+                    elif _s.startswith("**") and _s.endswith("**"): _sy2.append(P2(_s.strip("*"), _ps2["h3"]))
+                    else: _sy2.append(P2(_re2.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", _s), _ps2["b"]))
+                _sy2.append(Sp2(1, 20))
+                _sy2.append(HR2(width="100%", thickness=0.5, color=HexColor("#1a3a5c"), spaceAfter=6))
+                _sy2.append(P2("NERAI Intelligence Hub \u2014 Strategic Analysis Lab", _ps2["m"]))
+                _d2.build(_sy2)
+                _pio2.seek(0)
+                _sfn2 = "".join(c if c.isalnum() or c in " -_" else "" for c in _topic_cached)[:50].strip().replace(" ", "_")
+                st.download_button(label="📥 Download PDF Report", data=_pio2.getvalue(), file_name=f"NERAI_Report_{_sfn2}.pdf", mime="application/pdf", key="tt_pdf_dl_cached")
+            except Exception:
+                pass
+
     elif _tt_generate and not _tt_topic:
         st.warning("Please enter a research topic.")
 
