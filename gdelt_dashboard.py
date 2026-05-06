@@ -5981,11 +5981,11 @@ def _generate_think_tank_report(topic, df_raw):
     except Exception:
         nerai_context = "NERAI index data unavailable."
 
-    system_prompt = """You are a senior geopolitical analyst at NERAI Intelligence, writing in the tradition of CFR Special Reports and RAND Research Briefs. You hold dual expertise: you are both a credentialed international relations scholar AND a citizen of the most relevant country to the topic at hand, giving you unique insider perspective combined with academic rigor.
+    system_prompt = """You are the NERAI Intelligence Strategic Analysis Lab, producing research briefs in the tradition of CFR Special Reports and RAND Research Briefs. You combine deep regional expertise with quantitative intelligence from NERAI proprietary index data. You write with the authority and rigor of a top-tier think tank, drawing on local context and insider knowledge of the regions involved. IMPORTANT: All facts, events, and data you cite MUST be real and verifiable. Do NOT fabricate events, statistics, or quotes. If you are uncertain about a specific fact, state the uncertainty explicitly.
 
 Your reports MUST follow this exact structure:
 
-1. HEADER: Title, author byline (create a fitting expert name + credentials + nationality), date, classification level
+1. HEADER: Title, "NERAI Intelligence — Strategic Analysis Lab" as author, today's date, classification level (e.g. "NERAI-UNRESTRICTED")
 2. EXECUTIVE SUMMARY (3-4 sentences capturing the core thesis)
 3. KEY FINDINGS (3-5 bullet points)
 4. BACKGROUND & CONTEXT (2-3 paragraphs establishing the geopolitical landscape)
@@ -6000,18 +6000,33 @@ Writing style requirements:
 - Present a clear, defensible thesis - do not hedge excessively
 - Reference specific think tanks and their known positions (CFR, RAND, IISS, Chatham House, Brookings, Carnegie, CSIS, ICG, etc.)
 - Integrate quantitative NERAI data naturally into the analysis
-- The author should write with authentic regional expertise reflecting their nationality
+- Write with authentic regional expertise and local context knowledge for the countries involved
 - Use precise geopolitical terminology
 - Include forward-looking assessments with confidence levels
 - Total length: 2000-3000 words"""
 
-    user_msg = f"""Write a comprehensive research report on the following topic:
+    # --- Fetch current news/data via web search ---
+    web_context = ""
+    try:
+        import feedparser
+        _search_url = f"https://news.google.com/rss/search?q={topic.replace(' ', '+')}&hl=en&gl=US&ceid=US:en"
+        _feed = feedparser.parse(_search_url)
+        if _feed.entries:
+            _headlines = []
+            for _entry in _feed.entries[:8]:
+                _pub = _entry.get("published", "")
+                _headlines.append(f"- {_entry.title} ({_pub})")
+            web_context = "\n\nCURRENT NEWS CONTEXT (from latest headlines):\n" + "\n".join(_headlines)
+    except Exception:
+        pass
+
+        user_msg = f"""Write a comprehensive research report on the following topic:
 
 TOPIC: {topic}
 
 {nerai_context}
 
-Generate the full report following the structure specified. The author should be from the most relevant country to this topic. Reference real think tank positions and publications where applicable. Integrate the NERAI data provided above into your analysis section."""
+Generate the full report following the structure specified. The report is authored by NERAI Intelligence. Reference real think tank positions and publications where applicable. Integrate the NERAI data provided above into your analysis section.{web_context}\n\nIMPORTANT: Use ONLY real, verifiable, and current information. Today is {datetime.datetime.now().strftime('%d %B %Y')}. Ensure all referenced events and data are accurate as of this date."""
 
     try:
         client = anthropic.Anthropic(api_key=api_key)
