@@ -6201,8 +6201,18 @@ def render_briefing_room():
         if _instab_nar is not None:
             _latest_d = df.columns[-1]
             _prev_d = df.columns[-2] if len(df.columns) >= 2 else _latest_d
-            _top5_nar = _instab_nar[_latest_d].nlargest(5)
-            _chg_nar = ((_instab_nar[_latest_d] - _instab_nar[_prev_d]) / _instab_nar[_prev_d].replace(0, np.nan) * 100).dropna()
+            # Normalize to 0-100 scale
+            _instab_norm = apply_norm(_instab_nar, "Score (0\u2013100)") if 'apply_norm' in dir() else _instab_nar
+            # Use 7-day averages for stable comparison
+            if len(df.columns) >= 14:
+                _nar_recent7 = _instab_norm[df.columns[-7:]].mean(axis=1)
+                _nar_prev7 = _instab_norm[df.columns[-14:-7]].mean(axis=1)
+            else:
+                _nar_recent7 = _instab_norm[_latest_d]
+                _nar_prev7 = _instab_norm[_prev_d]
+            _top5_nar = _nar_recent7.nlargest(5)
+            _chg_nar = ((_nar_recent7 - _nar_prev7) / _nar_prev7.replace(0, np.nan).clip(lower=1.0) * 100).dropna()
+            _chg_nar = _chg_nar.clip(-200, 200)
             _risers = _chg_nar.nlargest(3)
             _nar_lines = [f"### Global Risk Briefing \u2014 {_latest_d.strftime(chr(37)+chr(100)+chr(32)+chr(37)+chr(66)+chr(32)+chr(37)+chr(89))}"]
             _nar_lines.append("")
@@ -6215,9 +6225,10 @@ def render_briefing_room():
             _nar_lines.append("**Key Movements:**")
             for c, ch in _risers.items():
                 _nar_lines.append(f"- {COUNTRY_NAMES.get(c, c)}: +{ch:.1f}% instability increase")
-            _gavg = _instab_nar[_latest_d].mean()
-            _gprev = _instab_nar[_prev_d].mean()
-            _gchg = ((_gavg - _gprev) / max(_gprev, 1e-9)) * 100
+            _gavg = _nar_recent7.mean()
+            _gprev = _nar_prev7.mean()
+            _gchg = ((_gavg - _gprev) / max(_gprev, 1.0)) * 100
+            _gchg = max(min(_gchg, 200), -200)
             _trend = "rose" if _gchg > 0 else "declined"
             _nar_lines.append("")
             _nar_lines.append(f"**Global Assessment:** Average instability {_trend} by {abs(_gchg):.1f}% to {_gavg:.1f}.")
